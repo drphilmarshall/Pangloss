@@ -9,80 +9,151 @@ to-do
 - decide whether to continue
 '''
 
-import distances,pylab
+# import distances
+import pylab, atpy
 import matplotlib.pyplot as plt
 import numpy
 import numpy.random as rnd
+
 #import time
 #t0=time.clock()    
-D = distances.Distance()
-zl=0.3
-zs=1.5
 
+# D = distances.Distance()
+# zl=0.3
+# zs=1.5
+
+arcmin2rad = (1.0/60.0)*numpy.pi/180.0
+rad2arcmin = 1.0/arcmin2rad
 
 # ============================================================================
     
-class lightcone:
+class catalog:
 
-   def __init__(self, position, radius, zd, zs):
-        self.name = 'Light cone containing a gravitational lens'
-        self.position = np.array(position)
-        self.radius = radius
-        self.zd = zd
-        self.zs = zs
+   def __init__(self, datafile):
+        self.name = 'Catalog of objects'
+        self.datafile = datafile
+#         self.catalog = atpy.Table(datafile, type='ascii')
+#         print "Read in table, length",len(self.catalog)
         return None
 
-    def __str__(self):
-        return '%.2f %.2f ' % (position)
+   def __str__(self):
+#         return 'Lightcone extracted from %s, of radius %.2f arcmin, centred on (%.2f,%.2f) deg' % (datafile,radius,position)
+        return 'Lightcone extracted from %s' % (datafile)
+
+# ============================================================================
+    
+# Drill out the narrow pencil beam defined by position vector xc and radius.
+class lightcone:
+
+   def __init__(self, catalog, position, radius):
+
+        self.name = 'Lightcone through the observed Universe'
+        self.master = catalog
+        self.xc = position
+        self.rmax = radius
+        
+        # Drill out galaxies in a box centred on xc:
+        dx = self.rmax*arcmin2rad
+        index = numpy.where(self.catalog.x > xc[0]-dx and
+                            self.catalog.x < xc[0]+dx and
+                            self.catalog.y > xc[1]-dx and
+                            self.catalog.y < xc[1]+dx)
+        galaxies = self.catalog[index]
+        # Recentre the coordinate system on the cone centroid, and 
+        # convert to arcmin:
+        galaxies.add_empty_column('r')
+        galaxies.x = (galaxies.x - xc[0])*rad2arcmin
+        galaxies.y = (galaxies.y - xc[1])*rad2arcmin
+        galaxies.r = numpy.sqrt(galaxies.x*galaxies.x + galaxies.y*galaxies.y)
+        index = numpy.where(galaxies.r < self.rmax)
+        self.galaxies = objects[index]
+        
+        return None
+
+
+   def __str__(self):
+        return 'Lightcone of radius %.2f arcmin, centred on (%.2f,%.2f) deg' % (datafile,radius,position)
+
+
+   def plot(self):
+       plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='.')
+       plt.xlabel('x (arcmin)')
+       plt.ylabel('y (arcmin)')
+       plt.axes().set_aspect('equal')
+       plt.title('%s' % self)
+       return None
 
 # ----------------------------------------------------------------------------
-    
-    def selectlens()
-
-    def beta(i,j,k):  
-        if j>i:
-            R1 = D.Da(i,j)/D.Da(j)
-            R2 = D.Da(i,k)/D.Da(k)
-            return R2/R1
-        if i>j:
-            R1 = D.Da(j,i)/D.Da(i)
-            R2 = D.Da(j,k)/D.Da(k)
-            return R1/R2
-
-    def Kappaindiv()
-
-    def Shearindiv()
-
-
-
-    def Kappa_keeton(i=zl,j,k=zs,):
-        B=beta(i,j,k)
-        K=Kappaindiv()
-        G=Shearindiv()
-        return (1.-B)*(K-B(K^2-G^2))/((1-BK)^2-(G)^2)
-
-    def Kappa_sum(i,j,k):
-
-
+#     
+#     def selectlens()
+# 
+# # ----------------------------------------------------------------------------
+#     
+#     def beta(i,j,k):  
+#         if j>i:
+#             R1 = D.Da(i,j)/D.Da(j)
+#             R2 = D.Da(i,k)/D.Da(k)
+#             return R2/R1
+#         if i>j:
+#             R1 = D.Da(j,i)/D.Da(i)
+#             R2 = D.Da(j,k)/D.Da(k)
+#             return R1/R2
+# 
+# # ----------------------------------------------------------------------------
+#     
+#     def Kappaindiv()
+# 
+# # ----------------------------------------------------------------------------
+#     
+#     def Shearindiv()
+# 
+# 
+# 
+# # ----------------------------------------------------------------------------
+#     
+#     def Kappa_keeton(i=zl,j,k=zs,):
+#         B=beta(i,j,k)
+#         K=Kappaindiv()
+#         G=Shearindiv()
+#         return (1.-B)*(K-B(K^2-G^2))/((1-BK)^2-(G)^2)
+# 
+#     def Kappa_sum(i,j,k):
+# 
+# 
 # ============================================================================
 
 # TESTS:
 
-def cog_test():
+def test(catalog):
 
-    print "Plotting curve of growth around a random lens"
+    print "Initialising lightcone data..."
     
-    pos = [0.0, 0.0]
-    r = 0.05 # radians
-    lc = lightcone(pos, r, zd, zs)
+    xc = [0.0, 0.0]
+    rmax = 2 # arcmin
+    lc = lightcone(catalog,xc,rmax)
 
+    print "Making halos..."
+    lc.make_halos()
+
+    print "Making stellar masses..."
+    lc.make_galaxy_stellar_masses()
+
+    print "Making stellar masses..."
+
+    print "Plotting positions..."
+    lc.plot()
+    
     return
    
 # ============================================================================
 
 if __name__ == '__main__':
 
-    cog_test()
+    datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+    master = atpy.Table(datafile, type='ascii')
+    print "Read in master table, length",len(master)
+    
+    test(master)
     
 # ============================================================================
 
