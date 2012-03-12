@@ -27,60 +27,66 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ============================================================================
     
-class catalog:
+# Given a catalog, drill out a narrow pencil beam defined by position vector 
+# xc and some radius.
 
-   def __init__(self, datafile):
-        self.name = 'Catalog of objects'
-        self.datafile = datafile
-#         self.catalog = atpy.Table(datafile, type='ascii')
-#         print "Read in table, length",len(self.catalog)
-        return None
-
-   def __str__(self):
-#         return 'Lightcone extracted from %s, of radius %.2f arcmin, centred on (%.2f,%.2f) deg' % (datafile,radius,position)
-        return 'Lightcone extracted from %s' % (datafile)
-
-# ============================================================================
-    
-# Drill out the narrow pencil beam defined by position vector xc and radius.
 class lightcone:
 
    def __init__(self, catalog, position, radius):
 
         self.name = 'Lightcone through the observed Universe'
-        self.master = catalog
+        self.catalog = catalog
         self.xc = position
         self.rmax = radius
-        
+       
         # Drill out galaxies in a box centred on xc:
         dx = self.rmax*arcmin2rad
-        index = numpy.where(self.catalog.x > xc[0]-dx and
-                            self.catalog.x < xc[0]+dx and
-                            self.catalog.y > xc[1]-dx and
-                            self.catalog.y < xc[1]+dx)
-        galaxies = self.catalog[index]
+        self.galaxies = self.catalog.where((self.catalog['pos_0[rad]'] > (self.xc[0]-dx)) & \
+                                           (self.catalog['pos_0[rad]'] < (self.xc[0]+dx)) & \
+                                           (self.catalog['pos_1[rad]'] > (self.xc[1]-dx)) & \
+                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx)))
+
         # Recentre the coordinate system on the cone centroid, and 
         # convert to arcmin:
-        galaxies.add_empty_column('r')
-        galaxies.x = (galaxies.x - xc[0])*rad2arcmin
-        galaxies.y = (galaxies.y - xc[1])*rad2arcmin
-        galaxies.r = numpy.sqrt(galaxies.x*galaxies.x + galaxies.y*galaxies.y)
-        index = numpy.where(galaxies.r < self.rmax)
-        self.galaxies = objects[index]
+        x = (self.galaxies['pos_0[rad]'] - self.xc[0])*rad2arcmin
+        y = (self.galaxies['pos_1[rad]'] - self.xc[1])*rad2arcmin
+        r = numpy.sqrt(x*x + y*y)
+        self.galaxies.add_column('x',x)
+        self.galaxies.add_column('y',y)
+        self.galaxies.add_column('r',r)
+        self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
+        
+        # Note that these are placeholder galaxies: they may not have any 
+        # observable properties yet.
         
         return None
 
+# ----------------------------------------------------------------------------
 
    def __str__(self):
-        return 'Lightcone of radius %.2f arcmin, centred on (%.2f,%.2f) deg' % (datafile,radius,position)
+        return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
+# ----------------------------------------------------------------------------
 
    def plot(self):
-       plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='.')
-       plt.xlabel('x (arcmin)')
-       plt.ylabel('y (arcmin)')
+      
+       # Galaxy positions:
+       plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
+      
+       # More here, optionally...
+       
+       # Lightcone boundary and centroid:
+       circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
+       ax=pylab.gca()
+       ax.add_patch(circ)
+       plt.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+
+       # Labels:
+       plt.xlabel('x / arcmin')
+       plt.ylabel('y / arcmin')
        plt.axes().set_aspect('equal')
-       plt.title('%s' % self)
+#        plt.title('%s' % self)
+      
        return None
 
 # ----------------------------------------------------------------------------
@@ -126,22 +132,31 @@ class lightcone:
 
 def test(catalog):
 
+    plt.clf()
     print "Initialising lightcone data..."
     
-    xc = [0.0, 0.0]
+    xc = [-0.004, -0.010] # radians
     rmax = 2 # arcmin
     lc = lightcone(catalog,xc,rmax)
 
-    print "Making halos..."
-    lc.make_halos()
-
-    print "Making stellar masses..."
-    lc.make_galaxy_stellar_masses()
-
-    print "Making stellar masses..."
-
-    print "Plotting positions..."
+    print "Plotting positions of objects..."
     lc.plot()
+
+#     print "Distributing dark matter in halos..."
+#     lc.make_dmhalos()
+#     lc.plot(dmhalos=True)
+# 
+#     print "Distributing stars in galaxies..."
+#     lc.make_galaxies()
+#     lc.plot(galaxies=True)
+# 
+#     print "Computing Keeton (2003) convergence at optical axis..."
+#     lc.keeton_kappa()
+
+
+    pngfile = 'test.png'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
     
     return
    
@@ -149,7 +164,12 @@ def test(catalog):
 
 if __name__ == '__main__':
 
-    datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+# Simulated (Millenium) lightcone data from Hilbert:
+#     datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+
+# First 99 lines of the same, for testing:
+    datafile = "test.txt"
+    
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
