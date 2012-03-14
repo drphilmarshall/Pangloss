@@ -32,12 +32,15 @@ rad2arcmin = 1.0/arcmin2rad
 
 class lightcone:
 
-   def __init__(self, catalog, position, radius):
+   def __init__(self, catalog, position, radius, zl,zs):
 
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
-        self.xc = position
+        self.xc = position 
         self.rmax = radius
+        self.zl = zl
+        self.zs = zs
+
        
         # Drill out galaxies in a box centred on xc:
         dx = self.rmax*arcmin2rad
@@ -69,24 +72,44 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    def plot(self):
-      
+ 
+       #ax1.ylabel('y / arcmin')
+
+
        # Galaxy positions:
+       plt.subplot(2,1,(1),aspect='equal')
+       #ax1=plt.subplot(211)
        plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
-      
-       # More here, optionally...
        
+       #ax1.scatter(self.galaxies.x, self.galaxies.y, c='red', marker='o',s=((nu                     mpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2)   )     
+ 
+       #plt.subplots_adjust(*args, **kwargs)
+
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
        ax=pylab.gca()
        ax.add_patch(circ)
-       plt.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+       ax.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
 
        # Labels:
+
        plt.xlabel('x / arcmin')
        plt.ylabel('y / arcmin')
-       plt.axes().set_aspect('equal')
-#        plt.title('%s' % self)
-      
+       #plt.axes().set_aspect('equal')     
+
+
+       plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+       #plt.title('%s' % self)
+
+
+       #subplot for view down redshift axis
+       plt.subplot(2,1,2)
+       plt.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
+       plt.xlabel('Redshift')
+       plt.ylabel('Distance from Line of sight / arcmin')
+       #plt.axis(0,self.zs,0,self.rmax+0.1)
+       #plt.axvline(x=zl, ymin=0, ymax=1,color='black', ls='solid')
+     
        return None
 
 # ----------------------------------------------------------------------------
@@ -134,10 +157,11 @@ def test(catalog):
 
     plt.clf()
     print "Initialising lightcone data..."
-    
-    xc = [-0.004, -0.010] # radians
+    zl=0.3
+    zs=1.5
+    xc = [-0.004, -0.010] # radians,radians,redshift
     rmax = 2 # arcmin
-    lc = lightcone(catalog,xc,rmax)
+    lc = lightcone(catalog,xc,rmax,zl,zs)
 
     print "Plotting positions of objects..."
     lc.plot()
