@@ -32,14 +32,14 @@ rad2arcmin = 1.0/arcmin2rad
 
 class lightcone:
 
-   def __init__(self, catalog, position, radius, zl,zs):
+   def __init__(self, catalog, position, radius, zlens,zsource):
 
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
         self.xc = position 
         self.rmax = radius
-        self.zl = zl
-        self.zs = zs
+        self.zl = zlens
+        self.zs = zsource
 
        
         # Drill out galaxies in a box centred on xc:
@@ -77,7 +77,7 @@ class lightcone:
 
 
        # Galaxy positions:
-       plt.subplot(2,1,(1),aspect='equal')
+       plt.subplot(2,1,1,aspect='equal')
        #ax1=plt.subplot(211)
        plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
        
@@ -106,10 +106,10 @@ class lightcone:
        plt.subplot(2,1,2)
        plt.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
        plt.xlabel('Redshift')
-       plt.ylabel('Distance from Line of sight / arcmin')
-       #plt.axis(0,self.zs,0,self.rmax+0.1)
-       #plt.axvline(x=zl, ymin=0, ymax=1,color='black', ls='solid')
-     
+       plt.ylabel('LoS distance / arcmin')
+       plt.axis([0,self.zs+0.1,0,self.rmax+0.1])
+       plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed')
+       plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
        return None
 
 # ----------------------------------------------------------------------------
