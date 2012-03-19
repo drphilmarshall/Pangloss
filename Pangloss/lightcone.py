@@ -225,16 +225,17 @@ class lightcone:
        return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # # ----------------------------------------------------------------------------
-    def MCrelation():
-       return
+    def MCrelation(M_200):
+       c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
+       return c_200
 
 # # ----------------------------------------------------------------------------
-    # NFW model for halo 
+    # NFW model for halo ###Not finished yet
     def Kappaindiv(self):
        X=(self.galaxies.x**2+self.galaxies.y**2)**.5
-       r=(X*D.Da(self.galaxies['z_spec']))
+       r=(X*D.Da(self.galaxies['z_spec'])) ###Is this the right conversion to angular units?###
        M=self.galaxies['M_Halo[M_sol/h]']
-       
+       c=MCrelation(M)
        R=r/rs
        rhos=
 
@@ -244,7 +245,7 @@ class lightcone:
        return kappa
  
 # # ----------------------------------------------------------------------------
-    # SIS model for halo
+    # NFW model for halo
 #    def Shearindiv(self):
 # 
 #       return
