@@ -83,7 +83,7 @@ class lightcone:
    # 2-panel plot, showing view from Earth and also line of sight section:
    def plot(self,starlight=False,dmglow=False):
  
-#<<<<<<< HEAD
+
        #ax1.ylabel('y / arcmin')
 
 
@@ -92,7 +92,7 @@ class lightcone:
        ax1.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
        
        ax1.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
-#=======
+
        # View from Earth (needs to be larger!):
        plt.subplot(2,1,1,aspect='equal')
        empty = True
@@ -104,27 +104,27 @@ class lightcone:
          empty = False
        if empty:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
-#>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
+
  
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
-#<<<<<<< HEAD
+
        #circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
        ax1.add_patch(circ)
        #ax.add_patch(circ2)
        ax1.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
-#=======
+
        # circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
        ax=pylab.gca()
        ax.add_patch(circ)
        # ax.add_patch(circ2)
        ax.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
-#>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
+
 
        # Labels:
        plt.xlabel('x / arcmin')
        plt.ylabel('y / arcmin')
-#<<<<<<< HEAD
+
 
 
 
@@ -132,7 +132,7 @@ class lightcone:
        #plt.title('%s' % self)
 
 
-       #subplot for view along redshift axis
+       #Tom Collett's subplot for view along redshift axis
        ax2=plt.subplot(2,1,2)
 
        ax2.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
@@ -150,13 +150,12 @@ class lightcone:
 
 
 
-#=======
 
        plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
        # plt.title('%s' % self)
 
 
-       # View along redshift axis: 
+       # Phil Marshall's View along redshift axis: 
 
 #TC: I prefered the old plot! y position gives the confusing impression that some objects 
 #    are much closer to the optical axis than they really are.
@@ -185,7 +184,7 @@ class lightcone:
        plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
        plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
        plt.axhline(y=0.0, xmin=0.0, xmax=zmax, color='black', ls='dashed')
-#>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
+
 
        return None
 
