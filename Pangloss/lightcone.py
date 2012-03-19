@@ -37,7 +37,9 @@ rad2arcmin = 1.0/arcmin2rad
 # *inherit* the properties (parameters and methods) of the lightcone object.
 # We should try and do this, in order to learn how inheritance works!
 
-#TC Good idea. But I have no idea how to do it! 
+#TC: Good idea. But I have no idea how to do it! 
+
+#Note to Phil. Anything marked '###' is still unfinished/preliminary and probably wrong!
 
 class lightcone:
 
