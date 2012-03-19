@@ -31,6 +31,12 @@ rad2arcmin = 1.0/arcmin2rad
 # Given a catalog, drill out a narrow pencil beam defined by position vector 
 # xc and some radius.
 
+# PJM: I am not sure that lightcone objects should necessarily have the 
+# properties zl and zs. lens_lightcones, yes, but lightcones no. The logical
+# way to code this would be to define a new class, lens_lightcone, and have it
+# *inherit* the properties (parameters and methods) of the lightcone object.
+# We should try and do this, in order to learn how inheritance works!
+
 class lightcone:
 
    def __init__(self, catalog, position, radius, zlens,zsource):
@@ -72,8 +78,10 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
 
-   def plot(self):
+   # 2-panel plot, showing view from Earth and also line of sight section:
+   def plot(self,starlight=False,dmglow=False):
  
+<<<<<<< HEAD
        #ax1.ylabel('y / arcmin')
 
 
@@ -82,19 +90,39 @@ class lightcone:
        ax1.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
        
        ax1.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+=======
+       # View from Earth (needs to be larger!):
+       plt.subplot(2,1,1,aspect='equal')
+       empty = True
+       if dmglow:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+         empty = False
+       if starlight:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+         empty = False
+       if empty:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
+>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
  
-   
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
+<<<<<<< HEAD
        #circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
        ax1.add_patch(circ)
        #ax.add_patch(circ2)
        ax1.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+=======
+       # circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
+       ax=pylab.gca()
+       ax.add_patch(circ)
+       # ax.add_patch(circ2)
+       ax.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
 
        # Labels:
-
        plt.xlabel('x / arcmin')
        plt.ylabel('y / arcmin')
+<<<<<<< HEAD
 
 
 
@@ -120,6 +148,38 @@ class lightcone:
 
 
 
+=======
+
+       plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+       # plt.title('%s' % self)
+
+
+       # View along redshift axis:
+       plt.subplot(2,1,2)
+       empty = True
+       if dmglow:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+         empty = False
+       if starlight:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+         empty = False
+       if empty:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.y, c='k', marker='o',s=1)
+
+       plt.xlabel('redshift z')
+#        plt.ylabel('distance from LoS / arcmin')
+       plt.ylabel('y / arcmin')
+       
+       zmax = max(self.galaxies['z_spec'].max(),self.zs)
+#        print self.zs,self.galaxies['z_spec'].max()
+#        print zmax
+       plt.axis([0,zmax+0.1,-self.rmax-0.1,self.rmax+0.1])
+
+       # Add lines marking source and lens plane, and optical axis:
+       plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
+       plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
+       plt.axhline(y=0.0, xmin=0.0, xmax=zmax, color='black', ls='dashed')
+>>>>>>> 26d82bfc744d7f038294cc901f423cd691013648
 
        return None
 
@@ -182,7 +242,7 @@ def test(catalog):
     lc = lightcone(catalog,xc,rmax,zl,zs)
 
     print "Plotting positions of objects..."
-    lc.plot()
+    lc.plot(starlight=True,dmglow=True)
 
 #     print "Distributing dark matter in halos..."
 #     lc.make_dmhalos()
