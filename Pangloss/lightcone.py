@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import numpy
 import numpy.random as rnd
 import distances
+from mpl_toolkits.axes_grid1 import ImageGrid
 
 #import time
 #t0=time.clock()    
@@ -77,47 +78,48 @@ class lightcone:
 
 
        # Galaxy positions:
-       plt.subplot(2,1,1,aspect='equal')
-       #ax1=plt.subplot(211)
-       plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+       ax1=plt.subplot(2,1,1, aspect ='equal')
+       ax1.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
        
-       plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+       ax1.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
  
    
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
        #circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
-       ax=pylab.gca()
-       ax.add_patch(circ)
+       ax1.add_patch(circ)
        #ax.add_patch(circ2)
-       ax.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+       ax1.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
 
        # Labels:
 
        plt.xlabel('x / arcmin')
        plt.ylabel('y / arcmin')
-       #plt.axes().set_aspect('equal')     
 
 
-       plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+
+       ax1.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
        #plt.title('%s' % self)
 
 
        #subplot for view along redshift axis
-       plt.subplot(2,1,2)
-       plt.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
+       ax2=plt.subplot(2,1,2)
+
+       ax2.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
        plt.xlabel('Redshift')
        plt.ylabel('LoS distance / arcmin')
        zmax = self.galaxies['z_spec'].max()
-       print zmax
-       print self.zs
+
        if self.zs > zmax:
-          plt.axis([0,self.zs+0.1,0,self.rmax+0.1])
+          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
        else:
-          plt.axis([0,zmax+0.1,0,self.rmax+0.1])      
+          ax2.axis([0,zmax+0.1,0,self.rmax+0.1])      
        #add lines fof source and lens plane
-       plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
-       plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
+       ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
+       ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
+
+
+
 
        return None
 
@@ -126,35 +128,41 @@ class lightcone:
 #     def selectlens()
 # 
 # # ----------------------------------------------------------------------------
-#     
-#     def beta(i,j,k):  
-#         if j>i:
-#             R1 = D.Da(i,j)/D.Da(j)
-#             R2 = D.Da(i,k)/D.Da(k)
-#             return R2/R1
-#         if i>j:
-#             R1 = D.Da(j,i)/D.Da(i)
-#             R2 = D.Da(j,k)/D.Da(k)
-#             return R1/R2
-# 
+   #beta parameter for a perturber at j:  
+   def beta(i,j,k):  
+      if j>k:
+         print "z_pert > z_source?, wtf?"
+         df
+      if j>i:
+         R1 = D.Da(i,j)/D.Da(j)
+         R2 = D.Da(i,k)/D.Da(k)
+         return R2/R1
+      if i>j:
+         R1 = D.Da(j,i)/D.Da(i)
+         R2 = D.Da(j,k)/D.Da(k)
+         return R2/R1
+ 
 # # ----------------------------------------------------------------------------
-#     
-#     def Kappaindiv()
-# 
+    # SIS model for halo 
+#    def Kappaindiv(self):
+#       return
+ 
 # # ----------------------------------------------------------------------------
-#     
-#     def Shearindiv()
+    # SIS model for halo
+#    def Shearindiv(self):
 # 
-# 
-# 
+#       return
+ 
 # # ----------------------------------------------------------------------------
 #     
 #     def Kappa_keeton(i=zl,j,k=zs,):
+#       if j<k:
 #         B=beta(i,j,k)
 #         K=Kappaindiv()
 #         G=Shearindiv()
 #         return (1.-B)*(K-B(K^2-G^2))/((1-BK)^2-(G)^2)
-# 
+#       else return 0.0
+#
 #     def Kappa_sum(i,j,k):
 # 
 # 
@@ -170,7 +178,7 @@ def test(catalog):
     zs=2.0
     #xc = [-1*arcmin2rad,-1*arcmin2rad]
     xc = [-.004, -0.010] # radians
-    rmax = 20 # arcmin
+    rmax = 2 # arcmin
     lc = lightcone(catalog,xc,rmax,zl,zs)
 
     print "Plotting positions of objects..."
