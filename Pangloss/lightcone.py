@@ -37,7 +37,7 @@ rad2arcmin = 1.0/arcmin2rad
 # *inherit* the properties (parameters and methods) of the lightcone object.
 # We should try and do this, in order to learn how inheritance works!
 
-#TC Good idea.
+#TC Good idea. But I have no idea how to do it! 
 
 class lightcone:
 
@@ -144,7 +144,7 @@ class lightcone:
           ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
        else:
           ax2.axis([0,zmax+0.1,0,self.rmax+0.1])      
-       #add lines fof source and lens plane
+       #add lines for source and lens plane
        ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
        ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
 
@@ -208,9 +208,40 @@ class lightcone:
          return R2/R1
  
 # # ----------------------------------------------------------------------------
-    # SIS model for halo 
-#    def Kappaindiv(self):
-#       return
+    #Function needed to calculate kappa and gamma for an NFW (or hernquist) halo.
+    def Ffunc(x):
+       y=(x**2-1)**.5
+       if x>1:
+          return (1./y)*numpy.arctan(y)
+       else: 
+          print "WARNING You are very close to a halo"
+          if x=1:
+             return 1.
+          else:
+             return (1./y)*numpy.arctanh(y)
+
+# # ----------------------------------------------------------------------------
+    def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
+       return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+
+# # ----------------------------------------------------------------------------
+    def MCrelation():
+       return
+
+# # ----------------------------------------------------------------------------
+    # NFW model for halo 
+    def Kappaindiv(self):
+       X=(self.galaxies.x**2+self.galaxies.y**2)**.5
+       r=(X*D.Da(self.galaxies['z_spec']))
+       M=self.galaxies['M_Halo[M_sol/h]']
+       
+       R=r/rs
+       rhos=
+
+       sigmacrit=SigmaCrit(self.galaxies['z_spec'],self.zs)
+       kappas=rhos*rs/sigma_crit
+       kappa =  2*kappas(1-Ffunc(R))/(R^2-1)
+       return kappa
  
 # # ----------------------------------------------------------------------------
     # SIS model for halo
