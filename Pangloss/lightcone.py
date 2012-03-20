@@ -210,27 +210,34 @@ class lightcone:
          return R2/R1
  
 # # ----------------------------------------------------------------------------
-    #Function needed to calculate kappa and gamma for an NFW (or hernquist) halo.
+    #Function needed to calculate kappa and gamma for an NFW halo.
     def Ffunc(x):
-       y=(x**2-1)**.5
+       
        if x>1:
+          y=(x**2-1)**.5
           return (1./y)*numpy.arctan(y)
        else: 
           print "WARNING You are very close to a halo"
           if x=1:
              return 1.
           else:
+             y=(-x**2+1)**.5
              return (1./y)*numpy.arctanh(y)
 
 # # ----------------------------------------------------------------------------
     def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
        return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
-
 # # ----------------------------------------------------------------------------
     def MCrelation(M_200):
        c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
+# # ----------------------------------------------------------------------------
+    def delta_c(c):
+       return (200./3)*c^3/(numpy.log(1+c)-c/(1+c))
+# # ----------------------------------------------------------------------------
+    def rho_crit_univ(z)   #critical density of the universe at z
 
+       return 
 # # ----------------------------------------------------------------------------
     # NFW model for halo ###Not finished yet
     def Kappaindiv(self):
@@ -238,8 +245,11 @@ class lightcone:
        r=(X*D.Da(self.galaxies['z_spec'])) ###Is this the right conversion to angular units?###
        M=self.galaxies['M_Halo[M_sol/h]']
        c=MCrelation(M)
+       
+       rs=r_200/c
+       rhos=delta_c(c)*rho_crit_univ(self.galaxies['z_spec'])       
+
        R=r/rs
-       rhos=
 
        sigmacrit=SigmaCrit(self.galaxies['z_spec'],self.zs)
        kappas=rhos*rs/sigma_crit
@@ -253,7 +263,8 @@ class lightcone:
 #       return
  
 # # ----------------------------------------------------------------------------
-#     
+#     #Kappa Keeton, following Keeton (200?)and Momcheva et al. (200?)
+#
 #     def Kappa_keeton(i=zl,j,k=zs,):
 #       if j<k:
 #         B=beta(i,j,k)
