@@ -94,7 +94,7 @@ class lightcone:
          R2 = D.Da(j,k)/D.Da(k)
          return R2/R1
  
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    #Function needed to calculate kappa and gamma for an NFW halo.
    def Ffunc(x):
        if x>1:
@@ -108,44 +108,62 @@ class lightcone:
              y=(-x**2+1)**.5
              return (1./y)*numpy.arctanh(y)
 
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
        return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    def MCrelation(M_200):
        c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    def delta_c(c):
        return (200./3)*c^3/(numpy.log(1+c)-c/(1+c))
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    def Hsquared(z):
        H0 =D.h*3.241*10**-18
        Hsq=(H0**2)*(D.Omega_M*(1+z)**3+(1-D.Omega_M)) #Lambda CDM only at this stage
        return Hsq
     
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    def rho_crit_univ(z):   #critical density of the universe at z
        ro= 2.642*10**46**Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
        return ro
-# # ----------------------------------------------------------------------------
-    # NFW model for halo ###Not finished yet
-   def Kappaindiv(self):
-       X=(self.galaxies.x**2+self.galaxies.y**2)**.5
-       r=(X*D.Da(self.galaxies['z_spec'])) ###Is this the right conversion to angular units?###
-       M=self.galaxies['M_Halo[M_sol/h]']
-       c=MCrelation(M)
+# ----------------------------------------------------------------------------
+   # NFW model for halo ###Not finished yet
+   def make_kappa_contributions(self):
+
+#        X=(self.galaxies.x**2+self.galaxies.y**2)**.5
+# PJM: this is already stored as self.galaxies.r!
+
+       zd = self.galaxies['z_spec']
+       DA = D.Da(zd)
+       self.galaxies.add_column('DA',DA)
        
-       rs=r_200/c
-       rhos=delta_c(c)*rho_crit_univ(self.galaxies['z_spec'])       
+       rphys=self.galaxies.r*DA  # Mpc
+       ###Is this the right conversion to angular units?###
+       # PJM: I think so! Note units. Check H0 is included...
+       
+       M200 = self.galaxies['M_Halo[M_sol/h]']
+       
+       # Compute NFW quantities, and store for later:
+       c200 = MCrelation(M200)
+       self.galaxies.add_column('c200',c)       
+       rs = r_200/c200
+       rhos = delta_c(c200)*rho_crit_univ(zd)       
+       self.galaxies.add_column('rs',rs)
+       self.galaxies.add_column('rhos',rhos)
 
-       R=r/rs
-       sigmacrit=SigmaCrit(self.galaxies['z_spec'],self.zs)
-       kappas=rhos*rs/sigma_crit
-       kappa =  2*kappas(1-Ffunc(R))/(R^2-1)
-       return kappa
+       x = rphys/rs
+       sigmacrit = SigmaCrit(zd,self.zs)
+       kappas = rhos*rs/sigma_crit
+       kappa = 2*kappas(1-Ffunc(x))/(x*x-1)
+       
+       # Contributions to simple weighted sum (Keeton 2003):
+       self.galaxies.add_column('kappa',kappa)
+       
+       return None
 
-# # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
    # 2-panel plot, showing view from Earth and also line of sight section:
    def plot(self,starlight=False,dmglow=False):
  
@@ -170,7 +188,12 @@ class lightcone:
          empty = False
        if empty:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
-       plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=  ( Kappaindiv(self) ))###This line is broken: why?###
+       
+#        plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=  ( Kappaindiv(self) ))###This line is broken: why?###
+       plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa) )
+       # PJM: This plot script is getting messy: can you try and keep things separate,
+       # and organised by options please? if this then that etc 
+ 
  
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
@@ -294,9 +317,6 @@ def test(catalog):
     rmax = 2 # arcmin
     lc = lightcone(catalog,xc,rmax,zl,zs)
 
-    print "Plotting positions of objects..."
-    lc.plot(starlight=True,dmglow=True)
-
 #     print "Distributing dark matter in halos..."
 #     lc.make_dmhalos()
 #     lc.plot(dmhalos=True)
@@ -305,9 +325,15 @@ def test(catalog):
 #     lc.make_galaxies()
 #     lc.plot(galaxies=True)
 # 
-#     print "Computing Keeton (2003) convergence at optical axis..."
-#     lc.keeton_kappa()
-
+    print "Computing Keeton (2003) convergence at optical axis due to each halo..."
+    lc.make_kappa_contributions()
+    
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa)
+    
+    # Now make an illustrative plot:
+    
+    print "Plotting objects in lightcone..."
+    lc.plot(starlight=True,dmglow=True)
 
     pngfile = 'test.png'
     plt.savefig(pngfile)
