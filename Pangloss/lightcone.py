@@ -22,7 +22,6 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 
 D = distances.Distance()
 
-
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
@@ -81,7 +80,72 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+   #beta parameter for a perturber at j:  
+   def beta(i,j,k):  
+      if j>k:
+         print "z_pert > z_source?, wtf?"
+         df
+      if j>i:
+         R1 = D.Da(i,j)/D.Da(j)
+         R2 = D.Da(i,k)/D.Da(k)
+         return R2/R1
+      if i>j:
+         R1 = D.Da(j,i)/D.Da(i)
+         R2 = D.Da(j,k)/D.Da(k)
+         return R2/R1
+ 
+# # ----------------------------------------------------------------------------
+   #Function needed to calculate kappa and gamma for an NFW halo.
+   def Ffunc(x):
+       if x>1:
+          y=(x**2-1)**.5
+          return (1./y)*numpy.arctan(y)
+       else: 
+          print "WARNING You are very close to a halo"
+          if x==1:
+             return 1.
+          else:
+             y=(-x**2+1)**.5
+             return (1./y)*numpy.arctanh(y)
 
+# # ----------------------------------------------------------------------------
+   def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
+       return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+# # ----------------------------------------------------------------------------
+   def MCrelation(M_200):
+       c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
+       return c_200
+# # ----------------------------------------------------------------------------
+   def delta_c(c):
+       return (200./3)*c^3/(numpy.log(1+c)-c/(1+c))
+# # ----------------------------------------------------------------------------
+   def Hsquared(z):
+       H0 =D.h*3.241*10**-18
+       Hsq=(H0**2)*(D.Omega_M*(1+z)**3+(1-D.Omega_M)) #Lambda CDM only at this stage
+       return Hsq
+    
+# # ----------------------------------------------------------------------------
+   def rho_crit_univ(z):   #critical density of the universe at z
+       ro= 2.642*10**46**Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
+       return ro
+# # ----------------------------------------------------------------------------
+    # NFW model for halo ###Not finished yet
+   def Kappaindiv(self):
+       X=(self.galaxies.x**2+self.galaxies.y**2)**.5
+       r=(X*D.Da(self.galaxies['z_spec'])) ###Is this the right conversion to angular units?###
+       M=self.galaxies['M_Halo[M_sol/h]']
+       c=MCrelation(M)
+       
+       rs=r_200/c
+       rhos=delta_c(c)*rho_crit_univ(self.galaxies['z_spec'])       
+
+       R=r/rs
+       sigmacrit=SigmaCrit(self.galaxies['z_spec'],self.zs)
+       kappas=rhos*rs/sigma_crit
+       kappa =  2*kappas(1-Ffunc(R))/(R^2-1)
+       return kappa
+
+# # ----------------------------------------------------------------------------
    # 2-panel plot, showing view from Earth and also line of sight section:
    def plot(self,starlight=False,dmglow=False):
  
@@ -106,7 +170,7 @@ class lightcone:
          empty = False
        if empty:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
-
+       plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=  ( Kappaindiv(self) ))###This line is broken: why?###
  
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
@@ -195,67 +259,6 @@ class lightcone:
 #     def selectlens()
 # 
 # # ----------------------------------------------------------------------------
-   #beta parameter for a perturber at j:  
-   def beta(i,j,k):  
-      if j>k:
-         print "z_pert > z_source?, wtf?"
-         df
-      if j>i:
-         R1 = D.Da(i,j)/D.Da(j)
-         R2 = D.Da(i,k)/D.Da(k)
-         return R2/R1
-      if i>j:
-         R1 = D.Da(j,i)/D.Da(i)
-         R2 = D.Da(j,k)/D.Da(k)
-         return R2/R1
- 
-# # ----------------------------------------------------------------------------
-    #Function needed to calculate kappa and gamma for an NFW halo.
-    def Ffunc(x):
-       
-       if x>1:
-          y=(x**2-1)**.5
-          return (1./y)*numpy.arctan(y)
-       else: 
-          print "WARNING You are very close to a halo"
-          if x=1:
-             return 1.
-          else:
-             y=(-x**2+1)**.5
-             return (1./y)*numpy.arctanh(y)
-
-# # ----------------------------------------------------------------------------
-    def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
-       return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
-# # ----------------------------------------------------------------------------
-    def MCrelation(M_200):
-       c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
-       return c_200
-# # ----------------------------------------------------------------------------
-    def delta_c(c):
-       return (200./3)*c^3/(numpy.log(1+c)-c/(1+c))
-# # ----------------------------------------------------------------------------
-    def rho_crit_univ(z)   #critical density of the universe at z
-
-       return 
-# # ----------------------------------------------------------------------------
-    # NFW model for halo ###Not finished yet
-    def Kappaindiv(self):
-       X=(self.galaxies.x**2+self.galaxies.y**2)**.5
-       r=(X*D.Da(self.galaxies['z_spec'])) ###Is this the right conversion to angular units?###
-       M=self.galaxies['M_Halo[M_sol/h]']
-       c=MCrelation(M)
-       
-       rs=r_200/c
-       rhos=delta_c(c)*rho_crit_univ(self.galaxies['z_spec'])       
-
-       R=r/rs
-
-       sigmacrit=SigmaCrit(self.galaxies['z_spec'],self.zs)
-       kappas=rhos*rs/sigma_crit
-       kappa =  2*kappas(1-Ffunc(R))/(R^2-1)
-       return kappa
- 
 # # ----------------------------------------------------------------------------
     # NFW model for halo
 #    def Shearindiv(self):
