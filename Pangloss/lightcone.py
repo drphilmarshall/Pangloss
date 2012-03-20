@@ -221,33 +221,39 @@ class lightcone:
        #plt.title('%s' % self)
 
 
-       #Tom Collett's subplot for view along redshift axis
-       ax2=plt.subplot(2,1,2)
-
-       ax2.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
-       plt.xlabel('Redshift')
-       plt.ylabel('LoS distance / arcmin')
-       zmax = self.galaxies['z_spec'].max()
-
-       if self.zs > zmax:
-          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
-       else:
-          ax2.axis([0,zmax+0.1,0,self.rmax+0.1])      
-       #add lines for source and lens plane
-       ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
-       ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
+#      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
+#      #Tom Collett's subplot for view along redshift axis
+#      ax2=plt.subplot(2,1,2)
+#
+#       ax2.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
+#       plt.xlabel('Redshift')
+#       plt.ylabel('LoS distance / arcmin')
+#       zmax = self.galaxies['z_spec'].max()
+#
+#       if self.zs > zmax:
+#          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
+#       else:
+#          ax2.axis([0,zmax+0.1,0,self.rmax+0.1])      
+#       #add lines for source and lens plane
+#       ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
+#       ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
+#
+#
+#
+#
+#      plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+#       # plt.title('%s' % self)
+#
+
+#      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
-       plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
-       # plt.title('%s' % self)
+       # Phil Marshall's subplot  View along redshift axis: 
 
-
-       # Phil Marshall's View along redshift axis: 
-
-#TC: I prefered the old plot! y position gives the confusing impression that some objects 
-#    are much closer to the optical axis than they really are.
+       #TC: I prefered the old plot! y position gives the confusing impression that some objects 
+       #    are much closer to the optical axis than they really are.
 
        plt.subplot(2,1,2)
        empty = True
