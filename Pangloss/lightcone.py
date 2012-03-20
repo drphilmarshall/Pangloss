@@ -21,7 +21,6 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 #t0=time.clock()    
 
 D = distances.Distance()
-
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
@@ -135,9 +134,9 @@ class lightcone:
 #        X=(self.galaxies.x**2+self.galaxies.y**2)**.5
 # PJM: this is already stored as self.galaxies.r!
 
-       zd = self.galaxies['z_spec']
-       DA = D.Da(zd)
-       self.galaxies.add_column('DA',DA)
+       #zd = self.galaxies['z_spec']
+       print self
+       self.galaxies.add_column('DA',D.Da(0,self.galaxies['z_spec']))
        
        rphys=self.galaxies.r*DA  # Mpc
        ###Is this the right conversion to angular units?###
@@ -147,9 +146,11 @@ class lightcone:
        
        # Compute NFW quantities, and store for later:
        c200 = MCrelation(M200)
-       self.galaxies.add_column('c200',c)       
+       self.galaxies.add_column('c200',c)     
+  
        rs = r_200/c200
-       rhos = delta_c(c200)*rho_crit_univ(zd)       
+       rhos = delta_c(c200)*rho_crit_univ(zd)
+       
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
@@ -334,7 +335,7 @@ def test(catalog):
     print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
     
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa)
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa) 
     
     # Now make an illustrative plot:
     
