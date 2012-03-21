@@ -102,7 +102,8 @@ class lightcone:
 #       return z
 #
 # ----------------------------------------------------------------------------
-   # Function needed to calculate kappa for an NFW halo. #note that Ffunc and Ffunc2 are identical.
+   # Function needed to calculate kappa for an NFW halo. 
+   # Note that Ffunc and Ffunc2 are identical.
    def Ffunc2(self,x):
        z=numpy.zeros(len(x))
        for i in range(len(x)):
@@ -120,7 +121,8 @@ class lightcone:
        return z
 
 # ----------------------------------------------------------------------------
-   # Function needed to calculate gamma for an NFW halo. #Form is ridiculously long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+   # Function needed to calculate gamma for an NFW halo. 
+   # Form is ridiculously long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
    def Gfunc(self,x):
        z=numpy.zeros(len(x))
        for i in range(len(x)):
@@ -146,32 +148,39 @@ class lightcone:
        #print z
        return z
 
-
-
 # ----------------------------------------------------------------------------
-   def SigmaCrit(self,zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
 
+   def SigmaCrit(self,zl,zs): 
+   # NOTE zl here is the lensing object NOT necessarily the primary lens
        return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+
 # ----------------------------------------------------------------------------
+
    def MCrelation(self,M200):
        c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
+
 # ----------------------------------------------------------------------------
+
    def delta_c(self,c):
        return (200./3)*(c**3)/(numpy.log(1+c)-c/(1+c))
+
 # ----------------------------------------------------------------------------
+
    def Hsquared(self,z):
        H0 =D.h*3.241*10**-18
        Hsq=(H0**2)*(D.OMEGA_M*(1+z)**3+(1-D.OMEGA_M)) #Lambda CDM only at this stage
        return Hsq
     
 # ----------------------------------------------------------------------------
+
    def rho_crit_univ(self,z):   #critical density of the universe at z
        ro= 2.642*10**46**self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
        return ro
  
 # ----------------------------------------------------------------------------
-   #beta parameter for a perturber at j:  
+
+   # Beta parameter for a perturber at j:  
    def beta(self,i,j,k):  
       if j>k:
          print "z_pert > z_source? you shouldn't be asking for this"
@@ -185,8 +194,8 @@ class lightcone:
          return R2/R1
 
 # ----------------------------------------------------------------------------
-     #Kappa Keeton, following Keeton (2003)and Momcheva et al. (2006)
 
+   # Kappa Keeton, following Keeton (2003)and Momcheva et al. (2006)
    def KappaKeeton(self,zl,zd,zs,kappa,shear):
       output = numpy.zeros(len(zd))
       for i in range(len(zd)):
@@ -200,6 +209,7 @@ class lightcone:
       return output
 
 # ----------------------------------------------------------------------------
+
    # NFW model for halo
    def make_kappa_contributions(self):
 
@@ -225,7 +235,8 @@ class lightcone:
        
        r200 = (3*M200/(800*3.14159*self.rho_crit_univ(zd)))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
        rs = r200/c200                                                                           #(wright and brainerd)
-       ### Is this right - I'm not 100% clear on what the concentration parameter does ###
+       ### Is this right - I'm not 100% clear on what the concentration 
+       ### parameter does... PJM: yes, this is right! c200 is about 4 for 10^15Msun clusters
 
        rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
        
@@ -237,14 +248,14 @@ class lightcone:
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
        kappas = rhos*rs/sigmacrit
-       #kappa = 2*kappas*(1-self.Ffunc(x))/(x**2-1)
+       # kappa = 2*kappas*(1-self.Ffunc(x))/(x**2-1)
            #following keeton's catalog of mass functions.
-       kappa = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  #note that Ffunc and Ffunc2 are identical. (but written differently in different references)
+       kappa = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  # Note that Ffunc and Ffunc2 are identical. (but written differently in different references)
            #fololowing http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
        shear = kappas * self.Gfunc(x)
 
-       #kappa or shear is zero if behind the source!
+       # kappa or shear is zero if behind the source!
        for i in range(len(zd)):
           if zd[i] > self.zs:
              kappa[i] = 0.0
