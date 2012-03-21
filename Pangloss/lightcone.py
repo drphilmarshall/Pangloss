@@ -376,7 +376,7 @@ def test(catalog):
     plt.clf()
     print "Initialising lightcone data..."
     zl=0.3
-    zs=3.0
+    zs=2.0
     #xc = [-1*arcmin2rad,-1*arcmin2rad]
     xc = [-.004, -0.010] # radians
     rmax = 2 # arcmin
