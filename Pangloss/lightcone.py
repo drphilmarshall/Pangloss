@@ -21,11 +21,8 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 #t0=time.clock()    
 
 D = distances.Distance()
-<<<<<<< HEAD
-
-=======
 D.h = 0.7
->>>>>>> 1f4d9670706cc9ac306b5d4b45c5a455f93c6df1
+
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
