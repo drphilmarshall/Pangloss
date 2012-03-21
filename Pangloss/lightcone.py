@@ -21,6 +21,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 #t0=time.clock()    
 
 D = distances.Distance()
+
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
@@ -56,7 +57,8 @@ class lightcone:
         self.galaxies = self.catalog.where((self.catalog['pos_0[rad]'] > (self.xc[0]-dx)) & \
                                            (self.catalog['pos_0[rad]'] < (self.xc[0]+dx)) & \
                                            (self.catalog['pos_1[rad]'] > (self.xc[1]-dx)) & \
-                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx)))
+                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx))) # & \
+                                           # zspec< z_source
 
         # Recentre the coordinate system on the cone centroid, and 
         # convert to arcmin:
@@ -82,7 +84,7 @@ class lightcone:
    #beta parameter for a perturber at j:  
    def beta(i,j,k):  
       if j>k:
-         print "z_pert > z_source?, wtf?"
+         print "z_pert > z_source? you shouldn't be including these"
          df
       if j>i:
          R1 = D.Da(i,j)/D.Da(j)
@@ -134,13 +136,11 @@ class lightcone:
 #        X=(self.galaxies.x**2+self.galaxies.y**2)**.5
 # PJM: this is already stored as self.galaxies.r!
 
-       #zd = self.galaxies['z_spec']
-       print self
-       self.galaxies.add_column('DA',D.Da(0,self.galaxies['z_spec']))
+       zd = self.galaxies['z_spec']
+       DA = D.Da(self.zl) ###fudged so I can play with other things###
+       self.galaxies.add_column('DA',DA)
        
        rphys=self.galaxies.r*DA  # Mpc
-       ###Is this the right conversion to angular units?###
-       # PJM: I think so! Note units. Check H0 is included...
        
        M200 = self.galaxies['M_Halo[M_sol/h]']
        
@@ -149,8 +149,7 @@ class lightcone:
        self.galaxies.add_column('c200',c)     
   
        rs = r_200/c200
-       rhos = delta_c(c200)*rho_crit_univ(zd)
-       
+       rhos = delta_c(c200)*rho_crit_univ(zd)       
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
@@ -335,7 +334,7 @@ def test(catalog):
     print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
     
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa) 
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa)
     
     # Now make an illustrative plot:
     
