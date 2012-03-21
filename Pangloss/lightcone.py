@@ -83,38 +83,71 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
-   #beta parameter for a perturber at j:  
-   def beta(self,i,j,k):  
-      if j>k:
-         print "z_pert > z_source? you shouldn't be including these"
-         df
-      if j>i:
-         R1 = D.Da(i,j)/D.Da(j)
-         R2 = D.Da(i,k)/D.Da(k)
-         return R2/R1
-      if i>j:
-         R1 = D.Da(j,i)/D.Da(i)
-         R2 = D.Da(j,k)/D.Da(k)
-         return R2/R1
- 
+#   # Function needed to calculate kappa and gamma for an NFW halo.
+#   def Ffunc(self,x):
+#       z=numpy.zeros(len(x))
+#       for i in range(len(x)):
+#          if x[i]>1:
+#             y=(x[i]**2-1)**.5
+#             z[i]= (1./y)*numpy.arctan(y)
+#          else: 
+#             print "WARNING You are very close to a halo"
+#             if x[i]==1:
+#                z[i] =1
+#             else:
+#                y=(-x[i]**2+1)**.5
+#                z[i] = (1./y)*numpy.arctanh(y)
+#       #print x
+#       #print z
+#       return z
+#
 # ----------------------------------------------------------------------------
-   # Function needed to calculate kappa and gamma for an NFW halo.
-   def Ffunc(self,x):
+   # Function needed to calculate kappa for an NFW halo. #note that Ffunc and Ffunc2 are identical.
+   def Ffunc2(self,x):
        z=numpy.zeros(len(x))
        for i in range(len(x)):
           if x[i]>1:
-             y=(x[i]**2-1)**.5
-             z[i]= (1./y)*numpy.arctan(y)
+             z[i]= 1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1)/(x[i]+1))**.5)
           else: 
              print "WARNING You are very close to a halo"
              if x[i]==1:
                 z[i] =1
              else:
                 y=(-x[i]**2+1)**.5
-                z[i] = (1./y)*numpy.arctanh(y)
-       print x
-       print z
+                z[i] = 1-(2./(1-x[i]**2)**.5)*numpy.arctan(((1-x[i])/(x[i]+1))**.5)
+       #print x
+       #print z
        return z
+
+# ----------------------------------------------------------------------------
+   # Function needed to calculate gamma for an NFW halo. #Form is ridiculously long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+   def Gfunc(self,x):
+       z=numpy.zeros(len(x))
+       for i in range(len(x)):
+          X=x[i]
+          if x[i]>1:
+             y=(((X-1)/(X+1))**.5)
+             z[i]= (8* numpy.arctan(y) / (X**2*(X**2-1)**0.5)) +\
+                 (4/X**2)*numpy.log(X/2) - \
+                 2/(X**2-1) +\
+                 4*numpy.arctan(y)/((X**2-1)**(3/2))
+
+          else: 
+             #print "WARNING You are very close to a halo"
+             if x[i]==1:
+                z[i] =(10./3+4*numpy.log(0.5))
+             else:
+                y=(((1-X)/(X+1))**.5)
+                z[i]= (8* numpy.arctanh(y) / (X**2*(1-X**2)**0.5)) +\
+                    (4/X**2)*numpy.log(X/2) - \
+                    2/(X**2-1) +\
+                    4*numpy.arctanh(y)/((X**2-1)*(1-X**2)**(1/2))
+       #print x
+       #print z
+       return z
+
+
+
 # ----------------------------------------------------------------------------
    def SigmaCrit(self,zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
 
@@ -136,6 +169,36 @@ class lightcone:
    def rho_crit_univ(self,z):   #critical density of the universe at z
        ro= 2.642*10**46**self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
        return ro
+ 
+# ----------------------------------------------------------------------------
+   #beta parameter for a perturber at j:  
+   def beta(self,i,j,k):  
+      if j>k:
+         print "z_pert > z_source? you shouldn't be including these"
+      if j>i:
+         R1 = D.Da(i,j)/D.Da(j)
+         R2 = D.Da(i,k)/D.Da(k)
+         return R2/R1
+      if i>j:
+         R1 = D.Da(j,i)/D.Da(i)
+         R2 = D.Da(j,k)/D.Da(k)
+         return R2/R1
+
+# ----------------------------------------------------------------------------
+     #Kappa Keeton, following Keeton (2003)and Momcheva et al. (2006)
+
+   def KappaKeeton(self,zl,zd,zs,kappa,shear):
+      output = numpy.zeros(len(zd))
+      for i in range(len(zd)):
+       if zd[i] < zs:
+         B=self.beta(zl,zd[i],zs)
+         K=kappa[i]
+         G=shear[i]
+         output[i] = (1.-B)*(K-B*(K**2-G**2))/((1-B*K)**2-(G)**2)
+       else: 
+         output[i]= 0.0
+      return output
+
 # ----------------------------------------------------------------------------
    # NFW model for halo
    def make_kappa_contributions(self):
@@ -157,8 +220,11 @@ class lightcone:
        c200 = self.MCrelation(M200)
        self.galaxies.add_column('c200',c200)     
 
-
-       rs = (M200/(4*3.14159*self.rho_crit_univ(zd))*(numpy.log(1+c200)-c200/(1+c200)))**(1./3) #units: megaparsecs
+       
+       #rs = (M200/(4*3.14159*self.rho_crit_univ(zd))*(numpy.log(1+c200)-c200/(1+c200)))**(1./3) #units: megaparsecs
+       
+       r200 = (3*M200/(800*3.14159*self.rho_crit_univ(zd)))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+       rs = r200/c200                                                                           #(wright and brainerd)
        ### Is this right - I'm not 100% clear on what the concentration parameter does ###
 
        rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
@@ -171,68 +237,66 @@ class lightcone:
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
        kappas = rhos*rs/sigmacrit
-       kappa = 2*kappas*(1-self.Ffunc(x))/(x*x-1)
-       
+       #kappa = 2*kappas*(1-self.Ffunc(x))/(x**2-1)
+           #following keeton's catalog of mass functions.
+       kappa = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  #note that Ffunc and Ffunc2 are identical. (but written differently in different references)
+           #fololowing http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+
+       shear = kappas * self.Gfunc(x)
+
+       #kappa or shear is zero if behind the source!
+       for i in range(len(zd)):
+          if zd[i] > self.zs:
+             kappa[i] = 0.0
+             shear[i] = 0.0
+
+       kappa_keeton=self.KappaKeeton(self.zl,zd,self.zs,kappa,shear)
+
        # Contributions to simple weighted sum (Keeton 2003):
        self.galaxies.add_column('kappa',kappa)
-       
+       self.galaxies.add_column('gamma',shear)
+       self.galaxies.add_column('kappa_keeton',kappa_keeton)
+      
        return None
 
 # ----------------------------------------------------------------------------
    # 2-panel plot, showing view from Earth and also line of sight section:
-   def plot(self,starlight=False,dmglow=False):
- 
-
-       #ax1.ylabel('y / arcmin')
-
+   def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False):
 
        # Galaxy positions:
        ax1=plt.subplot(2,1,1, aspect ='equal')
-       ax1.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
-       
-       ax1.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
-
-       # View from Earth (needs to be larger!):
        plt.subplot(2,1,1,aspect='equal')
        empty = True
-       if dmglow:
+
+       # plot different properties depending on options:
+       if dmglow==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
          empty = False
-       if starlight:
+       if starlight==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
          empty = False
+       if kappa_indiv:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**12, edgecolor = 'none')     
+         empty = False
+       if kappa_keeton:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa_keeton)*10**12, edgecolor = 'none')     
+         empty = False
        if empty:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)
-       
-#        plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=  ( Kappaindiv(self) ))###This line is broken: why?###
-       plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa) )
-       # PJM: This plot script is getting messy: can you try and keep things separate,
-       # and organised by options please? if this then that etc 
- 
- 
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)      
+
        # Lightcone boundary and centroid:
        circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
-
-       #circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
        ax1.add_patch(circ)
-       #ax.add_patch(circ2)
        ax1.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
-
-       # circ2=pylab.Circle(self.xc,radius=self.rmax/2.,fill=False,linestyle='dotted')
-       ax=pylab.gca()
-       ax.add_patch(circ)
-       # ax.add_patch(circ2)
-       ax.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
 
 
        # Labels:
        plt.xlabel('x / arcmin')
        plt.ylabel('y / arcmin')
 
-
-
-
+       #axis limits
        ax1.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+
        #plt.title('%s' % self)
 
 
@@ -303,26 +367,6 @@ class lightcone:
 #     def selectlens()
 # 
 # # ----------------------------------------------------------------------------
-# # ----------------------------------------------------------------------------
-    # NFW model for halo
-#    def Shearindiv(self):
-# 
-#       return
- 
-# # ----------------------------------------------------------------------------
-#     #Kappa Keeton, following Keeton (200?)and Momcheva et al. (200?)
-#
-#     def Kappa_keeton(i=zl,j,k=zs,):
-#       if j<k:
-#         B=beta(i,j,k)
-#         K=Kappaindiv()
-#         G=Shearindiv()
-#         return (1.-B)*(K-B(K^2-G^2))/((1-BK)^2-(G)^2)
-#       else return 0.0
-#
-#     def Kappa_sum(i,j,k):
-# 
-# 
 # ============================================================================
 
 # TESTS:
@@ -332,7 +376,7 @@ def test(catalog):
     plt.clf()
     print "Initialising lightcone data..."
     zl=0.3
-    zs=2.0
+    zs=3.0
     #xc = [-1*arcmin2rad,-1*arcmin2rad]
     xc = [-.004, -0.010] # radians
     rmax = 2 # arcmin
@@ -354,7 +398,7 @@ def test(catalog):
     # Now make an illustrative plot:
     
     print "Plotting objects in lightcone..."
-    lc.plot(starlight=True,dmglow=True)
+    lc.plot(starlight=False,dmglow=False, kappa_indiv=True)
 
     pngfile = 'test.png'
     plt.savefig(pngfile)
