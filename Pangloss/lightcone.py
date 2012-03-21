@@ -137,7 +137,7 @@ class lightcone:
        ro= 2.642*10**46**self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
        return ro
 # ----------------------------------------------------------------------------
-   # NFW model for halo ###Not finished yet
+   # NFW model for halo
    def make_kappa_contributions(self):
 
        # Compute distance to each galaxy 
@@ -156,11 +156,11 @@ class lightcone:
        # Compute NFW quantities, and store for later:
        c200 = self.MCrelation(M200)
        self.galaxies.add_column('c200',c200)     
-  
-       r200 = 0.1 ###fudge###
 
 
-       rs = r200/c200
+       rs = (M200/(4*3.14159*self.rho_crit_univ(zd))*(numpy.log(1+c200)-c200/(1+c200)))**(1./3) #units: megaparsecs
+       ### Is this right - I'm not 100% clear on what the concentration parameter does ###
+
        rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
        
        self.galaxies.add_column('rs',rs)
