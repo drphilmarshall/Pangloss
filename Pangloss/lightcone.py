@@ -21,7 +21,11 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 #t0=time.clock()    
 
 D = distances.Distance()
+<<<<<<< HEAD
 
+=======
+D.h = 0.7
+>>>>>>> 1f4d9670706cc9ac306b5d4b45c5a455f93c6df1
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
@@ -82,7 +86,7 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
    #beta parameter for a perturber at j:  
-   def beta(i,j,k):  
+   def beta(self,i,j,k):  
       if j>k:
          print "z_pert > z_source? you shouldn't be including these"
          df
@@ -96,8 +100,8 @@ class lightcone:
          return R2/R1
  
 # ----------------------------------------------------------------------------
-   #Function needed to calculate kappa and gamma for an NFW halo.
-   def Ffunc(x):
+   # Function needed to calculate kappa and gamma for an NFW halo.
+   def Ffunc(self,x):
        if x>1:
           y=(x**2-1)**.5
           return (1./y)*numpy.arctan(y)
@@ -110,23 +114,23 @@ class lightcone:
              return (1./y)*numpy.arctanh(y)
 
 # ----------------------------------------------------------------------------
-   def SigmaCrit(zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
+   def SigmaCrit(self,zl,zs): #NOTE zl here is the lensing object NOT necessarily the primary lens
        return (1.663*10**18)*(D.Da(zs)/(D.Da(zl)*D.Da(zl,zs))) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 # ----------------------------------------------------------------------------
-   def MCrelation(M_200):
-       c_200 = 4.67*(M_200/(10**14))**0.11 #Neto et al. equation 5
+   def MCrelation(self,M200):
+       c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
 # ----------------------------------------------------------------------------
-   def delta_c(c):
+   def delta_c(self,c):
        return (200./3)*c^3/(numpy.log(1+c)-c/(1+c))
 # ----------------------------------------------------------------------------
-   def Hsquared(z):
+   def Hsquared(self,z):
        H0 =D.h*3.241*10**-18
        Hsq=(H0**2)*(D.Omega_M*(1+z)**3+(1-D.Omega_M)) #Lambda CDM only at this stage
        return Hsq
     
 # ----------------------------------------------------------------------------
-   def rho_crit_univ(z):   #critical density of the universe at z
+   def rho_crit_univ(self,z):   #critical density of the universe at z
        ro= 2.642*10**46**Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
        return ro
 # ----------------------------------------------------------------------------
@@ -136,27 +140,30 @@ class lightcone:
 #        X=(self.galaxies.x**2+self.galaxies.y**2)**.5
 # PJM: this is already stored as self.galaxies.r!
 
+       # Compute distance to each galaxy 
+       # (note Da is not a function of an array):
        zd = self.galaxies['z_spec']
-       DA = D.Da(self.zl) ###fudged so I can play with other things###
-       self.galaxies.add_column('DA',DA)
-       
-       rphys=self.galaxies.r*DA  # Mpc
-       
+       Da = numpy.zeros(len(zd))
+       for i in range(len(zd)):
+         Da[i] = D.Da(zd[i])
+       self.galaxies.add_column('Da',Da)
+       rphys=self.galaxies.r*Da  # Mpc
        M200 = self.galaxies['M_Halo[M_sol/h]']
        
        # Compute NFW quantities, and store for later:
-       c200 = MCrelation(M200)
-       self.galaxies.add_column('c200',c)     
+       c200 = self.MCrelation(M200)
+       self.galaxies.add_column('c200',c200)     
   
-       rs = r_200/c200
-       rhos = delta_c(c200)*rho_crit_univ(zd)       
+       rs = r200/c200
+       rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
+       
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
        x = rphys/rs
-       sigmacrit = SigmaCrit(zd,self.zs)
+       sigmacrit = self.SigmaCrit(zd,self.zs)  # units: Solarmasses per megaparsec^2
        kappas = rhos*rs/sigma_crit
-       kappa = 2*kappas(1-Ffunc(x))/(x*x-1)
+       kappa = 2*kappas(1-self.Ffunc(x))/(x*x-1)
        
        # Contributions to simple weighted sum (Keeton 2003):
        self.galaxies.add_column('kappa',kappa)
