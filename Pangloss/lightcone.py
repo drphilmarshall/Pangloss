@@ -174,7 +174,7 @@ class lightcone:
    #beta parameter for a perturber at j:  
    def beta(self,i,j,k):  
       if j>k:
-         print "z_pert > z_source? you shouldn't be including these"
+         print "z_pert > z_source? you shouldn't be asking for this"
       if j>i:
          R1 = D.Da(i,j)/D.Da(j)
          R2 = D.Da(i,k)/D.Da(k)
@@ -194,7 +194,7 @@ class lightcone:
          B=self.beta(zl,zd[i],zs)
          K=kappa[i]
          G=shear[i]
-         output[i] = (1.-B)*(K-B*(K**2-G**2))/((1-B*K)**2-(G)**2)
+         output[i] = (1.-B)*(K-B*(K**2-G**2))/((1-B*K)**2-(B*G)**2)
        else: 
          output[i]= 0.0
       return output
