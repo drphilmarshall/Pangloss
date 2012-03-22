@@ -152,7 +152,8 @@ class lightcone:
 
    def SigmaCrit(self,zl,zs): 
    # NOTE zl here is the lensing object NOT necessarily the primary lens
-       return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) # numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+       return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
+               # ^numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # ----------------------------------------------------------------------------
 
@@ -203,9 +204,11 @@ class lightcone:
          B=self.beta(zl,zd[i],zs)
          K=kappa[i]
          G=shear[i]
-         output[i] = (1.-B)*(K-B*(K**2-G**2))/((1-B*K)**2-(B*G)**2)
+         print B,G,K
+         output[i] = (1.-B)   * (K-    B*(K**2-G**2)   )  /    ( (1-B*K)**2   - (B*G)**2   )
        else: 
          output[i]= 0.0
+      print output
       return output
 
 # ----------------------------------------------------------------------------
@@ -235,8 +238,7 @@ class lightcone:
        
        r200 = (3*M200/(800*3.14159*self.rho_crit_univ(zd)))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
        rs = r200/c200                                                                           #(wright and brainerd)
-       ### Is this right - I'm not 100% clear on what the concentration 
-       ### parameter does... PJM: yes, this is right! c200 is about 4 for 10^15Msun clusters
+
 
        rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
        
@@ -250,10 +252,13 @@ class lightcone:
        kappas = rhos*rs/sigmacrit
        # kappa = 2*kappas*(1-self.Ffunc(x))/(x**2-1)
            #following keeton's catalog of mass functions.
-       kappa = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  # Note that Ffunc and Ffunc2 are identical. (but written differently in different references)
+       kappaNFW = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  # Note that Ffunc and Ffunc2 are identical. (but written differently in different references)
            #fololowing http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
-       shear = kappas * self.Gfunc(x)
+       shearNFW = kappas * self.Gfunc(x)
+
+       kappa = kappaNFW   #these should include a component from starlight too
+       shear = shearNFW
 
        # kappa or shear is zero if behind the source!
        for i in range(len(zd)):
@@ -267,12 +272,11 @@ class lightcone:
        self.galaxies.add_column('kappa',kappa)
        self.galaxies.add_column('gamma',shear)
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
-      
        return None
 
 # ----------------------------------------------------------------------------
    # 2-panel plot, showing view from Earth and also line of sight section:
-   def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False):
+   def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
 
        # Galaxy positions:
        ax1=plt.subplot(2,1,1, aspect ='equal')
@@ -281,17 +285,29 @@ class lightcone:
 
        # plot different properties depending on options:
        if dmglow==True:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
          empty = False
        if starlight==True:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
          empty = False
-       if kappa_indiv:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**12, edgecolor = 'none')     
+       if kappa_indiv: 
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**11, edgecolor = 'none')     
          empty = False
        if kappa_keeton:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa_keeton)*10**12, edgecolor = 'none')     
+         for galaxy in self.galaxies:
+            kappa = galaxy['kappa_keeton']*10**11
+            if kappa <0:
+               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa, edgecolor = 'none')     
+            else:
+               plt.scatter(galaxy['x'], galaxy['y'],  c='r', marker='o',s=kappa, edgecolor = 'none')
          empty = False
+       if observed_light==True:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
+         empty = False
+
+
+
+
        if empty:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=1)      
 
@@ -315,27 +331,46 @@ class lightcone:
 
 
 #      #Tom Collett's subplot for view along redshift axis
-#      ax2=plt.subplot(2,1,2)
-#
-#       ax2.scatter(self.galaxies['z_spec'],(self.galaxies.x**2+self.galaxies.y**2)**.5, c='k', marker='o',s=1)
-#       plt.xlabel('Redshift')
-#       plt.ylabel('LoS distance / arcmin')
-#       zmax = self.galaxies['z_spec'].max()
-#
-#       if self.zs > zmax:
-#          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
-#       else:
-#          ax2.axis([0,zmax+0.1,0,self.rmax+0.1])      
-#       #add lines for source and lens plane
-#       ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
-#       ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')
-#
-#
-#
-#
-#      plt.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
-#       # plt.title('%s' % self)
-#
+       ""
+
+       ax2=plt.subplot(2,1,2)
+       empty = True
+       if dmglow:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+         empty = False
+       if starlight:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+         empty = False
+       if kappa_indiv: 
+         plt.scatter(self.galaxies['z_spec'], self.galaxies.r, c='r', marker='o',s=(self.galaxies.kappa)*10**11, edgecolor = 'none')     
+         empty = False
+       if kappa_keeton:
+         for galaxy in self.galaxies:
+            kappa = galaxy['kappa_keeton']*10**11
+            if kappa <0:
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='b', marker='o',s=-kappa, edgecolor = 'none')     
+            else:
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='r', marker='o',s=kappa, edgecolor = 'none')
+         #empty = False
+       if observed_light==True:
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
+         empty = False
+       if empty:
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='k', marker='o',s=0.05)
+       plt.xlabel('Redshift')
+       plt.ylabel('LoS distance / arcmin')
+       zmax = self.galaxies['z_spec'].max()
+
+       if self.zs > zmax:
+          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
+       else:
+          #ax2.axis([0,zmax+0.1,0,self.rmax+0.1])
+          ax2.axis([0,self.zs+0.1,0,self.rmax+0.1])
+       #add lines for source and lens plane
+       ax2.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
+       ax2.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')       # plt.title('%s' % self)
+
+       ""
 
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
@@ -344,7 +379,7 @@ class lightcone:
 
        #TC: I prefered the old plot! y position gives the confusing impression that some objects 
        #    are much closer to the optical axis than they really are.
-
+       """
        plt.subplot(2,1,2)
        empty = True
        if dmglow:
@@ -353,8 +388,20 @@ class lightcone:
        if starlight:
          plt.scatter(self.galaxies['z_spec'],self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
          empty = False
+       if kappa_indiv: 
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**11, edgecolor = 'none')     
+         empty = False
+       if kappa_keeton:
+         for galaxy in self.galaxies:
+            kappa = galaxy['kappa_keeton']*10**11
+            if kappa <0:
+               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa, edgecolor = 'none')     
+            else:
+               plt.scatter(galaxy['x'], galaxy['y'], c='r', marker='o',s=kappa, edgecolor = 'none')
+         empty = False
        if empty:
          plt.scatter(self.galaxies['z_spec'],self.galaxies.y, c='k', marker='o',s=1)
+
 
        plt.xlabel('redshift z')
 #        plt.ylabel('distance from LoS / arcmin')
@@ -370,7 +417,7 @@ class lightcone:
        plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
        plt.axhline(y=0.0, xmin=0.0, xmax=zmax, color='black', ls='dashed')
 
-
+       """
        return None
 
 # ----------------------------------------------------------------------------
@@ -409,7 +456,7 @@ def test(catalog):
     # Now make an illustrative plot:
     
     print "Plotting objects in lightcone..."
-    lc.plot(starlight=False,dmglow=False, kappa_indiv=True)
+    lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=True)
 
     pngfile = 'test.png'
     plt.savefig(pngfile)
@@ -422,10 +469,10 @@ def test(catalog):
 if __name__ == '__main__':
 
 # Simulated (Millenium) lightcone data from Hilbert:
-#     datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+    datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
 
 # First 99 lines of the same, for testing:
-    datafile = "test.txt"
+#    datafile = "test.txt"
     
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
