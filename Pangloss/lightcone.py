@@ -88,8 +88,8 @@ class lightcone:
            zlens=self.lens['z_spec']
            position =[x,y]
            if lensindex <0:
-              print "Lens at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%.2f, %.2f]" % \
-                  (self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],self.lens['M_Stellar[M_sol/h]'],self.lens['M_Halo[M_sol/h]'])
+              print "Lens %i at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%.2f, %.2f]" % \
+                  (rndnum, self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],self.lens['M_Stellar[M_sol/h]'],self.lens['M_Halo[M_sol/h]'])
 
 
 
@@ -136,39 +136,27 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
-#   # Function needed to calculate kappa and gamma for an NFW halo.
-#   def Ffunc(self,x):
-#       z=numpy.zeros(len(x))
-#       for i in range(len(x)):
-#          if x[i]>1:
-#             y=(x[i]**2-1)**.5
-#             z[i]= (1./y)*numpy.arctan(y)
-#          else: 
-#             print "WARNING You are very close to a halo"
-#             if x[i]==1:
-#                z[i] =1
-#             else:
-#                y=(-x[i]**2+1)**.5
-#                z[i] = (1./y)*numpy.arctanh(y)
-#       #print x
-#       #print z
-#       return z
-#
+
+
+
 # ----------------------------------------------------------------------------
    # Function needed to calculate kappa for an NFW halo. 
-   # Note that Ffunc and Ffunc2 are identical.
-   def Ffunc2(self,x):
+
+   def Ffunc(self,x):
        z=numpy.zeros(len(x))
        for i in range(len(x)):
           if x[i]>1:
-             z[i]= 1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1)/(x[i]+1))**.5)
+             z[i]= (1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1.)/(x[i]+1))**.5))/(x[i]**2-1.)
           else: 
              #print "WARNING You are very close to a halo"
              if x[i]==1:
-                z[i] =1
+                z[i] =1./3
              else:
                 y=(-x[i]**2+1)**.5
-                z[i] = 1-(2./(1-x[i]**2)**.5)*numpy.arctan(((1-x[i])/(x[i]+1))**.5)
+                z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctan(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
+
+
+          if z[i] < 0: print 'warning Ffunc'
        return z
 
 # ----------------------------------------------------------------------------
@@ -183,8 +171,7 @@ class lightcone:
              z[i]= (8* numpy.arctan(y) / (X**2*(X**2-1)**0.5)) +\
                  (4/X**2)*numpy.log(X/2) - \
                  2/(X**2-1) +\
-                 4*numpy.arctan(y)/((X**2-1)**(3/2))
-
+                 4*numpy.arctan(y)/(((X**2)-1)**(3./2))
           else: 
              #print "WARNING You are very close to a halo"
              if x[i]==1:
@@ -194,7 +181,9 @@ class lightcone:
                 z[i]= (8* numpy.arctanh(y) / (X**2*(1-X**2)**0.5)) +\
                     (4/X**2)*numpy.log(X/2) - \
                     2/(X**2-1) +\
-                    4*numpy.arctanh(y)/((X**2-1)*(1-X**2)**(1/2))
+                    4*numpy.arctanh(y)/((X**2-1)*(1-X**2)**(1./2))
+          #if z[i]<0: print 'warning Gfunc'; print x[i]; print z[i]
+
        return z
 
 # ----------------------------------------------------------------------------
@@ -297,10 +286,8 @@ class lightcone:
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
        kappas = rhos*rs/sigmacrit
-       # kappa = 2*kappas*(1-self.Ffunc(x))/(x**2-1)
-           #following keeton's catalog of mass functions.
-       kappaNFW = 2*kappas*(1-self.Ffunc2(x))/(x**2-1)  # Note that Ffunc and Ffunc2 are identical. (but written differently in different references)
-           #fololowing http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+
+       kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
        shearNFW = kappas * self.Gfunc(x)
 
@@ -319,6 +306,9 @@ class lightcone:
        self.galaxies.add_column('kappa',kappa)
        self.galaxies.add_column('gamma',shear)
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
+       #print self.galaxies.gamma
+       #print self.galaxies.kappa
+       #print self.galaxies.kappa_keeton
        return None
 
 # ----------------------------------------------------------------------------
@@ -326,7 +316,8 @@ class lightcone:
 
    # 2-panel plot, showing view from Earth and also line of sight section:
    def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
-       scaler=numpy.max([numpy.absolute((numpy.min(self.galaxies.kappa))),numpy.max(self.galaxies.kappa)])/10
+       scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_keeton))), numpy.max(self.galaxies.kappa_keeton)])/200
+       scale2=1# (numpy.max(self.galaxies.kappa))/500
        # Galaxy positions:
        ax1=plt.subplot(2,1,1, aspect ='equal')
        plt.subplot(2,1,1,aspect='equal')
@@ -340,21 +331,19 @@ class lightcone:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
          empty = False
        if kappa_indiv: 
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**1, edgecolor = 'none')     
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='g', marker='o',s=(self.galaxies.kappa)/scale2, edgecolor = 'none')     
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
             kappa = galaxy['kappa_keeton']
             if kappa <0:
-               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa/scaler , edgecolor = 'none')    
+               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa/scale , edgecolor = 'none')    
             else:
-               plt.scatter(galaxy['x'], galaxy['y'],  c='r', marker='o',s=kappa/scaler , edgecolor = 'none')
+               plt.scatter(galaxy['x'], galaxy['y'],  c='r', marker='o',s=kappa/scale , edgecolor = 'none')
          empty = False
        if observed_light==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
          empty = False
-
-
 
 
        if empty:
@@ -385,25 +374,28 @@ class lightcone:
        ax2=plt.subplot(2,1,2)
        empty = True
        if dmglow:
-         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3) )
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
          empty = False
        if starlight:
-         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
+         plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
          empty = False
        if kappa_indiv: 
-         plt.scatter(self.galaxies['z_spec'], self.galaxies.r, c='r', marker='o',s=(self.galaxies.kappa)*10**1, edgecolor = 'none')     
+         plt.scatter(self.galaxies['z_spec'], self.galaxies.r, c='g', marker='o',s=(self.galaxies.kappa)/scale2, edgecolor = 'none')     
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
             kappa = galaxy['kappa_keeton']
             if kappa <0:
-               plt.scatter(galaxy['z_spec'], galaxy['r'], c='b', marker='o',s=-kappa/scaler, edgecolor = 'none')     
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='b', marker='o',s=-kappa/scale, edgecolor = 'none')     
             else:
-               plt.scatter(galaxy['z_spec'], galaxy['r'], c='r', marker='o',s=kappa/scaler, edgecolor = 'none')
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='r', marker='o',s=kappa/scale, edgecolor = 'none')
          #empty = False
+       
        if observed_light==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
          empty = False
+
+
        if empty:
          plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='k', marker='o',s=0.05)
        plt.xlabel('Redshift')
@@ -526,7 +518,7 @@ def test1(catalog):
     #zl=[] # leave as [] to select a lens at random
     
     print "Initialising lightcone data..."
-    lc = lightcone(catalog,rmax,zs,lensindex=-1)#1570
+    lc = lightcone(catalog,rmax,zs,lensindex=-1)
 
 
 #     print "Distributing dark matter in halos..."
@@ -541,11 +533,11 @@ def test1(catalog):
     lc.make_kappa_contributions()
     
     print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)
-    
     # Now make an illustrative plot:
     
     print "Plotting objects in lightcone..."
-    lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=True)
+    lc.plot(starlight=False,dmglow=False, kappa_indiv=True, kappa_keeton=True,observed_light=True)
+    
 
     pngfile = 'test.png'
     plt.savefig(pngfile)
@@ -557,7 +549,7 @@ def test1(catalog):
     pngfile = 'curve_of_growth.png'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
-
+    
     
     return
 
@@ -588,7 +580,7 @@ def test2(catalog): #plots a kappa distribution:
     for j in range(iterations):      
        if K[j]>0.01: print j
     plt.hist(K,bins=30)
-    plt.yscale('log')
+    #plt.yscale('log')
     pngfile = 'Kappa_keeton_distribution.png'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
