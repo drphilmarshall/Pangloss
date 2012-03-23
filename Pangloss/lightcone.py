@@ -8,6 +8,15 @@ to-do
 - carry out curve of growth test
 - decide whether to continue
 '''
+###Things that I think are flawed:###
+# Starlight lensing
+# --> Lines of sight close to halos.
+
+
+
+
+
+
 
 # import distances
 import pylab, atpy
@@ -41,26 +50,70 @@ rad2arcmin = 1.0/arcmin2rad
 
 #Note to Phil. Anything marked '###' is still unfinished/preliminary and probably wrong!
 
+
+
+
+
 class lightcone:
 
-   def __init__(self, catalog, position, radius, zlens,zsource):
+   def __init__(self, catalog,radius,zsource, position=[], zlens=[], lensindex=-1):
 
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
-        self.xc = position 
+        # selects a lens, if not already given a lens index.
+        if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
+           if lensindex <0: print "Choosing a lens..."
+           else: print "evaluating for lens %i" % lensindex
+           xmax=self.catalog['pos_0[rad]'].max()-radius*arcmin2rad
+           xmin=self.catalog['pos_0[rad]'].min()+radius*arcmin2rad
+           ymax=self.catalog['pos_0[rad]'].max()-radius*arcmin2rad
+           ymin=self.catalog['pos_0[rad]'].min()+radius*arcmin2rad
+           self.potential_lenses = self.catalog.where((self.catalog['pos_0[rad]'] > xmin) & \
+                                                         (self.catalog['pos_0[rad]'] < xmax) & \
+                                                         (self.catalog['pos_1[rad]'] > ymin) & \
+                                                         (self.catalog['pos_1[rad]'] < ymax) & \
+                                                         (self.catalog['z_spec']<0.6)& \
+                                                         (self.catalog['z_spec']>0.3)& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(1))& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(19)))#& (self.catalog['mag_SDSS_r'] < 21.5))
+
+
+           #print len(self.potential_lenses['z_spec'])
+
+           rndnum=rnd.randint(0,len(self.potential_lenses['z_spec']))
+           if lensindex >-1: rndnum=lensindex
+           self.lens=self.potential_lenses[rndnum]
+           x=self.lens['pos_0[rad]']
+           y=self.lens['pos_1[rad]']
+           zlens=self.lens['z_spec']
+           position =[x,y]
+           if lensindex <0:
+              print "Lens at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%.2f, %.2f]" % \
+                  (self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],self.lens['M_Stellar[M_sol/h]'],self.lens['M_Halo[M_sol/h]'])
+
+
+
+        # Calculate/save some necessary parameters
         self.rmax = radius
+        self.Da_l = D.Da(zlens)
+        self.Da_s = D.Da(zsource)
+        self.xc = position 
         self.zl = zlens
         self.zs = zsource
         self.Da_l = D.Da(zlens)
         self.Da_s = D.Da(zsource)
-       
-        # Drill out galaxies in a box centred on xc:
+
+    
+        # Drill out galaxies in a box centred on the lens, insist they are lower redshift than the source, and remove the lens itself:
         dx = self.rmax*arcmin2rad
         self.galaxies = self.catalog.where((self.catalog['pos_0[rad]'] > (self.xc[0]-dx)) & \
                                            (self.catalog['pos_0[rad]'] < (self.xc[0]+dx)) & \
                                            (self.catalog['pos_1[rad]'] > (self.xc[1]-dx)) & \
-                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx))) # & \
-                                           # zspec< z_source
+                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx)) & \
+                                           (self.catalog['z_spec'] < zsource ) & \
+                                           (self.catalog['z_spec'] != self.lens['z_spec']) & \
+                                           (self.catalog['pos_0[rad]'] != self.lens['pos_0[rad]']) & \
+                                           (self.catalog['pos_1[rad]'] != self.lens['pos_1[rad]']))
 
         # Recentre the coordinate system on the cone centroid, and 
         # convert to arcmin:
@@ -110,14 +163,12 @@ class lightcone:
           if x[i]>1:
              z[i]= 1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1)/(x[i]+1))**.5)
           else: 
-             print "WARNING You are very close to a halo"
+             #print "WARNING You are very close to a halo"
              if x[i]==1:
                 z[i] =1
              else:
                 y=(-x[i]**2+1)**.5
                 z[i] = 1-(2./(1-x[i]**2)**.5)*numpy.arctan(((1-x[i])/(x[i]+1))**.5)
-       #print x
-       #print z
        return z
 
 # ----------------------------------------------------------------------------
@@ -144,8 +195,6 @@ class lightcone:
                     (4/X**2)*numpy.log(X/2) - \
                     2/(X**2-1) +\
                     4*numpy.arctanh(y)/((X**2-1)*(1-X**2)**(1/2))
-       #print x
-       #print z
        return z
 
 # ----------------------------------------------------------------------------
@@ -204,11 +253,9 @@ class lightcone:
          B=self.beta(zl,zd[i],zs)
          K=kappa[i]
          G=shear[i]
-         print B,G,K
          output[i] = (1.-B)   * (K-    B*(K**2-G**2)   )  /    ( (1-B*K)**2   - (B*G)**2   )
        else: 
          output[i]= 0.0
-      print output
       return output
 
 # ----------------------------------------------------------------------------
@@ -275,9 +322,11 @@ class lightcone:
        return None
 
 # ----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------
+
    # 2-panel plot, showing view from Earth and also line of sight section:
    def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
-
+       scaler=numpy.max([numpy.absolute((numpy.min(self.galaxies.kappa))),numpy.max(self.galaxies.kappa)])/10
        # Galaxy positions:
        ax1=plt.subplot(2,1,1, aspect ='equal')
        plt.subplot(2,1,1,aspect='equal')
@@ -291,15 +340,15 @@ class lightcone:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
          empty = False
        if kappa_indiv: 
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**11, edgecolor = 'none')     
+         plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o',s=(self.galaxies.kappa)*10**1, edgecolor = 'none')     
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
-            kappa = galaxy['kappa_keeton']*10**11
+            kappa = galaxy['kappa_keeton']
             if kappa <0:
-               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa, edgecolor = 'none')     
+               plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa/scaler , edgecolor = 'none')    
             else:
-               plt.scatter(galaxy['x'], galaxy['y'],  c='r', marker='o',s=kappa, edgecolor = 'none')
+               plt.scatter(galaxy['x'], galaxy['y'],  c='r', marker='o',s=kappa/scaler , edgecolor = 'none')
          empty = False
        if observed_light==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
@@ -342,15 +391,15 @@ class lightcone:
          plt.scatter(self.galaxies['z_spec'],self.galaxies.r, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2) )     
          empty = False
        if kappa_indiv: 
-         plt.scatter(self.galaxies['z_spec'], self.galaxies.r, c='r', marker='o',s=(self.galaxies.kappa)*10**11, edgecolor = 'none')     
+         plt.scatter(self.galaxies['z_spec'], self.galaxies.r, c='r', marker='o',s=(self.galaxies.kappa)*10**1, edgecolor = 'none')     
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
-            kappa = galaxy['kappa_keeton']*10**11
+            kappa = galaxy['kappa_keeton']
             if kappa <0:
-               plt.scatter(galaxy['z_spec'], galaxy['r'], c='b', marker='o',s=-kappa, edgecolor = 'none')     
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='b', marker='o',s=-kappa/scaler, edgecolor = 'none')     
             else:
-               plt.scatter(galaxy['z_spec'], galaxy['r'], c='r', marker='o',s=kappa, edgecolor = 'none')
+               plt.scatter(galaxy['z_spec'], galaxy['r'], c='r', marker='o',s=kappa/scaler, edgecolor = 'none')
          #empty = False
        if observed_light==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
@@ -420,25 +469,65 @@ class lightcone:
        """
        return None
 
-# ----------------------------------------------------------------------------
-#     
-#     def selectlens()
-# 
+
 # # ----------------------------------------------------------------------------
+
+   def curve_of_growth(self):
+      #set up things to plot:
+      args=numpy.argsort(-numpy.absolute(self.galaxies.kappa_keeton))
+      ordered_kappas=numpy.take(self.galaxies.kappa_keeton,args)
+      zero=numpy.zeros(1)
+      cumtot=numpy.concatenate((zero,numpy.cumsum(ordered_kappas)))
+
+      corresponding_r=numpy.concatenate((zero,numpy.take(self.galaxies.r,args)))
+
+      n=range(len(args)+1)
+
+      #work out limits for plot
+      #maximum=ordered_kappas.max()      
+      #minimum=ordered_kappas.min()
+      #if numpy.absolute(maximum) < numpy.absolute(minimum):
+      #   max = minimum
+      #   min = numpy.max([maximum,0])
+      #else: 
+      #   max = maximum
+      #   min = numpy.min([minimum,0])
+
+      #choose first m points
+      n1=n[:]
+      cumtot1=cumtot[:]
+      corresponding_r1=corresponding_r[:]
+
+      #start plotting:
+      plt.clf()
+      plt.subplot(1,1,1)
+      plt.plot(n,cumtot)
+      #plt.xscale('log')
+      plt.scatter(n1,cumtot1,c=corresponding_r1,s=15,edgecolor='none')
+      plt.colorbar()
+      plt.xlim([0,20])
+      plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
+      plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+      #plt.ylim([1.1*min,1.1*max])
+
 # ============================================================================
 
 # TESTS:
 
-def test(catalog):
+def test1(catalog):
 
     plt.clf()
+    rmax = 2
+
+    zs=2.0 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
+
+
+    #xc = [] # radians, leave as[] to select a lens at random
+    #zl=[] # leave as [] to select a lens at random
+    
     print "Initialising lightcone data..."
-    zl=0.3
-    zs=2.0
-    #xc = [-1*arcmin2rad,-1*arcmin2rad]
-    xc = [-.004, -0.010] # radians
-    rmax = 2 # arcmin
-    lc = lightcone(catalog,xc,rmax,zl,zs)
+    lc = lightcone(catalog,rmax,zs,lensindex=-1)#1570
+
 
 #     print "Distributing dark matter in halos..."
 #     lc.make_dmhalos()
@@ -451,7 +540,7 @@ def test(catalog):
     print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
     
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa)
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)
     
     # Now make an illustrative plot:
     
@@ -461,9 +550,57 @@ def test(catalog):
     pngfile = 'test.png'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
+
+    print "Plotting curve of growth..."
+    plt.clf()
+    lc.curve_of_growth()
+    pngfile = 'curve_of_growth.png'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
+
     
     return
-   
+
+#-------------------------------------------------------------------------
+
+def test2(catalog): #plots a kappa distribution:
+###not finished###
+#we could consider feeding in our lens selection parameters here)
+
+
+    plt.clf()
+    rmax = 2
+
+    zs=1.39 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
+    xc = [] # radians, leave as[] to select a lens at random
+    zl=[] # leave as [] to select a lens at random
+
+
+    iterations=10000
+    K=numpy.zeros(iterations)
+    for j in range(iterations):
+       i = j+0 #systematically evaluate for all j
+       #i = rnd.randint(0,13594) # or pick random sample
+       lc = lightcone(catalog,rmax,zs,xc,zl,lensindex=i)
+       lc.make_kappa_contributions()
+       K[j]=numpy.sum(lc.galaxies.kappa_keeton)
+       if K[j]>0.01: print j
+    for j in range(iterations):      
+       if K[j]>0.01: print j
+    plt.hist(K,bins=30)
+    plt.yscale('log')
+    pngfile = 'Kappa_keeton_distribution.png'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
+
+    
+    return
+
+#-------------------------------------------------------------------------
+
+#def test3(catalogue):
+
+
 # ============================================================================
 
 if __name__ == '__main__':
@@ -477,7 +614,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test(master)
+    test1(master)
     
 # ============================================================================
 
