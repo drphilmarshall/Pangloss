@@ -31,6 +31,9 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 
 D = distances.Distance()
 D.h = 0.7
+c = 299792458.
+G = 4.3e-6
+
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -51,7 +54,7 @@ rad2arcmin = 1.0/arcmin2rad
 #Note to Phil. Anything marked '###' is still unfinished/preliminary and probably wrong!
 
 
-#### there is a bug in here somewhere (I _always_ get negative kappa_keetons, This can't be right). Functions I haven't checked are marked "####"
+#### there is a bug in here somewhere (I _always_ get very small negative kappa_keetons, this can't be right can it?). Functions I haven't checked are marked "####"
 
 
 class lightcone:
@@ -74,8 +77,8 @@ class lightcone:
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
                                                          (self.catalog['z_spec']<0.6)& \
                                                          (self.catalog['z_spec']>0.3)& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(1))& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(19)))#& (self.catalog['mag_SDSS_r'] < 21.5))
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10))& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(12)))#& (self.catalog['mag_SDSS_r'] < 21.5))
 
 
            #print len(self.potential_lenses['z_spec'])
@@ -153,7 +156,7 @@ class lightcone:
                 z[i] =1./3
              else:
                 y=(-x[i]**2+1)**.5
-                z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctan(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
+                z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctanh(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
 
 
           if z[i] < 0: print 'warning Ffunc'
@@ -188,34 +191,34 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
 
-   def SigmaCrit(self,zl,zs): ####
+   def SigmaCrit(self,zl,zs): 
    # NOTE zl here is the lensing object NOT necessarily the primary lens
        return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
-               # ^numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+               # ^ numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # ----------------------------------------------------------------------------
 
-   def MCrelation(self,M200):####
+   def MCrelation(self,M200):
        c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
 
 # ----------------------------------------------------------------------------
 
-   def delta_c(self,c):####
+   def delta_c(self,c):
        return (200./3)*(c**3)/(numpy.log(1+c)-c/(1+c))
 
 # ----------------------------------------------------------------------------
 
-   def Hsquared(self,z):####
+   def Hsquared(self,z):
        H0 =D.h*3.241*10**-18
-       Hsq=(H0**2)*(D.OMEGA_M*(1+z)**3+(1-D.OMEGA_M)) #Lambda CDM only at this stage
+       Hsq=(H0**2.)*(D.OMEGA_M*(1.+z)**3.+(1.-D.OMEGA_M)) #Flat LambdaCDM only at this stage
        return Hsq
     
 # ----------------------------------------------------------------------------
 
    def rho_crit_univ(self,z):   #critical density of the universe at z
-       ro= 2.642*10**46**self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of persecond.
-       return ro ####
+       ro= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
+       return ro 
  
 # ----------------------------------------------------------------------------
 
@@ -253,7 +256,6 @@ class lightcone:
    def make_kappa_contributions(self): ####
 
        # Compute distance to each galaxy 
-       # (note Da is not a function of an array):
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
        Da_tosource = numpy.zeros(len(zd))
@@ -263,25 +265,21 @@ class lightcone:
        self.galaxies.add_column('Da',Da)
        self.galaxies.add_column('Da_tosource',Da_tosource)
        rphys=self.galaxies.r*Da  # Mpc
-       M200 = self.galaxies['M_Halo[M_sol/h]']
-       
+
        # Compute NFW quantities, and store for later:
+       M200 = self.galaxies['M_Halo[M_sol/h]']
        c200 = self.MCrelation(M200)
        self.galaxies.add_column('c200',c200)     
-
-       
-       #rs = (M200/(4*3.14159*self.rho_crit_univ(zd))*(numpy.log(1+c200)-c200/(1+c200)))**(1./3) #units: megaparsecs
-       
-       r200 = (3*M200/(800*3.14159*self.rho_crit_univ(zd)))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+       rho=self.rho_crit_univ(zd)
+       self.galaxies.add_column('rho_crit',rho)
+       r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
        rs = r200/c200                                                                           #(wright and brainerd)
+       rhos = self.delta_c(c200)*self.galaxies.rho_crit # units: solar mass per cubic megaparsec
 
-
-       rhos = self.delta_c(c200)*self.rho_crit_univ(zd)  # units: solar mass per cubic megaparsec
-       
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
-       x = rphys/rs
+       x = rphys/(200*rs)
        sigmacrit = self.SigmaCrit(zd,self.zs)  # units: Solarmasses per megaparsec^2
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
@@ -290,7 +288,7 @@ class lightcone:
        kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
        shearNFW = kappas * self.Gfunc(x)
-
+       
        kappa = kappaNFW   #these should include a component from starlight too
        shear = shearNFW
 
@@ -537,7 +535,7 @@ def test1(catalog):
     # Now make an illustrative plot:
     
     print "Plotting objects in lightcone..."
-    lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=False)
+    lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=True)
     
 
     pngfile = 'test.png'
@@ -550,6 +548,8 @@ def test1(catalog):
     pngfile = 'curve_of_growth.png'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
+    
+    #print lc.galaxies.kappa/lc.galaxies.gamma
     
     
     return
@@ -569,7 +569,7 @@ def test2(catalog): #plots a kappa distribution:
     zl=[] # leave as [] to select a lens at random
 
 
-    iterations=1000
+    iterations=85
     K=numpy.zeros(iterations)
     for j in range(iterations):
        i = j+0 #systematically evaluate for all j
@@ -577,13 +577,14 @@ def test2(catalog): #plots a kappa distribution:
        lc = lightcone(catalog,rmax,zs,xc,zl,lensindex=i)
        lc.make_kappa_contributions()
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)
-       if K[j]>0.01: print j
-    for j in range(iterations):      
-       if K[j]>0.01: print j
+       #if K[j]>0.01: print j
+    #for j in range(iterations):      
+       #if K[j]>0.01: print j
     plt.hist(K,bins=30)
     #plt.yscale('log')
     pngfile = 'Kappa_keeton_distribution.png'
     plt.savefig(pngfile)
+    plt.ylim([0,500])
     print "Plot saved in",pngfile
 
     
@@ -607,7 +608,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test2(master)
+    test1(master)
     
 # ============================================================================
 
