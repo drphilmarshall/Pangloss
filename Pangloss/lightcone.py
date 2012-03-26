@@ -54,8 +54,6 @@ rad2arcmin = 1.0/arcmin2rad
 #Note to Phil. Anything marked '###' is still unfinished/preliminary and probably wrong!
 
 
-#### there is a bug in here somewhere (I _always_ get very small negative kappa_keetons, this can't be right can it?). Functions I haven't checked are marked "####"
-
 
 class lightcone:
 
@@ -63,7 +61,7 @@ class lightcone:
 
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
-        # selects a lens, if not already given a lens index.
+        # selects a lens, if not already given a lens position/index.
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
            if lensindex <0: print "Choosing a lens..."
            else: print "evaluating for lens %i" % lensindex
@@ -77,8 +75,8 @@ class lightcone:
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
                                                          (self.catalog['z_spec']<0.6)& \
                                                          (self.catalog['z_spec']>0.3)& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10))& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(12)))#& (self.catalog['mag_SDSS_r'] < 21.5))
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10.2))& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(13)))#& (self.catalog['mag_SDSS_r'] < 21.5))
 
 
            #print len(self.potential_lenses['z_spec'])
@@ -89,10 +87,10 @@ class lightcone:
            x=self.lens['pos_0[rad]']
            y=self.lens['pos_1[rad]']
            zlens=self.lens['z_spec']
-           position =[x,y]
-           if lensindex <0:
-              print "Lens %i at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%.2f, %.2f]" % \
-                  (rndnum, self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],self.lens['M_Stellar[M_sol/h]'],self.lens['M_Halo[M_sol/h]'])
+           position = [x,y]
+           if lensindex <0: # or lensindex >0:
+              print "Lens %i at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%2.2f, %2.2f]" % \
+                  (rndnum, self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],numpy.log10(self.lens['M_Stellar[M_sol/h]']),numpy.log10(self.lens['M_Halo[M_sol/h]']))
 
 
 
@@ -229,11 +227,11 @@ class lightcone:
       if j>i:
          R1a = D.Da(i,j)/D.Da(j)
          R2a = D.Da(i,k)/D.Da(k)
-         return R2a/R1a
+         return R1a/R2a
       if i>j:
          R1b = D.Da(j,i)/D.Da(i)
          R2b = D.Da(j,k)/D.Da(k)
-         return R2b/R1b
+         return R1b/R2b
 
 # ----------------------------------------------------------------------------
 
@@ -253,7 +251,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self): ####
+   def make_kappa_contributions(self): 
 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
@@ -265,6 +263,8 @@ class lightcone:
        self.galaxies.add_column('Da',Da)
        self.galaxies.add_column('Da_tosource',Da_tosource)
        rphys=self.galaxies.r*Da  # Mpc
+
+       # ---------------------------------------------------------------------
 
        # Compute NFW quantities, and store for later:
        M200 = self.galaxies['M_Halo[M_sol/h]']
@@ -279,7 +279,7 @@ class lightcone:
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
-       x = rphys/(200*rs)
+       x = rphys/rs
        sigmacrit = self.SigmaCrit(zd,self.zs)  # units: Solarmasses per megaparsec^2
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
@@ -289,6 +289,17 @@ class lightcone:
 
        shearNFW = kappas * self.Gfunc(x)
        
+       #---------------------------------------------------------------------------------
+
+       # Compute starlight lensing component.
+
+
+
+
+
+       #---------------------------------------------------------------------------------
+
+
        kappa = kappaNFW   #these should include a component from starlight too
        shear = shearNFW
 
@@ -304,9 +315,7 @@ class lightcone:
        self.galaxies.add_column('kappa',kappa)
        self.galaxies.add_column('gamma',shear)
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
-       #print self.galaxies.gamma
-       #print self.galaxies.kappa
-       #print self.galaxies.kappa_keeton
+
        return None
 
 # ----------------------------------------------------------------------------
@@ -564,12 +573,12 @@ def test2(catalog): #plots a kappa distribution:
     plt.clf()
     rmax = 2
 
-    zs=1.39 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
+    zs=1.4 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
     xc = [] # radians, leave as[] to select a lens at random
     zl=[] # leave as [] to select a lens at random
 
 
-    iterations=85
+    iterations=100
     K=numpy.zeros(iterations)
     for j in range(iterations):
        i = j+0 #systematically evaluate for all j
@@ -577,14 +586,20 @@ def test2(catalog): #plots a kappa distribution:
        lc = lightcone(catalog,rmax,zs,xc,zl,lensindex=i)
        lc.make_kappa_contributions()
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)
-       #if K[j]>0.01: print j
+       #if K[j]>0.1: print j
     #for j in range(iterations):      
        #if K[j]>0.01: print j
-    plt.hist(K,bins=30)
+    bins=numpy.arange(-0.2,0.1,0.005)
+    plt.hist(K,bins)
     #plt.yscale('log')
     pngfile = 'Kappa_keeton_distribution.png'
-    plt.savefig(pngfile)
     plt.ylim([0,500])
+    plt.xlim([-0.2,.3])
+ 
+
+    plt.savefig(pngfile)
+
+
     print "Plot saved in",pngfile
 
     
@@ -608,7 +623,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test1(master)
+    test2(master)
     
 # ============================================================================
 
