@@ -1,2 +1,36 @@
-
 Pangloss
+
+
+Pangloss is a code for light cone reconstruction.
+
+The primary class "lightcone.py" can be used for drilling out lines of sight from the Millenium catalogues of S. Hilbert. 
+
+distances.py is a class calculating cosmologically usefull quantaties i.e comoving distances. Written by Matt Auger.
+
+The user can either enter a position around which to draw a light cone, or can let pangloss choose a lens, given redshift and stellar mass selections (currently hard coded, but can easily be changed), minor alterations could allow other lens selection proceedures. Feel free to add these, preferably as a function rather than hard coded.
+
+Once a lens and lightcone has been selected the code calculates kappa_ext and gamma_ext for each halo in the catalogue. These are then weighted to create a kappa_keeton for each halo(see Keeton 2003, http://iopscience.iop.org/0004-637X/584/2/664/pdf/56371.web.pdf), which can be summed to give a kappa_keeton_total. Kappa_keeton is an approximation, but may well be good enough for our purposes.
+
+Our code currently only assumes NFW halos, and ignores starlight information.
+
+--------------------------------------------------------
+
+Plotting tools that currently exist:
+
+plot(): shows the lightcone from earth, and a subplot for the redshift axis. *
+
+curve_of_growth(): plots cumulative sum of kappa_keetons as a function of either kappa_keeton, angular distance from LOS, or r band magnitude (more options can and should be added), and a subplot showing redshift vs line of sight. *
+
+Both of these have lots of options for what to plot - r_mag (observed_light=True) and kappa_keeton (=True) are recommended as probably the most meaningful.
+
+
+test2() will calculate kappa_keeton_total for n systems and plot a histogram.
+
+
+-----------------------------------------------------
+We currently are having problems with subtracting the mean density of the universe - this makes all our results shifted somewhat. hopefully this will be resolved soon!
+
+
+
+
+TC
