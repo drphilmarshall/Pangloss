@@ -72,9 +72,9 @@ class lightcone:
                                                          (self.catalog['pos_0[rad]'] < xmax) & \
                                                          (self.catalog['pos_1[rad]'] > ymin) & \
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
-                                                         (self.catalog['z_spec']<0.6)& \
-                                                         (self.catalog['z_spec']>0.3)& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10.2))& \
+                                                         (self.catalog['z_spec']<0.65)& \
+                                                         (self.catalog['z_spec']>0.55)& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(0.2))& \
                                                          (self.catalog['M_Stellar[M_sol/h]']<10**(13)))#& (self.catalog['mag_SDSS_r'] < 21.5))
 
 
@@ -252,7 +252,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # function to calculate what kappa to subtract due to the mean density field
-   def kappa_sheet(self): ###
+   def kappa_expected(self): ###
       #print clock()
 
 
@@ -273,15 +273,15 @@ class lightcone:
          D_ps[i]=D.Da(zp[i],self.zs)
 
          #comoving volume of element, is total comoving volume * solid angle/4pi: omega = 2*pi(1-cos(theta))
-         box_vol_p[i]=(D.comoving_volume((zp[i]-dz/2.),(zp[i]+dz/2.)))*((1-numpy.cos(theta)))/2
+         #box_vol_p[i]=(D.comoving_volume((zp[i]-dz/2.),(zp[i]+dz/2.)))*((1-numpy.cos(theta)))/2
+         box_vol_p[i]=(D.comoving_distance((zp[i]-dz/2.),(zp[i]+dz/2.)))
 
 
          sigma_crit_p[i]=(1.663*10**18)*(self.Da_s/(D_p[i]*D_ps[i])) 
          kappa_p[i]=(self.rho_crit_univ(zp[i])*box_vol_p[i])/sigma_crit_p[i]
 
-      kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) ###this is flawed!!!
-      print kappa_keeton_p.sum()
-      print box_vol_p
+      kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
+      return numpy.sum(kappa_keeton_p)
 
       plt.subplot(2,1,1)
       plt.plot(zp,kappa_p)
@@ -368,6 +368,8 @@ class lightcone:
        self.galaxies.add_column('kappa',kappa)
        self.galaxies.add_column('gamma',shear)
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
+
+       self.kappa_expectation= self.kappa_expected()
 
        return None
 
@@ -487,46 +489,69 @@ class lightcone:
 
 # # ----------------------------------------------------------------------------
 
-   def curve_of_growth(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True):
+   def curve_of_growth(self,ordering="contribution",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True):
        plt.clf()
        scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_keeton))), \
                             numpy.max(self.galaxies.kappa_keeton)])/200
        scale2= (numpy.max(self.galaxies.kappa))/200
-       plt.subplot(2,1,1)
-      #set up things to plot:
-       args=numpy.argsort(-numpy.absolute(self.galaxies.kappa_keeton))
-       ordered_kappas=numpy.take(self.galaxies.kappa_keeton,args)
-       zeropoint=0.0 ### I should be kappa_planes
+
+       zeropoint=-self.kappa_expectation
        zero=numpy.ones(1)*zeropoint
-       cumtot=numpy.concatenate((zero,numpy.cumsum(ordered_kappas)))
-       
-       corresponding_r=numpy.concatenate((zero,numpy.take(self.galaxies.r,args)))
-       
+
+
+       plt.subplot(2,1,1)
+       #set up things to plot:
+       if ordering=="contribution":
+          args=numpy.argsort(-numpy.absolute(self.galaxies.kappa_keeton))
+       if ordering=="distance":
+          args=numpy.argsort((self.galaxies.r))
+          dist=numpy.concatenate((zero,numpy.take(self.galaxies.r,args)))
+       if ordering=="r_mag":
+          args=numpy.argsort((self.galaxies['mag_SDSS_r']))
+          rmag=numpy.concatenate((zero,numpy.take(self.galaxies['mag_SDSS_r'],args)))
+       ordered_kappas=numpy.take(self.galaxies.kappa_keeton,args)
+
+
+       cat=numpy.concatenate((zero,(ordered_kappas)))
+       cumtot=numpy.cumsum(cat)
        n=range(len(args)+1)
       
-      #work out limits for plot
-      #maximum=ordered_kappas.max()      
-      #minimum=ordered_kappas.min()
-      #if numpy.absolute(maximum) < numpy.absolute(minimum):
-      #   max = minimum
-      #   min = numpy.max([maximum,0])
-      #else: 
-      #   max = maximum
-      #   min = numpy.min([minimum,0])
+       #work out limits for plot
+       #maximum=ordered_kappas.max()      
+       #minimum=ordered_kappas.min()
+       #if numpy.absolute(maximum) < numpy.absolute(minimum):
+       #   max = minimum
+       #   min = numpy.max([maximum,0])
+       #else: 
+       #   max = maximum
+       #   min = numpy.min([minimum,0])
 
-      #choose first m points
-       n1=n[:20]
-       cumtot1=cumtot[:20]
-       corresponding_r1=corresponding_r[:20]
-       
-      #start plotting:
-       plt.plot(n,cumtot)
-      #plt.xscale('log')
-       plt.scatter(n1,cumtot1,c=corresponding_r1,s=15,edgecolor='none')
-       plt.colorbar()
-       plt.xlim([0,200])
-       plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
-       plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+       #choose first m points
+       #n1=n[:20]
+       #cumtot1=cumtot[:20]
+       #corresponding_r1=corresponding_r[:20]
+
+       if ordering=="contribution":
+          plt.plot(n,cumtot)
+          #plt.xlim([0,200])
+          plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
+          plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+       if ordering=="distance":
+          plt.plot(dist,cumtot)
+          #plt.xlim([0,200])
+          plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
+          plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+          plt.xlabel('LOS distance (arcsec)')
+       if ordering=="r_mag":
+          plt.plot(rmag,cumtot)
+          #plt.xlim([0,200])
+          plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
+          plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+       plt.ylabel('$\kappa_{ext}$ (cumulative)')
+
+
+
+
 
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
@@ -536,7 +561,8 @@ class lightcone:
 
        plt.subplot(2,1,2)
        empty = True
-       
+
+       self.galaxies=self.galaxies.where(self.galaxies.r<2)
 
        if dmglow==True:
          plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
@@ -585,7 +611,7 @@ class lightcone:
 def test1(catalog):
 
     plt.clf()
-    rmax = 2
+    rmax = 25
 
     zs=2.0 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
 
@@ -596,7 +622,7 @@ def test1(catalog):
     xc = []#[xpos,ypos,zl] #leave as [] to select a lens at random
 
     print "Initialising lightcone data..."
-    lc = lightcone(catalog,rmax,zs,lensindex=1,position=xc)
+    lc = lightcone(catalog,rmax,zs,lensindex=-1,position=xc)
 
 
 #     print "Distributing dark matter in halos..."
@@ -610,23 +636,21 @@ def test1(catalog):
     print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
 
-    #calculate kappa_keeton_sheets.sum() and subtract from total kappa_keeton
-    lc.kappa_sheet()
-
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
     # Now make an illustrative plot:
     
-    print "Plotting objects in lightcone..."
-    lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=True)
-    
+    if rmax < 8:
+       print "Plotting objects in lightcone..."
+       lc.plot(starlight=False,dmglow=False, kappa_indiv=False, kappa_keeton=True,observed_light=True)
+       
 
-    pngfile = 'test.png'
-    plt.savefig(pngfile)
-    print "Plot saved in",pngfile
+       pngfile = 'test.png'
+       plt.savefig(pngfile)
+       print "Plot saved in",pngfile
 
     print "Plotting curve of growth..."
     plt.clf()
-    lc.curve_of_growth()
+    lc.curve_of_growth(ordering="distance")
     pngfile = 'curve_of_growth.png'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
@@ -642,25 +666,26 @@ def test2(catalog): #plots a kappa distribution:
 
 
     plt.clf()
-    rmax = 2
+    rmax = 5
 
     zs=1.4 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
     position = [] # radians, leave as[] to select a lens at random
     zl=[] # leave as [] to select a lens at random
     xc = []
 
-    iterations=1900
+    iterations=900
     K=numpy.zeros(iterations)
     for j in range(iterations):
        i = j+0 #systematically evaluate for all j
        #i = rnd.randint(0,13594) # or pick random sample
        lc = lightcone(catalog,rmax,zs,position=xc,lensindex=i)
        lc.make_kappa_contributions()
-       K[j]=numpy.sum(lc.galaxies.kappa_keeton)
-    bins=numpy.arange(-0.06,0.29,0.005)
+       K[j]=numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
+
+    bins=numpy.arange(-0.26,0.29,0.005)
     plt.hist(K,bins,normed=True)
-    plt.xlabel("$\Kappa_{\mathrm{ext}}$")
-    plt.ylabel("pdf($\Kappa_{\mathrm{ext}}$)")
+    plt.xlabel("$\kappa_{ext}$")
+    plt.ylabel("pdf($\kappa_{ext}$)")
     #plt.yscale('log')
     pngfile = 'Kappa_keeton_distribution.png'
     #plt.ylim([0,500])
@@ -693,7 +718,7 @@ if __name__ == '__main__':
     print "Read in master table, length",len(master)
     
     test1(master)
-    
+
 # ============================================================================
 
 
