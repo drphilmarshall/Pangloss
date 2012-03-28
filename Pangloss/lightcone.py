@@ -306,7 +306,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self, deterministic=True): 
+   def make_kappa_contributions(self, deterministic=True,photozerror=False,halomasserror=False,Mcerror=False): 
     if deterministic==True:
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
@@ -382,12 +382,17 @@ class lightcone:
        #create some necessary but empty columns, if they don't already exist:
        self.galaxies.add_column('b_M_Subhalo',self.galaxies['M_Subhalo[M_sol/h]'])###
        self.galaxies.add_column('b_M_Stellar',self.galaxies['M_Stellar[M_sol/h]'])###
+       if halomasserror==True:
+          for i in range(len(self.galaxies.b_M_Subhalo)):
+             self.galaxies.b_M_Subhalo[i]*=0.3*rnd.lognormal() #30% error on the mass
 
        # Compute distance to each galaxy 
        zdtrue = self.galaxies['z_spec'] # could use a photo_z estimater here instead
-       zd=zdtrue*0.0
-       for i in range(len(zd)):
-          zd[i]=zdtrue[i]*(1+0.05*rnd.normal()) #5% photoz error
+       zd=zdtrue*1.0
+
+       if photozerror==True:
+          for i in range(len(zd)):
+             zd[i]=zdtrue[i]*(1+0.05*rnd.normal()) #5% photoz error
 
        Da = numpy.zeros(len(zd))
        Da_tosource = numpy.zeros(len(zd))
