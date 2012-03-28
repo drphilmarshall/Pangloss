@@ -206,7 +206,7 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
 
-   def MCrelation(self,M200):
+   def MCrelation(self,M200,MCerror=False):
        c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
 
@@ -384,7 +384,8 @@ class lightcone:
        self.galaxies.add_column('b_M_Stellar',self.galaxies['M_Stellar[M_sol/h]'])###
        if halomasserror==True:
           for i in range(len(self.galaxies.b_M_Subhalo)):
-             self.galaxies.b_M_Subhalo[i]*=0.3*rnd.lognormal() #30% error on the mass
+             self.galaxies.b_M_Subhalo[i]*=rnd.lognormal(0.3) #30% lognormal error on the mass
+             #self.galaxies.b_M_Subhalo[i]*=1+0.3*rnd.normal() #30% error on the mass
 
        # Compute distance to each galaxy 
        zdtrue = self.galaxies['z_spec'] # could use a photo_z estimater here instead
@@ -408,7 +409,10 @@ class lightcone:
 
        # Compute NFW quantities, and store for later:
        M200 = self.galaxies.b_M_Subhalo
-       c200 = self.MCrelation(M200)### deterministic=False
+       if Mcerror==True:
+          c200 = self.MCrelation(M200,MCerror=True)
+       else:
+          c200 = self.MCrelation(M200)
        self.galaxies.add_column('b_c200',c200)     
        rho=self.rho_crit_univ(zd)
        self.galaxies.add_column('b_rho_crit',rho)

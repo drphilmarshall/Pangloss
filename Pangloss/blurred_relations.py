@@ -33,7 +33,7 @@ print kappatrue
 
 
 # calculate the 'real' kappa_keeton.
-iterations=100
+iterations=1000
 K=numpy.zeros(iterations)
 
 for iteration in range(iterations): 
@@ -46,7 +46,7 @@ plt.hist(K,bins,normed=True)
 plt.axvline(x=kappatrue, ymin=0,ymax=1, c='k', ls='dashed')
 plt.xlabel("$\kappa_{ext}$")
 plt.ylabel("pdf($\kappa_{ext}$)")
-plt.title('Perfect information, but 5% error on z_perturbers, 30% error on M_Halo')
+#plt.title('Perfect information, but 5% error on z_perturbers, 30% error on M_Halo')
 pngfile = 'Kappa_keeton_blurred.png'
 plt.savefig(pngfile)
 
