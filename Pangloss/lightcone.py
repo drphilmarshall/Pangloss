@@ -53,13 +53,15 @@ rad2arcmin = 1.0/arcmin2rad
 
 class lightcone:
 
-   def __init__(self, catalog,radius,zsource, position=[], lensindex=-1):
+   def __init__(self, catalog,radius,zsource, position=[], lensindex=-1, deterministic=True):
         if position ==[]: 
             flag=1
         else:
             flag =0
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
+        self.deterministic=deterministic
+
         # selects a lens, if not already given a lens position/index.
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
            if lensindex <0: print "Choosing a lens..."
@@ -72,9 +74,9 @@ class lightcone:
                                                          (self.catalog['pos_0[rad]'] < xmax) & \
                                                          (self.catalog['pos_1[rad]'] > ymin) & \
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
-                                                         (self.catalog['z_spec']<0.65)& \
-                                                         (self.catalog['z_spec']>0.55)& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(0.2))& \
+                                                         (self.catalog['z_spec']<0.6)& \
+                                                         (self.catalog['z_spec']>0.3)& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10.2))& \
                                                          (self.catalog['M_Stellar[M_sol/h]']<10**(13)))#& (self.catalog['mag_SDSS_r'] < 21.5))
 
 
@@ -90,6 +92,10 @@ class lightcone:
            if lensindex <0: # or lensindex >0:
               print "Lens %i at [%.4f,%.4f], redshift of z=%.2f and log([stellar mass, halo mass]/M_sun) = [%2.2f, %2.2f]" % \
                   (rndnum, self.lens['pos_0[rad]'],self.lens['pos_1[rad]'],self.lens['z_spec'],numpy.log10(self.lens['M_Stellar[M_sol/h]']),numpy.log10(self.lens['M_Halo[M_sol/h]']))
+
+
+
+          
 
 
 
@@ -142,6 +148,7 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+
    # Function needed to calculate kappa for an NFW halo. 
 
    def Ffunc(self,x):
@@ -346,14 +353,10 @@ class lightcone:
 
        # Compute starlight lensing component.
 
-
-
-
-
        #---------------------------------------------------------------------------------
 
 
-       kappa = kappaNFW   #these should include a component from starlight too
+       kappa = kappaNFW   #these could include a component from starlight too
        shear = shearNFW
 
        # kappa or shear is zero if behind the source!
@@ -374,6 +377,10 @@ class lightcone:
        return None
 
 # ----------------------------------------------------------------------------
+
+
+
+
 # ----------------------------------------------------------------------------
 
    # 2-panel plot, showing view from Earth and also line of sight section:
