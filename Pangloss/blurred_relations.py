@@ -23,7 +23,7 @@ ypos = -0.01731
 zl =  1.0 
 xc = []#[xpos,ypos,zl] #leave as [] to select a lens at random
 
-lc = lightcone.lightcone(master,rmax,zs,lensindex=-1,position=xc)
+lc = lightcone.lightcone(master,rmax,zs,lensindex=1,position=xc)
 
 # calculate a 'blurred' kappa keeton.
 
@@ -33,8 +33,20 @@ print kappatrue
 
 
 # calculate the 'real' kappa_keeton.
-lc.make_kappa_contributions(deterministic=False)
-#kappatrue=numpy.sum(lc.galaxies.kappa_keeton)
-#print kappatrue
+iterations=500
+K=numpy.zeros(iterations)
+
+for iteration in range(iterations): 
+    lc.make_kappa_contributions(deterministic=False)
+    K[iteration] = lc.kappa_blurred
 
 
+bins=20#numpy.arange(-0.26,0.29,0.005)
+plt.hist(K,bins,normed=True)
+plt.axvline(x=kappatrue, ymin=0,ymax=1, c='k', ls='dashed')
+plt.xlabel("$\kappa_{ext}$")
+plt.ylabel("pdf($\kappa_{ext}$)")
+pngfile = 'Kappa_keeton_blurred.png'
+plt.savefig(pngfile)
+
+print "Plot saved in",pngfile

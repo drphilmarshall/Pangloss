@@ -197,9 +197,11 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
 
-   def SigmaCrit(self): 
+   def SigmaCrit(self, deterministic=True): 
    # NOTE zl here is the lensing object NOT necessarily the primary lens
-       return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
+      if deterministic ==False:
+         return (1.663*10**18)*(self.Da_s/(self.galaxies.b_Da*self.galaxies.b_Da_tosource)) 
+      else: return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
                # ^ numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # ----------------------------------------------------------------------------
@@ -373,26 +375,87 @@ class lightcone:
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
 
        self.kappa_expectation= self.kappa_expected()
+
+
+    #blurred - not deterministic-----------------
     if deterministic==False:       
        #create some necessary but empty columns, if they don't already exist:
-       self.galaxies.add_column('b_z',0)
-       self.galaxies.add_column('b_Da',0)
-       self.galaxies.add_column('b_Da_tosource',0)
-       self.galaxies.add_column('b_rphys',0)
-       self.galaxies.add_column('b_rho_crit',0)
-       self.galaxies.add_column('b_MHalo',0)
-       self.galaxies.add_column('b_c200',0)
-       self.galaxies.add_column('b_rs',0)
-       self.galaxies.add_column('b_rhos',0)
-       self.galaxies.add_column('b_SigmaCrit',0)
-       self.galaxies.add_column('b_Mstellar',0)
-       self.galaxies.add_column('b_kappa',0)
-       self.galaxies.add_column('b_gamma',0)
-       self.galaxies.add_column('b_kappa_keeton',0)
-       
+       self.galaxies.add_column('b_M_Subhalo',self.galaxies['M_Subhalo[M_sol/h]'])###
+       self.galaxies.add_column('b_M_Stellar',self.galaxies['M_Stellar[M_sol/h]'])###
 
+       # Compute distance to each galaxy 
+       zdtrue = self.galaxies['z_spec'] # could use a photo_z estimater here instead
+       zd=zdtrue*0.0
+       for i in range(len(zd)):
+          zd[i]=zdtrue[i]*(1+0.05*rnd.normal()) #5% photoz error
+
+       Da = numpy.zeros(len(zd))
+       Da_tosource = numpy.zeros(len(zd))
+       for i in range(len(zd)):
+         Da[i] = D.Da(zd[i])
+         Da_tosource[i] = D.Da(zd[i],self.zs)
+       self.galaxies.add_column('b_Da',Da)
+       self.galaxies.add_column('b_Da_tosource',Da_tosource)
+       rphys=self.galaxies.r*arcmin2rad*Da  # Mpc
+       self.galaxies.add_column('b_rphys',rphys)     
+
+       # ---------------------------------------------------------------------
+
+       # Compute NFW quantities, and store for later:
+       M200 = self.galaxies.b_M_Subhalo
+       c200 = self.MCrelation(M200)### deterministic=False
+       self.galaxies.add_column('b_c200',c200)     
+       rho=self.rho_crit_univ(zd)
+       self.galaxies.add_column('b_rho_crit',rho)
+       r200 = (3*M200/(800*3.14159*self.galaxies.b_rho_crit))**(1./3) #units: megaparsecs       #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+       rs = r200/c200
+       #(wright and brainerd)
+       rhos = self.delta_c(c200)*self.galaxies.b_rho_crit   # units: solar mass per cubic megaparsec
+
+       self.galaxies.add_column('b_rs',rs)
+       self.galaxies.add_column('b_rhos',rhos)
+
+       x = rphys/rs
+       sigmacrit = self.SigmaCrit(deterministic=False)  # units: Solarmasses per megaparsec^2
+       self.galaxies.add_column('b_SigmaCrit',sigmacrit)
+
+       kappas = rhos*rs/sigmacrit
+
+
+       # need to cut out sub halos - can be done in several ways.
+       #for i in range(kappas.size()):
+       #   if self.galaxies
+
+       kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+
+       shearNFW = kappas * self.Gfunc(x)
+       
+       #---------------------------------------------------------------------------------
+
+       # Compute starlight lensing component.
+
+       #---------------------------------------------------------------------------------
+
+
+       kappa = kappaNFW   #these could include a component from starlight too
+       shear = shearNFW
+
+       # kappa or shear is zero if behind the source!
+       for i in range(len(zd)):
+          if zd[i] > self.zs:
+             kappa[i] = 0.0
+             shear[i] = 0.0
+
+       kappa_keeton=self.KappaKeeton(self.zl,zd,self.zs,kappa,shear)
+
+       # Contributions to simple weighted sum (Keeton 2003):
+       self.galaxies.add_column('b_kappa',kappa)
+       self.galaxies.add_column('b_gamma',shear)
+       self.galaxies.add_column('b_kappa_keeton',kappa_keeton)
        self.kappa_blurred=numpy.sum(self.galaxies.b_kappa_keeton)
-       self.galaxies.remove_columns(['b_z','b_Da'])
+ 
+
+       self.galaxies.remove_columns(['b_Da','b_Da_tosource','b_rphys','b_rho_crit','b_M_Subhalo','b_c200','b_rs','b_rhos','b_SigmaCrit','b_M_Stellar','b_kappa','b_gamma','b_kappa_keeton'])
 
     return None
 
