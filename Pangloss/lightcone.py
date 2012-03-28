@@ -304,8 +304,8 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self): 
-
+   def make_kappa_contributions(self, deterministic=True): 
+    if deterministic==True:
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -373,8 +373,28 @@ class lightcone:
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
 
        self.kappa_expectation= self.kappa_expected()
+    if deterministic==False:       
+       #create some necessary but empty columns, if they don't already exist:
+       self.galaxies.add_column('b_z',0)
+       self.galaxies.add_column('b_Da',0)
+       self.galaxies.add_column('b_Da_tosource',0)
+       self.galaxies.add_column('b_rphys',0)
+       self.galaxies.add_column('b_rho_crit',0)
+       self.galaxies.add_column('b_MHalo',0)
+       self.galaxies.add_column('b_c200',0)
+       self.galaxies.add_column('b_rs',0)
+       self.galaxies.add_column('b_rhos',0)
+       self.galaxies.add_column('b_SigmaCrit',0)
+       self.galaxies.add_column('b_Mstellar',0)
+       self.galaxies.add_column('b_kappa',0)
+       self.galaxies.add_column('b_gamma',0)
+       self.galaxies.add_column('b_kappa_keeton',0)
+       
 
-       return None
+       self.kappa_blurred=numpy.sum(self.galaxies.b_kappa_keeton)
+       self.galaxies.remove_columns(['b_z','b_Da'])
+
+    return None
 
 # ----------------------------------------------------------------------------
 

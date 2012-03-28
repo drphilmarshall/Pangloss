@@ -24,3 +24,17 @@ zl =  1.0
 xc = []#[xpos,ypos,zl] #leave as [] to select a lens at random
 
 lc = lightcone.lightcone(master,rmax,zs,lensindex=-1,position=xc)
+
+# calculate a 'blurred' kappa keeton.
+
+lc.make_kappa_contributions(deterministic=True)
+kappatrue=numpy.sum(lc.galaxies.kappa_keeton)
+print kappatrue
+
+
+# calculate the 'real' kappa_keeton.
+lc.make_kappa_contributions(deterministic=False)
+#kappatrue=numpy.sum(lc.galaxies.kappa_keeton)
+#print kappatrue
+
+
