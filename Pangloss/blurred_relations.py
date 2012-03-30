@@ -26,7 +26,10 @@ xc = []
 
 iter=30
 
-for j in range(iter):
+
+for j in [5]:
+#for j in [0,1,6,5,14,12]:
+#for j in range(iter):
     lc = lightcone.lightcone(master,rmax,zs,lensindex=j,position=xc)
 
 # calculate a 'blurred' kappa keeton.
@@ -37,11 +40,11 @@ for j in range(iter):
 
 
 # calculate the 'real' kappa_keeton.
-    iterations=100
+    iterations=200
     K=numpy.zeros(iterations)
 
     for iteration in range(iterations): 
-        lc.make_kappa_contributions(deterministic=False,photozerror=True,halomasserror=False)
+        lc.make_kappa_contributions(deterministic=False,photozerror=True,halomasserror=True,MCerror=True)
         K[iteration] = lc.kappa_blurred
 
 
@@ -51,7 +54,7 @@ for j in range(iter):
     plt.axvline(x=kappatrue, ymin=0,ymax=1, c='k', ls='dashed')
     plt.xlabel("$\kappa_{ext}$")
     plt.ylabel("pdf($\kappa_{ext}$)")
-    plt.xlim([kappatrue-0.04,kappatrue+0.02])
+    plt.xlim([kappatrue-0.04,kappatrue+0.04])
 
 #plt.title('Perfect information, but 5% error on z_perturbers, 30% error on M_Halo')
     pngfile = 'photozerror/Kappa_keeton_blurred_%i.png' %j

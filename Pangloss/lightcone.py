@@ -136,7 +136,8 @@ class lightcone:
         self.galaxies.add_column('y',y)
         self.galaxies.add_column('r',r)
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
-        
+
+      
         # Note that these are placeholder galaxies: they may not have any 
         # observable properties yet.
         
@@ -211,7 +212,7 @@ class lightcone:
        c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
       if MCerror==True:
-       c_200 = (4.67*(M200/(10**14))**0.11)*(rnd.lognormal(0.3)) #Neto et al. equation 5 + scatter
+       c_200 = (4.67*(M200/(10**14))**0.11)*(rnd.lognormal(0,0.3)/numpy.exp(0.+(0.3**2.)/2.)) #Neto et al. equation 5 + scatter
        return c_200
 
 # ----------------------------------------------------------------------------
@@ -310,7 +311,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self, deterministic=True,photozerror=False,halomasserror=False,Mcerror=False): 
+   def make_kappa_contributions(self, deterministic=True): 
     if deterministic==True:
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
@@ -380,69 +381,96 @@ class lightcone:
 
        self.kappa_expectation= self.kappa_expected()
 
+    return None
 
-    #blurred - not deterministic-----------------
-    if deterministic==False:       
-       #create some necessary but empty columns, if they don't already exist:
-       self.galaxies.add_column('b_M_Subhalo',self.galaxies['M_Subhalo[M_sol/h]'])
-       self.galaxies.add_column('b_M_Stellar',self.galaxies['M_Stellar[M_sol/h]'])###
-       if halomasserror==True:
-          for i in range(len(self.galaxies.b_M_Subhalo)):
-             self.galaxies.b_M_Subhalo[i]*=rnd.lognormal(0.3) #30% lognormal error on the mass
-             #self.galaxies.b_M_Subhalo[i]*=1+0.3*rnd.normal() #30% error on the mass
+# ----------------------------------------------------------------------------
 
-       # Compute distance to each galaxy 
-       zdtrue = self.galaxies['z_spec'] # could use a photo_z estimater here instead
-       zd=zdtrue*1.0
-#
-       if photozerror==True:
-          for i in range(len(zd)):
-             zd[i]=(1+((1+zdtrue[i])*0.05*rnd.normal()))*zdtrue[i]    # .05*(1+z) photoz error
-#
-       Da = numpy.zeros(len(zd))
-       Da_tosource = numpy.zeros(len(zd))
-       for i in range(len(zd)):
-         Da[i] = D.Da(zd[i])
-         Da_tosource[i] = D.Da(zd[i],self.zs)
-       self.galaxies.add_column('b_Da',Da)
-       self.galaxies.add_column('b_Da_tosource',Da_tosource)
-       rphys=self.galaxies.r*arcmin2rad*Da  # Mpc
-       self.galaxies.add_column('b_rphys',rphys)     
-#
-       # ---------------------------------------------------------------------
-#
-#       # Compute NFW quantities, and store for later:
-       M200 = self.galaxies.b_M_Subhalo
-       if Mcerror==True:
-          c200 = self.MCrelation(M200,MCerror=True)
-       else:
-          c200 = self.MCrelation(M200)
-       self.galaxies.add_column('b_c200',c200)     
-       rho=self.rho_crit_univ(zd)
-       self.galaxies.add_column('b_rho_crit',rho)
-       r200 = (3*M200/(800*3.14159*self.galaxies.b_rho_crit))**(1./3) #units: megaparsecs       #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-       rs = r200/c200
-#       #(wright and brainerd)
-       rhos = self.delta_c(c200)*self.galaxies.b_rho_crit   # units: solar mass per cubic megaparsec
-#
-       self.galaxies.add_column('b_rs',rs)
-       self.galaxies.add_column('b_rhos',rhos)
-#
-       x = rphys/rs
-       sigmacrit = self.SigmaCrit(deterministic=False)  # units: Solarmasses per megaparsec^2
-       self.galaxies.add_column('b_SigmaCrit',sigmacrit)
-#
+   def Mstar_to_M200(self,M_Star,z,Scatter=True):
+      #Following Behroozi et al. 2010.
+
+      #parameters:
+      if z<0.9:
+         Mstar00 = 10.72
+         Mstar0a = 0.55
+         Mstar0aa=0.0
+         M_10 = 12.35
+         M_1a = 0.28
+         beta0 = 0.44
+         betaa = 0.18
+         delta0 = 0.57
+         deltaa = 0.17
+         gamma0 = 1.56
+         gammaa = 2.51
+      else:
+         Mstar00 = 11.09
+         Mstar0a = 0.56
+         Mstar0aa= 6.99
+         M_10 = 12.27
+         M_1a = -0.84
+         beta0 = 0.65
+         betaa = 0.31
+         delta0 = 0.56
+         deltaa = -0.12
+         gamma0 = 1.12
+         gammaa =  -0.53
+
+
+      #scaled parameters:
+      a=1./(1.+z)
+      M_1=M_10+M_1a*(a-1)
+      beta=beta0+betaa*(a-1)
+      Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5))
+      delta=delta0+deltaa*(a-1)
+      gamma=gamma0+gammaa*(a-1)
+
+      #reltationship ****NO SCATTER****
+      M_200 = numpy.log10(M_1)+beta*numpy.log10(M_Star/Mstar0)+((M_Star/Mstar0)**delta)/((M_Star/Mstar0)**-gamma+1)-0.5
+      return M_200
+
+# ----------------------------------------------------------------------------
+   def reconstruct_lightcone(self,photozerr=0.05):
+
+      self.reconstruct = self.galaxies.where('z_spec' >0 )
+      self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'rphys'])
+
+      z=self.reconstruct['z_spec']
+      z_phot=rnd.normal(z,photozerr*(1+z))
+
+      self.reconstruct.add_column('z_phot',z_phot)
+
+      M_Star=self.reconstruct['M_Stellar[M_sol/h]'] # Times an M* scatter relationship
+
+      self.reconstruct.add_column('M_Star',M_Star)
+
+      M_200=self.Mstar_to_M200(M_Star,z_phot,scatter=True) #needs a scatter
+
+      self.reconstruct.add_column('M_200',M_200)
+
+      c_200= self.MCrelation(M_200, MCerror=True)
+      
+      self.reconstruct.add_column('c_200',c_200)      
+
+      rho=self.rho_crit_univ(zd)
+
+      r_200 = (3*M_200/(800*3.14159*rho))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+      rs = r_200/c_200                                                                           #(wright and brainerd)
+      rhos = self.delta_c(c200)*rho # units: solar mass per cubic megaparsec
+
+      x = rphys/rs
+      sigmacrit=(1.663*10**18)*(self.Da_s/(self.galaxies.b_Da*self.galaxies.b_Da_tosource)) 
+
        kappas = rhos*rs/sigmacrit
-#
-#
-#       # need to cut out sub halos - can be done in several ways.
-#       #for i in range(kappas.size()):
-#       #   if self.galaxies
-#
+
+
+
+       # need to cut out sub halos - can be done in several ways.
+       #for i in range(kappas.size()):
+       #   if self.galaxies
+
        kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-#
+
        shearNFW = kappas * self.Gfunc(x)
-#       
+       
        #---------------------------------------------------------------------------------
 
        # Compute starlight lensing component.
@@ -462,19 +490,11 @@ class lightcone:
        kappa_keeton=self.KappaKeeton(self.zl,zd,self.zs,kappa,shear)
 
        # Contributions to simple weighted sum (Keeton 2003):
-       self.galaxies.add_column('b_kappa',kappa)
-       self.galaxies.add_column('b_gamma',shear)
-       self.galaxies.add_column('b_kappa_keeton',kappa_keeton)
-       self.kappa_blurred=numpy.sum(self.galaxies.b_kappa_keeton)
- 
+       self.galaxies.add_column('kappa',kappa)
+       self.galaxies.add_column('gamma',shear)
+       self.galaxies.add_column('kappa_keeton',kappa_keeton)
 
-       self.galaxies.remove_columns(['b_Da','b_Da_tosource','b_rphys','b_rho_crit','b_M_Subhalo','b_c200','b_rs','b_rhos','b_SigmaCrit','b_M_Stellar','b_kappa','b_gamma','b_kappa_keeton'])
-
-    return None
-
-# ----------------------------------------------------------------------------
-
-
+       self.kappa_expectation= self.kappa_expected()
 
 
 # ----------------------------------------------------------------------------
@@ -592,7 +612,7 @@ class lightcone:
 
 # # ----------------------------------------------------------------------------
 
-   def curve_of_growth(self,ordering="contribution",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True):
+   def curve_of_growth(self,ordering="contribution",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
        plt.clf()
        scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_keeton))), \
                             numpy.max(self.galaxies.kappa_keeton)])/200
@@ -650,6 +670,7 @@ class lightcone:
           #plt.xlim([0,200])
           plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
           plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+          plt.xlim([16,26])
        plt.ylabel('$\kappa_{ext}$ (cumulative)')
 
 
@@ -714,15 +735,17 @@ class lightcone:
 def test1(catalog):
 
     plt.clf()
-    rmax = 25
+    rmax = 20
+    print rmax
 
     zs=2.0 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
 
 #-0.00633207	-0.0173126
-    xpos = -0.00633
-    ypos = -0.01731
+    xpos = -0.008
+    ypos = -0.008
     zl =  1.0 
-    xc = []#[xpos,ypos,zl] #leave as [] to select a lens at random
+    xc = []
+    #xc = [xpos,ypos,zl] #leave as [] to select a lens at random
 
     print "Initialising lightcone data..."
     lc = lightcone(catalog,rmax,zs,lensindex=-1,position=xc)
@@ -804,8 +827,21 @@ def test2(catalog): #plots a kappa distribution:
 
 #-------------------------------------------------------------------------
 
-#def test3(catalogue):
+def test3(catalog):
+    plt.clf()
+    rmax = 2
+    xc = []
+    zs=1.4
+    print "Initialising lightcone data..."
+    lc = lightcone(catalog,rmax,zs,lensindex=-1,position=xc)
 
+    print "Computing Keeton (2003) convergence at optical axis due to each halo..."
+    lc.make_kappa_contributions()
+
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)
+    # Now make an illustrative plot:
+    
+    lc.reconstruct_lightcone()
 
 # ============================================================================
 
@@ -820,7 +856,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test1(master)
+    test3(master)
 
 # ============================================================================
 
