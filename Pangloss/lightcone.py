@@ -431,10 +431,16 @@ class lightcone:
    def reconstruct_lightcone(self,photozerr=0.05):
 
       self.reconstruct = self.galaxies.where('z_spec' >0 )
-      self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'rphys'])
+      self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'r'])
 
       z=self.reconstruct['z_spec']
       z_phot=rnd.normal(z,photozerr*(1+z))
+      Da = numpy.zeros(len(z))
+      Da_tosource = numpy.zeros(len(z))
+      for i in range(len(z_phot)):
+         Da[i] = D.Da(z_phot[i])
+         Da_tosource[i] = D.Da(z_phot[i],self.zs)
+      rphys=self.reconstruct.r*Da*arcmin2rad
 
       self.reconstruct.add_column('z_phot',z_phot)
 
@@ -457,9 +463,9 @@ class lightcone:
       rhos = self.delta_c(c200)*rho # units: solar mass per cubic megaparsec
 
       x = rphys/rs
-      sigmacrit=(1.663*10**18)*(self.Da_s/(self.galaxies.b_Da*self.galaxies.b_Da_tosource)) 
+      sigmacrit=(1.663*10**18)*(self.Da_s/(Da_tosource*Da)) 
 
-       kappas = rhos*rs/sigmacrit
+      kappas = rhos*rs/sigmacrit
 
 
 
@@ -467,9 +473,9 @@ class lightcone:
        #for i in range(kappas.size()):
        #   if self.galaxies
 
-       kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+      kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
-       shearNFW = kappas * self.Gfunc(x)
+      shearNFW = kappas * self.Gfunc(x)
        
        #---------------------------------------------------------------------------------
 
