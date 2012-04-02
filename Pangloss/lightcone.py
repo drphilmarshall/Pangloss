@@ -212,7 +212,7 @@ class lightcone:
        c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
        return c_200
       if MCerror==True:
-       c_200 = (4.67*(M200/(10**14))**0.11)*(rnd.lognormal(0,0.3)/numpy.exp(0.+(0.3**2.)/2.)) #Neto et al. equation 5 + scatter
+       c_200 = (4.67*(M200/(10**14))**0.11)#*(rnd.lognormal(0,0.3)/numpy.exp(0.+(0.3**2.)/2.)) #Neto et al. equation 5 + scatter
        return c_200
 
 # ----------------------------------------------------------------------------
@@ -385,58 +385,62 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
 
-   def Mstar_to_M200(self,M_Star,z,Scatter=True):
+   def Mstar_to_M200(self,M_Star,redshift,scatter=True):
       #Following Behroozi et al. 2010.
-
+      M_200=numpy.zeros(len(M_Star))
+      
       #parameters:
-      if z<0.9:
-         Mstar00 = 10.72
-         Mstar0a = 0.55
-         Mstar0aa=0.0
-         M_10 = 12.35
-         M_1a = 0.28
-         beta0 = 0.44
-         betaa = 0.18
-         delta0 = 0.57
-         deltaa = 0.17
-         gamma0 = 1.56
-         gammaa = 2.51
-      else:
-         Mstar00 = 11.09
-         Mstar0a = 0.56
-         Mstar0aa= 6.99
-         M_10 = 12.27
-         M_1a = -0.84
-         beta0 = 0.65
-         betaa = 0.31
-         delta0 = 0.56
-         deltaa = -0.12
-         gamma0 = 1.12
-         gammaa =  -0.53
+      for i in range(len(M_Star)):
+         z=redshift[i]
+         if z<0.9:
+            Mstar00 = 10.72
+            Mstar0a = 0.55
+            Mstar0aa=0.0
+            M_10 = 12.35
+            M_1a = 0.28
+            beta0 = 0.44
+            betaa = 0.18
+            delta0 = 0.57
+            deltaa = 0.17
+            gamma0 = 1.56
+            gammaa = 2.51
+         else:
+            Mstar00 = 11.09
+            Mstar0a = 0.56
+            Mstar0aa= 6.99
+            M_10 = 12.27
+            M_1a = -0.84
+            beta0 = 0.65
+            betaa = 0.31
+            delta0 = 0.56
+            deltaa = -0.12
+            gamma0 = 1.12
+            gammaa =  -0.53
 
 
       #scaled parameters:
-      a=1./(1.+z)
-      M_1=M_10+M_1a*(a-1)
-      beta=beta0+betaa*(a-1)
-      Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5))
-      delta=delta0+deltaa*(a-1)
-      gamma=gamma0+gammaa*(a-1)
+         a=1./(1.+z)
+         M_1=10**(M_10+M_1a*(a-1))
+         beta=beta0+betaa*(a-1)
+         Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
+         delta=delta0+deltaa*(a-1)
+         gamma=gamma0+gammaa*(a-1)
 
       #reltationship ****NO SCATTER****
-      M_200 = numpy.log10(M_1)+beta*numpy.log10(M_Star/Mstar0)+((M_Star/Mstar0)**delta)/((M_Star/Mstar0)**-gamma+1)-0.5
+
+         M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
+
       return M_200
 
 # ----------------------------------------------------------------------------
    def reconstruct_lightcone(self,photozerr=0.05):
-
-      self.reconstruct = self.galaxies.where('z_spec' >0 )
+      self.reconstruct = self.galaxies.where(self.galaxies['z_spec'] >0.0 )     
       self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'r'])
 
       z=self.reconstruct['z_spec']
       z_phot=rnd.normal(z,photozerr*(1+z))
-      Da = numpy.zeros(len(z))
-      Da_tosource = numpy.zeros(len(z))
+      Da = numpy.zeros(len(z_phot))
+      Da_tosource = numpy.zeros(len(z_phot))
       for i in range(len(z_phot)):
          Da[i] = D.Da(z_phot[i])
          Da_tosource[i] = D.Da(z_phot[i],self.zs)
@@ -446,27 +450,43 @@ class lightcone:
 
       M_Star=self.reconstruct['M_Stellar[M_sol/h]'] # Times an M* scatter relationship
 
+      #print self.galaxies['M_Stellar[M_sol/h]']
+      #print M_Star.max()
+      #print M_Star.min()
+      
       self.reconstruct.add_column('M_Star',M_Star)
 
       M_200=self.Mstar_to_M200(M_Star,z_phot,scatter=True) #needs a scatter
 
       self.reconstruct.add_column('M_200',M_200)
 
-      c_200= self.MCrelation(M_200, MCerror=True)
+      c_200= self.MCrelation(M_200, MCerror=True) #needs a scatter
       
       self.reconstruct.add_column('c_200',c_200)      
 
-      rho=self.rho_crit_univ(zd)
+      rho=self.rho_crit_univ(z_phot)
+      l= M_200[:]/self.galaxies['M_Subhalo[M_sol/h]'][:]
+      plt.scatter((l),self.reconstruct.z_phot,s=1, edgecolor='none',c='k')
+      plt.xscale('log')
+      plt.xlim([0.1,10**3])
+      plt.xlabel('Overestimate of halo mass from Behroozi compared to M_halo_MS')
+      plt.ylabel('redshift')
+      plt.axvline(x=1,ymin=0,ymax=1)
+      plt.show()
+      plt.savefig('M_200.png')
 
       r_200 = (3*M_200/(800*3.14159*rho))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
       rs = r_200/c_200                                                                           #(wright and brainerd)
-      rhos = self.delta_c(c200)*rho # units: solar mass per cubic megaparsec
+      rhos = self.delta_c(c_200)*rho # units: solar mass per cubic megaparsec
 
       x = rphys/rs
       sigmacrit=(1.663*10**18)*(self.Da_s/(Da_tosource*Da)) 
 
       kappas = rhos*rs/sigmacrit
+     
 
+      #plt.hist(numpy.log10(M_200))
+      #plt.show()
 
 
        # need to cut out sub halos - can be done in several ways.
@@ -484,23 +504,32 @@ class lightcone:
        #---------------------------------------------------------------------------------
 
 
-       kappa = kappaNFW   #these could include a component from starlight too
-       shear = shearNFW
+      kappa = kappaNFW   #these could include a component from starlight too
+      shear = shearNFW
+
+      #plt.hist((x))
+      #plt.show()
+      #plt.hist((kappa))
+      #plt.show()
+      #plt.hist((shear))
+      #plt.show()
+
+
 
        # kappa or shear is zero if behind the source!
-       for i in range(len(zd)):
-          if zd[i] > self.zs:
+      for i in range(len(z_phot)):
+          if z_phot[i] > self.zs:
              kappa[i] = 0.0
              shear[i] = 0.0
 
-       kappa_keeton=self.KappaKeeton(self.zl,zd,self.zs,kappa,shear)
+      kappa_keeton=self.KappaKeeton(self.zl,z_phot,self.zs,kappa,shear)
 
        # Contributions to simple weighted sum (Keeton 2003):
-       self.galaxies.add_column('kappa',kappa)
-       self.galaxies.add_column('gamma',shear)
-       self.galaxies.add_column('kappa_keeton',kappa_keeton)
+      self.reconstruct.add_column('kappa',kappa)
+      self.reconstruct.add_column('gamma',shear)
+      self.reconstruct.add_column('kappa_keeton',kappa_keeton)
 
-       self.kappa_expectation= self.kappa_expected()
+      #self.kappa_expected_reconstruct = self.kappa_expected()
 
 
 # ----------------------------------------------------------------------------
