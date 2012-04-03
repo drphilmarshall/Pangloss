@@ -206,14 +206,110 @@ class lightcone:
                # ^ numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # ----------------------------------------------------------------------------
+   def logerr(self,l,m,s):
+      #k=1./(s*(2*3.14159)**0.5)
+      #d=k*numpy.exp(-0.5*((l-m)/s)**2)
+      #c=10**d
+      c=10*rnd.normal(m,s)
+
+
+      return c
+
 
    def MCrelation(self,M200,MCerror=False):
       if MCerror==False:
-       c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
-       return c_200
+         c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
       if MCerror==True:
-       c_200 = (4.67*(M200/(10**14))**0.11)#*(rnd.lognormal(0,0.3)/numpy.exp(0.+(0.3**2.)/2.)) #Neto et al. equation 5 + scatter
-       return c_200
+       c_200=4.67*(M200/(10**14))**0.11
+       logc_200=numpy.log10(c_200)
+       lM200 = numpy.log10(M200)
+       for i in range(len(M200)):    #best fit scatter parameters of neto et al (double log normal)
+         if lM200[i]<11.875: ### FILLER
+            f=0.205 ###FILLER
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.683,0.147) ###FILLER
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.920,0.106) ###FILLER
+         if lM200[i]<12.125:
+            f=0.205
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.683,0.147)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.920,0.106)
+         elif lM200[i]<12.375:
+            f=0.171
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.658,0.150)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.903,0.108)
+         elif lM200[i]<12.625:
+            f=0.199
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.646,0.139)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.881,0.099)        
+         elif lM200[i]<12.875:
+            f=0.229
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.605,0.158)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.838,0.101)          
+         elif lM200[i]<13.125:
+            f=0.263
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.603,0.136)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.810,0.100)          
+         elif lM200[i]<13.375:
+            f=0.253
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.586,0.140)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.793,0.099)         
+         elif lM200[i]<13.625:
+            f=0.275
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.566,0.142)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.763,0.095)            
+         elif lM200[i]<13.875:
+            f=0.318
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.543,0.140)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.744,0.094)
+         elif lM200[i]<14.125:
+            f=0.361
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.531,0.131)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.716,0.088)            
+         elif lM200[i]<14.375:
+            f=0.383
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.510,0.121)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.689,0.095)       
+         elif lM200[i]<14.625:
+            f=0.370
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.490,0.133)
+            else:
+               c_200[i]= self.logerr(logc_200[i],0.670,0.094)           
+         elif lM200[i]<14.875:
+            f=0.484
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.519,0.121)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.635,0.091)    
+         elif lM200[i]<15.125:
+            f=0.578
+            if rnd.rand()<f:
+               c_200[i]=self.logerr(logc_200[i],0.493,0.094)
+            else:
+               c_200[i]=self.logerr(logc_200[i],0.661,0.061)
+      return c_200
+
 
 # ----------------------------------------------------------------------------
 
@@ -267,6 +363,7 @@ class lightcone:
 
    # function to calculate what kappa to subtract due to the mean density field
    def kappa_expected(self): ###
+      return 0.0 #### THIS FUNCTION IS BOGUS
       #print clock()
 
 
@@ -295,7 +392,7 @@ class lightcone:
          kappa_p[i]=(self.rho_crit_univ(zp[i])*box_vol_p[i])/sigma_crit_p[i]
 
       kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
-      return 0 #numpy.sum(kappa_keeton_p)
+       #numpy.sum(kappa_keeton_p)
 
       plt.subplot(2,1,1)
       plt.plot(zp,kappa_p)
@@ -329,7 +426,8 @@ class lightcone:
 
        # Compute NFW quantities, and store for later:
        M200 = self.galaxies['M_Subhalo[M_sol/h]']
-       c200 = self.MCrelation(M200)
+       c200 = self.MCrelation(M200,MCerror=False)
+       cscatter=self.MCrelation(M200,MCerror=True)
        self.galaxies.add_column('c200',c200)     
        rho=self.rho_crit_univ(zd)
        self.galaxies.add_column('rho_crit',rho)
@@ -388,7 +486,7 @@ class lightcone:
    def Mstar_to_M200(self,M_Star,redshift,scatter=True):
       #Following Behroozi et al. 2010.
       M_200=numpy.zeros(len(M_Star))
-      
+      M_200b=numpy.zeros(len(M_Star)) 
       #parameters:
       for i in range(len(M_Star)):
          z=redshift[i]
@@ -430,7 +528,13 @@ class lightcone:
 
          M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
 
-      return M_200
+         #print M_200[i]
+
+         #M_200b[i]=((M_1)*((M_Star[i]/Mstar0)**(beta/gamma)+(M_Star[i]/Mstar0)**(delta/gamma))**gamma)
+
+
+
+      return M_200#,M_200b
 
 # ----------------------------------------------------------------------------
    def reconstruct_lightcone(self,photozerr=0.05):
@@ -448,7 +552,7 @@ class lightcone:
 
       self.reconstruct.add_column('z_phot',z_phot)
 
-      M_Star=self.reconstruct['M_Stellar[M_sol/h]'] # Times an M* scatter relationship
+      M_Star=self.reconstruct['M_Stellar[M_sol/h]'] ### Times an M* scatter relationship
 
       #print self.galaxies['M_Stellar[M_sol/h]']
       #print M_Star.max()
@@ -456,24 +560,31 @@ class lightcone:
       
       self.reconstruct.add_column('M_Star',M_Star)
 
-      M_200=self.Mstar_to_M200(M_Star,z_phot,scatter=True) #needs a scatter
+      M_200=self.Mstar_to_M200(M_Star,z_phot,scatter=True) ###needs a scatter
 
       self.reconstruct.add_column('M_200',M_200)
 
-      c_200= self.MCrelation(M_200, MCerror=True) #needs a scatter
+      c_200= self.MCrelation(M_200, MCerror=True) ###needs correct scatter for low mass halos.
       
       self.reconstruct.add_column('c_200',c_200)      
 
       rho=self.rho_crit_univ(z_phot)
+      """
       l= M_200[:]/self.galaxies['M_Subhalo[M_sol/h]'][:]
-      plt.scatter((l),self.reconstruct.z_phot,s=1, edgecolor='none',c='k')
+      #plt.scatter((l),self.reconstruct.z_phot,s=1, edgecolor='none',c='k')
+      plt.scatter((l),numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']),s=1, edgecolor='none',c='k')
       plt.xscale('log')
+      #plt.yscale('log')
       plt.xlim([0.1,10**3])
+      #plt.ylim([0,3])
+      #plt.ylim([0,3])
       plt.xlabel('Overestimate of halo mass from Behroozi compared to M_halo_MS')
-      plt.ylabel('redshift')
+      plt.ylabel('log(M_subhalo/M_sol)')   
+      #plt.ylabel('redshift')
       plt.axvline(x=1,ymin=0,ymax=1)
-      plt.show()
       plt.savefig('M_200.png')
+      plt.show()
+      """
 
       r_200 = (3*M_200/(800*3.14159*rho))**(1./3) #units: megaparsecs         #http://arxiv.org/pdf/astro-ph/9908213v1.pdf
       rs = r_200/c_200                                                                           #(wright and brainerd)
