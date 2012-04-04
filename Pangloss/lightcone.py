@@ -76,8 +76,9 @@ class lightcone:
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
                                                          (self.catalog['z_spec']<0.6)& \
                                                          (self.catalog['z_spec']>0.3)& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(10.2))& \
-                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(13)))#& (self.catalog['mag_SDSS_r'] < 21.5))
+                                                         (self.catalog['M_Stellar[M_sol/h]']>10**(0))& \
+                                                         (self.catalog['M_Stellar[M_sol/h]']<10**(15)))#& \
+                                                         #(self.catalog['mag_SDSS_r'] < 21.5))
 
 
            #print len(self.potential_lenses['z_spec'])
@@ -552,7 +553,9 @@ class lightcone:
 
       self.reconstruct.add_column('z_phot',z_phot)
 
-      M_Star=self.reconstruct['M_Stellar[M_sol/h]'] ### Times an M* scatter relationship
+      M_StarTrue=self.reconstruct['M_Stellar[M_sol/h]']
+      for i in range(len(M_StarTrue)):
+         M_Star[i]=10**(numpy.log10(M_StarTrue[i])+rnd.normal(0,0.2)) ### Fake M* scatter. (0.2 error in the log)
 
       #print self.galaxies['M_Stellar[M_sol/h]']
       #print M_Star.max()
