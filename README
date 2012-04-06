@@ -83,9 +83,10 @@ test2() will calculate kappa_keeton_total for n systems and plot a histogram.
 
 
 -----------------------------------------------------
-We currently are having problems with subtracting the mean density of the universe - this makes all our results shifted somewhat. hopefully this will be resolved soon!
+We currently are having problems with subtracting the mean density of the universe - this makes 
+all our results shifted somewhat. Hopefully this will be resolved soon, with powerful new theoretical work underway!
 
 
 
 
-TC
+TC & PJM
