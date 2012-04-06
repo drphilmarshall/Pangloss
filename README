@@ -1,28 +1,67 @@
 Pangloss
+--------
+
+Pangloss is a code for light cone reconstruction. In the top level directory are various command-line programs for carrying out reconstruction tasks:
+
+  MScompare.py:     compare reconstructed convergence with "true"
+                    convergence along N lines of sight through the
+                    Millenium Simulation.
+                
+  LCreconstruct.py: reconstruct the mass along the line of sight at a
+                    particular sky position, given photometric data
+                    in a supplied catalog.  
 
 
-Pangloss is a code for light cone reconstruction.
+Installing:
+-----------
 
-The primary class "lightcone.py" can be used for drilling out lines of sight from the Millenium catalogues of S. Hilbert. 
+Add the following lines (or similar) to your .login file:
 
-distances.py is a class calculating cosmologically usefull quantaties i.e comoving distances. Written by Matt Auger.
+ setenv PANGLOSS_DIR ${WORK_DIR}/Pangloss
+ setenv PYTHONPATH ${PANGLOSS_DIR}/Pangloss:${PYTHONPATH}
+ setenv PATH ${PATH}:${PANGLOSS_DIR}
 
-The user can either enter a position around which to draw a light cone, or can let pangloss choose a lens, given redshift and stellar mass selections (currently hard coded, but can easily be changed), minor alterations could allow other lens selection proceedures. Feel free to add these, preferably as a function rather than hard coded.
+Then "import Pangloss" should just work, and the command line scripts should too.
+
+
+Classes:
+--------
+
+The primary "lightcone" class can be used for drilling out lines of sight from the Millenium catalogues of S. Hilbert, and returns estimates of convergence given various assumptions.
+
+The "kappamap" class allows Hilbert's convergence maps, obtained by full-on ray-tracing, to be loaded and queried by position - this provides ground truth at each sky position.
+
+distances.py is a class calculating cosmologically useful quantities i.e comoving distances. Written by Matt Auger.
+
+
+lightcone:
+----------
+
+The user can either enter a position around which to draw a light cone, or can let Pangloss choose a lens, given redshift and stellar mass selections (currently hard coded, but can easily be changed), minor alterations could allow other lens selection proceedures. Feel free to add these, preferably as a function rather than hard coded.
 
 Once a lens and lightcone has been selected the code calculates kappa_ext and gamma_ext for each halo in the catalogue. These are then weighted to create a kappa_keeton for each halo(see Keeton 2003, http://iopscience.iop.org/0004-637X/584/2/664/pdf/56371.web.pdf), which can be summed to give a kappa_keeton_total. Kappa_keeton is an approximation, but may well be good enough for our purposes.
 
 Our code currently only assumes NFW halos, and ignores starlight information.
 
+
+kappamap:
+---------
+
+Stefan's convergence maps can be read in and interpolated to a particular sky position. The map data are available as raw binary, but the kappamap class writes a map out in FITS format every chance it gets.
+The maps are for convergence at a lens plane at zd=0.5, with source at redshift 1.6 (as in the case of B1608).
+
+
 --------------------------------------------------------
 
 Plotting tools that currently exist:
 
-plot(): shows the lightcone from earth, and a subplot for the redshift axis. *
+lightcone.plot(): 
+shows the lightcone from earth, and a subplot for the redshift axis. *
 
-curve_of_growth(): plots cumulative sum of kappa_keetons as a function of either kappa_keeton, angular distance from LOS, or r band magnitude (more options can and should be added), and a subplot showing redshift vs line of sight. *
+lightcone.curve_of_growth(): 
+plots cumulative sum of kappa_keetons as a function of either kappa_keeton, angular distance from LOS, or r band magnitude (more options can and should be added), and a subplot showing redshift vs line of sight. *
 
 Both of these have lots of options for what to plot - r_mag (observed_light=True) and kappa_keeton (=True) are recommended as probably the most meaningful.
-
 
 test2() will calculate kappa_keeton_total for n systems and plot a histogram.
 

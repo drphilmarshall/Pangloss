@@ -12,8 +12,6 @@ to-do
 # Starlight lensing
 # --> Lines of sight close to halos.
 
-
-# import distances
 import pylab, atpy
 import matplotlib.pyplot as plt
 import numpy
@@ -29,7 +27,6 @@ D = distances.Distance()
 D.h = 0.7
 c = 299792458.
 G = 4.3e-6
-
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -53,7 +50,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 class lightcone:
 
-   def __init__(self, catalog,radius,zsource, position=[], lensindex=-1, deterministic=True):
+   def __init__(self,catalog,radius,zsource,position=[],lensindex=-1,deterministic=True):
         if position ==[]: 
             flag=1
         else:
@@ -203,8 +200,9 @@ class lightcone:
    # NOTE zl here is the lensing object NOT necessarily the primary lens
       if deterministic ==False:
          return (1.663*10**18)*(self.Da_s/(self.galaxies.b_Da*self.galaxies.b_Da_tosource)) 
-      else: return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
-               # ^ numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
+      else: 
+         return (1.663*10**18)*(self.Da_s/(self.galaxies.Da*self.galaxies.Da_tosource)) 
+   #              ^ numerical factor is c^2/(4 pi G) in Solarmasses per megaparsec
 
 # ----------------------------------------------------------------------------
    def logerr(self,l,m,s):

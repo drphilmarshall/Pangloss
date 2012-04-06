@@ -15,7 +15,7 @@ rad2arcmin = 1.0/arcmin2rad
 deg2rad = numpy.pi/180.0
 rad2deg = 1.0/deg2rad
 
-vb = True
+vb = False
 
 # ============================================================================
     
@@ -233,6 +233,7 @@ class kappamap:
 if __name__ == '__main__':
 
 # Self-test: read in map from Stefan, and look up some convergence values.
+   vb = True
    
 # Read in map (and write out as FITS if it doesn't exist):
 #    kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa"
