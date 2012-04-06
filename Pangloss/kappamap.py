@@ -247,14 +247,15 @@ class kappamap:
 
 if __name__ == '__main__':
 
-# Simulated (Millenium) lightcone convergence data from Hilbert:
-#    kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa"
-   kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.fits"
+# Self-test: read in map from Stefan, and look up some convergence values.
    
 # Read in map (and write out as FITS if it doesn't exist):
+#    kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa"
 #    convergence = kappamap(kappafile,FITS=False)
 
 # Read in map from FITS file:
+
+   kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.fits"
    convergence = kappamap(kappafile)
   
 # Look up values at some points:
@@ -271,5 +272,38 @@ if __name__ == '__main__':
    kappa = convergence.at(i,j,coordinate_system='image')
    print "Compare with expected value: -0.0222247"
 
-   
+# Looking up kappa value at position 2184 , 2263  in the image coordinate system
+#   - physical coordinates: 0.00232653752829 0.00367303177544 (radians)
+#   - approximate world coordinates: 359.867675781 0.21044921875 (degrees)
+#   - ds9 image coordinates: 2185 2264
+#   Value of kappa =  1.17720580101
+# Compare with expected value: 1.17721
+#  
+# Looking up kappa value at position 2263 , 2184  in the image coordinate system
+#   - physical coordinates: 0.00367303177544 0.00232653752829 (radians)
+#   - approximate world coordinates: 359.790527344 0.13330078125 (degrees)
+#   - ds9 image coordinates: 2264 2185
+#   Value of kappa =  0.0169250555336
+# Compare with expected value: 0.0169251
+#  
+# Looking up kappa value at position 0 , 0  in the image coordinate system
+#   - physical coordinates: -0.0348980629244 -0.0348980629244 (radians)
+#   - approximate world coordinates: 2.00048828125 -1.99951171875 (degrees)
+#   - ds9 image coordinates: 1 1
+#   Value of kappa =  -0.0222246814519
+# Compare with expected value: -0.0222247
+
+   x = 0.00232653752829; y = 0.00367303177544
+   kappa = convergence.at(x,y,coordinate_system='physical')
+   print "Compare with expected value: 1.17721"
+
+# Looking up kappa value at position 0.00232653752829 , 0.00367303177544  in the physical coordinate system
+#   - image coordinates: 2184.0 2263.0
+#   - approximate world coordinates: 359.867675781 0.21044921875 (degrees)
+#   - ds9 image coordinates: 2185.0 2264.0
+#   Value of kappa =  1.1772058009
+# Compare with expected value: 1.17721
+
+# OK, internally all looks good. 
+
 # ============================================================================
