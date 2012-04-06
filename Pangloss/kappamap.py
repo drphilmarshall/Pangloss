@@ -4,13 +4,9 @@ Copyright 2012 Tom Collett (IoA) and Phil Marshall (Oxford).
 
 to-do
 -----
-- read in and reformat kappa map from Stefan
-- write functions for kappa lookup
+- check that kappa map is being read in the right way around...
 '''
 
-# import distances
-import pylab
-import matplotlib.pyplot as plt
 import numpy, os, string
 import struct, pyfits
 
@@ -24,17 +20,6 @@ vb = True
 # ============================================================================
     
 # Read in, write out, look up convergence kappa in map from Stefan Hilbert.
-# void
-# get_pixel_position(const int ix, const int iy, double *pos_x,  double *pos_x)
-# {
-#   const double   degree        = M_PI / 180.;
-#   const double   L_field       = 4.0 * degree;
-#   const int      N_pix_per_dim = 4096;
-#   const double   L_pix         = L_field / N_pix_per_dim;
-# 
-#   *pos_x = -0.5 * L_field  + (ix + 0.5) * L_pix;
-#   *pos_y = -0.5 * L_field  + (iy + 0.5) * L_pix;
-# }
 
 class kappamap:
 
