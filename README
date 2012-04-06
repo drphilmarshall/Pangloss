@@ -1,7 +1,7 @@
 Pangloss
 --------
 
-Pangloss is a code for light cone reconstruction. In the top level directory are various command-line programs for carrying out reconstruction tasks:
+Pangloss is a code for reconstructing all the mass within a light cone through the Universe - understanding such a mass distribution is important for accurate time delay lens cosmography, and also accurate lens magnification estimation. In the top level directory are various command-line programs for carrying out reconstruction tasks:
 
   MScompare.py:     compare reconstructed convergence with "true"
                     convergence along N lines of sight through the
@@ -17,11 +17,27 @@ Installing:
 
 Add the following lines (or similar) to your .login file:
 
- setenv PANGLOSS_DIR ${WORK_DIR}/Pangloss
- setenv PYTHONPATH ${PANGLOSS_DIR}/Pangloss:${PYTHONPATH}
- setenv PATH ${PATH}:${PANGLOSS_DIR}
+  setenv PANGLOSS_DIR ${WORK_DIR}/Pangloss
+  setenv PYTHONPATH ${PANGLOSS_DIR}/Pangloss:${PYTHONPATH}
+  setenv PATH ${PATH}:${PANGLOSS_DIR}
 
-Then "import Pangloss" should just work, and the command line scripts should too.
+Then "import Pangloss" from python should just work, and the command line scripts should too. You will need to have the following packages installed as well:
+
+  atpy,asciitable,pyfits
+  numpy,scipy,getopt,matplotlib
+
+Most (if not all) are available via pip and/or homebrew.
+
+
+Test Data:
+----------
+
+An example galaxy catalog and ray-traced convergence map from the Millenium Simulation can be downloaded from:
+
+   http://www.slac.stanford.edu/~pjm/H0/lightcones/
+
+Note that the convergence map is available in two formats. ".kappa" and ".fits" - FITS is recommended, but might (2012-04-06) be transposed...
+A ds9 visualisation of the FITS map is also provided.
 
 
 Classes:
