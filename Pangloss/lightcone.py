@@ -2,20 +2,37 @@
 This file is part of the Pangloss project.
 Copyright 2012 Tom Collett (IoA) and Phil Marshall (Oxford).
 
-to-do
------
+description:
+------------
+
+Given a catalog, drill out a narrow pencil beam defined by position
+vector  xc and some radius.
+
+# NB. Anything marked '###' is still unfinished/preliminary and 
+probably wrong! #### are finished functions that haven't been 
+bug-checked.
+
+to-do:
+------
 - finish basic functions
 - carry out curve of growth test
 - decide whether to continue
-'''
-###Things that I think are flawed:###
-# Starlight lensing
-# --> Lines of sight close to halos.
 
-import pylab, atpy
+issues:
+-------
+- stellar mass is not included yet
+- so lines of sight passing close to halos will not be accurate
+- Born approximation will break down in this case anyway
+- Keeton approximation may well be way off, need better approx from 
+    Roger, Sherry and Stefan.
+- lightcone and lenslightcone should be separate classes, where llc 
+    inherits from lc
+'''
+# ======================================================================
+
+import pylab
 import matplotlib.pyplot as plt
-import numpy
-import numpy.random as rnd
+import numpy, numpy.random as rnd, atpy
 import distances
 from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
@@ -31,33 +48,23 @@ G = 4.3e-6
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
+vb = False
+
 # ============================================================================
     
-# Given a catalog, drill out a narrow pencil beam defined by position vector 
-# xc and some radius.
-
-# PJM: I am not sure that lightcone objects should necessarily have the 
-# properties zl and zs. lens_lightcones, yes, but lightcones no. The logical
-# way to code this would be to define a new class, lens_lightcone, and have it
-# *inherit* the properties (parameters and methods) of the lightcone object.
-# We should try and do this, in order to learn how inheritance works!
-
-#TC: Good idea. But I have no idea how to do it! 
-
-#Note to Phil. Anything marked '###' is still unfinished/preliminary and probably wrong!
-#### are finished functions that haven't been bug-checked
-
 
 class lightcone:
 
    def __init__(self,catalog,radius,zsource,position=[],lensindex=-1,deterministic=True):
+
         if position ==[]: 
-            flag=1
+            flag = 1
         else:
-            flag =0
+            flag = 0
+
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
-        self.deterministic=deterministic
+        self.deterministic = deterministic
 
         # selects a lens, if not already given a lens position/index.
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
