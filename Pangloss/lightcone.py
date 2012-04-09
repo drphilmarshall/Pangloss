@@ -9,6 +9,8 @@ to-do
 - decide whether to continue
 '''
 ###Things that I think are flawed:###
+# Subtracting kappa_expected
+# Angular diameter distances in an inhomogenous universe
 # Starlight lensing
 # --> Lines of sight close to halos.
 
@@ -61,7 +63,7 @@ class lightcone:
         if position ==[]: 
             flag=1
         else:
-            flag =0
+            flag=0
 
         # selects a lens, if not already given a lens position/index.
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
@@ -210,14 +212,8 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
    def logerr(self,l,m,s):
-      #k=1./(s*(2*3.14159)**0.5)
-      #d=k*numpy.exp(-0.5*((l-m)/s)**2)
-      #c=10**d
       c=10*rnd.normal(m,s)
-
-
       return c
-
 
    def MCrelation(self,M200,MCerror=False):
       if MCerror==False:
@@ -447,8 +443,6 @@ class lightcone:
 
        kappas = rhos*rs/sigmacrit
 
-
-
        # need to cut out sub halos - can be done in several ways.
        #for i in range(kappas.size()):
        #   if self.galaxies
@@ -485,6 +479,7 @@ class lightcone:
     return None
 
 # ----------------------------------------------------------------------------
+   #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
 
    def Mstar_to_M200_Behroozi(self,M_Star,redshift,scatter=True):
       #Following Behroozi et al. 2010.
@@ -534,6 +529,7 @@ class lightcone:
          #   add a scatter!
       return M_200
 # ----------------------------------------------------------------------------
+   #Function binning MStar by MStar and redshift.
    def Bin_Mstars(self):
 
       linbin,delta=numpy.linspace(7,13,17,retstep=True)
@@ -565,7 +561,8 @@ class lightcone:
       self.binnedhalomeans=halomean
       self.binnedhalodists=halodist
       self.Bin_MstarsRUN=True
-            
+
+   #Function taking Mstar (binned relationship from catalog) and pick a hlao mass. 
    def Mstar_to_M200(self,M_Star,redshift):
       #Using catalog's M*-Mh relation:
       M_200=numpy.zeros(len(M_Star))
@@ -579,6 +576,8 @@ class lightcone:
          M_200[k]=10**(numpy.log10(halomean)+rnd.normal(0,halodist))
       return M_200
 # ----------------------------------------------------------------------------
+
+   #function to reconstruct the lightcone, starting with minimal information (currently M* and z_spec, but should ideally just be colours)
    def reconstruct_lightcone(self,photozerr=0.05,Behroozi=False):
       self.reconstruct = self.galaxies.where(self.galaxies['z_spec'] >0.0 )     
       self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'r'])
@@ -864,9 +863,6 @@ class lightcone:
        plt.ylabel('$\kappa_{ext}$ (cumulative)')
 
 
-
-
-
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
@@ -914,9 +910,6 @@ class lightcone:
        #add lines for source and lens plane
        plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
        plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')       # plt.title('%s' % self)
-
-
- 
 
 # ============================================================================
 
