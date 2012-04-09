@@ -28,6 +28,7 @@ issues:
 - lightcone and lenslightcone should be separate classes, where llc 
     inherits from lc
 '''
+
 # ======================================================================
 
 import pylab
@@ -57,14 +58,15 @@ class lightcone:
 
    def __init__(self,catalog,radius,zsource,position=[],lensindex=-1,deterministic=True):
 
-        if position ==[]: 
-            flag = 1
-        else:
-            flag = 0
-
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
         self.deterministic = deterministic
+        self.Bin_MstarsRUN = False
+
+        if position ==[]: 
+            flag=1
+        else:
+            flag=0
 
         # selects a lens, if not already given a lens position/index.
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
@@ -213,14 +215,8 @@ class lightcone:
 
 # ----------------------------------------------------------------------------
    def logerr(self,l,m,s):
-      #k=1./(s*(2*3.14159)**0.5)
-      #d=k*numpy.exp(-0.5*((l-m)/s)**2)
-      #c=10**d
       c=10*rnd.normal(m,s)
-
-
       return c
-
 
    def MCrelation(self,M200,MCerror=False):
       if MCerror==False:
@@ -450,8 +446,6 @@ class lightcone:
 
        kappas = rhos*rs/sigmacrit
 
-
-
        # need to cut out sub halos - can be done in several ways.
        #for i in range(kappas.size()):
        #   if self.galaxies
@@ -488,11 +482,11 @@ class lightcone:
     return None
 
 # ----------------------------------------------------------------------------
+   #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
 
-   def Mstar_to_M200(self,M_Star,redshift,scatter=True):
+   def Mstar_to_M200_Behroozi(self,M_Star,redshift,scatter=True):
       #Following Behroozi et al. 2010.
       M_200=numpy.zeros(len(M_Star))
-      M_200b=numpy.zeros(len(M_Star)) 
       #parameters:
       for i in range(len(M_Star)):
          z=redshift[i]
@@ -534,21 +528,68 @@ class lightcone:
 
          M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
 
-         #print M_200[i]
-
-         #M_200b[i]=((M_1)*((M_Star[i]/Mstar0)**(beta/gamma)+(M_Star[i]/Mstar0)**(delta/gamma))**gamma)
-
-
-
-      return M_200#,M_200b
-
+         #if scatter==True:
+         #   add a scatter!
+      return M_200
 # ----------------------------------------------------------------------------
-   def reconstruct_lightcone(self,photozerr=0.05):
+   #Function binning MStar by MStar and redshift.
+   def Bin_Mstars(self):
+
+      linbin,delta=numpy.linspace(7,13,17,retstep=True)
+      Mstarbins=numpy.power(10,linbin)
+      self.Mstarbins=Mstarbins
+      zbins=[0,1,2,3,99]
+      self.zbins=zbins
+
+      halomean = numpy.zeros((len(Mstarbins)-1,len(zbins)-1))
+      halodist = numpy.zeros((len(Mstarbins)-1,len(zbins)-1))
+
+      for i in range(len(Mstarbins)-1):
+         for j in range(len(zbins)-1):
+            M=self.catalog.where((self.catalog['M_Stellar[M_sol/h]']>Mstarbins[i]) & \
+                                   (self.catalog['M_Stellar[M_sol/h]']<Mstarbins[i+1]) & \
+                                   (self.catalog['z_spec']>zbins[j])&\
+                                   (self.catalog['z_spec']<zbins[j+1]))
+            if i==6 and j == 1: print M['M_Stellar[M_sol/h]'][9], M['z_spec'][9]
+            halomean[i,j]=numpy.mean(M['M_Subhalo[M_sol/h]'])
+            if numpy.isnan(halomean[i,j])!=True:
+               halodist[i,j]=numpy.std(numpy.log10(M['M_Subhalo[M_sol/h]']))
+               #print halodist[i,j]
+
+      #for i in range(len(Mstarbins)):
+      #   for j in range(len(zbins-1)):
+      #      if halodist[i,j]==0:
+      #         halodist[i,j]=0.2 ###FILLER
+
+      self.binnedhalomeans=halomean
+      self.binnedhalodists=halodist
+      self.Bin_MstarsRUN=True
+
+   #Function taking Mstar (binned relationship from catalog) and pick a hlao mass. 
+   def Mstar_to_M200(self,M_Star,redshift):
+      #Using catalog's M*-Mh relation:
+      M_200=numpy.zeros(len(M_Star))
+      i=numpy.digitize(M_Star,self.Mstarbins)
+      j=numpy.digitize(redshift,self.zbins)
+
+
+      for k in range(len(M_Star)):
+         halomean=self.binnedhalomeans[i[k]-1,j[k]-1]
+         halodist=self.binnedhalodists[i[k]-1,j[k]-1]
+         M_200[k]=10**(numpy.log10(halomean)+rnd.normal(0,halodist))
+      return M_200
+# ----------------------------------------------------------------------------
+
+   #function to reconstruct the lightcone, starting with minimal information (currently M* and z_spec, but should ideally just be colours)
+   def reconstruct_lightcone(self,photozerr=0.05,Behroozi=False):
       self.reconstruct = self.galaxies.where(self.galaxies['z_spec'] >0.0 )     
       self.reconstruct.keep_columns(['pos_0[rad]','pos_1[rad]','z_spec','M_Stellar[M_sol/h]', 'r'])
 
       z=self.reconstruct['z_spec']
-      z_phot=rnd.normal(z,photozerr*(1+z))
+      if photozerr>0:
+         z_phot=rnd.normal(z,photozerr*(1+z))
+      else:
+         z_phot=z
       Da = numpy.zeros(len(z_phot))
       Da_tosource = numpy.zeros(len(z_phot))
       for i in range(len(z_phot)):
@@ -559,8 +600,9 @@ class lightcone:
       self.reconstruct.add_column('z_phot',z_phot)
 
       M_StarTrue=self.reconstruct['M_Stellar[M_sol/h]']
+      M_Star=M_StarTrue*0.0
       for i in range(len(M_StarTrue)):
-         M_Star[i]=10**(numpy.log10(M_StarTrue[i])+rnd.normal(0,0.2)) ### Fake M* scatter. (0.2 error in the log)
+         M_Star[i]=10**(numpy.log10(M_StarTrue[i])+0*rnd.normal(0,0.2)) ### Fake M* scatter. (0.2 error in the log)
 
       #print self.galaxies['M_Stellar[M_sol/h]']
       #print M_Star.max()
@@ -568,7 +610,12 @@ class lightcone:
       
       self.reconstruct.add_column('M_Star',M_Star)
 
-      M_200=self.Mstar_to_M200(M_Star,z_phot,scatter=True) ###needs a scatter
+      if Behroozi==True:
+         M_200=self.Mstar_to_M200_Behroozi(M_Star,z_phot,scatter=True) ###needs a scatter
+      else:
+         if self.Bin_MstarsRUN==False:
+            self.Bin_Mstars()        
+         M_200=self.Mstar_to_M200(M_Star,z_phot)
 
       self.reconstruct.add_column('M_200',M_200)
 
@@ -626,16 +673,7 @@ class lightcone:
       kappa = kappaNFW   #these could include a component from starlight too
       shear = shearNFW
 
-      #plt.hist((x))
-      #plt.show()
-      #plt.hist((kappa))
-      #plt.show()
-      #plt.hist((shear))
-      #plt.show()
-
-
-
-       # kappa or shear is zero if behind the source!
+      # kappa or shear is zero if behind the source!
       for i in range(len(z_phot)):
           if z_phot[i] > self.zs:
              kappa[i] = 0.0
@@ -828,9 +866,6 @@ class lightcone:
        plt.ylabel('$\kappa_{ext}$ (cumulative)')
 
 
-
-
-
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
@@ -878,9 +913,6 @@ class lightcone:
        #add lines for source and lens plane
        plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dashed',label='bla')
        plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='solid')       # plt.title('%s' % self)
-
-
- 
 
 # ============================================================================
 
