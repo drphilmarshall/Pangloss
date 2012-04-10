@@ -137,7 +137,7 @@ def MScompare(argv):
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
       # Reconstruction:
-      lc = Pangloss.lightcone(catalog,Rcone,zs,position=xc)
+      lc = Pangloss.lightcone(master,Rcone,zs,position=xc)
       lc.make_kappa_contributions()
       kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
 

@@ -1042,7 +1042,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test2(master)
+    test1(master)
 
 # ============================================================================
 
