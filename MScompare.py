@@ -130,7 +130,7 @@ def MScompare(argv):
    kappa_hilbert = numpy.zeros(Ncones)
    
    for k in range(Ncones):
-
+      if k % 100 == 0 and k !=0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k],zd]
 
       # Truth:
