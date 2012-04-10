@@ -150,23 +150,30 @@ def MScompare(argv):
    bias = numpy.average(difference)
    scatter = numpy.std(difference)
 
-   print "(kappa_keeton - kappa_hilbert) = ",bias,"+/-",scatter
+   print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
 
    # Now plot histograms:
+   list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)
-   plt.hist(kappa_keeton, bins=20,normed=True)
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.title("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias,scatter))
+   plt.hist(kappa_keeton, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
+   plt.legend(loc=1)
    plt.subplot(312)
-   plt.hist(kappa_hilbert, bins=20,normed=True)
-   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=1)
    plt.subplot(313)
-   plt.hist(difference, bins=20,normed=True)
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-
-   plt.title("kappa_keeton - kappa_hilbert = %.3f+/- %.3f" % (bias,scatter))
-
-   plt.savefig("keeton-hilbert.png")
+   plt.hist(difference, bins=20,normed=True,label="$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=2)
+   plt.savefig("keeton-hilbert_histograms.png")
    plt.show()
+   plt.clf()
+   plt.subplot(111)
+   plt.scatter(kappa_keeton,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.savefig("keeton-hilbert_scatter.png")
+   plt.show()
+   
 
 # ======================================================================
 
