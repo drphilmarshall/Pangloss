@@ -345,6 +345,10 @@ class lightcone:
          R1b = D.Da(j,i)/D.Da(i)
          R2b = D.Da(j,k)/D.Da(k)
          return R1b/R2b
+      if i == j:
+         return 1.0
+      if j==k:
+          return 0.0
 
 # ----------------------------------------------------------------------------
 
@@ -356,7 +360,8 @@ class lightcone:
          B=self.beta(zl,zd[i],zs)
          K=kappa[i]
          G=shear[i]
-         output[i] = (1.-B)   * (K-    B*(K**2-G**2)   )  /    ( (1-B*K)**2   - (B*G)**2   )
+         D= K**2-G**2
+         output[i] = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
        else: 
          output[i]= 0.0
       return output

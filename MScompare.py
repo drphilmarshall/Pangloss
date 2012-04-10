@@ -70,8 +70,8 @@ def MScompare(argv):
    Rcone = 2 # arcmin
   
    # Defaults are for B1608 (CHECK):
-   zd = 0.5
-   zs = 1.6
+   zd = 0.62
+   zs = 1.39
   
    for o,a in opts:
       if o in ("-v", "--verbose"):
@@ -153,8 +153,20 @@ def MScompare(argv):
    print "(kappa_keeton - kappa_hilbert) = ",bias,"+/-",scatter
 
    # Now plot histograms:
-   
-   # TBD
+   plt.subplot(311)
+   plt.hist(kappa_keeton, bins=20,normed=True)
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.subplot(312)
+   plt.hist(kappa_hilbert, bins=20,normed=True)
+   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.subplot(313)
+   plt.hist(difference, bins=20,normed=True)
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+
+   plt.title("kappa_keeton - kappa_hilbert = %.3f+/- %.3f" % (bias,scatter))
+
+   plt.savefig("keeton-hilbert.png")
+   plt.show()
 
 # ======================================================================
 
