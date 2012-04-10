@@ -77,14 +77,14 @@ class lightcone:
                                                          (self.catalog['pos_0[rad]'] < xmax) & \
                                                          (self.catalog['pos_1[rad]'] > ymin) & \
                                                          (self.catalog['pos_1[rad]'] < ymax) & \
-                                                         (self.catalog['z_spec']<0.6)& \
-                                                         (self.catalog['z_spec']>0.3)& \
+                                                         (self.catalog['z_spec']<0.62)& \
+                                                         (self.catalog['z_spec']>0.58)& \
                                                          (self.catalog['M_Stellar[M_sol/h]']>10**(0))& \
                                                          (self.catalog['M_Stellar[M_sol/h]']<10**(15)))#& \
                                                          #(self.catalog['mag_SDSS_r'] < 21.5))
 
 
-           #print len(self.potential_lenses['z_spec'])
+           print len(self.potential_lenses['z_spec'])
 
            rndnum=rnd.randint(0,len(self.potential_lenses['z_spec']))
            if lensindex >-1: rndnum=lensindex
@@ -407,8 +407,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self, deterministic=True): 
-    if deterministic==True:
+   def make_kappa_contributions(self): 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -476,7 +475,7 @@ class lightcone:
 
        self.kappa_expectation= self.kappa_expected()
 
-    return None
+       return None
 
 # ----------------------------------------------------------------------------
    #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
@@ -699,7 +698,7 @@ class lightcone:
 
        # plot different properties depending on options:
        if dmglow==True:
-         plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
+         #plt.scatter(self.galaxies.x, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Subhalo[M_sol/h]']))/3),edgecolor = 'none' )
          empty = False
        if starlight==True:
          plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
@@ -749,7 +748,7 @@ class lightcone:
        
 
        if dmglow==True:
-         plt.scatter(self.galaxies.z_spec, self.galaxies.y, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
+         plt.scatter(self.galaxies.z_spec, self.galaxies.y, c='k', marker='o',s=(((self.galaxies['M_Subhalo[M_sol/h]']))*3e-12),edgecolor = 'none' )
          empty = False
        if starlight==True:
          plt.scatter(self.galaxies.z_spec, self.galaxies.y, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
@@ -853,7 +852,7 @@ class lightcone:
           #plt.xlim([0,200])
           plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
           plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
-          plt.xlabel('LOS distance (arcsec)')
+          plt.xlabel('LOS distance (arcmin)')
        if ordering=="r_mag":
           plt.plot(rmag,cumtot)
           #plt.xlim([0,200])
@@ -866,20 +865,13 @@ class lightcone:
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
-#      #View along redshift axis
+#      #Redshift axis vs LOS distance
 
 
        plt.subplot(2,1,2)
        empty = True
 
-       self.galaxies=self.galaxies.where(self.galaxies.r<2)
-
-       if dmglow==True:
-         plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Halo[M_sol/h]']))/3),edgecolor = 'none' )
-         empty = False
-       if starlight==True:
-         plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='y', marker='o',s=((numpy.log(self.galaxies['M_Stellar[M_sol/h]']))/2),edgecolor = 'none' )     
-         empty = False
+       self.galaxies=self.galaxies.where(self.galaxies.r<8)
        if kappa_keeton:
          for galaxy in self.galaxies:
             kappa = galaxy['kappa_keeton']
@@ -891,6 +883,14 @@ class lightcone:
        if kappa_indiv: 
          plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='none', marker='o',s=(self.galaxies.kappa)/scale2)     
          empty = False
+
+       if dmglow==True:
+         plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='k', marker='o',s=((numpy.log(self.galaxies['M_Subhalo[M_sol/h]']))/3),edgecolor = 'none' )
+         empty = False
+       if starlight==True:
+         plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='g', marker='o',s=2**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])-7),edgecolor = 'none' )     
+         empty = False
+
        if observed_light==True:
          plt.scatter(self.galaxies.z_spec, self.galaxies.r, c='y', marker='o',s=2**(25-(self.galaxies['mag_SDSS_r'])),edgecolor = 'none' )     
          empty = False
@@ -982,7 +982,7 @@ def test2(catalog): #plots a kappa distribution:
     zl=[] # leave as [] to select a lens at random
     xc = []
 
-    iterations=900
+    iterations=1000
     K=numpy.zeros(iterations)
     for j in range(iterations):
        i = j+0 #systematically evaluate for all j
@@ -991,7 +991,7 @@ def test2(catalog): #plots a kappa distribution:
        lc.make_kappa_contributions()
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
 
-    bins=numpy.arange(-0.26,0.29,0.005)
+    bins=numpy.arange(-0.0,0.39,0.005)
     plt.hist(K,bins,normed=True)
     plt.xlabel("$\kappa_{ext}$")
     plt.ylabel("pdf($\kappa_{ext}$)")
@@ -1039,7 +1039,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test3(master)
+    test2(master)
 
 # ============================================================================
 

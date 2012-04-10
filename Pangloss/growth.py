@@ -20,7 +20,7 @@ datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC
 catalog= atpy.Table(datafile, type='ascii')
 
 
-for k in range(11000):
+for k in range(1):
     plt.clf()
     rmax = 5
     print rmax
@@ -35,17 +35,17 @@ for k in range(11000):
     #xc = [xpos,ypos,zl] #leave as [] to select a lens at random
 
     print "Initialising lightcone data..."
-    lc = lightcone.lightcone(catalog,rmax,zs,lensindex=k,position=xc)
+    lc = lightcone.lightcone(catalog,rmax,zs,lensindex=k+1,position=xc)
 
 
-#     print "Distributing dark matter in halos..."
-#     lc.make_dmhalos()
-#     lc.plot(dmhalos=True)
-# 
-#     print "Distributing stars in galaxies..."
-#     lc.make_galaxies()
-#     lc.plot(galaxies=True)
-# 
+    #print "Distributing dark matter in halos..."
+    #lc.make_dmhalos()
+    #lc.plot(dmhalos=True)
+ 
+    #print "Distributing stars in galaxies..."
+    #lc.make_galaxies()
+    #lc.plot(galaxies=True)
+ 
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
     i=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
@@ -58,7 +58,7 @@ for k in range(11000):
         mostimportant.append(dummy)
 
 
-mostimportant.write('mostimportant.table',type='ascii')
+#mostimportant.write('mostimportant.table',type='ascii')
     
 
     #plt.scatter(lc.galaxies['z_spec'],(lc.galaxies.kappa_keeton/lc.galaxies.kappa),s=1,edgecolor='none')
@@ -67,20 +67,20 @@ mostimportant.write('mostimportant.table',type='ascii')
 #    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)#-lc.kappa_expectation
     # Now make an illustrative plot:
     
-#    if rmax < 8:
-#       print "Plotting objects in lightcone..."
-#       lc.plot(starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True)
-#       
-#
-#       pngfile = 'test.png'
-#       plt.savefig(pngfile)
-#       print "Plot saved in",pngfile
-#
-#    print "Plotting curve of growth..."
-#    plt.clf()
-#    lc.curve_of_growth(ordering="r_mag")
-#    pngfile = 'curve_of_growth.png'
-#    plt.savefig(pngfile)
-#    print "Plot saved in",pngfile
-#    plt.show()
+    if rmax < 8:
+       print "Plotting objects in lightcone..."
+       lc.plot(starlight=False,dmglow=True,kappa_indiv=False,kappa_keeton=False,observed_light=True)
+       
+
+       pngfile = 'view_of_a_lightcone.png'
+       plt.savefig(pngfile)
+       print "Plot saved in",pngfile
+
+    print "Plotting curve of growth..."
+    plt.clf()
+    lc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
+    pngfile = 'curve_of_growth.png'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
+    plt.show()
     
