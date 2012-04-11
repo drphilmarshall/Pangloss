@@ -8,6 +8,7 @@ import pylab,matplotlib.pyplot as plt
 import numpy
 import numpy.random as rnd
 import distances
+from scipy import optimize
 
 # ======================================================================
 
@@ -118,6 +119,8 @@ def MScompare(argv):
    MSconvergence = Pangloss.kappamap(kappafile)
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
 
+
+
    # --------------------------------------------------------------------
 
    # Generate Ncones random positions, and reconstruct kappa_keeton in
@@ -128,7 +131,7 @@ def MScompare(argv):
       
    kappa_keeton = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
-   
+   other = numpy.zeros(Ncones)  
    for k in range(Ncones):
       if k % 100 == 0 and k !=0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k],zd]
@@ -138,7 +141,17 @@ def MScompare(argv):
 
       # Reconstruction:
       lc = Pangloss.lightcone(master,Rcone,zs,position=xc)
+      #lc.N_radius()
       lc.make_kappa_contributions()
+      ind=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
+      #other[k] = lc.galaxies.r[ind]
+      other[k] = lc.galaxies.kappa_keeton[ind]
+
+
+
+
+
+
       kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
 
 
@@ -151,7 +164,7 @@ def MScompare(argv):
    scatter = numpy.std(difference)
 
    print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
-
+   
    # Now plot histograms:
    list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)
@@ -164,15 +177,58 @@ def MScompare(argv):
    plt.subplot(313)
    plt.hist(difference, bins=20,normed=True,label="$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
    plt.legend(loc=2)
-   plt.savefig("keeton-hilbert_histograms.png")
+   plt.savefig("Fig2.png")
    plt.show()
    plt.clf()
    plt.subplot(111)
-   plt.scatter(kappa_keeton,kappa_hilbert,s=1,c='k',edgecolor='none')
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
-   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
-   plt.savefig("keeton-hilbert_scatter.png")
+   plt.scatter(kappa_hilbert,difference,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlim([-0.08,0.25])
+   plt.ylim([-0.2,0.1])
+   plt.savefig("Fig3.png")
    plt.show()
+   plt.scatter(difference,other,s=1,c='k',edgecolor='none')
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   #plt.ylabel("LOS distance to most important object (arcmin)")
+   plt.ylabel("Largest individual $\kappa_{\mathrm{Keeton}}$ in LOS")
+   plt.savefig("other.png")
+   plt.show()   
+   plt.clf()
+   plt.subplot(111)
+   plt.scatter(kappa_hilbert,kappa_keeton,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.savefig("Fig1.png")
+   plt.show()  
+
+   y=difference
+   x=kappa_hilbert
+   yerr=0.01 #assume an error on y
+   fitfunc= lambda p,x: p[0]+p[1]*x  
+   errfunc= lambda p,x,y, err: (y-fitfunc(p,x))/err
+   pinit=[0.03,-1.]
+   out =optimize.leastsq(errfunc,pinit,args=(x,y,yerr),full_output=1)
+   pfinal=out[0]
+   covar=out[1]
+   #print covar
+   #print pfinal
+
+   scatter=y-pfinal[0]-pfinal[1]*x
+   print numpy.std(scatter)
+
+   
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.plot(z, fitfunc(pfinal,z))
+   plt.scatter(x,y,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlim([-0.08,0.25])
+   plt.ylim([-0.2,0.1])
+   plt.savefig("Fig4.png")
+   plt.show() 
    
 
 # ======================================================================

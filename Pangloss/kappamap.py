@@ -60,7 +60,8 @@ class kappamap:
          # This should probably not be in __init__ but hopefully it only gets run once.  
       
       # Python array storage: need to take transpose of the map!
-      self.values = self.values.transpose()
+      # No you don't!
+      #self.values = self.values.transpose()
       
       return None
 

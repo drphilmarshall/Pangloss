@@ -156,6 +156,30 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+   def N_radius(self,radius=90,cut=26, band="r", radius_unit="arcsec"):
+       if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
+           col = "mag_SDSS_%s" % band
+       else:
+           col = "mag_%s" % band
+       if radius < 10: print "Warning: Default units for N_radius are arcsec!"
+       if radius_unit == "arcsec":
+           radius = radius/60
+       self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
+                                       (self.galaxies["%s"%col] < cut)   )
+
+       return self.galaxies.where((self.galaxies.r < radius) & \
+                                       (self.galaxies["%s"%col] < cut))
+
+
+   def N_total(self,radius=90,cut=26,band="r", radius_unit="arcsec"):
+       table=self.N_radius(radius=90,cut=26,band="r", radius_unit="arcsec")
+       print table.size()
+
+
+
+
+# ----------------------------------------------------------------------------
+
 
    # Function needed to calculate kappa for an NFW halo. 
 
