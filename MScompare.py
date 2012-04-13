@@ -9,6 +9,9 @@ import numpy
 import numpy.random as rnd
 import distances
 from scipy import optimize
+from scipy import stats
+
+N_45mean = 41.8
 
 # ======================================================================
 
@@ -131,6 +134,11 @@ def MScompare(argv):
       
    kappa_keeton = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
+   N_45 = numpy.zeros(Ncones)
+   N_60 = numpy.zeros(Ncones)
+   N_90 = numpy.zeros(Ncones)
+   N_30 = numpy.zeros(Ncones)
+   N_15 = numpy.zeros(Ncones)
    other = numpy.zeros(Ncones)  
    for k in range(Ncones):
       if k % 100 == 0 and k !=0: print ("evaluating cone %i of %i" %(k,Ncones))
@@ -145,14 +153,27 @@ def MScompare(argv):
       lc.make_kappa_contributions()
       ind=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
       #other[k] = lc.galaxies.r[ind]
-      other[k] = lc.galaxies.kappa_keeton[ind]
-
-
-
-
-
+      #N_45[k]=lc.N_radius(45,cut=[18.5,22.5])
+      #N_60[k]=lc.N_radius(45,cut=[18.5,23.5])
+      #N_90[k]=lc.N_radius(45,cut=[18.5,24.5])
+      #N_30[k]=lc.N_radius(45,cut=[18.5,25.5])
+      #N_15[k]=lc.N_radius(45,cut=[18.5,26.5])
+ 
+      N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
+      N_60[k]=lc.N_radius(60,cut=[18.5,24.5])
+      N_90[k]=lc.N_radius(90,cut=[18.5,24.5])
+      N_30[k]=lc.N_radius(30,cut=[18.5,24.5])
+      N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
+      
+      
 
       kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
+
+   print numpy.average(N_45)
+   print numpy.average(N_60)
+   print numpy.average(N_90)
+   print numpy.average(N_30)
+   print numpy.average(N_15)
 
 
    # --------------------------------------------------------------------
@@ -164,8 +185,18 @@ def MScompare(argv):
    scatter = numpy.std(difference)
 
    print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
-   
-   # Now plot histograms:
+
+   h=kappa_hilbert
+   print stats.linregress(N_45,h)[2]
+   print stats.linregress(N_60,h)[2]
+   print stats.linregress(N_90,h)[2]
+   print stats.linregress(N_30,h)[2]
+   print stats.linregress(N_15,h)[2]
+
+#========================================================================
+   #Now lots of plotting routines!!!!
+#========================================================================  
+   """
    list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)
    plt.title("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias,scatter))
@@ -181,9 +212,9 @@ def MScompare(argv):
    plt.show()
    plt.clf()
    plt.subplot(111)
-   plt.scatter(kappa_hilbert,difference,s=1,c='k',edgecolor='none')
+   plt.scatter(kappa_keeton,difference,s=1,c='k',edgecolor='none')
    plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
    plt.xlim([-0.08,0.25])
    plt.ylim([-0.2,0.1])
    plt.savefig("Fig3.png")
@@ -203,7 +234,7 @@ def MScompare(argv):
    plt.show()  
 
    y=difference
-   x=kappa_hilbert
+   x=kappa_keeton
    yerr=0.01 #assume an error on y
    fitfunc= lambda p,x: p[0]+p[1]*x  
    errfunc= lambda p,x,y, err: (y-fitfunc(p,x))/err
@@ -215,7 +246,7 @@ def MScompare(argv):
    #print pfinal
 
    scatter=y-pfinal[0]-pfinal[1]*x
-   print numpy.std(scatter)
+   #print numpy.std(scatter)
 
    
    plt.clf()
@@ -224,14 +255,70 @@ def MScompare(argv):
    plt.plot(z, fitfunc(pfinal,z))
    plt.scatter(x,y,s=1,c='k',edgecolor='none')
    plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-   plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
    plt.xlim([-0.08,0.25])
    plt.ylim([-0.2,0.1])
    plt.savefig("Fig4.png")
    plt.show() 
    
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_45,y,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{45}$")
+   plt.savefig("Fig5.png")
+   plt.show() 
 
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_45,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{45}$")
+   plt.savefig("Fig6.png")
+   plt.show()
+
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_60,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{60}$")
+   plt.savefig("Fig6b.png")
+   plt.show()
+
+
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_90,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{90}$")
+   plt.savefig("Fig6c.png")
+   plt.show()
+
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_30,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{30}$")
+   plt.savefig("Fig6d.png")
+   plt.show()
+
+   plt.clf()
+   plt.subplot(111)
+   z=numpy.linspace(-0.05,0.2,30)
+   plt.scatter(N_15,kappa_hilbert,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("N$_{15}$")
+   plt.savefig("Fig6e.png")
+   plt.show()
+   """
 # ======================================================================
+
+
 
 if __name__ == '__main__':
   MScompare(sys.argv[1:])

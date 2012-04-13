@@ -87,7 +87,7 @@ class lightcone:
                                                          #(self.catalog['mag_SDSS_r'] < 21.5))
 
 
-           print len(self.potential_lenses['z_spec'])
+           #print len(self.potential_lenses['z_spec'])
 
            rndnum=rnd.randint(0,len(self.potential_lenses['z_spec']))
            if lensindex >-1: rndnum=lensindex
@@ -144,7 +144,10 @@ class lightcone:
         self.galaxies.add_column('r',r)
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
 
-      
+
+        F814 = (self.galaxies.mag_SDSS_i + self.galaxies.mag_SDSS_z)/2. #approximate F814 colour.
+        self.galaxies.add_column("mag_F814W",F814)
+
         # Note that these are placeholder galaxies: they may not have any 
         # observable properties yet.
         
@@ -156,28 +159,31 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
-   def N_radius(self,radius=90,cut=26, band="r", radius_unit="arcsec"):
+   def N_radius_cat(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
        if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
            col = "mag_SDSS_%s" % band
+       elif band == "F814" or band == "F814W" or band == "814" or band == 814:
+           col = "mag_F814W"
        else:
            col = "mag_%s" % band
        if radius < 10: print "Warning: Default units for N_radius are arcsec!"
        if radius_unit == "arcsec":
-           radius = radius/60
-       self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
-                                       (self.galaxies["%s"%col] < cut)   )
+           radius = radius/60.
+       if col != "warning":
+           self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
+                                              (self.galaxies["%s"%col] < cut[1])& \
+                                          (self.galaxies["%s"%col] > cut[0]))
 
-       return self.galaxies.where((self.galaxies.r < radius) & \
-                                       (self.galaxies["%s"%col] < cut))
+           return self.galaxies.where((self.galaxies.r < radius) & \
+                                          (self.galaxies["%s"%col] < cut[1])& \
+                                          (self.galaxies["%s"%col] > cut[0]))
 
-
-   def N_total(self,radius=90,cut=26,band="r", radius_unit="arcsec"):
-       table=self.N_radius(radius=90,cut=26,band="r", radius_unit="arcsec")
-       print table.size()
-
-
-
-
+   def N_radius(self,radius,cut=[18.5,24.5],band="F814W", radius_unit="arcsec"):
+       Ntable=self.N_radius_cat(radius,cut,band, radius_unit)
+       #print len(Ntable.r)
+       #plt.hist(Ntable.r)
+       #plt.show()
+       return len(Ntable.r)
 # ----------------------------------------------------------------------------
 
 
@@ -578,7 +584,7 @@ class lightcone:
                                    (self.catalog['M_Stellar[M_sol/h]']<Mstarbins[i+1]) & \
                                    (self.catalog['z_spec']>zbins[j])&\
                                    (self.catalog['z_spec']<zbins[j+1]))
-            if i==6 and j == 1: print M['M_Stellar[M_sol/h]'][9], M['z_spec'][9]
+            #if i==6 and j == 1: print M['M_Stellar[M_sol/h]'][9], M['z_spec'][9]
             halomean[i,j]=numpy.mean(M['M_Subhalo[M_sol/h]'])
             if numpy.isnan(halomean[i,j])!=True:
                halodist[i,j]=numpy.std(numpy.log10(M['M_Subhalo[M_sol/h]']))
