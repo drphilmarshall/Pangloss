@@ -12,6 +12,10 @@ from scipy import optimize
 from scipy import stats
 
 N_45mean = 41.8
+N_60mean = 74.475
+N_90mean = 166.864
+N_30mean = 18.831
+N_15mean = 4.812
 
 # ======================================================================
 
@@ -129,8 +133,8 @@ def MScompare(argv):
    # Generate Ncones random positions, and reconstruct kappa_keeton in
    # each one. Also look up true kappa_hilbert at that position:
    
-   x = rnd.uniform(xmin,xmax,Ncones)
-   y = rnd.uniform(ymin,ymax,Ncones)
+   x = rnd.uniform(xmin+Rcone,xmax-Rcone,Ncones)
+   y = rnd.uniform(ymin+Rcone,ymax-Rcone,Ncones)
       
    kappa_keeton = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
@@ -139,36 +143,31 @@ def MScompare(argv):
    N_90 = numpy.zeros(Ncones)
    N_30 = numpy.zeros(Ncones)
    N_15 = numpy.zeros(Ncones)
-   other = numpy.zeros(Ncones)  
+   other = numpy.zeros(Ncones) 
+   kappa_hilbert_cut=[]
+   kappa_keeton_cut=[]
    for k in range(Ncones):
       if k % 100 == 0 and k !=0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k],zd]
 
       # Truth:
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
-
       # Reconstruction:
       lc = Pangloss.lightcone(master,Rcone,zs,position=xc)
-      #lc.N_radius()
-      lc.make_kappa_contributions()
-      ind=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
-      #other[k] = lc.galaxies.r[ind]
-      #N_45[k]=lc.N_radius(45,cut=[18.5,22.5])
-      #N_60[k]=lc.N_radius(45,cut=[18.5,23.5])
-      #N_90[k]=lc.N_radius(45,cut=[18.5,24.5])
-      #N_30[k]=lc.N_radius(45,cut=[18.5,25.5])
-      #N_15[k]=lc.N_radius(45,cut=[18.5,26.5])
- 
       N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
       N_60[k]=lc.N_radius(60,cut=[18.5,24.5])
       N_90[k]=lc.N_radius(90,cut=[18.5,24.5])
       N_30[k]=lc.N_radius(30,cut=[18.5,24.5])
       N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
       
-      
-
-      kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
-
+      if N_45[k]<2.05*N_45mean and N_45[k]>1.95*N_45mean:
+         kappa_hilbert_cut.append(kappa_hilbert[k])
+         #only reconstruct if N_45 cut is passed.
+         lc.make_kappa_contributions()
+         ind=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
+         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
+         kappa_keeton_cut.append(kappa_keeton[k])
+         print len(kc)
    print numpy.average(N_45)
    print numpy.average(N_60)
    print numpy.average(N_90)
@@ -183,19 +182,40 @@ def MScompare(argv):
    difference = kappa_keeton - kappa_hilbert
    bias = numpy.average(difference)
    scatter = numpy.std(difference)
+   hc=kappa_hilbert_cut
+   kc=kappa_keeton_cut
+   print len(kc)
+   dc=[]
+   for i in range(len(kc)):
+      dc.append(kc[i]-hc[i])
 
    print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
-
+   """
    h=kappa_hilbert
    print stats.linregress(N_45,h)[2]
    print stats.linregress(N_60,h)[2]
    print stats.linregress(N_90,h)[2]
    print stats.linregress(N_30,h)[2]
    print stats.linregress(N_15,h)[2]
+   """
+
 
 #========================================================================
    #Now lots of plotting routines!!!!
 #========================================================================  
+   list=numpy.linspace(-0.05,0.25,30)
+   plt.subplot(311)
+   plt.title("Kappa Histograms for LOS with $\mathrm{N}_{45}  = (2 \pm 0.05)\mathrm{Avg(N_{45})}$")
+   plt.hist(kc, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
+   plt.legend(loc=1)
+   plt.subplot(312)
+   plt.hist(hc, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=1)
+   plt.subplot(313)
+   plt.hist(dc, bins=20,normed=True,label="$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=2)
+   plt.savefig("TwiceMeanN45.png")
+
    """
    list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)

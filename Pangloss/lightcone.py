@@ -159,6 +159,7 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+   #Tell me the number of galaxies within a certain radius, that pass a certain magnitude cut.
    def N_radius_cat(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
        if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
            col = "mag_SDSS_%s" % band
@@ -400,7 +401,7 @@ class lightcone:
 
    # function to calculate what kappa to subtract due to the mean density field
    def kappa_expected(self): ###
-      return 0.0 #### THIS FUNCTION IS BOGUS
+      #return 0.0 #### THIS FUNCTION IS BOGUS
       #print clock()
 
 
@@ -426,10 +427,10 @@ class lightcone:
 
 
          sigma_crit_p[i]=(1.663*10**18)*(self.Da_s/(D_p[i]*D_ps[i])) 
-         kappa_p[i]=(self.rho_crit_univ(zp[i])*box_vol_p[i])/sigma_crit_p[i]
+         kappa_p[i]=(self.rho_crit_univ(zp[i])*0.25*box_vol_p[i])/sigma_crit_p[i] #All times Omega_halos!!!
 
       kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
-       #numpy.sum(kappa_keeton_p)
+      return numpy.sum(kappa_keeton_p)
 
       plt.subplot(2,1,1)
       plt.plot(zp,kappa_p)
@@ -720,7 +721,7 @@ class lightcone:
       self.reconstruct.add_column('gamma',shear)
       self.reconstruct.add_column('kappa_keeton',kappa_keeton)
 
-      #self.kappa_expected_reconstruct = self.kappa_expected()
+      self.kappa_expectation_reconstruct = self.kappa_expected()
 
 
 # ----------------------------------------------------------------------------
@@ -1016,16 +1017,18 @@ def test2(catalog): #plots a kappa distribution:
     rmax = 5
 
     zs=1.4 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
-    position = [] # radians, leave as[] to select a lens at random
-    zl=[] # leave as [] to select a lens at random
+    position = [] # radians, leave as [] to select a lens at random
+    zl=0.6 #
     xc = []
 
     iterations=1000
     K=numpy.zeros(iterations)
     for j in range(iterations):
-       i = j+0 #systematically evaluate for all j
-       #i = rnd.randint(0,13594) # or pick random sample
-       lc = lightcone(catalog,rmax,zs,position=xc,lensindex=i)
+       x = rnd.uniform(xmin+rmax,xmax-rmax)
+       y = rnd.uniform(ymin+rmax,ymax-rmax)
+       xc=[x,y,zl]
+       i = rnd.randint(0,13594) # or pick random sample
+       lc = lightcone(catalog,rmax,zs,position=xc)
        lc.make_kappa_contributions()
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
 
