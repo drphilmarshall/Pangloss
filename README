@@ -1,7 +1,7 @@
 Pangloss
 --------
 
-Pangloss is a code for reconstructing all the mass within a light cone through the Universe - understanding such a mass distribution is important for accurate time delay lens cosmography, and also accurate lens magnification estimation. In the top level directory are various command-line programs for carrying out reconstruction tasks:
+Pangloss is a code, currently under development, for reconstructing all the mass within a light cone through the Universe. Understanding such a mass distribution is important for accurate time delay lens cosmography, and also accurate lens magnification estimation. In the top level directory are various command-line programs for carrying out reconstruction tasks:
 
   MScompare.py:     compare reconstructed convergence with "true"
                     convergence along N lines of sight through the
@@ -10,6 +10,13 @@ Pangloss is a code for reconstructing all the mass within a light cone through t
   LCreconstruct.py: reconstruct the mass along the line of sight at a
                     particular sky position, given photometric data
                     in a supplied catalog.  
+
+This README is aimed at the collaboration of people invetsigating this idea. If you are interested, but not one of these people, you should contact dr.phil.marshall@gmail.com and read the wiki to find out more about our plans. We are keen to hear from other researchers in the field who would like to coordinate with us.
+
+License:
+--------
+
+Pangloss is distributed under the Gnu Public License (GPL), a copy of which is delivered with this code. Copyright Tom Collett & Phil Marshall.
 
 
 Installing:
@@ -36,7 +43,7 @@ An example galaxy catalog and ray-traced convergence map from the Millenium Simu
 
    http://www.slac.stanford.edu/~pjm/H0/lightcones/
 
-Note that the convergence map is available in two formats. ".kappa" and ".fits" - FITS is recommended, but might (2012-04-06) be transposed...
+Note that the convergence map is available in two formats. ".kappa" and ".fits" - FITS is recommended, but might (2012-04-06) be transposed... 
 A ds9 visualisation of the FITS map is also provided.
 
 

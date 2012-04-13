@@ -59,9 +59,12 @@ class kappamap:
            if vb: print "Written kappa map to "+self.output
          # This should probably not be in __init__ but hopefully it only gets run once.  
       
-      # Python array storage: need to take transpose of the map!
-      # No you don't!
-      #self.values = self.values.transpose()
+      # PJM: originally, I had to transpose the map so that when it was
+      # written out to FITS, it would be displayed the right way round in ds9. 
+      # I guess I have the WCS wrong though, because this transpose makes
+      # the map and the catalog disagree...
+      # 
+      # self.values = self.values.transpose()
       
       return None
 
@@ -113,6 +116,9 @@ class kappamap:
       self.wcs['CD1_2'] = 0.0
       self.wcs['CD2_1'] = 0.0
       self.wcs['CD2_2'] = self.PIXSCALE
+      # BUG: this WCS must be wrong, since the map is displayed incorrectly
+      # even though the physical coord system below is correct...
+      
       self.wcs['CTYPE1'] = 'RA---TAN'
       self.wcs['CTYPE2'] = 'DEC--TAN'
       # i = LTV1 + LTM1_1*(x/rad) 
