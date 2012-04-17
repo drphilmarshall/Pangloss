@@ -19,23 +19,31 @@ datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC
 
 catalog= atpy.Table(datafile, type='ascii')
 
+xmax = catalog['pos_0[rad]'].max()
+xmin = catalog['pos_0[rad]'].min()
+ymax = catalog['pos_1[rad]'].max()
+ymin = catalog['pos_1[rad]'].min()
 
-for k in range(1):
+rmax = 5
+
+iterations =3
+xpos=rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad,iterations)
+ypos=rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad,iterations)
+xpos=[-0.00645898, -0.01021756, -0.01018463]
+ypos=[-0.00366765, -0.00836147, -0.00995278]
+
+print xpos,ypos
+
+for k in range(iterations):
+    hardcut=3
     plt.clf()
-    rmax = 5
-    print rmax
 
-    zs=2.0 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
+    zs=1.4 
+    zl =  0.6
 
-#-0.00633207	-0.0173126
-    xpos = -0.008
-    ypos = -0.008
-    zl =  1.0 
-    xc = []
-    #xc = [xpos,ypos,zl] #leave as [] to select a lens at random
-
+    xc = [xpos[k],ypos[k],zl]
     print "Initialising lightcone data..."
-    lc = lightcone.lightcone(catalog,rmax,zs,lensindex=k+1,position=xc)
+    lc = lightcone.lightcone(catalog,rmax,zs,position=xc)
 
 
     #print "Distributing dark matter in halos..."
@@ -47,7 +55,7 @@ for k in range(1):
     #lc.plot(galaxies=True)
  
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
-    lc.make_kappa_contributions()
+    lc.make_kappa_contributions(hardcut=3)
     i=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
     if k == 0:
         mostimportant=lc.galaxies.rows([i])
@@ -79,8 +87,32 @@ for k in range(1):
     print "Plotting curve of growth..."
     plt.clf()
     lc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
-    pngfile = 'curve_of_growth.png'
+    pngfile = 'curve_of_growth_Cone%i_3_Rvir_truncation.png'%(k+1)
+    plt.title = '3_Rvir_truncation'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
     plt.show()
+    
+
+
+    mc = lightcone.lightcone(catalog,rmax,zs,position=xc)
+    mc.make_kappa_contributions(hardcut=5)
+    mc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
+    pngfile = 'curve_of_growth_Cone%i_5_Rvir_truncation.png'%(k+1)
+    plt.title = '5_Rvir_truncation'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
+    plt.show()
+
+
+    nc = lightcone.lightcone(catalog,rmax,zs,position=xc)
+    nc.make_kappa_contributions(hardcut=10)
+    nc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
+    pngfile = 'curve_of_growth_Cone%i_10_Rvir_truncation.png'%(k+1)
+    plt.title = '10_Rvir_truncation'
+    plt.savefig(pngfile)
+    print "Plot saved in",pngfile
+    plt.show()
+    
+
     

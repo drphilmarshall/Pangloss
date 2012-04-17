@@ -163,6 +163,41 @@ class lightcone:
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+
+   # function to calculate what kappa to subtract due to an empty cone.
+   def kappa_expected(self): ####
+      #print clock()
+
+      nplanes=200
+      zp,dz=numpy.linspace(0,self.zs,nplanes,endpoint=False,retstep=True)
+      D_p =numpy.zeros(len(zp))
+      #D_pl=numpy.zeros(len(zp))
+      D_ps=numpy.zeros(len(zp))
+      box_vol_p=numpy.zeros(len(zp))
+      sigma_crit_p=numpy.zeros(len(zp))
+      kappa_p=numpy.zeros(len(zp))
+      gamma_p=numpy.zeros(len(zp)) #dummy variable - gamma is trivially zero for a sheet.
+
+      theta=self.rmax*arcmin2rad
+      for i in range(len(zp)):
+         D_p[i] =D.Da(zp[i])
+         #D_pl[i]=D.Da(zp[i],self.zl)
+         D_ps[i]=D.Da(zp[i],self.zs)
+
+         #comoving volume of element, is total comoving volume * solid angle/4pi: omega = 2*pi(1-cos(theta))
+         #box_vol_p[i]=(D.comoving_volume((zp[i]-dz/2.),(zp[i]+dz/2.)))*((1-numpy.cos(theta)))/2
+         box_vol_p[i]=(D.comoving_distance((zp[i]-dz/2.),(zp[i]+dz/2.)))
+
+         sigma_crit_p[i]=(1.663*10**18)*(self.Da_s/(D_p[i]*D_ps[i])) 
+         kappa_p[i]=(self.rho_crit_univ(zp[i])*D.OMEGA_M*box_vol_p[i])/sigma_crit_p[i] #All times Omega_halos!!!
+
+      kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
+      self.kappa_empty= numpy.sum(kappa_keeton_p)
+      return numpy.sum(kappa_keeton_p)
+
+      #print clock()
+
+# ----------------------------------------------------------------------------
    #Tell me the number of galaxies within a certain radius, that pass a certain magnitude cut.
    def N_radius_cat(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
        if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
@@ -406,51 +441,6 @@ class lightcone:
       return output
 
 # ----------------------------------------------------------------------------
-
-   # function to calculate what kappa to subtract due to the mean density field
-   def kappa_expected(self): ###
-      #return 0.0 #### THIS FUNCTION IS BOGUS
-      #print clock()
-
-
-      nplanes=200
-      zp,dz=numpy.linspace(0,self.zs,nplanes,endpoint=False,retstep=True)
-      D_p =numpy.zeros(len(zp))
-      #D_pl=numpy.zeros(len(zp))
-      D_ps=numpy.zeros(len(zp))
-      box_vol_p=numpy.zeros(len(zp))
-      sigma_crit_p=numpy.zeros(len(zp))
-      kappa_p=numpy.zeros(len(zp))
-      gamma_p=numpy.zeros(len(zp)) #dummy variable - gamma is trivially zero for a sheet.
-
-      theta=self.rmax*arcmin2rad
-      for i in range(len(zp)):
-         D_p[i] =D.Da(zp[i])
-         #D_pl[i]=D.Da(zp[i],self.zl)
-         D_ps[i]=D.Da(zp[i],self.zs)
-
-         #comoving volume of element, is total comoving volume * solid angle/4pi: omega = 2*pi(1-cos(theta))
-         #box_vol_p[i]=(D.comoving_volume((zp[i]-dz/2.),(zp[i]+dz/2.)))*((1-numpy.cos(theta)))/2
-         box_vol_p[i]=(D.comoving_distance((zp[i]-dz/2.),(zp[i]+dz/2.)))
-
-
-         sigma_crit_p[i]=(1.663*10**18)*(self.Da_s/(D_p[i]*D_ps[i])) 
-         kappa_p[i]=(self.rho_crit_univ(zp[i])*D.OMEGA_M*box_vol_p[i])/sigma_crit_p[i] #All times Omega_halos!!!
-
-      kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
-      return numpy.sum(kappa_keeton_p)
-
-      plt.subplot(2,1,1)
-      plt.plot(zp,kappa_p)
-      plt.subplot(2,1,2)
-      plt.plot(zp,kappa_keeton_p)
-      plt.show()
-
-
-
-      #print clock()
-
-# ----------------------------------------------------------------------------
    #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
 
    def Mstar_to_M200_Behroozi(self,M_Star,redshift,scatter=True):
@@ -503,7 +493,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self,BehrooziHalos=False): 
+   def make_kappa_contributions(self,BehrooziHalos=False,hardcut=3): 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -538,7 +528,7 @@ class lightcone:
 
        x = rphys/rs
        for i in range(len(x)):
-           if rphys[i] > 3*r200[i]: x[i]=-1 # Flag for hard cutoff.
+           if rphys[i] > hardcut*r200[i]: x[i]=-1 # Flag for hard cutoff.
 
        sigmacrit = self.SigmaCrit()  # units: Solarmasses per megaparsec^2
        self.galaxies.add_column('SigmaCrit',sigmacrit)
@@ -575,8 +565,6 @@ class lightcone:
        self.galaxies.add_column('kappa',kappa)
        self.galaxies.add_column('gamma',shear)
        self.galaxies.add_column('kappa_keeton',kappa_keeton)
-
-       self.kappa_expectation= self.kappa_expected()
 
        return None
 
@@ -736,9 +724,6 @@ class lightcone:
       self.reconstruct.add_column('gamma',shear)
       self.reconstruct.add_column('kappa_keeton',kappa_keeton)
 
-      self.kappa_expectation_reconstruct = self.kappa_expected()
-
-
 # ----------------------------------------------------------------------------
 
    # 2-panel plot, showing view from Earth and also line of sight section:
@@ -860,7 +845,7 @@ class lightcone:
                             numpy.max(self.galaxies.kappa_keeton)])/200
        scale2= (numpy.max(self.galaxies.kappa))/200
 
-       zeropoint=-self.kappa_expectation
+       zeropoint=-self.kappa_expected()
        zero=numpy.ones(1)*zeropoint
 
 
@@ -1041,23 +1026,25 @@ def test2(catalog): #plots a kappa distribution:
     ymax = catalog['pos_1[rad]'].max()
     ymin = catalog['pos_1[rad]'].min()
 
-    iterations=100
+    iterations=1000
     K=numpy.zeros(iterations)
+    h=3
     for j in range(iterations):
        x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
        y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad)
        xc=[x,y,zl]
        lc = lightcone(catalog,rmax,zs,position=xc)
-       lc.make_kappa_contributions()
-       K[j]=numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
-       if j % 10 ==0: print K[j],j
+       if j==0: kappa_empty=lc.kappa_expected()
+       lc.make_kappa_contributions(hardcut=h)
+       K[j]=numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
+       if j % 100 ==0: print K[j],j
 
     bins=numpy.arange(-0.05,0.1,0.005)
     plt.hist(K,bins,normed=True)
     plt.xlabel("$\kappa_{ext}$")
     plt.ylabel("pdf($\kappa_{ext}$)")
     #plt.yscale('log')
-    pngfile = 'Kappa_keeton_distribution.png'
+    pngfile = 'Kappa_keeton_distribution_%.0f_Rvir_cut.png'%h
     #plt.ylim([0,500])
     #plt.xlim([-0.2,.3])
  

@@ -149,7 +149,11 @@ def MScompare(argv):
    other = numpy.zeros(Ncones) 
    kappa_hilbert_cut=[]
    kappa_keeton_cut=[]
+
+   dummycone = Pangloss.lightcone(master,0.1,zs,position=[0,0,zd]) 
+   kappa_empty = dummycone.kappa_expected()
    for k in range(Ncones):
+      h=10
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k],zd]
 
@@ -165,14 +169,14 @@ def MScompare(argv):
       #N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
       N_45cut=False
       if N_45cut==False:
-         lc.make_kappa_contributions()
-         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
+         lc.make_kappa_contributions(hardcut=h)
+         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
 
       elif N_45[k]<2.05*N_45mean and N_45[k]>1.95*N_45mean:
          kappa_hilbert_cut.append(kappa_hilbert[k])
          #only reconstruct if N_45 cut is passed.
          lc.make_kappa_contributions()
-         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)
+         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
          kappa_keeton_cut.append(kappa_keeton[k])
          print len(kc)
  
@@ -230,7 +234,7 @@ def MScompare(argv):
    plt.subplot(311)
    plt.title("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias,scatter))
    plt.hist(kappa_keeton, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
-   plt.legend(loc=1)
+   plt.legend(title='Cut at %.0f R_vir.'%h, loc=1)
    plt.subplot(312)
    plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
    plt.legend(loc=1)
@@ -239,6 +243,8 @@ def MScompare(argv):
    plt.legend(loc=2)
    plt.savefig("Fig2.png")
    plt.show()
+
+   """
    plt.clf()
    plt.subplot(111)
    plt.scatter(kappa_keeton,difference,s=1,c='k',edgecolor='none')
@@ -253,7 +259,9 @@ def MScompare(argv):
    #plt.ylabel("LOS distance to most important object (arcmin)")
    plt.ylabel("Largest individual $\kappa_{\mathrm{Keeton}}$ in LOS")
    plt.savefig("other.png")
-   plt.show()   
+   plt.show()  
+   """
+ 
    plt.clf()
    plt.subplot(111)
    plt.scatter(kappa_hilbert,kappa_keeton,s=1,c='k',edgecolor='none')
@@ -290,6 +298,7 @@ def MScompare(argv):
    plt.savefig("Fig4.png")
    plt.show() 
    
+   """
    plt.clf()
    plt.subplot(111)
    z=numpy.linspace(-0.05,0.2,30)
@@ -307,6 +316,8 @@ def MScompare(argv):
    plt.xlabel("N$_{45}$")
    plt.savefig("Fig6.png")
    plt.show()
+   
+
 
    plt.clf()
    plt.subplot(111)
@@ -344,7 +355,7 @@ def MScompare(argv):
    plt.xlabel("N$_{15}$")
    plt.savefig("Fig6e.png")
    plt.show()
-   
+   """
 # ======================================================================
 
 
