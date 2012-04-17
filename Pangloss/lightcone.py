@@ -43,8 +43,7 @@ from time import clock
 
 D = distances.Distance()
 D.h = 0.7
-c = 299792458.
-G = 4.3e-6
+
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -61,6 +60,11 @@ class lightcone:
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
         self.deterministic = deterministic
+        self.xmax = self.catalog['pos_0[rad]'].max()
+        self.xmin = self.catalog['pos_0[rad]'].min()
+        self.ymax = self.catalog['pos_1[rad]'].max()
+        self.ymin = self.catalog['pos_1[rad]'].min() 
+
         self.Bin_MstarsRUN = False
 
         if position ==[]: 
@@ -72,10 +76,10 @@ class lightcone:
         if position==[]: #1-4) inside the light cone. 5-6) zspec sensible. 7-8) halo mass. 9) r band colour cut (currently disabled)
            if lensindex <0: print "Choosing a lens..."
            else: print "evaluating for lens %i" % lensindex
-           xmax=self.catalog['pos_0[rad]'].max()-radius*arcmin2rad
-           xmin=self.catalog['pos_0[rad]'].min()+radius*arcmin2rad
-           ymax=self.catalog['pos_0[rad]'].max()-radius*arcmin2rad
-           ymin=self.catalog['pos_0[rad]'].min()+radius*arcmin2rad
+           xmax=self.xmax-radius*arcmin2rad
+           xmin=self.xmin+radius*arcmin2rad
+           ymax=self.ymax-radius*arcmin2rad
+           ymin=self.ymin+radius*arcmin2rad
            self.potential_lenses = self.catalog.where((self.catalog['pos_0[rad]'] > xmin) & \
                                                          (self.catalog['pos_0[rad]'] < xmax) & \
                                                          (self.catalog['pos_1[rad]'] > ymin) & \
@@ -193,7 +197,9 @@ class lightcone:
    def Ffunc(self,x):
        z=numpy.zeros(len(x))
        for i in range(len(x)):
-          if x[i]>1:
+          if x[i]==-1:
+              z[i]=0.0
+          elif x[i]>1:
              z[i]= (1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1.)/(x[i]+1))**.5))/(x[i]**2-1.)
           else: 
              #print "WARNING You are very close to a halo"
@@ -214,7 +220,9 @@ class lightcone:
        z=numpy.zeros(len(x))
        for i in range(len(x)):
           X=x[i]
-          if x[i]>1:
+          if x[i]==-1:
+              z[i]=0.0
+          elif x[i]>1:
              y=(((X-1)/(X+1))**.5)
              z[i]= (8* numpy.arctan(y) / (X**2*(X**2-1)**0.5)) +\
                  (4/X**2)*numpy.log(X/2) - \
@@ -427,7 +435,7 @@ class lightcone:
 
 
          sigma_crit_p[i]=(1.663*10**18)*(self.Da_s/(D_p[i]*D_ps[i])) 
-         kappa_p[i]=(self.rho_crit_univ(zp[i])*0.25*box_vol_p[i])/sigma_crit_p[i] #All times Omega_halos!!!
+         kappa_p[i]=(self.rho_crit_univ(zp[i])*D.OMEGA_M*box_vol_p[i])/sigma_crit_p[i] #All times Omega_halos!!!
 
       kappa_keeton_p=self.KappaKeeton(self.zl,zp,self.zs,kappa_p,gamma_p) 
       return numpy.sum(kappa_keeton_p)
@@ -442,11 +450,60 @@ class lightcone:
 
       #print clock()
 
+# ----------------------------------------------------------------------------
+   #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
 
+   def Mstar_to_M200_Behroozi(self,M_Star,redshift,scatter=True):
+      #Following Behroozi et al. 2010.
+      M_200=numpy.zeros(len(M_Star))
+      #parameters:
+      for i in range(len(M_Star)):
+         z=redshift[i]
+         if z<0.9:
+            Mstar00 = 10.72
+            Mstar0a = 0.55
+            Mstar0aa=0.0
+            M_10 = 12.35
+            M_1a = 0.28
+            beta0 = 0.44
+            betaa = 0.18
+            delta0 = 0.57
+            deltaa = 0.17
+            gamma0 = 1.56
+            gammaa = 2.51
+         else:
+            Mstar00 = 11.09
+            Mstar0a = 0.56
+            Mstar0aa= 6.99
+            M_10 = 12.27
+            M_1a = -0.84
+            beta0 = 0.65
+            betaa = 0.31
+            delta0 = 0.56
+            deltaa = -0.12
+            gamma0 = 1.12
+            gammaa = -0.53
+
+
+      #scaled parameters:
+         a=1./(1.+z)
+         M_1=10**(M_10+M_1a*(a-1))
+         beta=beta0+betaa*(a-1)
+         Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
+         delta=delta0+deltaa*(a-1)
+         gamma=gamma0+gammaa*(a-1)
+
+      #reltationship ****NO SCATTER****
+
+         M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
+
+         if scatter==True:
+             M_200[i]=10.0**(numpy.log10(M_200[i])*rnd.normal(0,0.2))
+      return M_200
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self): 
+   def make_kappa_contributions(self,BehrooziHalos=False): 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -462,7 +519,11 @@ class lightcone:
        # ---------------------------------------------------------------------
 
        # Compute NFW quantities, and store for later:
-       M200 = self.galaxies['M_Subhalo[M_sol/h]']
+       if BehrooziHalos==False:
+           M200 = self.galaxies['M_Subhalo[M_sol/h]']
+       if BehrooziHalos==True:
+           M_star=self.galaxies['M_Stellar[M_sol/h]']
+           M200 = self.Mstar_to_M200_Behroozi(M_star,zd,scatter=False)
        c200 = self.MCrelation(M200,MCerror=False)
        cscatter=self.MCrelation(M200,MCerror=True)
        self.galaxies.add_column('c200',c200)     
@@ -476,6 +537,9 @@ class lightcone:
        self.galaxies.add_column('rhos',rhos)
 
        x = rphys/rs
+       for i in range(len(x)):
+           if rphys[i] > 3*r200[i]: x[i]=-1 # Flag for hard cutoff.
+
        sigmacrit = self.SigmaCrit()  # units: Solarmasses per megaparsec^2
        self.galaxies.add_column('SigmaCrit',sigmacrit)
 
@@ -516,64 +580,15 @@ class lightcone:
 
        return None
 
-# ----------------------------------------------------------------------------
-   #Function using the Behroozi M*-Mhalo relationship to recreate MHalos from M*s
 
-   def Mstar_to_M200_Behroozi(self,M_Star,redshift,scatter=True):
-      #Following Behroozi et al. 2010.
-      M_200=numpy.zeros(len(M_Star))
-      #parameters:
-      for i in range(len(M_Star)):
-         z=redshift[i]
-         if z<0.9:
-            Mstar00 = 10.72
-            Mstar0a = 0.55
-            Mstar0aa=0.0
-            M_10 = 12.35
-            M_1a = 0.28
-            beta0 = 0.44
-            betaa = 0.18
-            delta0 = 0.57
-            deltaa = 0.17
-            gamma0 = 1.56
-            gammaa = 2.51
-         else:
-            Mstar00 = 11.09
-            Mstar0a = 0.56
-            Mstar0aa= 6.99
-            M_10 = 12.27
-            M_1a = -0.84
-            beta0 = 0.65
-            betaa = 0.31
-            delta0 = 0.56
-            deltaa = -0.12
-            gamma0 = 1.12
-            gammaa =  -0.53
-
-
-      #scaled parameters:
-         a=1./(1.+z)
-         M_1=10**(M_10+M_1a*(a-1))
-         beta=beta0+betaa*(a-1)
-         Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
-         delta=delta0+deltaa*(a-1)
-         gamma=gamma0+gammaa*(a-1)
-
-      #reltationship ****NO SCATTER****
-
-         M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
-
-         #if scatter==True:
-         #   add a scatter!
-      return M_200
 # ----------------------------------------------------------------------------
    #Function binning MStar by MStar and redshift.
    def Bin_Mstars(self):
 
-      linbin,delta=numpy.linspace(7,13,17,retstep=True)
+      linbin,delta=numpy.linspace(7,13,12,retstep=True)
       Mstarbins=numpy.power(10,linbin)
       self.Mstarbins=Mstarbins
-      zbins=[0,1,2,3,99]
+      zbins=[0,1,2,99]
       self.zbins=zbins
 
       halomean = numpy.zeros((len(Mstarbins)-1,len(zbins)-1))
@@ -1021,18 +1036,23 @@ def test2(catalog): #plots a kappa distribution:
     zl=0.6 #
     xc = []
 
-    iterations=1000
+    xmax = catalog['pos_0[rad]'].max()
+    xmin = catalog['pos_0[rad]'].min()
+    ymax = catalog['pos_1[rad]'].max()
+    ymin = catalog['pos_1[rad]'].min()
+
+    iterations=100
     K=numpy.zeros(iterations)
     for j in range(iterations):
-       x = rnd.uniform(xmin+rmax,xmax-rmax)
-       y = rnd.uniform(ymin+rmax,ymax-rmax)
+       x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
+       y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad)
        xc=[x,y,zl]
-       i = rnd.randint(0,13594) # or pick random sample
        lc = lightcone(catalog,rmax,zs,position=xc)
        lc.make_kappa_contributions()
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
+       if j % 10 ==0: print K[j],j
 
-    bins=numpy.arange(-0.0,0.39,0.005)
+    bins=numpy.arange(-0.05,0.1,0.005)
     plt.hist(K,bins,normed=True)
     plt.xlabel("$\kappa_{ext}$")
     plt.ylabel("pdf($\kappa_{ext}$)")
@@ -1080,7 +1100,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test1(master)
+    test2(master)
 
 # ============================================================================
 
