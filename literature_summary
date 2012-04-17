@@ -1,5 +1,6 @@
 Keeton:
-A formalism to map kappa and gamma from small perturbations at different redshift planes onto a lens plane. Approximation breaks down if perturbations become too large. Uses ratio of angular diameter distances. Induces a small mixing between gamma and kappa, but to first order
+An approximation to map kappa and gamma from small perturbations at different redshift planes onto a lens plane. Approximation breaks down if perturbations become too large. Uses ratio of angular diameter distances. Induces a small mixing between gamma and kappa. 
+
 
 Momcheva:
 
