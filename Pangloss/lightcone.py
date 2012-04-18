@@ -37,6 +37,7 @@ import numpy, numpy.random as rnd, atpy
 import distances
 from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
+import LensingProfiles as LP
 
 #import time
 #t0=time.clock()    
@@ -224,58 +225,6 @@ class lightcone:
        #plt.hist(Ntable.r)
        #plt.show()
        return len(Ntable.r)
-# ----------------------------------------------------------------------------
-
-
-   # Function needed to calculate kappa for an NFW halo. 
-
-   def Ffunc(self,x):
-       z=numpy.zeros(len(x))
-       for i in range(len(x)):
-          if x[i]==-1:
-              z[i]=0.0
-          elif x[i]>1:
-             z[i]= (1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1.)/(x[i]+1))**.5))/(x[i]**2-1.)
-          else: 
-             #print "WARNING You are very close to a halo"
-             if x[i]==1:
-                z[i] =1./3
-             else:
-                y=(-x[i]**2+1)**.5
-                z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctanh(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
-
-
-          if z[i] < 0: print 'warning Ffunc'
-       return z
-
-# ----------------------------------------------------------------------------
-   # Function needed to calculate gamma for an NFW halo. 
-   # Form is ridiculously long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-   def Gfunc(self,x):
-       z=numpy.zeros(len(x))
-       for i in range(len(x)):
-          X=x[i]
-          if x[i]==-1:
-              z[i]=0.0
-          elif x[i]>1:
-             y=(((X-1)/(X+1))**.5)
-             z[i]= (8* numpy.arctan(y) / (X**2*(X**2-1)**0.5)) +\
-                 (4/X**2)*numpy.log(X/2) - \
-                 2/(X**2-1) +\
-                 4*numpy.arctan(y)/(((X**2)-1)**(3./2))
-          else: 
-             #print "WARNING You are very close to a halo"
-             if x[i]==1:
-                z[i] =(10./3+4*numpy.log(0.5))
-             else:
-                y=(((1-X)/(X+1))**.5)
-                z[i]= (8* numpy.arctanh(y) / (X**2*(1-X**2)**0.5)) +\
-                    (4/X**2)*numpy.log(X/2) - \
-                    2/(X**2-1) +\
-                    4*numpy.arctanh(y)/((X**2-1)*(1-X**2)**(1./2))
-          if z[i]<0: print 'warning Gfunc'; print x[i]; print z[i]
-
-       return z
 
 # ----------------------------------------------------------------------------
 
@@ -493,7 +442,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self,BehrooziHalos=False,hardcut=3): 
+   def make_kappa_contributions(self,BehrooziHalos=False,hardcut=False,truncation=False): 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -526,23 +475,22 @@ class lightcone:
        self.galaxies.add_column('rs',rs)
        self.galaxies.add_column('rhos',rhos)
 
-       x = rphys/rs
-       for i in range(len(x)):
-           if rphys[i] > hardcut*r200[i]: x[i]=-1 # Flag for hard cutoff.
-
        sigmacrit = self.SigmaCrit()  # units: Solarmasses per megaparsec^2
        self.galaxies.add_column('SigmaCrit',sigmacrit)
-
        kappas = rhos*rs/sigmacrit
 
-       # need to cut out sub halos - can be done in several ways.
-       #for i in range(kappas.size()):
-       #   if self.galaxies
 
-       kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+       x = rphys/rs
+       if hardcut!=False:
+           for i in range(len(x)):
+               if rphys[i] > hardcut*r200[i]: x[i]=-1 # Flag for hard cutoff.
+           kappaNFW = kappas*(LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+           shearNFW = kappas * LP.Gfunc(x)
+       if truncation=="BMO2":
+           kappaNFW = kappas*(LP.BMO2Ffunc(x)) #BMO profile
+           shearNFW = kappas * LP.BMO2Gfunc(x)    
 
-       shearNFW = kappas * self.Gfunc(x)
-       
+
        #---------------------------------------------------------------------------------
 
        # Compute starlight lensing component.
@@ -697,9 +645,9 @@ class lightcone:
        #for i in range(kappas.size()):
        #   if self.galaxies
 
-      kappaNFW = 2.*kappas*(self.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+      kappaNFW = 2.*kappas*(LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
-      shearNFW = kappas * self.Gfunc(x)
+      shearNFW = kappas * LP.Gfunc(x)
        
        #---------------------------------------------------------------------------------
 
@@ -984,7 +932,7 @@ def test1(catalog):
     print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     lc.make_kappa_contributions()
 
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expectation
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expected()
     # Now make an illustrative plot:
     
     if rmax < 8:
@@ -1087,7 +1035,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test2(master)
+    test1(master)
 
 # ============================================================================
 
