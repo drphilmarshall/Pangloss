@@ -55,7 +55,7 @@ for k in range(iterations):
     #lc.plot(galaxies=True)
  
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
-    lc.make_kappa_contributions(hardcut=3)
+    lc.make_kappa_contributions(truncation="BMO1")
     i=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
     if k == 0:
         mostimportant=lc.galaxies.rows([i])
@@ -87,14 +87,14 @@ for k in range(iterations):
     print "Plotting curve of growth..."
     plt.clf()
     lc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
-    pngfile = 'curve_of_growth_Cone%i_3_Rvir_truncation.png'%(k+1)
+    pngfile = 'curve_of_growth_Cone%i_5_Rvir_BM0truncation.png'%(k+1)
     plt.title = '3_Rvir_truncation'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
     plt.show()
     
 
-
+    """
     mc = lightcone.lightcone(catalog,rmax,zs,position=xc)
     mc.make_kappa_contributions(hardcut=5)
     mc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
@@ -108,11 +108,11 @@ for k in range(iterations):
     nc = lightcone.lightcone(catalog,rmax,zs,position=xc)
     nc.make_kappa_contributions(hardcut=10)
     nc.curve_of_growth(ordering="distance",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=True,observed_light=True)
-    pngfile = 'curve_of_growth_Cone%i_10_Rvir_truncation.png'%(k+1)
+    pngfile = 'curve_of_growth_Cone%i_10_Rvir_truncation.png'%k+1
     plt.title = '10_Rvir_truncation'
     plt.savefig(pngfile)
     print "Plot saved in",pngfile
     plt.show()
-    
+    """
 
     

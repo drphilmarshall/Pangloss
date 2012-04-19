@@ -442,7 +442,7 @@ class lightcone:
 # ----------------------------------------------------------------------------
 
    # NFW model for halo
-   def make_kappa_contributions(self,BehrooziHalos=False,hardcut=False,truncation=False): 
+   def make_kappa_contributions(self,BehrooziHalos=False,truncation=False,truncationscale=5): 
        # Compute distance to each galaxy 
        zd = self.galaxies['z_spec']
        Da = numpy.zeros(len(zd))
@@ -481,15 +481,19 @@ class lightcone:
 
 
        x = rphys/rs
-       if hardcut!=False:
+
+       if truncation=="hard":
            for i in range(len(x)):
-               if rphys[i] > hardcut*r200[i]: x[i]=-1 # Flag for hard cutoff.
+               if rphys[i] > truncationscale*r200[i]: x[i]=-1 # Flag for hard cutoff.
+       if truncation=="BMO1":
+           t=5*c200
+           kappaNFW = kappas * (LP.BMO1Ffunc(x,t)) #BMO profile
+           shearNFW = kappas * LP.BMO1Gfunc(x,t)  
+       #if truncation=="BMO1":
+       #
+       else:
            kappaNFW = kappas*(LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
            shearNFW = kappas * LP.Gfunc(x)
-       if truncation=="BMO2":
-           kappaNFW = kappas*(LP.BMO2Ffunc(x)) #BMO profile
-           shearNFW = kappas * LP.BMO2Gfunc(x)    
-
 
        #---------------------------------------------------------------------------------
 
@@ -976,14 +980,13 @@ def test2(catalog): #plots a kappa distribution:
 
     iterations=1000
     K=numpy.zeros(iterations)
-    h=3
     for j in range(iterations):
        x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
        y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad)
        xc=[x,y,zl]
        lc = lightcone(catalog,rmax,zs,position=xc)
        if j==0: kappa_empty=lc.kappa_expected()
-       lc.make_kappa_contributions(hardcut=h)
+       lc.make_kappa_contributions(truncation="BMO1",truncationscale=5)
        K[j]=numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
        if j % 100 ==0: print K[j],j
 
@@ -1035,7 +1038,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test1(master)
+    test2(master)
 
 # ============================================================================
 
