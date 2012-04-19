@@ -44,12 +44,12 @@ def Ffunc(x):
 
    # Function needed to calculate gamma for an NFW halo. 
    # Form is  long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-def Gfunc(x):
+def Gfunc(x): 
        z=numpy.zeros(len(x))
        for i in range(len(x)):
           X=x[i]
           if x[i]==-1:
-              z[i]=0.0
+              z[i]=0.0 ###THIS IS NOT TRUE, SHOULD BE GFUNC OF A POINT MASS HERE.####
           elif x[i]>1:
              y=(((X-1)/(X+1))**.5)
              z[i]= (8* numpy.arctan(y) / (X**2*(X**2-1)**0.5)) +\
@@ -88,7 +88,7 @@ def BMO1Ffunc(x,t):
     #if len(z) > 1: print z
     return z
 
-def BMO1Gfunc(x,t):    
+def BMO1Gfunc(x,t):    ### I AM DEFINITELY WRONG ### I GIVE SILLY ANSWERS IF X~1. ####
     z=numpy.zeros(len(x))
     for i in range(len(x)):                               
         X=x[i]
