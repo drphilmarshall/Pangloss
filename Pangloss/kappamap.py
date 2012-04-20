@@ -112,8 +112,6 @@ class kappamap:
       self.wcs['CD1_2'] = 0.0
       self.wcs['CD2_1'] = 0.0
       self.wcs['CD2_2'] = self.PIXSCALE
-      # BUG: this WCS must be wrong, since the map is displayed incorrectly
-      # even though the physical coord system below is correct...
       self.wcs['CTYPE1'] = 'RA---TAN'
       self.wcs['CTYPE2'] = 'DEC--TAN'
       
