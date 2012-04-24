@@ -502,12 +502,12 @@ class lightcone:
                ) #units are solar masses
 
            self.galaxies.add_column("mass",mass)
-           print self.galaxies.mass/self.galaxies['M_Subhalo[M_sol/h]']
+           #print self.galaxies.mass/self.galaxies['M_Subhalo[M_sol/h]']
            
-           ind=numpy.where(rphys > truncationscale*r200[i])#index of halos that are outside the truncation.
-
-           kappaNFW = kappas
-           shearNFW = kappas
+           out=numpy.where(rphys > truncationscale*r200[i])#index of halos that are outside the truncation.
+           ind=numpy.where(rphys < truncationscale*r200[i])#index of halos that are outside the truncation.
+           kappaNFW = kappas*1.0
+           shearNFW = kappas*1.0
            for i in range(len(x)):
                #treat as NFW if within truncation radius:
                if rphys[i]<R_trunc[i]: 
@@ -519,9 +519,12 @@ class lightcone:
                    shearNFW[i]=((self.galaxies.mass[i])\
                                     /(3.14159*(rphys[i])**2))\
                                     /sigmacrit[i]
-
-
-                   #print shearNFW[i]
+           #kappaNFW[ind]*=LP.Ffunc(x[ind])
+           #shearNFW[ind]*=LP.Gfunc(x[ind])
+           #kappaNFW[out]*=0.0
+           #shearNFW[out]=((self.galaxies.mass[out])\
+           #                         /(3.14159*(rphys[out])**2))\
+           #                         /sigmacrit[out]
 
                    
 
