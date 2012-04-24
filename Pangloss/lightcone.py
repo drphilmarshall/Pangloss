@@ -480,20 +480,27 @@ class lightcone:
        kappas = rhos*rs/sigmacrit
 
 
+
        x = rphys/rs
 
        if truncation=="hard":
+           mass=4*3.14159
+           self.galaxiess.add_column("mass",mass)
            for i in range(len(x)):
                if rphys[i] > truncationscale*r200[i]: x[i]=-1 # Flag for hard cutoff.
+
        if truncation=="BMO1":
            t=5*c200
            kappaNFW = kappas * (LP.BMO1Ffunc(x,t)) #BMO profile
            shearNFW = kappas * LP.BMO1Gfunc(x,t)  
        #if truncation=="BMO1":
-       #
+
        else:
            kappaNFW = kappas*(LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
            shearNFW = kappas * LP.Gfunc(x)
+           for i in range(len(x)):
+               if shearNFW[i]==0:
+                   shearNFW[i]=self.galaxies.mass[i]/(3.14159*)
 
        #---------------------------------------------------------------------------------
 
