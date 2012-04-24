@@ -26,7 +26,7 @@ ymin = catalog['pos_1[rad]'].min()
 
 rmax = 5
 
-iterations =3
+iterations =2
 xpos=rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad,iterations)
 ypos=rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad,iterations)
 xpos=[-0.00645898, -0.01021756, -0.01018463]
@@ -55,7 +55,7 @@ for k in range(iterations):
     #lc.plot(galaxies=True)
  
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
-    lc.make_kappa_contributions(truncation="BMO1")
+    lc.make_kappa_contributions(truncation="hard",truncationscale=10)
     i=(numpy.argsort(lc.galaxies.kappa_keeton))[-1]
     if k == 0:
         mostimportant=lc.galaxies.rows([i])

@@ -27,6 +27,16 @@ issues:
     Roger, Sherry and Stefan.
 - lightcone and lenslightcone should be separate classes, where llc 
     inherits from lc
+
+
+
+In need of array optimization
+-----------------------------
+- The LensingProfiles class
+- The beta function.
+- Mstar to MBehrooziHalo
+
+
 '''
 
 # ======================================================================
@@ -168,7 +178,8 @@ class lightcone:
    # function to calculate what kappa to subtract due to an empty cone.
    def kappa_expected(self): ####
       #print clock()
-
+      self.kappa_empty= 0.0 #numpy.sum(kappa_keeton_p)
+      return 0.0
       nplanes=200
       zp,dz=numpy.linspace(0,self.zs,nplanes,endpoint=False,retstep=True)
       D_p =numpy.zeros(len(zp))
@@ -479,28 +490,51 @@ class lightcone:
        self.galaxies.add_column('SigmaCrit',sigmacrit)
        kappas = rhos*rs/sigmacrit
 
-
+       R_trunc=truncationscale*r200
 
        x = rphys/rs
 
-       if truncation=="hard":
-           mass=4*3.14159
-           self.galaxiess.add_column("mass",mass)
-           for i in range(len(x)):
-               if rphys[i] > truncationscale*r200[i]: x[i]=-1 # Flag for hard cutoff.
+       if truncation=="hard" or truncation=='HARD' or truncation =='Hard':
+           #Calculated hard truncated total mass:
+           mass=4*3.14159*rhos*(rs**3)  *     \
+               (  numpy.log(1+(R_trunc)/rs) - \
+                  R_trunc/(rs+R_trunc)        \
+               ) #units are solar masses
 
-       if truncation=="BMO1":
+           self.galaxies.add_column("mass",mass)
+           print self.galaxies.mass/self.galaxies['M_Subhalo[M_sol/h]']
+           
+           ind=numpy.where(rphys > truncationscale*r200[i])#index of halos that are outside the truncation.
+
+           kappaNFW = kappas
+           shearNFW = kappas
+           for i in range(len(x)):
+               #treat as NFW if within truncation radius:
+               if rphys[i]<R_trunc[i]: 
+                   kappaNFW[i]*=LP.Ffunc([x[i]])
+                   shearNFW[i]*=LP.Gfunc([x[i]])
+               #treat as point mass if outside truncation radius:
+               else:
+                   kappaNFW[i]*=0.0
+                   shearNFW[i]=((self.galaxies.mass[i])\
+                                    /(3.14159*(rphys[i])**2))\
+                                    /sigmacrit[i]
+
+
+                   #print shearNFW[i]
+
+                   
+
+
+       elif truncation=="BMO1":
            t=5*c200
            kappaNFW = kappas * (LP.BMO1Ffunc(x,t)) #BMO profile
            shearNFW = kappas * LP.BMO1Gfunc(x,t)  
-       #if truncation=="BMO1":
+       #if truncation=="BMO2":
 
        else:
-           kappaNFW = kappas*(LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+           kappaNFW = kappas * (LP.Ffunc(x)) #following http://arxiv.org/pdf/astro-ph/9908213v1.pdf
            shearNFW = kappas * LP.Gfunc(x)
-           for i in range(len(x)):
-               if shearNFW[i]==0:
-                   shearNFW[i]=self.galaxies.mass[i]/(3.14159*)
 
        #---------------------------------------------------------------------------------
 
