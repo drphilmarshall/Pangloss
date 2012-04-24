@@ -39,18 +39,13 @@ Most (if not all) are available via pip and/or homebrew.
 Test Data:
 ----------
 
-An example galaxy catalog and ray-traced convergence map from the Millenium Simulation can be downloaded from:
-
-   http://www.slac.stanford.edu/~pjm/H0/lightcones/
-
-Note that the convergence map is available in two formats. ".kappa" and ".fits" - FITS is recommended, but might (2012-04-06) be transposed... 
-A ds9 visualisation of the FITS map is also provided.
+Example galaxy catalogs and ray-traced convergence maps from the Millenium Simulation are available from Stefan Hilbert on request.
 
 
 Classes:
 --------
 
-The primary "lightcone" class can be used for drilling out lines of sight from the Millenium catalogues of S. Hilbert, and returns estimates of convergence given various assumptions.
+The primary "lightcone" class can be used for drilling out lines of sight from the Millenium catalogues of Hilbert et al, and returns estimates of convergence given various assumptions.
 
 The "kappamap" class allows Hilbert's convergence maps, obtained by full-on ray-tracing, to be loaded and queried by position - this provides ground truth at each sky position.
 

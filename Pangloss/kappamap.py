@@ -32,7 +32,7 @@ class kappamap:
       
       if FITS:
          # Read in FITS image, extract wcs:
-         if vb: print "Reading in kappa map from file..."
+         if vb: print "Reading in kappa map from file "+kappafile
          self.read_in_fits_data()
          if vb: print "... done"
        
@@ -45,7 +45,7 @@ class kappamap:
          self.setwcs()
 
          # Read in binary data, to self.values:
-         if vb: print "Reading in kappa map from file..."
+         if vb: print "Reading in kappa map from file "+kappafile
          self.read_in_binary_data()
          if vb: print "... done"
 
@@ -58,13 +58,6 @@ class kappamap:
            self.write_out_to_fits()
            if vb: print "Written kappa map to "+self.output
          # This should probably not be in __init__ but hopefully it only gets run once.  
-      
-      # PJM: originally, I had to transpose the map so that when it was
-      # written out to FITS, it would be displayed the right way round in ds9. 
-      # I guess I have the WCS wrong though, because this transpose makes
-      # the map and the catalog disagree...
-      # 
-      # self.values = self.values.transpose()
       
       return None
 
@@ -80,9 +73,12 @@ class kappamap:
       hdr = hdu.header
       self.get_fits_wcs(hdr)
       self.values = hdu.data
+      # This transpose is necessary so that ds9 displays the image correctly.
+      self.values = self.values.transpose()
       self.NX = self.values.shape[0]
       self.PIXSCALE = self.wcs['CD1_1']
       self.field = self.NX*self.PIXSCALE
+      
       return None
 
 # ----------------------------------------------------------------------------
@@ -116,11 +112,9 @@ class kappamap:
       self.wcs['CD1_2'] = 0.0
       self.wcs['CD2_1'] = 0.0
       self.wcs['CD2_2'] = self.PIXSCALE
-      # BUG: this WCS must be wrong, since the map is displayed incorrectly
-      # even though the physical coord system below is correct...
-      
       self.wcs['CTYPE1'] = 'RA---TAN'
       self.wcs['CTYPE2'] = 'DEC--TAN'
+      
       # i = LTV1 + LTM1_1*(x/rad) 
       # j = LTV2 + LTM2_2*(y/rad) 
       self.wcs['LTV1'] = 0.5*self.field/self.PIXSCALE - 0.5
@@ -147,8 +141,9 @@ class kappamap:
       # Add WCS keywords to the FITS header (in apparently random order):
       for keyword in self.wcs.keys():
         hdu.header.update(keyword,self.wcs[keyword])
-      # Make image array:
-      hdu.data = self.values
+      # Make image array. The transpose is necessary so that ds9 displays 
+      # the image correctly.
+      hdu.data = self.values.transpose()
       # Verify and write to file:
       hdu.verify()
       hdu.writeto(self.output)
@@ -241,62 +236,30 @@ if __name__ == '__main__':
 
 # Self-test: read in map from Stefan, and look up some convergence values.
    vb = True
+   FITS = False
    
-# Read in map (and write out as FITS if it doesn't exist):
-#    kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa"
-#    convergence = kappamap(kappafile,FITS=False)
+   for ext in ( "kappa", "fits" ):
+   
+      print "Testing ."+ext+" file..."
 
-# Read in map from FITS file:
-
-   kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.fits"
-   convergence = kappamap(kappafile)
+      # Read in map (and write out as FITS if it doesn't exist):
+      kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f."+ext
+      if ext == "fits": FITS = True
+      convergence = kappamap(kappafile,FITS=FITS)
   
-# Look up values at some points:
-   
-   i = 2184 ; j = 2263
-   kappa = convergence.at(i,j,coordinate_system='image')
-   print "Compare with expected value: 1.17721"
+      # Look up value in some pixel:
 
-   i = 2263 ; j = 2184
-   kappa = convergence.at(i,j,coordinate_system='image')
-   print "Compare with expected value: 0.0169251"
+      i = 2184 ; j = 2263
+      kappa = convergence.at(i,j,coordinate_system='image')
+      print "Compare with expected value: 0.0169251"
 
-   i = 0 ; j = 0
-   kappa = convergence.at(i,j,coordinate_system='image')
-   print "Compare with expected value: -0.0222247"
+      # Check WCS / physical coords at same pixel:
 
-# Looking up kappa value at position 2184 , 2263  in the image coordinate system
-#   - physical coordinates: 0.00232653752829 0.00367303177544 (radians)
-#   - approximate world coordinates: 359.867675781 0.21044921875 (degrees)
-#   - ds9 image coordinates: 2185 2264
-#   Value of kappa =  1.17720580101
-# Compare with expected value: 1.17721
-#  
-# Looking up kappa value at position 2263 , 2184  in the image coordinate system
-#   - physical coordinates: 0.00367303177544 0.00232653752829 (radians)
-#   - approximate world coordinates: 359.790527344 0.13330078125 (degrees)
-#   - ds9 image coordinates: 2264 2185
-#   Value of kappa =  0.0169250555336
-# Compare with expected value: 0.0169251
-#  
-# Looking up kappa value at position 0 , 0  in the image coordinate system
-#   - physical coordinates: -0.0348980629244 -0.0348980629244 (radians)
-#   - approximate world coordinates: 2.00048828125 -1.99951171875 (degrees)
-#   - ds9 image coordinates: 1 1
-#   Value of kappa =  -0.0222246814519
-# Compare with expected value: -0.0222247
+      x = 0.00232653752829; y = 0.00367303177544
+      kappa = convergence.at(x,y,coordinate_system='physical')
+      print "Compare with expected value: 0.0169251"
 
-   x = 0.00232653752829; y = 0.00367303177544
-   kappa = convergence.at(x,y,coordinate_system='physical')
-   print "Compare with expected value: 1.17721"
-
-# Looking up kappa value at position 0.00232653752829 , 0.00367303177544  in the physical coordinate system
-#   - image coordinates: 2184.0 2263.0
-#   - approximate world coordinates: 359.867675781 0.21044921875 (degrees)
-#   - ds9 image coordinates: 2185.0 2264.0
-#   Value of kappa =  1.1772058009
-# Compare with expected value: 1.17721
-
-# OK, internally all looks good. 
+      print "...done."
+      print " "
 
 # ============================================================================
