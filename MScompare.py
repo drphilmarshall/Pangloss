@@ -169,7 +169,7 @@ def MScompare(argv):
       #N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
       N_45cut=False
       if N_45cut==False:
-         lc.make_kappa_contributions(hardcut=h)
+         lc.make_kappa_contributions(truncation='hard',truncationscale=3)
          kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
 
       elif N_45[k]<2.05*N_45mean and N_45[k]>1.95*N_45mean:

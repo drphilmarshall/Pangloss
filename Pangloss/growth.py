@@ -96,6 +96,9 @@ for k in range(iterations):
     zeropoint=0.0
     zero=numpy.ones(1)*zeropoint
 
+
+
+
     plt.clf()
     plt.subplot(3,1,1)
     args=numpy.argsort((lc.galaxies.r))
@@ -103,10 +106,13 @@ for k in range(iterations):
     ordered_kappas=numpy.take(lc.galaxies.kappa_keeton,args) 
     cat=numpy.concatenate((zero,(ordered_kappas)))
     cumtot=numpy.cumsum(cat)
+    l10=cumtot[-1]*1  
 
     plt.plot(dist,cumtot)
-    plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
-    plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+    plt.axhline(y=l10, xmin=0, xmax=1000,color='black', ls='--')
+    plt.xlim([0,5])
+
+
 
     plt.subplot(3,1,2)
     args=numpy.argsort((mc.galaxies.r))
@@ -114,11 +120,15 @@ for k in range(iterations):
     ordered_kappas=numpy.take(mc.galaxies.kappa_keeton,args) 
     cat=numpy.concatenate((zero,(ordered_kappas)))
     cumtot=numpy.cumsum(cat)
+    l5=cumtot[-1]*1 
 
     plt.plot(dist,cumtot)
-    plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
-    plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+    plt.axhline(y=l10, xmin=0, xmax=1000,color='black', ls='--')
+    plt.axhline(y=l5, xmin=0, xmax=1000,color='black', ls='-.')
 
+
+    plt.ylabel('$\kappa_{ext}$ (cumulative)')
+    plt.xlim([0,5])
 
     plt.subplot(3,1,3)
     args=numpy.argsort((nc.galaxies.r))
@@ -126,10 +136,32 @@ for k in range(iterations):
     ordered_kappas=numpy.take(nc.galaxies.kappa_keeton,args) 
     cat=numpy.concatenate((zero,(ordered_kappas)))
     cumtot=numpy.cumsum(cat)
-
+    l3=cumtot[-1] 
     plt.plot(dist,cumtot)
-    plt.axhline(y=cumtot[-1], xmin=0, xmax=1000,color='black', ls='dotted')
-    plt.axhline(y=0, xmin=0, xmax=1000,color='black', ls='solid')
+    plt.axhline(y=l10, xmin=0, xmax=1000,color='black', ls='--',label="10Rvir truncation")
+    plt.axhline(y=l5, xmin=0, xmax=1000,color='black', ls='-.',label="5Rvir truncation")
+    plt.axhline(y=l3, xmin=0, xmax=1000,color='black', ls='dotted', label="3Rvir truncation")
+
+    plt.xlim([0,5])
+
+
+    plt.legend(loc = 4, title = "$\sum \kappa$ (within 20\')")
+    leg = plt.gca().get_legend()
+    ltext  = leg.get_texts()
+    plt.setp(ltext, fontsize='small')
 
     plt.xlabel('LOS distance (arcmin)')
-    plt.ylabel('$\kappa_{ext}$ (cumulative)')
+
+    params = {'backend': 'ps',
+          'axes.labelsize': 12,
+          'text.fontsize': 16,
+          'legend.fontsize': 14,
+          'xtick.labelsize': 16,
+          'ytick.labelsize': 16,
+          'text.usetex': True,
+          'figure.figsize': [1000,30000]}
+    pylab.rcParams.update(params)
+
+
+    plt.savefig('truncations.png')
+    plt.show()

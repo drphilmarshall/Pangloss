@@ -1022,7 +1022,7 @@ def test2(catalog): #plots a kappa distribution:
     ymax = catalog['pos_1[rad]'].max()
     ymin = catalog['pos_1[rad]'].min()
 
-    iterations=1000
+    iterations=10
     K=numpy.zeros(iterations)
     for j in range(iterations):
        x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
@@ -1039,6 +1039,7 @@ def test2(catalog): #plots a kappa distribution:
     plt.xlabel("$\kappa_{ext}$")
     plt.ylabel("pdf($\kappa_{ext}$)")
     #plt.yscale('log')
+    h=2
     pngfile = 'Kappa_keeton_distribution_%.0f_Rvir_cut.png'%h
     #plt.ylim([0,500])
     #plt.xlim([-0.2,.3])
