@@ -11,6 +11,8 @@ vector  xc and some radius.
 # NB. Anything marked '###' is still unfinished/preliminary and 
 probably wrong! #### are finished functions that haven't been 
 bug-checked.
+##### Are obsolete functions that have been move out of lightcone.py, but need deleteing from here. LF. or LP. tell you where I moved the functions to.
+
 
 to-do:
 ------
@@ -48,6 +50,7 @@ import distances
 from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
 import LensingProfiles as LP
+import LensingFunc as LF
 
 #import time
 #t0=time.clock()    
@@ -238,7 +241,7 @@ class lightcone:
        return len(Ntable.r)
 
 # ----------------------------------------------------------------------------
-
+   #####
    def SigmaCrit(self, deterministic=True): 
    # NOTE zl here is the lensing object NOT necessarily the primary lens
       if deterministic ==False:
@@ -348,25 +351,12 @@ class lightcone:
 
 
 # ----------------------------------------------------------------------------
-
+   #####* I think this logical belongs to LP, but I haven't moved it yet
    def delta_c(self,c):
        return (200./3)*(c**3)/(numpy.log(1+c)-c/(1+c))
 
 # ----------------------------------------------------------------------------
-
-   def Hsquared(self,z):
-       H0 =D.h*3.241*10**-18
-       Hsq=(H0**2.)*(D.OMEGA_M*(1.+z)**3.+(1.-D.OMEGA_M)) #Flat LambdaCDM only at this stage
-       return Hsq
-    
-# ----------------------------------------------------------------------------
-
-   def rho_crit_univ(self,z):   #critical density of the universe at z
-       ro= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
-       return ro 
- 
-# ----------------------------------------------------------------------------
-
+   ##### C.
    # Beta parameter for a perturber at j:  
    def beta(self,i,j,k):  
       if j>k:
@@ -385,7 +375,7 @@ class lightcone:
           return 0.0
 
 # ----------------------------------------------------------------------------
-
+   ##### C.
    # Kappa Keeton, following Keeton (2003)and Momcheva et al. (2006)
    def KappaKeeton(self,zl,zd,zs,kappa,shear):
       output = numpy.zeros(len(zd))
