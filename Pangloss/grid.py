@@ -76,6 +76,13 @@ class lensgrid(grid):
       self.zl=zl
       self.zs=zs
 
+      #INHERIT
+      # list of planes
+      # dz planes
+      # nplanes
+      # Da_p
+      # rho_crit_p
+
       return None
 # ----------------------------------------------------------------------------
 
@@ -103,8 +110,11 @@ class lensgrid(grid):
 # TESTS:
 
 def test(zl,zs):
-    g=lensgrid(zl,zs)
-    print g.Da_p
+    g=grid()
+    lg=lensgrid(zl,zs)
+    lg.populatelensgrid()
+    print lg.Da_pl
+
     return
 
 #-------------------------------------------------------------------------
