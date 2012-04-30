@@ -28,6 +28,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
 import LensingProfiles as LP
 import LensingFunc as LF
+import pickle
 
 #t0=time.clock()    
 
@@ -59,7 +60,7 @@ class grid(object):
        self.rho_crit_p=D.rho_crit_univ(self.zplane)
 
    def snap(self,z):
-      snapped_p=numpy.digitize(z,self.zplane)-1
+      snapped_p=numpy.digitize(z,self.zplane-self.dz)-1
       snapped_z=self.zplane[snapped_p]
       return snapped_z,snapped_p
 
@@ -122,7 +123,7 @@ class lensgrid(grid):
 
        self.beta_p=LF.beta_Da(D12,Ds,D2,D1s)
        
-
+       
 
 
 # ============================================================================
