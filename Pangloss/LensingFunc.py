@@ -52,21 +52,9 @@ def beta(i,j,k):
         return 0.0
 
 # Same but for known angular diameter distances (much faster)
-def beta_Da():  
-    if j>k:
-        print "z_pert > z_source? you shouldn't be asking for this"
-    if j>i:
-        R1a = D.Da(i,j)/D.Da(j)
-        R2a = D.Da(i,k)/D.Da(k)
-        return R1a/R2a
-    if i>j:
-        R1b = D.Da(j,i)/D.Da(i)
-        R2b = D.Da(j,k)/D.Da(k)
-        return R1b/R2b
-    if i == j:
-        return 1.0
-    if j==k:
-        return 0.0
+def beta_Da(D12,Ds,D2,D1s):  
+    #print D12
+    return (D12*Ds)/(D2*D1s)
 
 
 # ----------------------------------------------------------------------------
