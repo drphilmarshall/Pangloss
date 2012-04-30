@@ -29,7 +29,6 @@ from time import clock
 import LensingProfiles as LP
 import LensingFunc as LF
 
-#import time
 #t0=time.clock()    
 
 D = distances.Distance()
@@ -46,7 +45,7 @@ vb = False
 
 class grid(object):
 
-   def __init__(self,zmax=3,nplanes=300): 
+   def __init__(self,zmax=3,nplanes=200): 
        self.name = '1D Redshift grid, with precalculated quantities '
 
        self.zmax=zmax
@@ -59,8 +58,10 @@ class grid(object):
            self.Da_p[i]= D.Da(self.zplane[i])
        self.rho_crit_p=D.rho_crit_univ(self.zplane)
 
-#   def snap(self,z):
-
+   def snap(self,z):
+      snapped_p=numpy.digitize(z,self.zplane)-1
+      snapped_z=self.zplane[snapped_p]
+      return snapped_z,snapped_p
 
 # ----------------------------------------------------------------------------
 
@@ -76,8 +77,11 @@ class lensgrid(grid):
       if zmax==[]:zmax=zs
       grid.__init__(self,zmax,nplanes)
       self.name = '1D Redshift grid, with precalculated quantities for a fixed lens and source'
-      self.zl=zl
-      self.zs=zs
+
+
+      # SNAP LENS AND SOURCE TO GRID:
+      self.zl=self.snap([zl])[0][0]
+      self.zs=self.snap([zs])[0][0]
       return None
 # ----------------------------------------------------------------------------
 
@@ -99,7 +103,7 @@ class lensgrid(grid):
            self.Da_pl[i] = D.Da(self.zplane[i],self.zl)
 
        
-       #Calculate sigma crit on each plane.
+       #Calculate sigma crit on each plane. #will raise a div0 warning, but this should be ignored
        self.Sigma_Crit_p=LF.SigmaCrit_Da(self.Da_p,self.Da_s,self.Da_ps)
 
 
@@ -129,7 +133,7 @@ def test(zl,zs):
     g=grid()
     lg=lensgrid(zl,zs)
     lg.populatelensgrid()
-    print lg.beta_p.max()
+    #lg.beta_p.max()
 
     return
 

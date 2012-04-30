@@ -52,8 +52,7 @@ def beta(i,j,k):
         return 0.0
 
 # Same but for known angular diameter distances (much faster)
-def beta_Da(D12,Ds,D2,D1s):  
-    #print D12
+def beta_Da(D12,Ds,D2,D1s): 
     return (D12*Ds)/(D2*D1s)
 
 
