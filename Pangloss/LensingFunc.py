@@ -59,7 +59,7 @@ def beta_Da(D12,Ds,D2,D1s):
 # ----------------------------------------------------------------------------
 
 # Kappa Keeton, following Keeton (2003) and Momcheva et al. (2006)
-def KappaKeeton(self,zl,zd,zs,kappa,shear):
+def KappaKeeton(zl,zd,zs,kappa,shear):
     output = numpy.zeros(len(zd))
     for i in range(len(zd)):
         if zd[i] < zs:
@@ -71,4 +71,13 @@ def KappaKeeton(self,zl,zd,zs,kappa,shear):
         else: 
             output[i]= 0.0
     return output
+# ----------------------------------------------------------------------------
+# Kappa Keeton, following Keeton (2003) and Momcheva et al. (2006)
+def KappaKeeton_beta(beta,kappa,shear):
+            B=beta
+            K=kappa
+            G=shear
+            D= K**2-G**2
+            output = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
+            return output
 # ----------------------------------------------------------------------------

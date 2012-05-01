@@ -8,7 +8,7 @@ Code to make a lensgrid object, which lightcone objects and smooth comoponent ob
 
 to-do:
 ------
-Make it work
+It should work now. TC #noguarantees
 
 issues:
 -------
@@ -28,7 +28,7 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
 import LensingProfiles as LP
 import LensingFunc as LF
-import pickle
+import cPickle
 
 #t0=time.clock()    
 
@@ -131,10 +131,6 @@ class lensgrid(grid):
 # TESTS:
 
 def test(zl,zs):
-    g=grid()
-    lg=lensgrid(zl,zs)
-    lg.populatelensgrid()
-    #lg.beta_p.max()
 
     return
 
@@ -155,6 +151,13 @@ def test3(catalog):
 # ============================================================================
 
 if __name__ == '__main__':
-    test(0.6,1.4)
+    zl,zs=0.6,1.4
+    lg=lensgrid(zl,zs)
+    lg.populatelensgrid()
+    filename='lensgrid_zl%.2f_zs%.2f.pcl'%(zl,zs)
+    #filename='test1.test'
 
+    f=open(filename,'wb')
+    cPickle.dump(lg,f,2)
+    f.close()
 # ============================================================================
