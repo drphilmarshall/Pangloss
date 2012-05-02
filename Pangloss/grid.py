@@ -105,7 +105,7 @@ class lensgrid(grid):
 
        
        #Calculate sigma crit on each plane. #will raise a div0 warning, but this should be ignored
-       self.Sigma_Crit_p=LF.SigmaCrit_Da(self.Da_p,self.Da_s,self.Da_ps)
+       self.sigma_crit_p=LF.SigmaCrit_Da(self.Da_p,self.Da_s,self.Da_ps)
 
 
        #Set angular diameter distances for beta calculation:

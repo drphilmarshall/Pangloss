@@ -20,7 +20,12 @@ def L(x,t):
     return numpy.log(x/((t**2+x**2)**.5+t))
 #=========================================================================
 # NFW profile functions.
+
+#--------------------------------------------------------------
+def delta_c(c):
+    return (200./3)*(c**3)/(numpy.log(1+c)-c/(1+c))
 # ------------------------------------------------------------------------
+
     # Function needed to calculate kappa for an NFW halo. 
 def Ffunc(x):
        z=numpy.zeros(len(x))

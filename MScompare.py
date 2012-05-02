@@ -79,9 +79,10 @@ def MScompare(argv):
    vb = False
    Ncones = 1000
    Rcone = 2 # arcmin
+   truncationscale=5   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
-   zd = 0.62
+   zl = 0.62
    zs = 1.39
   
    for o,a in opts:
@@ -91,8 +92,11 @@ def MScompare(argv):
          Ncones = int(a)
       elif o in ("-r"):
          Rcone = a
-      elif o in ("--zd"):
-         zd = a
+      elif o in ("-t"):
+         truncationscale = a 
+
+      elif o in ("--zl"):
+         zl = a
       elif o in ("--zs"):
          zs = a
       elif o in ("-h", "--help"):
@@ -129,7 +133,8 @@ def MScompare(argv):
    MSconvergence = Pangloss.kappamap(kappafile)
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
 
-
+   data=["%s"%catalog]
+   kappa_empty = Pangloss.Smooth(zl,zs,data,truncationscale=truncationscale,nplanes=50)
 
    # --------------------------------------------------------------------
 
@@ -150,12 +155,10 @@ def MScompare(argv):
    kappa_hilbert_cut=[]
    kappa_keeton_cut=[]
 
-   dummycone = Pangloss.lightcone(master,0.1,zs,position=[0,0,zd]) 
-   kappa_empty = dummycone.kappa_expected()
    for k in range(Ncones):
       h=10
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
-      xc = [x[k],y[k],zd]
+      xc = [x[k],y[k],zl]
 
       # Truth:
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
@@ -169,9 +172,9 @@ def MScompare(argv):
       #N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
       N_45cut=False
       if N_45cut==False:
-         lc.make_kappa_contributions(truncation='hard',truncationscale=3)
+         lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
          kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
-
+      """
       elif N_45[k]<2.05*N_45mean and N_45[k]>1.95*N_45mean:
          kappa_hilbert_cut.append(kappa_hilbert[k])
          #only reconstruct if N_45 cut is passed.
@@ -179,8 +182,9 @@ def MScompare(argv):
          kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
          kappa_keeton_cut.append(kappa_keeton[k])
          print len(kc)
- 
-   print numpy.average(N_45)
+      """
+
+   #print numpy.average(N_45)
    #print numpy.average(N_60)
    #print numpy.average(N_90)
    #print numpy.average(N_30)
