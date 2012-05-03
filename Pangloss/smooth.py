@@ -3,6 +3,7 @@
 
 import LensingFunc as LF
 import Relations as Rel
+import LensingProfiles as LP
 import grid
 
 
@@ -20,7 +21,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def Smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=200):
+def smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=200):
    lg=grid.lensgrid(zl,zs,nplanes=nplanes)
    lg.populatelensgrid()
    smoothcomponentindiv=numpy.zeros((lg.nplanes,len(catalogues)))
@@ -48,7 +49,6 @@ def Smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=2
       ymin = cat['pos_1[rad]'].min() 
       catarea=(xmax-xmin)*(ymax-ymin) #in square radians (steradians?)
       physicalarea=catarea*(lg.Da_p+1e-9)**2
-      print physicalarea
 
       cat=cat.where(cat["%s"%col]<magnitudecut)
 
@@ -85,15 +85,15 @@ def Smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=2
       smoothcomponent[p]=numpy.sum(smoothcomponentindiv[p,:])/len(catalogues)
    
    lg.smoothcomponent=smoothcomponent
-   lg.kappa=lg.smoothcomponent/lg.Sigma_Crit_p
+   lg.kappa=lg.smoothcomponent/lg.sigma_crit_p
    lg.kappakeeton=LF.KappaKeeton_beta(lg.beta_p,lg.kappa,0)
 
    #plt.plot(lg.kappakeeton)
    #plt.show()
 
-   print numpy.sum(lg.kappakeeton)
+   print "smooth component correction is: ",numpy.sum(lg.kappakeeton)
 
-
+   return numpy.sum(lg.kappakeeton)
 
 
 #d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"

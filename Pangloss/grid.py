@@ -52,11 +52,11 @@ class grid(object):
        self.zmax=zmax
        self.nplanes=nplanes    
        #These are the planes:
-       self.zplane,self.dz=self.redshiftbins=numpy.linspace(0,self.zmax,self.nplanes,endpoint=True,retstep=True)
+       self.zplane,self.dz=self.redshiftbins=numpy.linspace(0.,self.zmax,self.nplanes,endpoint=True,retstep=True)
 
        self.Da_p=numpy.zeros(len(self.zplane))
        for i in range(len(self.zplane)):
-           self.Da_p[i]= D.Da(self.zplane[i])
+           self.Da_p[i]= D.Da(self.zplane[i])+1e-100
        self.rho_crit_p=D.rho_crit_univ(self.zplane)
 
    def snap(self,z):
@@ -95,18 +95,15 @@ class lensgrid(grid):
        self.Da_l=D.Da(self.zl)
        self.Da_s=D.Da(self.zs)
        self.Da_ls=D.Da(self.zl,self.zs)
-       
        #Calculate angular diameter distances for each plane.
        self.Da_ps=numpy.zeros(len(self.zplane))
        self.Da_pl=numpy.zeros(len(self.zplane))
        for i in range(len(self.zplane)):
-           self.Da_ps[i] = D.Da(self.zplane[i],self.zs)
-           self.Da_pl[i] = D.Da(self.zplane[i],self.zl)
-
-       
+           self.Da_ps[i] = D.Da(self.zplane[i],self.zs)+1e-100
+           self.Da_pl[i] = D.Da(self.zplane[i],self.zl)+1e-100
+      
        #Calculate sigma crit on each plane. #will raise a div0 warning, but this should be ignored
        self.sigma_crit_p=LF.SigmaCrit_Da(self.Da_p,self.Da_s,self.Da_ps)
-
 
        #Set angular diameter distances for beta calculation:
        D1s=numpy.zeros(len(self.zplane))
@@ -123,30 +120,8 @@ class lensgrid(grid):
 
        self.beta_p=LF.beta_Da(D12,Ds,D2,D1s)
        
-       
 
 
-# ============================================================================
-
-# TESTS:
-
-def test(zl,zs):
-
-    return
-
-#-------------------------------------------------------------------------
-
-def test2(catalog): #plots a kappa distribution:
-###not finished###
-#we could consider feeding in our lens selection parameters here)
-
-
-    return
-
-#-------------------------------------------------------------------------
-
-def test3(catalog):
-    return
 
 # ============================================================================
 

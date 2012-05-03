@@ -171,7 +171,7 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,truncation=False,truncationscale=5): 
+    def make_kappa_contributions(self,BehrooziHalos=False,truncation="hard",truncationscale=5): 
         
         M200 = self.galaxies['M_Subhalo[M_sol/h]']
         c200 = Rel.MCrelation(M200)
@@ -195,8 +195,8 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
         kappaNFW=kappa_s*1.0
         shearNFW=kappa_s*1.0
-
-        for i in range(len(x)):
+        if truncation=="hard":
+            for i in range(len(x)):
                #treat as NFW if within truncation radius:
                if self.galaxies.rphys[i]<R_trunc[i]: 
                    kappaNFW[i]*=LP.Ffunc([x[i]])

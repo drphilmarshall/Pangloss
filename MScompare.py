@@ -48,6 +48,7 @@ def MScompare(argv):
      -r Rcone      Cone radius used in reconstruction
      -zd zd        Deflector redshift (to match kappafile)
      -zs zs        Source redshift (to match kappafile)
+     -t truncationscale number of virial radii to truncate NFW halos at.
 
    OUTPUTS
      stdout        Useful information
@@ -78,8 +79,8 @@ def MScompare(argv):
 
    vb = False
    Ncones = 1000
-   Rcone = 2 # arcmin
-   truncationscale=5   # *R_200 halo truncation
+   Rcone = 5 # arcmin
+   truncationscale=10   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
    zl = 0.62
@@ -134,7 +135,7 @@ def MScompare(argv):
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
 
    data=["%s"%catalog]
-   kappa_empty = Pangloss.Smooth(zl,zs,data,truncationscale=truncationscale,nplanes=50)
+   kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,nplanes=50)
 
    # --------------------------------------------------------------------
 
@@ -158,37 +159,17 @@ def MScompare(argv):
    for k in range(Ncones):
       h=10
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
-      xc = [x[k],y[k],zl]
+      xc = [x[k],y[k]]
 
       # Truth:
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
       # Reconstruction:
-      lc = Pangloss.lightcone(master,Rcone,zs,position=xc)
+      lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs)
       N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
-      #N_60[k]=lc.N_radius(60,cut=[18.5,24.5])
-      #N_90[k]=lc.N_radius(90,cut=[18.5,24.5])
-      #N_30[k]=lc.N_radius(30,cut=[18.5,24.5])
-      #N_15[k]=lc.N_radius(15,cut=[18.5,24.5])
-      N_45cut=False
-      if N_45cut==False:
-         lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
-         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
-      """
-      elif N_45[k]<2.05*N_45mean and N_45[k]>1.95*N_45mean:
-         kappa_hilbert_cut.append(kappa_hilbert[k])
-         #only reconstruct if N_45 cut is passed.
-         lc.make_kappa_contributions()
-         kappa_keeton[k] = numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty
-         kappa_keeton_cut.append(kappa_keeton[k])
-         print len(kc)
-      """
+      lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
+      kappa_keeton[k] = lc.kappa_keeton_total-kappa_empty
 
-   #print numpy.average(N_45)
-   #print numpy.average(N_60)
-   #print numpy.average(N_90)
-   #print numpy.average(N_30)
-   #print numpy.average(N_15)
 
 
    # --------------------------------------------------------------------
@@ -198,13 +179,12 @@ def MScompare(argv):
    difference = kappa_keeton - kappa_hilbert
    bias = numpy.average(difference)
    scatter = numpy.std(difference)
-   if  N_45cut==True:
-      hc=kappa_hilbert_cut
-      kc=kappa_keeton_cut
-      print len(kc)
-      dc=[]
-      for i in range(len(kc)):
-         dc.append(kc[i]-hc[i])
+   hc=kappa_hilbert_cut
+   kc=kappa_keeton_cut
+   print len(kc)
+   dc=[]
+   for i in range(len(kc)):
+      dc.append(kc[i]-hc[i])
 
    print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
    """
@@ -220,19 +200,6 @@ def MScompare(argv):
 #========================================================================
    #Now lots of plotting routines!!!!
 #========================================================================  
-   if N_45cut==True:
-      list=numpy.linspace(-0.05,0.25,30)
-      plt.subplot(311)
-      plt.title("Kappa Histograms for LOS with $\mathrm{N}_{45}  = (2 \pm 0.05)\mathrm{Avg(N_{45})}$")
-      plt.hist(kc, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
-      plt.legend(loc=1)
-      plt.subplot(312)
-      plt.hist(hc, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
-      plt.legend(loc=1)
-      plt.subplot(313)
-      plt.hist(dc, bins=20,normed=True,label="$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-      plt.legend(loc=2)
-      plt.savefig("TwiceMeanN45.png")
    
    list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)
@@ -264,7 +231,7 @@ def MScompare(argv):
    plt.ylabel("Largest individual $\kappa_{\mathrm{Keeton}}$ in LOS")
    plt.savefig("other.png")
    plt.show()  
-   """
+   
  
    plt.clf()
    plt.subplot(111)
@@ -302,7 +269,7 @@ def MScompare(argv):
    plt.savefig("Fig4.png")
    plt.show() 
    
-   """
+   
    plt.clf()
    plt.subplot(111)
    z=numpy.linspace(-0.05,0.2,30)
