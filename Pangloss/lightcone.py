@@ -11,8 +11,6 @@ vector  xc and some radius.
 # NB. Anything marked '###' is still unfinished/preliminary and 
 probably wrong! #### are finished functions that haven't been 
 bug-checked.
-##### Are obsolete functions that have been move out of lightcone.py, but need deleteing from here. LF. or LP. tell you where I moved the functions to.
-
 
 to-do:
 ------
@@ -39,6 +37,8 @@ In need of array optimization
 - Mstar to MBehrooziHalo
 
 
+
+The warning: divide by zero comes from the grid class, but it isn't causing any errors.
 '''
 
 # ======================================================================
@@ -134,7 +134,7 @@ class lightcone(object):
 # ============================================================================
 # ============================================================================
 
-class snappedlenslightcone(lightcone,grid.lensgrid):
+class lens_lightcone(lightcone,grid.lensgrid):
     def __init__(self,catalog,position,radius,zl,zs,nplanes=50):
         self.name = 'Snapped Lens Lightcone through the observed Universe'
         lightcone.__init__(self,catalog,radius,position)
@@ -148,7 +148,6 @@ class snappedlenslightcone(lightcone,grid.lensgrid):
         self.galaxies.add_column('zsnapped',zsnapped)
         self.galaxies.add_column('psnapped',psnapped)
 
-        return None
 
         zd = self.galaxies.zsnapped
         p  = self.galaxies.psnapped
@@ -157,15 +156,15 @@ class snappedlenslightcone(lightcone,grid.lensgrid):
         self.zs = self.snap([zs])
 
         # Grab relevant quantities from the grid
-        self.galaxies.Da_d = self.Da_p[p]
-        self.galaxies.Da_ds = self.Da_ps[p]
-        self.galaxies.Da_dl = self.Da_pl[p]
-        self.galaxies.beta = self.beta_p[p]
-        self.galaxies.rho_crit = self.rho_crit_p[p]
-        self.galaxies.sigma_crit=self.galaxies.sigma_crit_p[p]
+        self.galaxies.add_column('Da_d', self.Da_p[p])
+        self.galaxies.add_column('Da_ds', self.Da_ps[p])
+        self.galaxies.add_column('Da_dl', self.Da_pl[p])
+        self.galaxies.add_column('beta', self.beta_p[p])
+        self.galaxies.add_column('rho_crit',  self.rho_crit_p[p])
+        self.galaxies.add_column('sigma_crit', self.sigma_crit_p[p])
 
         #calculate rphys
-        self.galaxies.rphys=self.galaxies.Da_p*self.galaxies.r*arcmin2rad
+        self.galaxies.add_column('rphys',self.galaxies.Da_d*self.galaxies.r*arcmin2rad)
 
 
         return None
@@ -180,23 +179,54 @@ class snappedlenslightcone(lightcone,grid.lensgrid):
 
 
         r_s = r200/c200
-        rho_s = LF.delta_c(c200)*self.galaxies.rho_crit
+        rho_s = LP.delta_c(c200)*self.galaxies.rho_crit
         kappa_s = rho_s * r_s /self.galaxies.sigma_crit
     
         x=self.galaxies.rphys/r_s
 
         R_trunc=truncationscale*r200
         
-        mass=4*3.14159*rhos*(rs**3)  *     \
-            (  numpy.log(1+(R_trunc)/rs) - \
-                   R_trunc/(rs+R_trunc)    \
+        mass=4*3.14159*rho_s*(r_s**3)  *     \
+            (  numpy.log(1+(R_trunc)/r_s) - \
+                   R_trunc/(r_s+R_trunc)    \
             )
-        cat.add_column('Mtrunc', mass)
+        self.galaxies.add_column('Mtrunc', mass)
 
 
+        kappaNFW=kappa_s*1.0
+        shearNFW=kappa_s*1.0
+
+        for i in range(len(x)):
+               #treat as NFW if within truncation radius:
+               if self.galaxies.rphys[i]<R_trunc[i]: 
+                   kappaNFW[i]*=LP.Ffunc([x[i]])
+                   shearNFW[i]*=LP.Gfunc([x[i]])
+               #treat as point mass if outside truncation radius:
+               else:
+                   kappaNFW[i]*=0.0
+                   shearNFW[i]=((mass[i])\
+                                    /(3.14159*( self.galaxies.rphys[i])**2))\
+                                    /self.galaxies.sigma_crit[i]
+        
+        #-------------------------------------------------------
+        # Now computer starlight lensing component.
+        
+        # Implement here!!!! ###
+        #-------------------------------------------------------          
 
 
+        kappa = kappaNFW
+        shear = shearNFW
 
+        self.galaxies.add_column('kappa',kappa)
+        self.galaxies.add_column('gamma',shear)
+
+        kappa_keeton= LF.KappaKeeton_beta(self.galaxies.beta,self.galaxies.kappa,self.galaxies.gamma)
+        self.galaxies.add_column('kappa_keeton',kappa_keeton)
+        
+        self.kappa_keeton_total=numpy.sum(kappa_keeton)
+        
+        return None
 
 # ----------------------------------------------------------------------------
 
@@ -548,8 +578,8 @@ def test3(catalog):
     xc = [x,y]
     zl=0.6
     zs=1.4
-    lc = snappedlenslightcone(catalog,rmax,xc,zl,zs)
-
+    lc = lens_lightcone(catalog,rmax,xc,zl,zs)
+    lc.make_kappa_contributions()
 
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     #lc.make_kappa_contributions()
