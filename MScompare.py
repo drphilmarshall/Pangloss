@@ -80,7 +80,7 @@ def MScompare(argv):
    vb = False
    Ncones = 1000
    Rcone = 5 # arcmin
-   truncationscale=10   # *R_200 halo truncation
+   truncationscale=20   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
    zl = 0.62
@@ -157,7 +157,6 @@ def MScompare(argv):
    kappa_keeton_cut=[]
 
    for k in range(Ncones):
-      h=10
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k]]
 
@@ -165,7 +164,7 @@ def MScompare(argv):
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
       # Reconstruction:
-      lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs)
+      lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,nplanes=200)
       N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
       lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
       kappa_keeton[k] = lc.kappa_keeton_total-kappa_empty
@@ -205,7 +204,7 @@ def MScompare(argv):
    plt.subplot(311)
    plt.title("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias,scatter))
    plt.hist(kappa_keeton, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
-   plt.legend(title='Cut at %.0f R_vir.'%h, loc=1)
+   plt.legend(title='Cut at %.0f R_vir.'%truncationscale, loc=1)
    plt.subplot(312)
    plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
    plt.legend(loc=1)
@@ -214,7 +213,7 @@ def MScompare(argv):
    plt.legend(loc=2)
    plt.savefig("Fig2.png")
    plt.show()
-
+   
    """
    plt.clf()
    plt.subplot(111)
@@ -241,6 +240,7 @@ def MScompare(argv):
    plt.savefig("Fig1.png")
    plt.show()  
 
+   """
    y=difference
    x=kappa_keeton
    yerr=0.01 #assume an error on y
@@ -269,7 +269,7 @@ def MScompare(argv):
    plt.savefig("Fig4.png")
    plt.show() 
    
-   
+   """
    plt.clf()
    plt.subplot(111)
    z=numpy.linspace(-0.05,0.2,30)
@@ -333,5 +333,6 @@ def MScompare(argv):
 
 if __name__ == '__main__':
   MScompare(sys.argv[1:])
+  print "what's your fiducial cosmology?"
 
 # ======================================================================

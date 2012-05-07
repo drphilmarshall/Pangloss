@@ -200,13 +200,13 @@ class lens_lightcone(lightcone,grid.lensgrid):
                #treat as NFW if within truncation radius:
                if self.galaxies.rphys[i]<R_trunc[i]: 
                    kappaNFW[i]*=LP.Ffunc([x[i]])
-                   shearNFW[i]*=LP.Gfunc([x[i]])
+                   shearNFW[i]*=0#LP.Gfunc([x[i]])
                #treat as point mass if outside truncation radius:
                else:
                    kappaNFW[i]*=0.0
-                   shearNFW[i]=((mass[i])\
-                                    /(3.14159*( self.galaxies.rphys[i])**2))\
-                                    /self.galaxies.sigma_crit[i]
+                   shearNFW[i]=0.0#((mass[i])\
+                                  #  /(3.14159*( self.galaxies.rphys[i])**2))\
+                                  #  /self.galaxies.sigma_crit[i]
         
         #-------------------------------------------------------
         # Now computer starlight lensing component.
