@@ -79,8 +79,8 @@ def MScompare(argv):
 
    vb = False
    Ncones = 1000
-   Rcone = 5 # arcmin
-   truncationscale=20   # *R_200 halo truncation
+   Rcone = 2 # arcmin
+   truncationscale=5   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
    zl = 0.62
@@ -134,6 +134,8 @@ def MScompare(argv):
    MSconvergence = Pangloss.kappamap(kappafile)
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
 
+
+   # Calculate kappasmooth
    data=["%s"%catalog]
    kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,nplanes=50)
 
@@ -152,7 +154,9 @@ def MScompare(argv):
    N_90 = numpy.zeros(Ncones)
    N_30 = numpy.zeros(Ncones)
    N_15 = numpy.zeros(Ncones)
-   other = numpy.zeros(Ncones) 
+   other = numpy.zeros(Ncones)
+   other2 = numpy.zeros(Ncones)
+   
    kappa_hilbert_cut=[]
    kappa_keeton_cut=[]
 
@@ -161,11 +165,19 @@ def MScompare(argv):
       xc = [x[k],y[k]]
 
       # Truth:
-      kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
+      kappa_hilbert[k] = MSconvergence.at(y[k],x[k],coordinate_system='physical')
+      # THE CATALOGUES NEED TRANSPOSING!!!! (don't make that mistake again!)
+
+
 
       # Reconstruction:
       lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,nplanes=200)
+      col="mag_SDSS_i"
+      magcutcat=lc.galaxies.where((lc.galaxies["%s"%col] < 22))
       N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
+      other[k]=numpy.min(magcutcat.r)
+      other2[k]=numpy.min(lc.galaxies.r)
+      
       lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
       kappa_keeton[k] = lc.kappa_keeton_total-kappa_empty
 
@@ -177,7 +189,13 @@ def MScompare(argv):
    
    difference = kappa_keeton - kappa_hilbert
    bias = numpy.average(difference)
+
+   y=difference
+   x=kappa_keeton
+
    scatter = numpy.std(difference)
+   scatterprime = numpy.std(kappa_hilbert)
+   print scatterprime
    hc=kappa_hilbert_cut
    kc=kappa_keeton_cut
    print len(kc)
@@ -214,7 +232,29 @@ def MScompare(argv):
    plt.savefig("Fig2.png")
    plt.show()
    
-   """
+   plt.subplot(121)
+   plt.scatter(difference,other2,s=1,c='k',edgecolor='none', label="Any halo")
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   #plt.ylabel("LOS distance to most important object (arcmin)")
+   plt.ylabel("Closest halo to LOS (arcmin)")
+   plt.ylim([-0.4,0.2])
+   plt.subplot(121).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+   plt.ylim([0,0.8])
+   plt.legend()
+
+   plt.subplot(122)
+   plt.scatter(difference,other,s=1,c='g',edgecolor='none', label="Halo with i<22")
+   plt.legend()
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlim([-0.4,0.2])
+   plt.ylim([0,0.8])
+   plt.subplot(122).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+
+   plt.savefig("other.png")
+   plt.show()  
+   
+   
+   
    plt.clf()
    plt.subplot(111)
    plt.scatter(kappa_keeton,difference,s=1,c='k',edgecolor='none')
@@ -223,15 +263,9 @@ def MScompare(argv):
    plt.xlim([-0.08,0.25])
    plt.ylim([-0.2,0.1])
    plt.savefig("Fig3.png")
-   plt.show()
-   plt.scatter(difference,other,s=1,c='k',edgecolor='none')
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-   #plt.ylabel("LOS distance to most important object (arcmin)")
-   plt.ylabel("Largest individual $\kappa_{\mathrm{Keeton}}$ in LOS")
-   plt.savefig("other.png")
-   plt.show()  
+
    
- 
+
    plt.clf()
    plt.subplot(111)
    plt.scatter(kappa_hilbert,kappa_keeton,s=1,c='k',edgecolor='none')
@@ -241,22 +275,8 @@ def MScompare(argv):
    plt.show()  
 
    """
-   y=difference
-   x=kappa_keeton
-   yerr=0.01 #assume an error on y
-   fitfunc= lambda p,x: p[0]+p[1]*x  
-   errfunc= lambda p,x,y, err: (y-fitfunc(p,x))/err
-   pinit=[0.03,-1.]
-   out =optimize.leastsq(errfunc,pinit,args=(x,y,yerr),full_output=1)
-   pfinal=out[0]
-   covar=out[1]
-   #print covar
-   #print pfinal
 
-   scatter=y-pfinal[0]-pfinal[1]*x
    #print numpy.std(scatter)
-
-   
    plt.clf()
    plt.subplot(111)
    z=numpy.linspace(-0.05,0.2,30)
@@ -269,7 +289,8 @@ def MScompare(argv):
    plt.savefig("Fig4.png")
    plt.show() 
    
-   """
+
+
    plt.clf()
    plt.subplot(111)
    z=numpy.linspace(-0.05,0.2,30)
@@ -333,6 +354,6 @@ def MScompare(argv):
 
 if __name__ == '__main__':
   MScompare(sys.argv[1:])
-  print "what's your fiducial cosmology?"
+  print "check your fiducial cosmology?"
 
 # ======================================================================

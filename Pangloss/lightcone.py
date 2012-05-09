@@ -173,7 +173,7 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
     def make_kappa_contributions(self,BehrooziHalos=False,truncation="hard",truncationscale=5): 
         
-        M200 = self.galaxies['M_Subhalo[M_sol/h]']
+        M200 = self.galaxies['M_Subhalo[M_sol/h]']#*0.5
         c200 = Rel.MCrelation(M200)
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
 
@@ -200,13 +200,13 @@ class lens_lightcone(lightcone,grid.lensgrid):
                #treat as NFW if within truncation radius:
                if self.galaxies.rphys[i]<R_trunc[i]: 
                    kappaNFW[i]*=LP.Ffunc([x[i]])
-                   shearNFW[i]*=0#LP.Gfunc([x[i]])
+                   shearNFW[i]*=LP.Gfunc([x[i]])
                #treat as point mass if outside truncation radius:
                else:
                    kappaNFW[i]*=0.0
-                   shearNFW[i]=0.0#((mass[i])\
-                                  #  /(3.14159*( self.galaxies.rphys[i])**2))\
-                                  #  /self.galaxies.sigma_crit[i]
+                   shearNFW[i]=((mass[i])\
+                                    /(3.14159*( self.galaxies.rphys[i])**2))\
+                                    /self.galaxies.sigma_crit[i]
         
         #-------------------------------------------------------
         # Now computer starlight lensing component.

@@ -99,3 +99,25 @@ def smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=2
 #d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
 #datafile=[d1]
 #Smooth(0.6,1.4,datafile,truncationscale=5,nplanes=20)
+
+
+
+#test=False
+test=False
+#-------------------------------------------
+if test ==True:
+# Kappa Smooth as a function of magnitude cut:
+   d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+   datafile=[d1]
+   maglist=numpy.linspace(19,25,15,endpoint=True)
+   smoothlist=numpy.zeros(len(maglist))
+   for i in range(len(maglist)):
+      magcut=maglist[i]
+      smoothlist[i]=smooth(0.6,1.4,datafile,truncationscale=5,magnitudecut=magcut,band="i",nplanes=50)
+
+   plt.plot(maglist,smoothlist)
+   plt.xlabel("i band depth")
+   plt.ylabel("$\kappa_{\mathrm{smooth}}$")
+   plt.title("Truncation at 5 R$\mathrm{_{Vir}}$, $z_l = 0.6$, $z_s = 1.4$")
+   plt.savefig("../figure3.png")
+   plt.show()
