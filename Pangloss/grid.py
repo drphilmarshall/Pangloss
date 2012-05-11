@@ -33,8 +33,6 @@ import cPickle
 #t0=time.clock()    
 
 D = distances.Distance()
-D.h = 0.7
-
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -45,8 +43,8 @@ vb = False
     
 
 class grid(object):
-
-   def __init__(self,zmax=3,nplanes=200): 
+   def __init__(self,zmax=3,nplanes=200,cosmo=[0.25,0.75,0.73]): 
+       D=distances.Distance(cosmo=cosmo)
        self.name = '1D Redshift grid, with precalculated quantities '
 
        self.zmax=zmax
@@ -74,9 +72,9 @@ class grid(object):
 
 class lensgrid(grid):
 
-   def __init__(self,zl,zs,zmax=[],nplanes=200):
+   def __init__(self,zl,zs,zmax=[],nplanes=200,cosmo=[0.25,0.75,0.73]):
       if zmax==[]:zmax=zs
-      grid.__init__(self,zmax,nplanes)
+      grid.__init__(self,zmax,nplanes,cosmo=cosmo)
       self.name = '1D Redshift grid, with precalculated quantities for a fixed lens and source'
 
 

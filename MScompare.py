@@ -79,8 +79,8 @@ def MScompare(argv):
 
    vb = False
    Ncones = 1000
-   Rcone = 2 # arcmin
-   truncationscale=5   # *R_200 halo truncation
+   Rcone = 3 # arcmin
+   truncationscale=10   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
    zl = 0.62
@@ -137,7 +137,7 @@ def MScompare(argv):
 
    # Calculate kappasmooth
    data=["%s"%catalog]
-   kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,nplanes=50)
+   kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="RVir",nplanes=50)
 
    # --------------------------------------------------------------------
 
@@ -160,6 +160,7 @@ def MScompare(argv):
    kappa_hilbert_cut=[]
    kappa_keeton_cut=[]
 
+   interesting=[]
    for k in range(Ncones):
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k]]
@@ -175,16 +176,18 @@ def MScompare(argv):
       col="mag_SDSS_i"
       magcutcat=lc.galaxies.where((lc.galaxies["%s"%col] < 22))
       N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
-      other[k]=numpy.min(magcutcat.r)
-      other2[k]=numpy.min(lc.galaxies.r)
       
-      lc.make_kappa_contributions(truncation='hard',truncationscale=truncationscale)
+      other[k]=numpy.min(magcutcat.rphys)
+      other2[k]=numpy.min(lc.galaxies.rphys)
+      
+      lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale)
       kappa_keeton[k] = lc.kappa_keeton_total-kappa_empty
+      if numpy.absolute(kappa_keeton[k]-kappa_hilbert[k])>0.1: interesting.append(xc)
 
 
 
    # --------------------------------------------------------------------
-
+   print interesting
    # Basic statistics of two arrays:
    
    difference = kappa_keeton - kappa_hilbert
@@ -232,12 +235,13 @@ def MScompare(argv):
    plt.savefig("Fig2.png")
    plt.show()
    
+   """
    plt.subplot(121)
    plt.scatter(difference,other2,s=1,c='k',edgecolor='none', label="Any halo")
    plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
    #plt.ylabel("LOS distance to most important object (arcmin)")
    plt.ylabel("Closest halo to LOS (arcmin)")
-   plt.ylim([-0.4,0.2])
+   plt.xlim([-0.4,0.2])
    plt.subplot(121).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
    plt.ylim([0,0.8])
    plt.legend()
@@ -252,8 +256,26 @@ def MScompare(argv):
 
    plt.savefig("other.png")
    plt.show()  
-   
-   
+   """
+   plt.subplot(121)
+   plt.scatter(difference,other2,s=1,c='k',edgecolor='none', label="Any halo")
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.ylabel("Closest halo to LOS (Mpc)")
+   plt.xlim([-0.4,0.2])
+   plt.subplot(121).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+   #plt.ylim([0,0.8])
+   plt.legend()
+
+   plt.subplot(122)
+   plt.scatter(difference,other,s=1,c='g',edgecolor='none', label="Halo with i<22")
+   plt.legend()
+   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlim([-0.4,0.2])
+   #plt.ylim([0,0.8])
+   plt.subplot(122).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+
+   plt.savefig("other.png")
+   plt.show()    
    
    plt.clf()
    plt.subplot(111)
@@ -354,6 +376,7 @@ def MScompare(argv):
 
 if __name__ == '__main__':
   MScompare(sys.argv[1:])
-  print "check your fiducial cosmology?"
+  #print "check your fiducial cosmology?"
+
 
 # ======================================================================

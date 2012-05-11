@@ -21,8 +21,8 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=200):
-   lg=grid.lensgrid(zl,zs,nplanes=nplanes)
+def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73]):
+   lg=grid.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
    lg.populatelensgrid()
    smoothcomponentindiv=numpy.zeros((lg.nplanes,len(catalogues)))
    smoothcomponent=numpy.zeros(lg.nplanes)
@@ -67,8 +67,13 @@ def smooth(zl,zs,catalogues,truncationscale=3,magnitudecut=99,band='r',nplanes=2
       rs = r200/c200
       rhos = LP.delta_c(c200)*rhocrit 
 
-      R_trunc=truncationscale*r200
-    
+      if hardcut == "Rvir" or hardcut=="RVir" or hardcut == "r_vir" or hardcut == "rvir":
+         R_trunc=truncationscale*r200
+      elif hardcut == "rs" or hardcut=="Rs" or hardcut == "R_s" or hardcut == "r_s":
+         R_trunc=truncationscale*r_s
+      else: print "what hardcut did you mean?"  
+
+
       mass=4*3.14159*rhos*(rs**3)  *     \
           (  numpy.log(1+(R_trunc)/rs) - \
                 R_trunc/(rs+R_trunc)    \

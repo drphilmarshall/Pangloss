@@ -4,6 +4,8 @@ import numpy, numpy.random as rnd, atpy
 import distances
 from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
+from numpy import exp,pi
+from scipy.special import gamma,gammainc
 
 #import time
 #t0=time.clock()    
@@ -129,4 +131,25 @@ def BMO1Gfunc(x,t):    ### I AM DEFINITELY WRONG ### I GIVE SILLY ANSWERS IF X~1
 
 # ========================================================================
 # de Vaucelour profile functions.
+# ------------------------------------------------------------------------
+
+#def sersic(r,re,amp=1.,n=4.):
+#     k = 2.*n-1./3+4./(405.*n)+46/(25515.*n**2)
+#     amp = amp/((re**2)*exp(k)*n*(k**(-2*n))*gamma(2*n)*2*pi)
+#     R = r/re
+#     return amp*exp(-k*(R**(1./n)-1.))
+
+def sersic(r,re,amp=1.,n=4.):
+     k = 2.*n-1./3+4./(405.*n)+46/(25515.*n**2)
+     amp = amp/((re**2)*exp(k)*n*(k**(-2*n))*gamma(2*n)*2*pi)
+     R = r/re
+     kappa = amp*exp(-k*(R**(1./n)-1.))
+     kbar = 2*n*amp*exp(k)*gamma(2*n)*gammainc(2*n,k*R**(1./n))/(R**2*k**(2*n))
+     return kappa,kbar-kappa
+
+
+
+
+# ========================================================================
+# 
 # ------------------------------------------------------------------------
