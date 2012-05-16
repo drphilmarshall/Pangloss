@@ -11,7 +11,6 @@ import sys,getopt,atpy,pyfits
 import pylab,matplotlib.pyplot as plt
 import numpy
 import numpy.random as rnd
-import distances
 from scipy import optimize
 from scipy import stats
 
@@ -21,7 +20,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73]):
+def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="tom"):
    lg=grid.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
    lg.populatelensgrid()
    smoothcomponentindiv=numpy.zeros((lg.nplanes,len(catalogues)))
@@ -70,7 +69,7 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
       if hardcut == "Rvir" or hardcut=="RVir" or hardcut == "r_vir" or hardcut == "rvir":
          R_trunc=truncationscale*r200
       elif hardcut == "rs" or hardcut=="Rs" or hardcut == "R_s" or hardcut == "r_s":
-         R_trunc=truncationscale*r_s
+         R_trunc=truncationscale*rs
       else: print "what hardcut did you mean?"  
 
 
@@ -91,15 +90,19 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
    
    lg.smoothcomponent=smoothcomponent
    lg.kappa=lg.smoothcomponent/lg.sigma_crit_p
-   lg.kappakeeton=LF.KappaKeeton_beta(lg.beta_p,lg.kappa,0)
-
+   lg.kappaScaled=LF.KappaScale_beta(lg.beta_p,lg.kappa,0)
+   lg.kappaScaled_keeton=LF.KappaScale_beta(lg.beta_p,lg.kappa,0,scaling="keeton")
    #plt.plot(lg.kappakeeton)
    #plt.show()
 
-   print "smooth component correction is: ",numpy.sum(lg.kappakeeton)
-
-   return numpy.sum(lg.kappakeeton)
-
+   
+   if scaling == "keeton":
+      print "smooth component correction is: ",numpy.sum(lg.kappaScaled)
+      return numpy.sum(lg.kappaScaled_keeton)
+   
+   if scaling == "tom":
+      print "smooth component correction is: ",numpy.sum(lg.kappa-(lg.beta_p*lg.kappa))
+      return numpy.sum(lg.kappa-(lg.beta_p*lg.kappa))
 
 #d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
 #datafile=[d1]

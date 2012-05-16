@@ -46,7 +46,6 @@ The warning: divide by zero comes from the grid class, but it isn't causing any 
 import pylab
 import matplotlib.pyplot as plt
 import numpy, numpy.random as rnd, atpy
-import distances
 from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
 import LensingProfiles as LP
@@ -65,7 +64,7 @@ vb = False
 # ============================================================================
  
 class lightcone(object):
-    def __init__(self,catalog,position,radius):
+    def __init__(self,catalog,position,radius,magnitudecut=99,band="r"):
         self.name = 'Lightcone through the observed Universe'
         self.catalog = catalog
         self.xmax = self.catalog['pos_0[rad]'].max()
@@ -91,6 +90,14 @@ class lightcone(object):
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
         F814 = (self.galaxies.mag_SDSS_i + self.galaxies.mag_SDSS_z)/2. #approximate F814 colour.
         self.galaxies.add_column("mag_F814W",F814)
+        if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
+            col = "mag_SDSS_%s" % band
+        elif band == "F814" or band == "F814W" or band == "814" or band == 814:
+            col = "mag_F814W"
+        else:
+            col = "mag_%s" % band
+        self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < magnitudecut)
+
 
         return None
 
@@ -131,9 +138,9 @@ class lightcone(object):
 # ============================================================================
 
 class lens_lightcone(lightcone,grid.lensgrid):
-    def __init__(self,catalog,position,radius,zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73]):
+    def __init__(self,catalog,position,radius,zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r"):
         self.name = 'Snapped Lens Lightcone through the observed Universe'
-        lightcone.__init__(self,catalog,radius,position)
+        lightcone.__init__(self,catalog,radius,position,magnitudecut=magnitudecut,band=band)
         grid.lensgrid.__init__(self,zl,zs,nplanes=nplanes,cosmo=cosmo)
         self.populatelensgrid()
 
@@ -167,7 +174,7 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5): 
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom"): 
         # NFW lensing component.
 
         M200 = self.galaxies['M_Subhalo[M_sol/h]']#*0.5
@@ -204,17 +211,18 @@ class lens_lightcone(lightcone,grid.lensgrid):
                #treat as point mass if outside truncation radius:
                else:
                    kappaNFW[i]*=0.0
-                   shearNFW[i]=((mass[i])\
+                   shearNFW[i]=(((mass[i])\
                                     /(3.14159*( self.galaxies.rphys[i])**2))\
-                                    /self.galaxies.sigma_crit[i]
+                                    /self.galaxies.sigma_crit[i])
+                                    
         
         #-------------------------------------------------------
         # Now computer starlight lensing component.
 
-        Mstar=self.galaxies['M_Stellar[M_sol/h]']
-        reff=Rel.reffFromMass(Mstar) # in kiloparsecs. # Remember self.galaxies.rphys[i] is in Mpc so
-        reff=reff/1000 # now in megaparsecs :-)
-        kappaStar,shearStar=Mstar*LP.sersic(self.galaxies.rphys,reff)/self.galaxies.sigma_crit
+        #Mstar=self.galaxies['M_Stellar[M_sol/h]']
+        #reff=Rel.reffFromMass(Mstar) # in kiloparsecs. # Remember self.galaxies.rphys[i] is in Mpc so
+        #reff=reff/1000 # now in megaparsecs :-)
+        #kappaStar,shearStar=Mstar*LP.sersic(self.galaxies.rphys,reff)/self.galaxies.sigma_crit
         #should ^ these be times Mstar or not? TC thinks so.
         ###
         ####
@@ -222,19 +230,19 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
         #-------------------------------------------------------
         #compute a fudge component (nonNFW additional component to the halos), just to see what happens
-        kappaFudge=kappaNFW*0#.5
+        #kappaFudge=kappaNFW*0#.5
 
         #-------------------------------------------------------
-        kappa = kappaNFW + kappaFudge#+ kappaStar
+        kappa = kappaNFW #+ kappaStar
         shear = shearNFW #+ shearStar
 
         self.galaxies.add_column('kappa',kappa)
         self.galaxies.add_column('gamma',shear)
 
-        kappa_keeton= LF.KappaKeeton_beta(self.galaxies.beta,self.galaxies.kappa,self.galaxies.gamma)
-        self.galaxies.add_column('kappa_keeton',kappa_keeton)
+        kappa_Scaled= LF.KappaScale_beta(self.galaxies.beta,self.galaxies.kappa,self.galaxies.gamma,scaling=scaling)
+        self.galaxies.add_column('kappa_Scaled',kappa_Scaled)
         
-        self.kappa_keeton_total=numpy.sum(kappa_keeton)
+        self.kappa_Scaled_total=numpy.sum(kappa_Scaled)
         
         return None
 
@@ -550,27 +558,86 @@ def test2(catalog):
 
 def test3(catalog):
     rmax = 5
+    truncationscale=10
+    ncones=12
+    zl=0.6
+    zs=1.4
 
     xmax = catalog['pos_0[rad]'].max()
     xmin = catalog['pos_0[rad]'].min()
     ymax = catalog['pos_1[rad]'].max()
     ymin = catalog['pos_1[rad]'].min()
 
-    x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
-    y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad)
+    H0=numpy.linspace(0.65,0.83,30,endpoint=True)
+    Om=numpy.linspace(0.2,0.4,21,endpoint=True)
+
+    print Om
+
+    import smooth
+    datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+    data=[datafile]
+    kappa_empty_true= smooth.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="Rvir",nplanes=50,cosmo=[0.25,0.75,0.73])
+
+    x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad,ncones)
+    y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad,ncones)
+
+    matter=False
+    hubble=True
+    
+    if matter:
+        cosmologies=Om
+    elif hubble:
+        cosmologies=H0
+    else:
+        print "what should I plot?"
 
 
- 
-    xc = [x,y]
-    zl=0.6
-    zs=1.4
-    lc = lens_lightcone(catalog,rmax,xc,zl,zs,cosmo=[0.25,0.75,0.73])
-    lc.make_kappa_contributions()
-    print numpy.sum(lc.galaxies.kappa_keeton)
-    #lc.galaxies.remove_columns(['Mtrunc','kappa','gamma','kappa_keeton']) 
-    lc = lens_lightcone(catalog,rmax,xc,zl,zs,cosmo=[0.25,0.75,0.6])
-    lc.make_kappa_contributions()
-    print numpy.sum(lc.galaxies.kappa_keeton)
+    kappacos=numpy.zeros((len(cosmologies),ncones))
+    kappacostruth=numpy.zeros(ncones)
+    
+    for i in range(len(cosmologies)):
+        if matter:
+            cosmo=[Om[i],1-Om[i],0.73]
+        elif hubble:
+            cosmo=[0.25,0.75,H0[i]]
+        kappa_empty = smooth.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="Rvir",nplanes=50,cosmo=cosmo)
+
+        for j in range(ncones):
+            xc = [x[j],y[j]]
+
+            lc = lens_lightcone(catalog,rmax,xc,zl,zs,cosmo=[0.25,0.75,0.73])
+            lc.make_kappa_contributions(truncationscale=truncationscale)
+            kappacostruth[j]=numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty_true
+
+            lc = lens_lightcone(catalog,rmax,xc,zl,zs,cosmo=cosmo)
+            lc.make_kappa_contributions(truncationscale=truncationscale)
+            kappacos[i,j]=numpy.sum(lc.galaxies.kappa_keeton)-kappa_empty-kappacostruth[j]
+
+
+    order=numpy.argsort(kappacostruth)
+
+    ktrue=numpy.take(kappacostruth,order)
+    kcos=numpy.take(kappacos,order,axis=1)
+
+
+
+
+    #now make a plot
+    plt.figure(figsize=(10,6))
+    for j in range(ncones):
+            if j < 7: plt.plot(cosmologies,kcos[:,j],label="%.3f"%ktrue[j])
+            elif j < 14: plt.plot(cosmologies,kcos[:,j],ls= 'dashed',label="%.3f"%ktrue[j])
+            plt.xlim([cosmologies[0],cosmologies[-1]])
+    plt.ylabel("$\Delta \kappa_{\mathrm{Keeton}}$")
+    if matter:
+        plt.xlabel("$\Omega_{\mathrm{M}}$")
+        plt.legend(title = "$\kappa_{\mathrm{Keeton}}$$(\Omega_{\mathrm{M}}=0.25)$")
+    elif hubble:
+        plt.xlabel("$h$")
+        plt.legend(title = "$\kappa_{\mathrm{Keeton}}$$(h=0.73)$")
+    plt.savefig("kappavsh.png")
+    plt.show()
+
 
     #print "Computing Keeton (2003) convergence at optical axis due to each halo..."
     #lc.make_kappa_contributions()

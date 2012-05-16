@@ -32,8 +32,6 @@ import cPickle
 
 #t0=time.clock()    
 
-D = distances.Distance()
-
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 
@@ -42,11 +40,10 @@ vb = False
 # ============================================================================
     
 
-class grid(object):
+class grid(distances.Distance):
    def __init__(self,zmax=3,nplanes=200,cosmo=[0.25,0.75,0.73]): 
-       D=distances.Distance(cosmo=cosmo)
+       distances.Distance.__init__(self,cosmo=cosmo)
        self.name = '1D Redshift grid, with precalculated quantities '
-
        self.zmax=zmax
        self.nplanes=nplanes    
        #These are the planes:
@@ -54,8 +51,10 @@ class grid(object):
 
        self.Da_p=numpy.zeros(len(self.zplane))
        for i in range(len(self.zplane)):
-           self.Da_p[i]= D.Da(self.zplane[i])+1e-100
-       self.rho_crit_p=D.rho_crit_univ(self.zplane)
+           self.Da_p[i]= self.Da(self.zplane[i])+1e-100
+       self.rho_crit_p=self.rho_crit_univ(self.zplane)
+
+       self.cosmo=cosmo
 
    def snap(self,z):
       snapped_p=numpy.digitize(z,self.zplane-self.dz)-1
@@ -90,15 +89,15 @@ class lensgrid(grid):
 # ----------------------------------------------------------------------------
 
    def populatelensgrid(self):
-       self.Da_l=D.Da(self.zl)
-       self.Da_s=D.Da(self.zs)
-       self.Da_ls=D.Da(self.zl,self.zs)
+       self.Da_l=self.Da(self.zl)
+       self.Da_s=self.Da(self.zs)
+       self.Da_ls=self.Da(self.zl,self.zs)
        #Calculate angular diameter distances for each plane.
        self.Da_ps=numpy.zeros(len(self.zplane))
        self.Da_pl=numpy.zeros(len(self.zplane))
        for i in range(len(self.zplane)):
-           self.Da_ps[i] = D.Da(self.zplane[i],self.zs)+1e-100
-           self.Da_pl[i] = D.Da(self.zplane[i],self.zl)+1e-100
+           self.Da_ps[i] = self.Da(self.zplane[i],self.zs)+1e-100
+           self.Da_pl[i] = self.Da(self.zplane[i],self.zl)+1e-100
       
        #Calculate sigma crit on each plane. #will raise a div0 warning, but this should be ignored
        self.sigma_crit_p=LF.SigmaCrit_Da(self.Da_p,self.Da_s,self.Da_ps)

@@ -10,6 +10,7 @@ import numpy.random as rnd
 import distances
 from scipy import optimize
 from scipy import stats
+import cPickle
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -79,8 +80,8 @@ def MScompare(argv):
 
    vb = False
    Ncones = 1000
-   Rcone = 3 # arcmin
-   truncationscale=10   # *R_200 halo truncation
+   Rcone = 6 # arcmin
+   truncationscale=3   # *R_200 halo truncation
   
    # Defaults are for B1608 (CHECK):
    zl = 0.62
@@ -137,7 +138,8 @@ def MScompare(argv):
 
    # Calculate kappasmooth
    data=["%s"%catalog]
-   kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="RVir",nplanes=50)
+   kappa_empty = Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling="keeton")
+   kappa_empty_tom= Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling="tom")
 
    # --------------------------------------------------------------------
 
@@ -146,8 +148,11 @@ def MScompare(argv):
    
    x = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Ncones)
    y = rnd.uniform(ymin+Rcone*arcmin2rad,ymax-Rcone*arcmin2rad,Ncones)
-      
-   kappa_keeton = numpy.zeros(Ncones)
+   
+
+
+   kappa_Scaled = numpy.zeros(Ncones)
+   kappa_tom = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
    N_45 = numpy.zeros(Ncones)
    N_60 = numpy.zeros(Ncones)
@@ -157,10 +162,11 @@ def MScompare(argv):
    other = numpy.zeros(Ncones)
    other2 = numpy.zeros(Ncones)
    
-   kappa_hilbert_cut=[]
-   kappa_keeton_cut=[]
+   Rbins=numpy.linspace(0,Rcone,30,endpoint=True)
+   kappa_Scaled_R=numpy.zeros((len(Rbins),Ncones))
+   delta_kappa_R=numpy.zeros((len(Rbins),Ncones))
 
-   interesting=[]
+
    for k in range(Ncones):
       if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k]]
@@ -169,62 +175,87 @@ def MScompare(argv):
       kappa_hilbert[k] = MSconvergence.at(y[k],x[k],coordinate_system='physical')
       # THE CATALOGUES NEED TRANSPOSING!!!! (don't make that mistake again!)
 
-
-
       # Reconstruction:
-      lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,nplanes=200)
+      lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,nplanes=100)
       col="mag_SDSS_i"
       magcutcat=lc.galaxies.where((lc.galaxies["%s"%col] < 22))
-      N_45[k]=lc.N_radius(45,cut=[18.5,24.5])
-      
       other[k]=numpy.min(magcutcat.rphys)
       other2[k]=numpy.min(lc.galaxies.rphys)
       
-      lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale)
-      kappa_keeton[k] = lc.kappa_keeton_total-kappa_empty
-      if numpy.absolute(kappa_keeton[k]-kappa_hilbert[k])>0.1: interesting.append(xc)
+      lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling="tom")
+      kappa_Scaled[k] = lc.kappa_Scaled_total-kappa_empty
+      kappa_tom[k] = numpy.sum((1-lc.galaxies.beta)*lc.galaxies.kappa)-kappa_empty_tom
 
 
+      # calculate for smaller Rcone.
+      for j in range(len(Rbins)):
+         mc=lc.galaxies.where(lc.galaxies.r<Rbins[j])
+         kappa_Scaled_R[j,k]=numpy.sum(mc.kappa_Scaled)-kappa_empty
+         delta_kappa_R[j,k]=numpy.sum(mc.kappa_Scaled)-kappa_empty-kappa_hilbert[k]
 
    # --------------------------------------------------------------------
-   print interesting
    # Basic statistics of two arrays:
    
-   difference = kappa_keeton - kappa_hilbert
+   difference = kappa_Scaled - kappa_hilbert
    bias = numpy.average(difference)
+   scatter = numpy.std(difference)
+   difference2 = kappa_tom - kappa_hilbert
+   scatter2 = numpy.std(difference2)
+   bias2 = numpy.average(difference2)
 
    y=difference
-   x=kappa_keeton
+   x=kappa_Scaled
 
-   scatter = numpy.std(difference)
-   scatterprime = numpy.std(kappa_hilbert)
-   print scatterprime
-   hc=kappa_hilbert_cut
-   kc=kappa_keeton_cut
-   print len(kc)
-   dc=[]
-   for i in range(len(kc)):
-      dc.append(kc[i]-hc[i])
+   #scatterprime = numpy.std(kappa_hilbert)
+   #print scatterprime
 
-   print "$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
-   """
-   h=kappa_hilbert
-   print stats.linregress(N_45,h)[2]
-   print stats.linregress(N_60,h)[2]
-   print stats.linregress(N_90,h)[2]
-   print stats.linregress(N_30,h)[2]
-   print stats.linregress(N_15,h)[2]
-   """
+   print "$\kappa_{\mathrm{Scaled}}-\kappa_{\mathrm{Hilbert}}$ = ",bias,"+/-",scatter
 
-
+   bias_R=numpy.zeros(len(Rbins))
+   scatter_R=numpy.zeros(len(Rbins))
+   for j in range(len(Rbins)):
+      scatter_R[j]=numpy.std(delta_kappa_R[j,:])
+      bias_R[j]=numpy.mean(delta_kappa_R[j,:])
 #========================================================================
-   #Now lots of plotting routines!!!!
+   #Now lots of plotting routines
 #========================================================================  
-   
+   FILE = open("radcutbias.txt", 'w')
+   FILE2 = open("radcutscatter.txt", 'w')
+   cPickle.dump(bias_R , FILE )
+   cPickle.dump(scatter_R , FILE2)
+   plt.plot(Rbins,scatter_R,c='k',label="scatter")
+   plt.xlabel("Radius out to which LoS is reconstructed(arcmin)")
+   plt.ylabel("$\kappa_{\mathrm{TC}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.plot(Rbins,bias_R,c='k', ls = 'dashed',label="bias")
+   plt.text(3,0.35,"Truncation at 5 R_Vir")
+   plt.axhline(y=0,xmin=0,xmax=1,ls="dotted")
+   plt.legend(loc=4,title ="%i LoS"%Ncones)
+   plt.savefig("DeltaKappa_vs_Rcone.png")
+ 
+   plt.show()
+
+
+
+   list=numpy.linspace(-0.05,0.25,30)
+   plt.subplot(311)
+   plt.title("$\kappa_{\mathrm{TC}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias2,scatter2))
+   plt.hist(kappa_tom, bins=list,normed=True, label="$\kappa_{\mathrm{TC}}$")
+   plt.legend(title='Cut at %.0f R_vir.'%truncationscale, loc=1)
+   plt.subplot(312)
+   plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=1)
+   plt.subplot(313)
+   plt.hist(difference2, bins=20,normed=True,label="$\kappa_{\mathrm{TC}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.legend(loc=2)
+   plt.savefig("kappatom.png")
+   plt.show()
+
+
+   """ #I'm not keeton anymore!!!
    list=numpy.linspace(-0.05,0.25,30)
    plt.subplot(311)
    plt.title("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (bias,scatter))
-   plt.hist(kappa_keeton, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
+   plt.hist(kappa_Scaled, bins=list,normed=True, label="$\kappa_{\mathrm{Keeton}}$")
    plt.legend(title='Cut at %.0f R_vir.'%truncationscale, loc=1)
    plt.subplot(312)
    plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
@@ -232,9 +263,11 @@ def MScompare(argv):
    plt.subplot(313)
    plt.hist(difference, bins=20,normed=True,label="$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
    plt.legend(loc=2)
-   plt.savefig("Fig2.png")
+   plt.savefig("kappakeeton.png")
    plt.show()
-   
+   """
+
+
    """
    plt.subplot(121)
    plt.scatter(difference,other2,s=1,c='k',edgecolor='none', label="Any halo")
@@ -259,29 +292,29 @@ def MScompare(argv):
    """
    plt.subplot(121)
    plt.scatter(difference,other2,s=1,c='k',edgecolor='none', label="Any halo")
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{TC}}-\kappa_{\mathrm{Hilbert}}$")
    plt.ylabel("Closest halo to LOS (Mpc)")
-   plt.xlim([-0.4,0.2])
-   plt.subplot(121).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+   #plt.xlim([-0.4,0.2])
+   #plt.subplot(121).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
    #plt.ylim([0,0.8])
    plt.legend()
 
    plt.subplot(122)
    plt.scatter(difference,other,s=1,c='g',edgecolor='none', label="Halo with i<22")
    plt.legend()
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-   plt.xlim([-0.4,0.2])
+   plt.xlabel("$\kappa_{\mathrm{TC}}-\kappa_{\mathrm{Hilbert}}$")
+   #plt.xlim([-0.4,0.2])
    #plt.ylim([0,0.8])
-   plt.subplot(122).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
+   #plt.subplot(122).xaxis.set_ticklabels(["",-0.3,"",-0.1,"",0.1])
 
    plt.savefig("other.png")
    plt.show()    
    
    plt.clf()
    plt.subplot(111)
-   plt.scatter(kappa_keeton,difference,s=1,c='k',edgecolor='none')
-   plt.ylabel("$\kappa_{\mathrm{Keeton}}-\kappa_{\mathrm{Hilbert}}$")
-   plt.xlabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.scatter(kappa_Scaled,difference,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Scaled}}-\kappa_{\mathrm{Hilbert}}$")
+   plt.xlabel("$\kappa_{\mathrm{Scaled}$")
    plt.xlim([-0.08,0.25])
    plt.ylim([-0.2,0.1])
    plt.savefig("Fig3.png")
@@ -290,8 +323,8 @@ def MScompare(argv):
 
    plt.clf()
    plt.subplot(111)
-   plt.scatter(kappa_hilbert,kappa_keeton,s=1,c='k',edgecolor='none')
-   plt.ylabel("$\kappa_{\mathrm{Keeton}}$")
+   plt.scatter(kappa_hilbert,kappa_Scaled,s=1,c='k',edgecolor='none')
+   plt.ylabel("$\kappa_{\mathrm{Scaled}}$")
    plt.xlabel("$\kappa_{\mathrm{Hilbert}}$")
    plt.savefig("Fig1.png")
    plt.show()  

@@ -70,14 +70,19 @@ def KappaKeeton(zl,zd,zs,kappa,shear):
             output[i] = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
         else: 
             output[i]= 0.0
+            print "dont call me! - kappakeeton"
     return output
 # ----------------------------------------------------------------------------
 # Kappa Keeton, following Keeton (2003) and Momcheva et al. (2006)
-def KappaKeeton_beta(beta,kappa,shear):
+def KappaScale_beta(beta,kappa,shear,scaling="tom"):
             B=beta
             K=kappa
             G=shear
             D= K**2-G**2
-            output = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
-            return output
+            if scaling == "keeton" or "Keeton":
+                output = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
+                return output
+            if scaling == "tom" or scaling =="Tom" or scaling =="TC" or scaling =="Collett" or scaling =="collett":
+                output=(1.-B) * (K)
+                return output
 # ----------------------------------------------------------------------------
