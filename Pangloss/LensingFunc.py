@@ -85,4 +85,6 @@ def KappaScale_beta(beta,kappa,shear,scaling="tom"):
             if scaling == "tom" or scaling =="Tom" or scaling =="TC" or scaling =="Collett" or scaling =="collett":
                 output=(1.-B) * (K)
                 return output
+            if scaling == "additive"or scaling =="addition":
+                return K
 # ----------------------------------------------------------------------------

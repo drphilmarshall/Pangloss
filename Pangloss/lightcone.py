@@ -50,9 +50,9 @@ from mpl_toolkits.axes_grid1 import ImageGrid
 from time import clock
 import LensingProfiles as LP
 import LensingFunc as LF
-import grid
+import grid as GRID
 import Relations as Rel
-
+import cPickle
 #import time
 #t0=time.clock()    
 
@@ -137,16 +137,21 @@ class lightcone(object):
 # ============================================================================
 # ============================================================================
 
-class lens_lightcone(lightcone,grid.lensgrid):
-    def __init__(self,catalog,position,radius,zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r"):
+class lens_lightcone(lightcone):
+    def __init__(self,catalog,position,radius,zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r",grid=None):
         self.name = 'Snapped Lens Lightcone through the observed Universe'
         lightcone.__init__(self,catalog,radius,position,magnitudecut=magnitudecut,band=band)
-        grid.lensgrid.__init__(self,zl,zs,nplanes=nplanes,cosmo=cosmo)
-        self.populatelensgrid()
+        if grid==None:
+            self.grid=GRID.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
+            self.grid.populatelensgrid()
+        else: self.grid=grid
+
+
+
 
         self.galaxies=self.galaxies.where(self.galaxies.z_spec < zs)
 
-        zsnapped,psnapped=self.snap(self.galaxies.z_spec)
+        zsnapped,psnapped=self.grid.snap(self.galaxies.z_spec)
 
         self.galaxies.add_column('zsnapped',zsnapped)
         self.galaxies.add_column('psnapped',psnapped)
@@ -155,16 +160,16 @@ class lens_lightcone(lightcone,grid.lensgrid):
         zd = self.galaxies.zsnapped
         p  = self.galaxies.psnapped
 
-        self.zl = self.snap([zl])
-        self.zs = self.snap([zs])
+        self.zl = self.grid.snap([zl])
+        self.zs = self.grid.snap([zs])
 
         # Grab relevant quantities from the grid
-        self.galaxies.add_column('Da_d', self.Da_p[p])
-        self.galaxies.add_column('Da_ds', self.Da_ps[p])
-        self.galaxies.add_column('Da_dl', self.Da_pl[p])
-        self.galaxies.add_column('beta', self.beta_p[p])
-        self.galaxies.add_column('rho_crit',  self.rho_crit_p[p])    # Mpc
-        self.galaxies.add_column('sigma_crit', self.sigma_crit_p[p]) #solarmasses per Mpc^2
+        self.galaxies.add_column('Da_d', self.grid.Da_p[p])
+        self.galaxies.add_column('Da_ds', self.grid.Da_ps[p])
+        self.galaxies.add_column('Da_dl', self.grid.Da_pl[p])
+        self.galaxies.add_column('beta', self.grid.beta_p[p])
+        self.galaxies.add_column('rho_crit',  self.grid.rho_crit_p[p])    # Mpc
+        self.galaxies.add_column('sigma_crit', self.grid.sigma_crit_p[p]) #solarmasses per Mpc^2
 
         #calculate rphys
         self.galaxies.add_column('rphys',self.galaxies.Da_d*self.galaxies.r*arcmin2rad) #units 
@@ -174,11 +179,15 @@ class lens_lightcone(lightcone,grid.lensgrid):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom"): 
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom",errors=True,eMhalo=0.0001): 
         # NFW lensing component.
 
-        M200 = self.galaxies['M_Subhalo[M_sol/h]']#*0.5
-        c200 = Rel.MCrelation(M200)
+        M200 = self.galaxies['M_Subhalo[M_sol/h]']
+        if errors==True:
+            #print numpy.min(M200)
+            M200= 10**(numpy.log10(M200)+rnd.normal(0,eMhalo))
+            #print numpy.min(M200)
+        c200 = Rel.MCrelation(M200,MCerror=errors)
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
 
 
@@ -243,6 +252,9 @@ class lens_lightcone(lightcone,grid.lensgrid):
         self.galaxies.add_column('kappa_Scaled',kappa_Scaled)
         
         self.kappa_Scaled_total=numpy.sum(kappa_Scaled)
+        
+        kappa_fail=kappa_Scaled[kappa_Scaled<0]
+        #if kappa_fail!=[]:print kappa_fail
         
         return None
 
