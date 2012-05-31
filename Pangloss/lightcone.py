@@ -182,7 +182,7 @@ class lens_lightcone(lightcone):
     def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom",errors=True,eMhalo=0.0001): 
         # NFW lensing component.
 
-        M200 = self.galaxies['M_Subhalo[M_sol/h]']
+        M200 = Mstar_to_M200(self.galaxies['M_Stellar[M_sol/h]'],self.galaxies['z_spec'],cat=catalogues)
         if errors==True:
             #print numpy.min(M200)
             M200= 10**(numpy.log10(M200)+rnd.normal(0,eMhalo))

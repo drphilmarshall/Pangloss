@@ -187,7 +187,7 @@ def MScompare(argv):
       other[k]=numpy.min(magcutcat.rphys)
       other2[k]=numpy.min(lc.galaxies.rphys)
       
-      EMH=0.1
+      EMH=0.0000001
       lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,eMhalo=EMH)
       kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,grid=grid,eMhalo=EMH)
       kappa_Scaled[k] = (lc.kappa_Scaled_total-kappa_empty)

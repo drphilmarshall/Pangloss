@@ -54,12 +54,15 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
 
       cat=cat.where(cat["%s"%col]<magnitudecut)
 
+      """
       M200 = cat['M_Subhalo[M_sol/h]']
       if errors == True:
-         #print numpy.min(M200),numpy.max(M200)
          M200= 10**(numpy.log10(M200)+rnd.normal(0,eMhalo))
-         #print numpy.min(M200),numpy.max(M200)
-      #M200 = 10**(numpy.log10(cat['M_Subhalo[M_sol/h]'])*rnd.normal(1,0.5))
+      """
+      M200=Mstar_to_M200(cat['M_Stellar[M_sol/h]'],cat['z_spec'])
+
+
+
       c200 = Rel.MCrelation(M200,MCerror=errors)
       cat.add_column('NetoC', c200)
       snappedz,planes=lg.snap(cat['z_spec'])
