@@ -97,7 +97,7 @@ class lightcone(object):
         else:
             col = "mag_%s" % band
         self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < magnitudecut)
-
+        #self.galaxies=self.galaxies.where(self.galaxies.Type==0)
 
         return None
 
@@ -147,6 +147,13 @@ class lens_lightcone(lightcone):
         else: self.grid=grid
 
 
+        #correct M_subhalos that == 0
+        Msub=self.galaxies['M_Subhalo[M_sol/h]']
+        Mhal=self.galaxies['M_Halo[M_sol/h]']
+        Msub[Msub==0]=Mhal[Msub==0]
+        self.galaxies.remove_columns("M_Subhalo[M_sol/h]")
+
+        self.galaxies.add_column("M_Subhalo[M_sol/h]",Msub)
 
 
         self.galaxies=self.galaxies.where(self.galaxies.z_spec < zs)
@@ -179,16 +186,39 @@ class lens_lightcone(lightcone):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom",errors=True,eMhalo=0.0001): 
-        # NFW lensing component.
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom",errors=True,BehrooziSpline=None,eBer=0.212): 
 
-        M200 = Mstar_to_M200(self.galaxies['M_Stellar[M_sol/h]'],self.galaxies['z_spec'],cat=catalogues)
-        if errors==True:
-            #print numpy.min(M200)
-            M200= 10**(numpy.log10(M200)+rnd.normal(0,eMhalo))
-            #print numpy.min(M200)
+        Mh2Mh=False
+        Mstar2Mh=True
+        nosatellites=False
+
+        #print self.galaxies['M_Subhalo[M_sol/h]'].where(self.galaxies['M_Subhalo[M_sol/h]']==0)
+        #=self.galaxies['M_Halo[M_sol/h]'].where(self.galaxies['M_Subhalo[M_sol/h]']==0)
+
+        if errors ==True:
+            if Mh2Mh:
+                if BehrooziSpline==None:
+                    HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Rel.Behroozi_Spline()
+                else:
+                    HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=BehrooziSpline[0],BehrooziSpline[1],BehrooziSpline[2],BehrooziSpline[3],
+                M200 = Rel.Mhalo_to_Mhalo(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'],HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=eBer)
+
+            if Mstar2Mh:
+                Mstar=10**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])+rnd.normal(0,0.15))
+                M200=Rel.Mstar_to_M200(Mstar,self.galaxies['z_spec'],scatter=False)
+                if nosatellites==True:
+                    M200[self.galaxies.Type==1]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]
+
+
+
+        else: M200=self.galaxies['M_Subhalo[M_sol/h]']
+
+
+
         c200 = Rel.MCrelation(M200,MCerror=errors)
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
+
+        #print (M200/self.galaxies['M_Subhalo[M_sol/h]']).max()
 
 
         r_s = r200/c200
@@ -201,14 +231,24 @@ class lens_lightcone(lightcone):
             R_trunc=truncationscale*r200
         elif hardcut == "rs" or hardcut=="Rs" or hardcut == "R_s" or hardcut == "r_s":
             R_trunc=truncationscale*r_s
+        elif hardcut== "subhalo":
+            R_trunc=3*r200
+            R_trunc[self.galaxies.Type == 1]=(r200[self.galaxies.Type == 1])*truncationscale
         else: print "what hardcut did you mean?"
+
+
+        """
+        print self.galaxies.Mtrunc
 
         mass=4*3.14159*rho_s*(r_s**3)  *     \
             (  numpy.log(1+(R_trunc)/r_s) - \
                    R_trunc/(r_s+R_trunc)    \
             )
-        self.galaxies.add_column('Mtrunc', mass)
 
+        print mass
+
+        self.galaxies.add_column('Mtrunc', mass)
+        """
 
         kappaNFW=kappa_s*1.0
         shearNFW=kappa_s*1.0
@@ -220,7 +260,7 @@ class lens_lightcone(lightcone):
                #treat as point mass if outside truncation radius:
                else:
                    kappaNFW[i]*=0.0
-                   shearNFW[i]=(((mass[i])\
+                   shearNFW[i]=(((self.galaxies.Mtrunc[i])\
                                     /(3.14159*( self.galaxies.rphys[i])**2))\
                                     /self.galaxies.sigma_crit[i])
                                     
@@ -262,7 +302,7 @@ class lens_lightcone(lightcone):
 
    # 2-panel plot, showing view from Earth and also line of sight section:
     def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
-       scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_keeton))), numpy.max(self.galaxies.kappa_keeton)])/200
+       scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_Scaled))), numpy.max(self.galaxies.kappa_Scaled)])/200
        scale2= (numpy.max(self.galaxies.kappa))/200
        # Galaxy positions:
        ax1=plt.subplot(2,1,1, aspect ='equal')
@@ -278,7 +318,7 @@ class lens_lightcone(lightcone):
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
-            kappa = galaxy['kappa_keeton']
+            kappa = galaxy['kappa_Scaled']
             if kappa <0:
                plt.scatter(galaxy['x'], galaxy['y'], c='b', marker='o',s=-kappa/scale , edgecolor = 'none')    
             else:
@@ -328,7 +368,7 @@ class lens_lightcone(lightcone):
          empty = False
        if kappa_keeton:
          for galaxy in self.galaxies:
-            kappa = galaxy['kappa_keeton']
+            kappa = galaxy['kappa_Scaled']
             if kappa <0:
                plt.scatter(galaxy['z_spec'], galaxy['y'], c='b', marker='o',s=-kappa/scale , edgecolor = 'none')    
             else:
@@ -375,8 +415,8 @@ class lens_lightcone(lightcone):
 
     def curve_of_growth(self,ordering="contribution",starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
        plt.clf()
-       scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_keeton))), \
-                            numpy.max(self.galaxies.kappa_keeton)])/200
+       scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_Scaled))), \
+                            numpy.max(self.galaxies.kappa_Scaled)])/200
        scale2= (numpy.max(self.galaxies.kappa))/200
 
        zeropoint=-self.kappa_expected()
@@ -386,14 +426,14 @@ class lens_lightcone(lightcone):
        plt.subplot(2,1,1)
        #set up things to plot:
        if ordering=="contribution":
-          args=numpy.argsort(-numpy.absolute(self.galaxies.kappa_keeton))
+          args=numpy.argsort(-numpy.absolute(self.galaxies.kappa_Scaled))
        if ordering=="distance":
           args=numpy.argsort((self.galaxies.r))
           dist=numpy.concatenate((zero,numpy.take(self.galaxies.r,args)))
        if ordering=="r_mag":
           args=numpy.argsort((self.galaxies['mag_SDSS_r']))
           rmag=numpy.concatenate((zero,numpy.take(self.galaxies['mag_SDSS_r'],args)))
-       ordered_kappas=numpy.take(self.galaxies.kappa_keeton,args)
+       ordered_kappas=numpy.take(self.galaxies.kappa_Scaled,args)
 
 
        cat=numpy.concatenate((zero,(ordered_kappas)))
@@ -491,34 +531,32 @@ class lens_lightcone(lightcone):
 def test1(catalog):
 
     plt.clf()
-    rmax = 20
-    print rmax
+    rmax = 3    
+    zs=1.4 
 
-    zs=2.0 #should be selecting a source redshift (possibly use forecaster from Collett et al. 2012)
-
-#-0.00633207	-0.0173126
     xpos = -0.008
     ypos = -0.008
     zl =  1.0 
     xc = []
     #xc = [xpos,ypos,zl] #leave as [] to select a lens at random
+    rmax = 5
 
-    print "Initialising lightcone data..."
-    lc = lightcone(catalog,rmax,zs,lensindex=-1,position=xc)
+    xmax = catalog['pos_0[rad]'].max()
+    xmin = catalog['pos_0[rad]'].min()
+    ymax = catalog['pos_1[rad]'].max()
+    ymin = catalog['pos_1[rad]'].min()
+
+    x = rnd.uniform(xmin+rmax*arcmin2rad,xmax-rmax*arcmin2rad)
+    y = rnd.uniform(ymin+rmax*arcmin2rad,ymax-rmax*arcmin2rad)
+
+    xc = [x,y]
+
+    lc = lens_lightcone(catalog,rmax,xc,zl,zs)
+
+    lc.make_kappa_contributions(hardcut="RVir",truncationscale=3,scaling="add",errors=False)
 
 
-#     print "Distributing dark matter in halos..."
-#     lc.make_dmhalos()
-#     lc.plot(dmhalos=True)
-# 
-#     print "Distributing stars in galaxies..."
-#     lc.make_galaxies()
-#     lc.plot(galaxies=True)
-# 
-    print "Computing Keeton (2003) convergence at optical axis due to each halo..."
-    lc.make_kappa_contributions()
-
-    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_keeton)-lc.kappa_expected()
+    print "Total external convergence =",numpy.sum(lc.galaxies.kappa_Scaled)
     # Now make an illustrative plot:
     
     if rmax < 8:
@@ -557,12 +595,15 @@ def test2(catalog):
 
  
     xc = [x,y]
+    #print xc
+    xc=[-0.007537950324046427, -0.006001515672089354]
+
     zl=0.6
     zs=1.4
     lc = lens_lightcone(catalog,rmax,xc,zl,zs)
-    lc.make_kappa_contributions()
+    lc.make_kappa_contributions(errors=False)
 
-    print numpy.min(lc.galaxies.rphys)
+    print numpy.max(lc.galaxies.kappa_Scaled[lc.galaxies.Type==2])
 
     return
 
@@ -672,7 +713,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test3(master)
+    test1(master)
 
 # ============================================================================
 

@@ -79,12 +79,15 @@ def KappaScale_beta(beta,kappa,shear,scaling="tom"):
             K=kappa
             G=shear
             D= K**2-G**2
-            if scaling == "keeton" or "Keeton":
+
+            if scaling == "keeton" or scaling == "Keeton":
                 output = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
-                return output
-            if scaling == "tom" or scaling =="Tom" or scaling =="TC" or scaling =="Collett" or scaling =="collett":
+
+            if scaling == "tom" or scaling =="Tom" or scaling =="TC" or scaling =="Collett" or scaling =="collett" or scaling == "prime":
                 output=(1.-B) * (K)
-                return output
-            if scaling == "additive"or scaling =="addition":
-                return K
+
+            if scaling == "additive" or scaling =="addition" or scaling =="add":
+                #print "boo"
+                output = (K)#K*1.0
+            return output
 # ----------------------------------------------------------------------------

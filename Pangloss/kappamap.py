@@ -243,7 +243,7 @@ if __name__ == '__main__':
       print "Testing ."+ext+" file..."
 
       # Read in map (and write out as FITS if it doesn't exist):
-      kappafile = "../../data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f."+ext
+      kappafile = "kappafiles/GGL_los_8_7_7_N_4096_ang_4_rays_to_plane_37_f."+ext
       if ext == "fits": FITS = True
       convergence = kappamap(kappafile,FITS=FITS)
   
