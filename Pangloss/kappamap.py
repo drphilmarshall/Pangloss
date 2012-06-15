@@ -32,7 +32,7 @@ class kappamap:
       
       if FITS:
          # Read in FITS image, extract wcs:
-         if vb: print "Reading in kappa map from file "+kappafile
+         if vb: print "Reading in map from file "+kappafile
          self.read_in_fits_data()
          if vb: print "... done"
        
@@ -45,18 +45,19 @@ class kappamap:
          self.setwcs()
 
          # Read in binary data, to self.values:
-         if vb: print "Reading in kappa map from file "+kappafile
+         if vb: print "Reading in map from file "+kappafile
          self.read_in_binary_data()
          if vb: print "... done"
 
          # If it doesn't already exist, output the map to FITS file:
-         pieces = string.split(self.input,'.')
-         self.output = string.join(pieces[0:len(pieces)-1],'.')+'.fits'
+         # pieces = string.split(self.input,'.')
+         # self.output = string.join(pieces[0:len(pieces)-1],'.')+'.fits'
+         self.output = self.input+'.fits'
          if os.path.exists(self.output): 
            if vb: print "FITS version already exists: ",self.output
          else:  
            self.write_out_to_fits()
-           if vb: print "Written kappa map to "+self.output
+           if vb: print "Written map to "+self.output
          # This should probably not be in __init__ but hopefully it only gets run once.  
       
       return None
