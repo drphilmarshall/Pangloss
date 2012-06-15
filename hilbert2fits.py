@@ -73,10 +73,9 @@ def hilbert2fits(argv):
  
    # --------------------------------------------------------------------
 
-   Pangloss.vb = True
    for infile in infiles:
      # Read in map and convert (done automatically):    
-     map = Pangloss.kappamap(infile)
+     map = Pangloss.kappamap(infile,FITS=False,vb=True)
 
 # ======================================================================
 
