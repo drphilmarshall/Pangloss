@@ -231,11 +231,9 @@ class kappamap:
       return mean
       
 # ============================================================================
-test1=False
-test2=True
-
-
 if __name__ == '__main__':
+ test1=True
+ test2=False
  if test1==True:
 # Self-test: read in map from Stefan, and look up some convergence values.
    vb = True
