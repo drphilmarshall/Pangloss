@@ -80,7 +80,7 @@ def MScompare(argv):
    vb = False
    Ncones = 1000
    Rcone = 3 # arcmin
-   truncationscale=2   # *R_200 halo truncation
+   truncationscale=3   # *R_200 halo truncation
   
    scaling = "add" 
    #scaling = "tom"
@@ -140,21 +140,16 @@ def MScompare(argv):
    grid=Pangloss.lensgrid(zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73])
    grid.populatelensgrid()
 
-   # Calculate kappasmooth
-   #data=["%s"%catalog] feed it a list of tables, not filenames (saves load time)
-   #kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,grid=grid)
-   #kappa_empty_tom= Pangloss.smooth(zl,zs,data,truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling="tom")
 
    # --------------------------------------------------------------------
 
-   # Generate Ncones random positions, and reconstruct kappa_keeton in
-   # each one. Also look up true kappa_hilbert at that position:
+   # Generate Ncones random positions
    
    x = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Ncones)
    y = rnd.uniform(ymin+Rcone*arcmin2rad,ymax-Rcone*arcmin2rad,Ncones)
    
 
-
+   #------------------------------------------------------------------
    kappa_Scaled = numpy.zeros(Ncones)
    kappa_tom = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
@@ -165,7 +160,6 @@ def MScompare(argv):
    N_15 = numpy.zeros(Ncones)
    other = numpy.zeros(Ncones)
    other2 = numpy.zeros(Ncones)
-   
    K_0 = numpy.zeros(Ncones)
    K_1 = numpy.zeros(Ncones)
    K_2 = numpy.zeros(Ncones)
@@ -175,28 +169,41 @@ def MScompare(argv):
    M_0 = numpy.zeros(Ncones)
    M_1 = numpy.zeros(Ncones)
    M_2 = numpy.zeros(Ncones)
-
    large005 = numpy.zeros(Ncones)
    large01 = numpy.zeros(Ncones)
    large02 = numpy.zeros(Ncones)
-
-
    kap=[]
    dist=[]
-
    Rbins=numpy.linspace(0,Rcone,30,endpoint=True)
    kappa_Scaled_R=numpy.zeros((len(Rbins),Ncones))
    delta_kappa_R=numpy.zeros((len(Rbins),Ncones))
 
 
    errors=True
-   eBer=1e-99
+   eBer=0.15
    errors=False
+   if errors==False: eBer=1e-99
+
+
+   Mstar2Mh=True
+   Mh2Mh=False 
+   perfectsatellites=False
+   centralsonly=True
+
+# fit splines to the Behroozi relationship, if needed.
+   if Mh2Mh==True:
+      HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Pangloss.Rel.Behroozi_Spline()
+      BehrooziSpline=[HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz]
+   else: BehrooziSpline = None
+
+
+#  reconstruct kappa_scaled and look up true kappa_hilbert at that position:
+
    if errors==False:
-      kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,grid=grid,errors=errors)
+      kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,grid=grid,errors=errors,Mstar2Mh=Mstar2Mh,BehrooziSpline=BehrooziSpline,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,centralsonly=centralsonly)
       print kappa_empty
    for k in range(Ncones):
-      if k % 100 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
+      if k % 10 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k]]
 
       # Truth:
@@ -210,15 +217,14 @@ def MScompare(argv):
       other[k]=numpy.min(magcutcat.rphys)
       other2[k]=numpy.min(lc.galaxies.rphys)
 
-
+ 
       if errors==True:
-         HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Pangloss.Rel.Behroozi_Spline()
-         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,BehrooziSpline=[HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz],eBer=eBer)
-         kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,errors=errors,grid=grid,BehrooziSpline=[HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz],eBer=eBer)
+         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,BehrooziSpline=BehrooziSpline,centralsonly=centralsonly,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
+
+         kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,errors=errors,grid=grid,BehrooziSpline=BehrooziSpline,eBer=eBer,centralsonly=centralsonly,Mstar2Mh=Mstar2Mh,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh)
 
       else:
-         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors)
-
+         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,BehrooziSpline=BehrooziSpline,Mstar2Mh=Mstar2Mh,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,centralsonly=centralsonly)
 
       kappa_Scaled[k] = (lc.kappa_Scaled_total-kappa_empty)
       #kappa_tom[k] = (numpy.sum((1-lc.galaxies.beta)*lc.galaxies.kappa)-kappa_empty_tom)
@@ -228,11 +234,11 @@ def MScompare(argv):
       K_2[k] = numpy.sum(lc.galaxies.kappa_Scaled[lc.galaxies.Type==2])/numpy.sum(lc.galaxies.kappa_Scaled)
 
 
-
       N_0[k] = numpy.size(lc.galaxies.Type[lc.galaxies.Type==0])*1.0/numpy.size(lc.galaxies.Type)
       N_1[k] = numpy.size(lc.galaxies.Type[lc.galaxies.Type==1])*1.0/numpy.size(lc.galaxies.Type)
       N_2[k] = numpy.size(lc.galaxies.Type[lc.galaxies.Type==2])*1.0/numpy.size(lc.galaxies.Type)
 
+      N_1[k]+=N_2[k]
 
 
       M_0[k] = numpy.sum(lc.galaxies['M_Subhalo[M_sol/h]'][lc.galaxies.Type==0])*1.0/numpy.sum(lc.galaxies['M_Subhalo[M_sol/h]'])
@@ -331,64 +337,67 @@ def MScompare(argv):
    
 
    bins = numpy.linspace(0,1,20)
-   plt.subplot(331)
-   plt.hist(K_0,bins,alpha=0.5,fc='b',hatch=' ',label="Central galaxies in main halo")
-   plt.hist(K_2,bins,alpha=0.5,fc='g',hatch=' ',label="Non-Central main galaxies")
-   plt.hist(K_1,bins,alpha=0.5,fc='r',label="Satellite galaxies")
+   #plt.subplot(331)
+   plt.subplot(311)
+   plt.hist(K_0,bins,alpha=0.5,fc='r',hatch=' ',label="Central galaxies")
+   #plt.hist(K_2,bins,alpha=0.5,fc='g',hatch=' ',label="Non-Central main galaxies")
+   plt.hist(K_1,bins,alpha=0.5,fc='b',label="Satellite galaxies")
    plt.xlabel('$\kappa$ fraction')
    plt.legend(loc=9)
 
 
-   plt.subplot(332)
-   plt.hist(K_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5)
-   plt.hist(K_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5)
-   plt.hist(K_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5)
-   plt.xlabel('$\kappa > 0.03$')
+   #plt.subplot(332)
+   #plt.hist(K_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5)
+   #plt.hist(K_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5)
+   #plt.hist(K_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5)
+   #plt.xlabel('$\kappa > 0.03$')
 
-   plt.subplot(333)
-   plt.hist(K_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5)
-   plt.hist(K_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5)
-   plt.hist(K_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5)
-   plt.xlabel('$\kappa < 0.0$')
+   #plt.subplot(333)
+   #plt.hist(K_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5)
+   #plt.hist(K_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5)
+   #plt.hist(K_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5)
+   #plt.xlabel('$\kappa < 0.0$')
 
 
-   plt.subplot(334)
-   plt.hist(N_0,bins,fc='b',alpha=0.5,hatch='/ ')
-   plt.hist(N_2,bins,fc='g',alpha=0.5,hatch='/ ')
-   plt.hist(N_1,bins,fc='r',alpha=0.5,hatch='/ ')
+   #plt.subplot(334)
+   plt.subplot(312)
+   plt.hist(N_0,bins,fc='r',alpha=0.5,hatch='/ ')
+   #plt.hist(N_2,bins,fc='g',alpha=0.5,hatch='/ ')
+   plt.hist(N_1,bins,fc='b',alpha=0.5,hatch='/ ')
    plt.xlabel('Number fraction')
 
-   plt.subplot(335)
-   plt.hist(N_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5,hatch='/ ')
-   plt.hist(N_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5,hatch='/ ')
-   plt.hist(N_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5,hatch='/ ')
-   plt.xlabel('$\kappa > 0.03$')
+   #plt.subplot(335)
+   #plt.hist(N_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5,hatch='/ ')
+   #plt.hist(N_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5,hatch='/ ')
+   #plt.hist(N_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5,hatch='/ ')
+   #plt.xlabel('$\kappa > 0.03$')
 
-   plt.subplot(336)
-   plt.hist(N_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5,hatch='/ ')
-   plt.hist(N_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5,hatch='/ ')
-   plt.hist(N_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5,hatch='/ ')
-   plt.xlabel('$\kappa < 0.0$')
+   #plt.subplot(336)
+   #plt.hist(N_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5,hatch='/ ')
+   #plt.hist(N_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5,hatch='/ ')
+   #plt.hist(N_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5,hatch='/ ')
+   #plt.xlabel('$\kappa < 0.0$')
 
-   plt.subplot(337)
-   plt.hist(M_0,bins,fc='b',alpha=0.5,hatch='\ ')
-   plt.hist(M_2,bins,fc='g',alpha=0.5,hatch='\ ')
-   plt.hist(M_1,bins,fc='r',alpha=0.5,hatch='\ ')
+   #plt.subplot(337)
+   plt.subplot(313)
+   plt.hist(M_0,bins,fc='r',alpha=0.5,hatch='\ ')
+   #plt.hist(M_2,bins,fc='g',alpha=0.5,hatch='\ ')
+   plt.hist(M_1,bins,fc='b',alpha=0.5,hatch='\ ')
    plt.xlabel('Mass fraction')
 
 
-   plt.subplot(338)
-   plt.hist(M_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5,hatch='\ ')
-   plt.hist(M_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5,hatch='\ ')
-   plt.hist(M_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5,hatch='\ ')
-   plt.xlabel('$\kappa > 0.03$')
+   #plt.subplot(338)
+   #plt.hist(M_0[kappa_Scaled>0.03],bins,fc='b',alpha=0.5,hatch='\ ')
+   #plt.hist(M_2[kappa_Scaled>0.03],bins,fc='g',alpha=0.5,hatch='\ ')
+   #plt.hist(M_1[kappa_Scaled>0.03],bins,fc='r',alpha=0.5,hatch='\ ')
+   #plt.xlabel('$\kappa > 0.03$')
 
-   plt.subplot(339)
-   plt.hist(M_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5,hatch='\ ')
-   plt.hist(M_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5,hatch='\ ')
-   plt.hist(M_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5,hatch='\ ')
-   plt.xlabel('$\kappa < 0.0$')
-
+   #plt.subplot(339)
+   #plt.hist(M_0[kappa_Scaled<0.0],bins,fc='b',alpha=0.5,hatch='\ ')
+   #plt.hist(M_2[kappa_Scaled<0.0],bins,fc='g',alpha=0.5,hatch='\ ')
+   #plt.hist(M_1[kappa_Scaled<0.0],bins,fc='r',alpha=0.5,hatch='\ ')
+   #plt.xlabel('$\kappa < 0.0$')
+   
    plt.savefig("contributions.png")
    plt.show()
    plt.clf()
@@ -449,8 +458,18 @@ def MScompare(argv):
    #plt.clf()
    #plt.scatter(dist,kap,edgecolor='none',c='k',s=0.5)
    #plt.show()
-
-   plt.hist(kap)
+   bins=numpy.linspace(-5,1,30)
+   plt.hist(numpy.log10(kap),bins,alpha=0.5)
+   plt.title("Individual log($\kappa$) contributions")
+   plt.ylabel("Number of halos")
+   plt.xlabel("log($\kappa$)")
+   nnn=0
+   for i in range(len(kap)):
+      if kap[i] > 0: nnn+=1
+   plt.figtext(0.5,0.8," %.2f percent of halos within 3\' \n contribute no convergence" \
+                  %  (100-(nnn*100./len(kap)))\
+                  )
+   plt.savefig("kaphist.png")
    plt.show()
 
    """

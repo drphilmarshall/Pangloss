@@ -9,6 +9,7 @@ to-do
 
 import numpy, os, string
 import struct, pyfits
+import pylab as plt
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -230,9 +231,12 @@ class kappamap:
       return mean
       
 # ============================================================================
+test1=False
+test2=True
+
 
 if __name__ == '__main__':
-
+ if test1==True:
 # Self-test: read in map from Stefan, and look up some convergence values.
    vb = True
    FITS = False
@@ -242,7 +246,7 @@ if __name__ == '__main__':
       print "Testing ."+ext+" file..."
 
       # Read in map (and write out as FITS if it doesn't exist):
-      kappafile = "kappafiles/GGL_los_8_7_7_N_4096_ang_4_rays_to_plane_37_f."+ext
+      kappafile = "/data/tcollett/Pangloss/kappafiles/GGL_los_8_1_1_N_4096_ang_4_rays_to_plane_37_f."+ext
       if ext == "fits": FITS = True
       convergence = kappamap(kappafile,FITS=FITS)
   
@@ -262,3 +266,30 @@ if __name__ == '__main__':
       print " "
 
 # ============================================================================
+ if test2 ==True:
+    kappafiles=[]
+    kappafiles +=  ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_1_1_N_4096_ang_4_rays_to_plane_37_f.fits"]
+    kappafiles += ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_7_7_N_4096_ang_4_rays_to_plane_37_f.fits"]
+
+    l=4096
+    U=1
+
+
+    kappa = numpy.zeros((l/U,l/U,len(kappafiles)))
+    print numpy.shape(kappa)
+
+
+    for k in range(len(kappafiles)):
+       convergence = kappamap(kappafiles[k],FITS=True)
+       for i in range(l/U):
+          if i % 500 ==0 : print k,",",i
+          for j in range(l/U):
+             kappa[i,j,k] = convergence.at(U*i,U*j,coordinate_system='image')
+
+    kappa=kappa.ravel()
+
+    print numpy.mean(kappa)
+
+
+    plt.hist(kappa)
+    plt.show()

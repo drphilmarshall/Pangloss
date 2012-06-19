@@ -21,7 +21,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="tom",errors=True,grid=None,BehrooziSpline=None,eBer=0.212):
+def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="add",errors=True,grid=None,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
    #print time.clock()
    if grid==None:
       lg=GRID.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
@@ -42,64 +42,76 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
    else:
       col = "mag_%s" % band
 
+
    i=0
    for datafile in catalogues:
       cat = datafile#atpy.Table(datafile, type='ascii')
       #print "cat read in", time.clock()
+      cat=cat.where(cat["%s"%col] < magnitudecut)
+      if centralsonly==True:
+         cat=cat.where(cat.Type==0)
+      #cat=cat.where(cat.Type!=2)
 
       xmax = cat['pos_0[rad]'].max()
       xmin = cat['pos_0[rad]'].min()
       ymax = cat['pos_1[rad]'].max()
       ymin = cat['pos_1[rad]'].min() 
       catarea=(xmax-xmin)*(ymax-ymin) #in square radians (steradians?)
-      physicalarea=catarea*(lg.Da_p+1e-9)**2
+      physicalarea=catarea*(lg.Da_p+1e-99)**2
 
-      Msub=cat['M_Subhalo[M_sol/h]']
-      Mhal=cat['M_Halo[M_sol/h]']
-      Msub[Msub==0]=Mhal[Msub==0]
-      cat.remove_columns("M_Subhalo[M_sol/h]")
-      cat.add_column("M_Subhalo[M_sol/h]",Msub)
+      #Msub=cat['M_Subhalo[M_sol/h]']
+      #Mhal=cat['M_Halo[M_sol/h]']
+      #Msub[Msub==0]=Mhal[Msub==0]
+      #cat.remove_columns("M_Subhalo[M_sol/h]")
+      #cat.add_column("M_Subhalo[M_sol/h]",Msub)
+      #print numpy.sum(cat["M_Subhalo[M_sol/h]"][cat.Type==0])
+      #print numpy.sum(cat["M_Subhalo[M_sol/h]"][cat.Type==1])
+      #print numpy.sum(cat["M_Subhalo[M_sol/h]"][cat.Type==2])
 
-      Mh2Mh=False
-      Mstar2Mh=True
-      nosatellites=False
 
-      if errors==True:
-         if Mh2Mh:
+
+
+      cat['M_Subhalo[M_sol/h]'][cat['M_Subhalo[M_sol/h]']==0.0]=1.0
+
+      if Mh2Mh:
             if BehrooziSpline==None:
                HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Rel.Behroozi_Spline()
             else:
                HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=BehrooziSpline[0],BehrooziSpline[1],BehrooziSpline[2],BehrooziSpline[3]
 
             M200 = Rel.Mhalo_to_Mhalo(cat['M_Subhalo[M_sol/h]'],cat['z_spec'],HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=eBer)
-         if Mstar2Mh:
-            Mstar=10**(numpy.log10(cat['M_Stellar[M_sol/h]'])+rnd.normal(0,0.15,len(cat.z_spec)))
+      elif Mstar2Mh:
+            Mstar=10**(numpy.log10(cat['M_Stellar[M_sol/h]'])+rnd.normal(0,eBer,len(cat.z_spec)))
             M200=Rel.Mstar_to_M200(Mstar,cat['z_spec'],scatter=False)
 
-            Mt=Rel.Mstar_to_M200(cat['M_Stellar[M_sol/h]'],cat['z_spec'],scatter=False)
-            print numpy.max(numpy.log10(Mt/M200)[Mt>10**13])
+            #Mt=Rel.Mstar_to_M200(cat['M_Stellar[M_sol/h]'],cat['z_spec'],scatter=False)
+            #print numpy.max(numpy.log10(Mt/M200)[Mt>10**13])
 
-
-            if nosatellites==True:
-                    M200[cat.Type==1]=cat['M_Subhalo[M_sol/h]'][cat.Type==1]
 
       else: M200 = cat['M_Subhalo[M_sol/h]']
+
+      if perfectsatellites==True:
+                    M200[cat.Type==1]=cat['M_Subhalo[M_sol/h]'][cat.Type==1]
+                    M200[cat.Type==2]=cat['M_Subhalo[M_sol/h]'][cat.Type==2]
+
+ 
+
+
 
       #print numpy.std((numpy.log10(M200[M200>1e15]/cat['M_Subhalo[M_sol/h]'][M200>1e15])))
 
 
 
       c200 = Rel.MCrelation(M200,MCerror=errors)
-      cat.add_column('NetoC', c200)
+      #cat.add_column('NetoC', c200)
       snappedz,planes=lg.snap(cat['z_spec'])
-      cat.add_column("snappedplane",planes)
-      cat.add_column("snapped_redshift",snappedz)
+      #cat.add_column("snappedplane",planes)
+      #cat.add_column("snapped_redshift",snappedz)
 
-      print cat.snappedplane
 
       rhocrit=lg.rho_crit_p[planes]
       r200 = (3*M200/(800*3.14159*rhocrit))**(1./3)
-      cat.add_column('r200TRUE', r200)
+      #cat.add_column('r200TRUE', r200)
 
       rs = r200/c200
       rhos = LP.delta_c(c200)*rhocrit 
@@ -119,31 +131,22 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
                 R_trunc/(rs+R_trunc)    \
                 )
       cat.add_column('Mtrunc', mass)
-      #print cat.Mtrunc
+ 
 
       for p in range(lg.nplanes):
-         ontheplane=cat.where(cat.snappedplane==p)
+         ontheplane=cat.where(planes==p)
          smoothcomponentindiv[p,i]=numpy.sum(ontheplane.Mtrunc)/physicalarea[p]
       i+=1
 
    for p in range(lg.nplanes):
       smoothcomponent[p]=numpy.sum(smoothcomponentindiv[p,:])/len(catalogues)
    
-
-
    lg.smoothcomponent=smoothcomponent
    lg.kappa=lg.smoothcomponent/lg.sigma_crit_p
-   
-   #print lg.kappa
-
    lg.kappaScaled=LF.KappaScale_beta(lg.beta_p,lg.kappa,0,scaling=scaling)
-   #print lg.kappaScaled
 
-   #plt.plot(lg.kappa/lg.kappaScaled)
-   #plt.show()
-
-   #print numpy.max(lg.kappaScaled)
-   #print numpy.min(lg.kappaScaled)
+   cat.remove_columns('Mtrunc')
+   
    return numpy.sum(lg.kappaScaled)
    
 
@@ -153,13 +156,14 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
    #print "finished",time.clock()
 
 
+
 test=False
 #test=True
 #-------------------------------------------
 if test ==True:
    #print "running"
 # Kappa Smooth as a function of magnitude cut:
-   d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+   d1= "catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
    datafile=[atpy.Table(d1, type='ascii')]
    """
    maglist=numpy.linspace(19,25,15,endpoint=True)

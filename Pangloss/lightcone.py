@@ -97,7 +97,6 @@ class lightcone(object):
         else:
             col = "mag_%s" % band
         self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < magnitudecut)
-        #self.galaxies=self.galaxies.where(self.galaxies.Type==0)
 
         return None
 
@@ -148,12 +147,11 @@ class lens_lightcone(lightcone):
 
 
         #correct M_subhalos that == 0
-        Msub=self.galaxies['M_Subhalo[M_sol/h]']
-        Mhal=self.galaxies['M_Halo[M_sol/h]']
-        Msub[Msub==0]=Mhal[Msub==0]
-        self.galaxies.remove_columns("M_Subhalo[M_sol/h]")
-
-        self.galaxies.add_column("M_Subhalo[M_sol/h]",Msub)
+        #Msub=self.galaxies['M_Subhalo[M_sol/h]']
+        #Mhal=self.galaxies['M_Halo[M_sol/h]']
+        #Msub[Msub==0]=Mhal[Msub==0]
+        #self.galaxies.remove_columns("M_Subhalo[M_sol/h]")
+        #self.galaxies.add_column("M_Subhalo[M_sol/h]",Msub)
 
 
         self.galaxies=self.galaxies.where(self.galaxies.z_spec < zs)
@@ -186,32 +184,36 @@ class lens_lightcone(lightcone):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="tom",errors=True,BehrooziSpline=None,eBer=0.212): 
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False): 
 
-        Mh2Mh=False
-        Mstar2Mh=True
-        nosatellites=False
+        if centralsonly==True:
+            self.galaxies=self.galaxies.where(self.galaxies.Type==0)
+            #self.galaxies=self.galaxies.where(self.galaxies.Type!=2)
 
-        #print self.galaxies['M_Subhalo[M_sol/h]'].where(self.galaxies['M_Subhalo[M_sol/h]']==0)
-        #=self.galaxies['M_Halo[M_sol/h]'].where(self.galaxies['M_Subhalo[M_sol/h]']==0)
 
-        if errors ==True:
-            if Mh2Mh:
+
+
+
+        self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies['M_Subhalo[M_sol/h]']==0.0]=1.0
+
+        if Mh2Mh:
                 if BehrooziSpline==None:
                     HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Rel.Behroozi_Spline()
                 else:
                     HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=BehrooziSpline[0],BehrooziSpline[1],BehrooziSpline[2],BehrooziSpline[3],
                 M200 = Rel.Mhalo_to_Mhalo(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'],HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=eBer)
 
-            if Mstar2Mh:
-                Mstar=10**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])+rnd.normal(0,0.15))
-                M200=Rel.Mstar_to_M200(Mstar,self.galaxies['z_spec'],scatter=False)
-                if nosatellites==True:
-                    M200[self.galaxies.Type==1]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]
-
-
+        elif Mstar2Mh:
+                Mstar=10**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])+rnd.normal(0,eBer,len(self.galaxies.z_spec)))
+                M200=Rel.Mstar_to_M200(Mstar,self.galaxies['z_spec'],scatter=False,)
 
         else: M200=self.galaxies['M_Subhalo[M_sol/h]']
+
+
+        if perfectsatellites==True:
+            M200[self.galaxies.Type==1]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]
+            M200[self.galaxies.Type==2]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==2]
+
 
 
 
@@ -237,18 +239,16 @@ class lens_lightcone(lightcone):
         else: print "what hardcut did you mean?"
 
 
-        """
-        print self.galaxies.Mtrunc
+        
 
         mass=4*3.14159*rho_s*(r_s**3)  *     \
             (  numpy.log(1+(R_trunc)/r_s) - \
                    R_trunc/(r_s+R_trunc)    \
             )
 
-        print mass
-
+        #print "boo"
         self.galaxies.add_column('Mtrunc', mass)
-        """
+        #print "hoo"
 
         kappaNFW=kappa_s*1.0
         shearNFW=kappa_s*1.0
@@ -260,7 +260,7 @@ class lens_lightcone(lightcone):
                #treat as point mass if outside truncation radius:
                else:
                    kappaNFW[i]*=0.0
-                   shearNFW[i]=(((self.galaxies.Mtrunc[i])\
+                   shearNFW[i]=(((mass[i])\
                                     /(3.14159*( self.galaxies.rphys[i])**2))\
                                     /self.galaxies.sigma_crit[i])
                                     
