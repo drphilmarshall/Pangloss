@@ -156,7 +156,7 @@ def binMS(cat=None):
       return None
 
 #--------------------------------------------------------------
-def Mstar_to_M200(M_Star,redshift,scatter=True,Behroozi=True,cat=None):
+def Mstar_to_M200(M_Star,redshift,Behroozi=True):
    if Behroozi==True:
       #Following Behroozi et al. 2010.
       M_200=numpy.zeros(len(M_Star))
@@ -201,28 +201,8 @@ def Mstar_to_M200(M_Star,redshift,scatter=True,Behroozi=True,cat=None):
 
          M_200[i] =10.0**(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
 
-         if scatter==True:
-             M_200[i]=10.0**(numpy.log10(M_200[i])*rnd.normal(0,0.2))
+
       return M_200 
-
-def Behroozi_Spline():
-      points = numpy.linspace(6,12,500)
-      redshift=0*points+0.1
-      masses= 10**points
-
-      MH=Mstar_to_M200(masses,redshift,scatter=False)
-      BS1=interpolate.splrep(MH,masses)
-      BS2=interpolate.splrep(masses,MH)
-
-      redshift=0*points+1.5
-
-      MH2=Mstar_to_M200(masses,redshift,scatter=False)
-
-      BS3=interpolate.splrep(MH2,masses)
-      BS4=interpolate.splrep(masses,MH2)
- 
-      return BS1,BS2,BS3,BS4
-
 
 #----------------------------------------------------------
 def Mhalo_to_Mhalo(OLD,z,HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=0.212):

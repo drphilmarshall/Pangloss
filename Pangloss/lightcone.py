@@ -137,12 +137,15 @@ class lightcone(object):
 # ============================================================================
 
 class lens_lightcone(lightcone):
-    def __init__(self,catalog,position,radius,zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r",grid=None):
+    def __init__(self,catalog,position,radius,zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r",grid=None):
         self.name = 'Snapped Lens Lightcone through the observed Universe'
         lightcone.__init__(self,catalog,radius,position,magnitudecut=magnitudecut,band=band)
         if grid==None:
             self.grid=GRID.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
             self.grid.populatelensgrid()
+            FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
+            MFs=cPickle.load(FILE)
+            self.grid.Behroozigrid(MFs)
         else: self.grid=grid
 
 
@@ -165,8 +168,8 @@ class lens_lightcone(lightcone):
         zd = self.galaxies.zsnapped
         p  = self.galaxies.psnapped
 
-        self.zl = self.grid.snap([zl])
-        self.zs = self.grid.snap([zs])
+        self.zl = self.grid.snap([zl])[0][0]
+        self.zs = self.grid.snap([zs])[0][0]
 
         # Grab relevant quantities from the grid
         self.galaxies.add_column('Da_d', self.grid.Da_p[p])
@@ -184,24 +187,53 @@ class lens_lightcone(lightcone):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False): 
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False): 
 
         if centralsonly==True:
             self.galaxies=self.galaxies.where(self.galaxies.Type==0)
             #self.galaxies=self.galaxies.where(self.galaxies.Type!=2)
 
-
-
+        #drop the A-Centrals
+        self.galaxies=self.galaxies.where(self.galaxies.Type!=2)
 
 
         self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies['M_Subhalo[M_sol/h]']==0.0]=1.0
 
         if Mh2Mh:
-                if BehrooziSpline==None:
-                    HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Rel.Behroozi_Spline()
-                else:
-                    HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=BehrooziSpline[0],BehrooziSpline[1],BehrooziSpline[2],BehrooziSpline[3],
-                M200 = Rel.Mhalo_to_Mhalo(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'],HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=eBer)
+                #de-strip (dress?) some satellites: Do we need/want to do this?
+                #self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]*=1+(0.05*rnd.poisson(4,len(self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1])))
+
+
+
+                Mstar = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'])
+
+                Mstore=Mstar*1.0
+
+                #Now give the Mstars a scatter for observational errors:
+                Mstar = 10**(numpy.log10(Mstar)+rnd.normal(0,0.15,len(Mstar)))
+
+                Mstar[numpy.log10(Mstar)>12.45]=10**12.46
+
+                self.galaxies.add_column("Mstar",Mstar)
+                #trim out very low stellar mass halos:
+                self.galaxies=self.galaxies.where(numpy.log10(self.galaxies.Mstar)>7)
+
+        
+
+
+
+
+                M200  = self.grid.drawMhalo(self.galaxies.Mstar,self.galaxies['z_spec'])
+
+
+                # This should never print anything.
+                if len(M200[numpy.isnan(M200)==True]!=0):
+                    M200[numpy.isnan(M200)==True]=self.grid.drawMhalo(10**(numpy.log10(self.galaxies.Mstar[numpy.isnan(M200)==True])),self.galaxies['z_spec'][numpy.isnan(M200)==True]+0.001)
+                    print "boo"
+                    if len(M200[numpy.isnan(M200)==True]!=0):
+                        print numpy.log10(Mstar[numpy.isnan(M200)==True])
+                        print numpy.log10(Mstore[numpy.isnan(M200)==True])
+
 
         elif Mstar2Mh:
                 Mstar=10**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])+rnd.normal(0,eBer,len(self.galaxies.z_spec)))
@@ -215,7 +247,7 @@ class lens_lightcone(lightcone):
             M200[self.galaxies.Type==2]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==2]
 
 
-
+        self.galaxies.add_column('M200',M200)
 
         c200 = Rel.MCrelation(M200,MCerror=errors)
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
@@ -275,11 +307,7 @@ class lens_lightcone(lightcone):
         #should ^ these be times Mstar or not? TC thinks so.
         ###
         ####
-        # This is disabled currently - it gives silly answers for a minority of LoS that get very cose to the galaxies (SL lines where keeton approximation breaks.)
-
-        #-------------------------------------------------------
-        #compute a fudge component (nonNFW additional component to the halos), just to see what happens
-        #kappaFudge=kappaNFW*0#.5
+        # This is disabled currently - it gives silly answers for a minority of LoS that get very close to the galaxies (SL lines where keeton approximation breaks.)
 
         #-------------------------------------------------------
         kappa = kappaNFW #+ kappaStar
@@ -389,7 +417,6 @@ class lens_lightcone(lightcone):
        plt.xlabel('Redshift')
        plt.ylabel('y / arcmin')
        zmax = self.galaxies['z_spec'].max()
-
 
        plt.axis([0,self.zs+0.1,0,self.rmax+0.1])
 
@@ -531,7 +558,7 @@ class lens_lightcone(lightcone):
 def test1(catalog):
 
     plt.clf()
-    rmax = 3    
+    rmax = 0.5    
     zs=1.4 
 
     xpos = -0.008
@@ -583,6 +610,7 @@ def test1(catalog):
 def test2(catalog): 
 
     rmax = 5
+    truncationscale=3
 
     xmax = catalog['pos_0[rad]'].max()
     xmin = catalog['pos_0[rad]'].min()
@@ -595,15 +623,44 @@ def test2(catalog):
 
  
     xc = [x,y]
-    #print xc
-    xc=[-0.007537950324046427, -0.006001515672089354]
-
+    print xc
     zl=0.6
     zs=1.4
-    lc = lens_lightcone(catalog,rmax,xc,zl,zs)
-    lc.make_kappa_contributions(errors=False)
+    Mh2Mh=True
+    errors=True
+    #build grid.
+    grid=GRID.lensgrid(zl,zs,nplanes=50,cosmo=[0.25,0.75,0.73])
+    grid.populatelensgrid()
+    FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
+    MFs=cPickle.load(FILE)
+    grid.Behroozigrid(MFs)
 
-    print numpy.max(lc.galaxies.kappa_Scaled[lc.galaxies.Type==2])
+
+    klen=1000
+    kappa_Scaled=numpy.zeros(klen)
+
+    lc = lens_lightcone(catalog,rmax,xc,zl,zs,grid=grid)
+    lc.make_kappa_contributions(truncationscale=truncationscale,hardcut="RVir",scaling="add",errors=False,Mh2Mh=False)
+    kappaTruth=lc.kappa_Scaled_total
+
+    for k in range(klen):
+        if k % 20 ==0 : print k,"of",klen
+        lc = lens_lightcone(catalog,rmax,xc,zl,zs,grid=grid)
+        lc.make_kappa_contributions(truncationscale=truncationscale,hardcut="RVir",scaling="add",errors=errors,Mh2Mh=Mh2Mh)
+        kappa_Scaled[k] =lc.kappa_Scaled_total
+
+
+    lc.plot()
+    plt.show()
+    print numpy.std(kappa_Scaled)
+    print numpy.mean(kappa_Scaled)
+    plt.hist(kappa_Scaled)
+    plt.axvline(x=kappaTruth,ymin=0,ymax=1,c='k',ls='--')
+    plt.show()
+
+    
+
+
 
     return
 
@@ -705,7 +762,7 @@ def test3(catalog):
 if __name__ == '__main__':
 
 # Simulated (Millenium) lightcone data from Hilbert:
-    datafile = "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
+    datafile = "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
 
 # First 99 lines of the same, for testing:
 #    datafile = "test.txt"
@@ -713,7 +770,7 @@ if __name__ == '__main__':
     master = atpy.Table(datafile, type='ascii')
     print "Read in master table, length",len(master)
     
-    test1(master)
+    test2(master)
 
 # ============================================================================
 

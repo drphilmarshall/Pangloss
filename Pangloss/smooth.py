@@ -21,7 +21,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=200,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="add",errors=True,grid=None,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
+def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=100,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="add",errors=True,grid=None,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
    #print time.clock()
    if grid==None:
       lg=GRID.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
@@ -155,12 +155,13 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
 #Smooth(0.6,1.4,datafile,truncationscale=5,nplanes=20)
    #print "finished",time.clock()
 
-
-
-test=False
-#test=True
 #-------------------------------------------
-if test ==True:
+if __name__ == '__main__':
+  test1=False
+  #test2=True
+
+
+  if test1 ==True:
    #print "running"
 # Kappa Smooth as a function of magnitude cut:
    d1= "catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
@@ -219,3 +220,7 @@ if test ==True:
    plt.xlabel("$\kappa_{\mathrm{smooth}}$")
    plt.savefig("smoothvsmasserror")
    plt.show()
+
+
+  if test2 ==True:
+   print "running"

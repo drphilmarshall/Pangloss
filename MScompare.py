@@ -10,7 +10,7 @@ import numpy.random as rnd
 import distances
 from scipy import optimize
 from scipy import stats
-import cPickle
+import cPickle, copy
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -136,9 +136,12 @@ def MScompare(argv):
    MSconvergence = Pangloss.kappamap(kappafile)
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
 
-   #build grid
+   #build grid, populate it and invert the behroozi relation on each plane.
    grid=Pangloss.lensgrid(zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73])
    grid.populatelensgrid()
+   FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
+   MFs=cPickle.load(FILE)
+   grid.Behroozigrid(MFs)
 
 
    # --------------------------------------------------------------------
@@ -151,6 +154,7 @@ def MScompare(argv):
 
    #------------------------------------------------------------------
    kappa_Scaled = numpy.zeros(Ncones)
+   kappa_Scaled_truth = numpy.zeros(Ncones)
    kappa_tom = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
    N_45 = numpy.zeros(Ncones)
@@ -180,30 +184,30 @@ def MScompare(argv):
 
 
    errors=True
-   eBer=0.15
-   errors=False
-   if errors==False: eBer=1e-99
 
-
-   Mstar2Mh=True
-   Mh2Mh=False 
+   Mstar2Mh=False
+   Mh2Mh=True
    perfectsatellites=False
-   centralsonly=True
-
-# fit splines to the Behroozi relationship, if needed.
-   if Mh2Mh==True:
-      HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Pangloss.Rel.Behroozi_Spline()
-      BehrooziSpline=[HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz]
-   else: BehrooziSpline = None
+   centralsonly=False
 
 
 #  reconstruct kappa_scaled and look up true kappa_hilbert at that position:
+   smooth=False
+   mean0=True
 
-   if errors==False:
-      kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,grid=grid,errors=errors,Mstar2Mh=Mstar2Mh,BehrooziSpline=BehrooziSpline,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,centralsonly=centralsonly)
-      print kappa_empty
+   if mean0==True and smooth == True: print "make your mind up! smooth or mean=0?"
+
+   kappa_empty = 0
+   kappa_empty_truth = 0
+
+   if smooth==True:
+      kappa_empty_truth = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",scaling=scaling,grid=grid,errors=False,Mstar2Mh=False,perfectsatellites=True,Mh2Mh=False,centralsonly=False)
+
+   if errors==False and smooth == True:
+         kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",scaling=scaling,errors=errors,grid=grid,centralsonly=centralsonly,Mstar2Mh=Mstar2Mh,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh)
+
    for k in range(Ncones):
-      if k % 10 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
+      if k % 50 == 0: print ("evaluating cone %i of %i" %(k,Ncones))
       xc = [x[k],y[k]]
 
       # Truth:
@@ -217,17 +221,27 @@ def MScompare(argv):
       other[k]=numpy.min(magcutcat.rphys)
       other2[k]=numpy.min(lc.galaxies.rphys)
 
- 
-      if errors==True:
-         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,BehrooziSpline=BehrooziSpline,centralsonly=centralsonly,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
+      lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,centralsonly=centralsonly,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
 
-         kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",nplanes=100,scaling=scaling,errors=errors,grid=grid,BehrooziSpline=BehrooziSpline,eBer=eBer,centralsonly=centralsonly,Mstar2Mh=Mstar2Mh,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh)
+      tc= Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
+      tc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
 
-      else:
-         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,BehrooziSpline=BehrooziSpline,Mstar2Mh=Mstar2Mh,eBer=eBer,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,centralsonly=centralsonly)
+      if errors==True and smooth == True:
+         kappa_empty = Pangloss.smooth(zl,zs,[master],truncationscale=truncationscale,hardcut="RVir",scaling=scaling,errors=errors,grid=grid,centralsonly=centralsonly,Mstar2Mh=Mstar2Mh,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh)
+
 
       kappa_Scaled[k] = (lc.kappa_Scaled_total-kappa_empty)
-      #kappa_tom[k] = (numpy.sum((1-lc.galaxies.beta)*lc.galaxies.kappa)-kappa_empty_tom)
+      kappa_Scaled_truth[k]=tc.kappa_Scaled_total-kappa_empty_truth
+
+      #plt.scatter(lc.galaxies.M200,tc.galaxies.M200)
+      #plt.show()
+
+      #print  lc.kappa_Scaled_total,1
+      #if  numpy.isnan(lc.kappa_Scaled_total)==True:
+      #   jg =lc.galaxies.where(numpy.isnan(lc.galaxies.M200)==True)
+      #   print jg.Mstar,jg.z_spec
+      #print  tc.kappa_Scaled_total,2
+
 
       K_0[k] = numpy.sum(lc.galaxies.kappa_Scaled[lc.galaxies.Type==0])/numpy.sum(lc.galaxies.kappa_Scaled)
       K_1[k] = numpy.sum(lc.galaxies.kappa_Scaled[lc.galaxies.Type==1])/numpy.sum(lc.galaxies.kappa_Scaled)
@@ -256,11 +270,26 @@ def MScompare(argv):
          kap.append(lc.galaxies.kappa[zaz])
 
       # calculate for smaller Rcone.
+
+ 
       for j in range(len(Rbins)):
          mc=lc.galaxies.where(lc.galaxies.r<Rbins[j])
          kappa_Scaled_R[j,k]=numpy.sum(mc.kappa_Scaled)-kappa_empty
          delta_kappa_R[j,k]=numpy.sum(mc.kappa_Scaled)-kappa_empty-kappa_hilbert[k]
 
+  
+
+   if mean0==True:
+      aleph=numpy.mean(kappa_Scaled)
+      print numpy.mean(kappa_Scaled)
+      kappa_Scaled-=numpy.mean(kappa_Scaled)
+      print numpy.mean(kappa_Scaled)
+      kappa_Scaled_truth-=numpy.mean(kappa_Scaled_truth)
+      for j in range(len(Rbins)):
+          kappa_Scaled_R[j]-=aleph
+          delta_kappa_R[j]-=aleph
+
+ 
    print numpy.mean(kappa_hilbert)
    print numpy.mean(kappa_Scaled)
 
@@ -491,16 +520,20 @@ def MScompare(argv):
    plt.clf()
    list=numpy.linspace(-0.25,0.25,30)
    plt.subplot(311)
-   plt.title("$\kappa_{\mathrm{%s}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (scaling,bias,scatter))
-   plt.hist(kappa_Scaled, bins=list,normed=True, label="$\kappa_{\mathrm{%s}}$"%scaling)
-   plt.legend(title='Cut at %.0f R_vir.'%truncationscale, loc=1)
+   #plt.title("$\kappa_{\mathrm{%s}}-\kappa_{\mathrm{Hilbert}}$ = %.3f +/- %.3f" % (scaling,bias,scatter))
+   plt.hist(kappa_Scaled, bins=list,alpha=0.8,normed=True, label="re-inferred halo mass")
+   plt.hist(kappa_Scaled_truth, bins=list,alpha=0.3,normed=True, label="perfect halo mass")
+
+   plt.legend(title='$\kappa_{\mathrm{reconstruction}}$', loc=1)
    plt.subplot(312)
-   plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$")
+   plt.hist(kappa_hilbert, bins=list,normed=True,label="$\kappa_{\mathrm{Hilbert}}$",color='r',alpha=0.5)
    plt.legend(loc=1)
    plt.subplot(313)
-   plt.hist(difference, bins=list,normed=True,label="$\kappa_{\mathrm{%s}}-\kappa_{\mathrm{Hilbert}}$"%scaling)
-   plt.legend(loc=1)
-   plt.savefig("kappaBehrooziScatteredMstar.png")
+   plt.hist(difference, bins=list,alpha=0.8,normed=True,label="re-inferred halo mass")
+   plt.hist(kappa_Scaled_truth-kappa_hilbert, bins=list,alpha=0.3,normed=True,label="perfect halo mass")
+
+   plt.legend(loc=1,title="difference")
+   plt.savefig("comparison.png")
    plt.show()
    
 
