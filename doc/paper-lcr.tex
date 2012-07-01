@@ -1,0 +1,294 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Pangloss: Testing the reconstruction paper
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[useAMS,usenatbib]{mn2e}
+%% letterpaper
+%% a4paper
+
+% \voffset=-0.8in
+
+% Packages:
+\input psfig.sty
+\usepackage{xspace}
+\usepackage{graphicx}
+
+% Macros:
+\input{macros.tex}
+\input{addresses.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title[Line of Sight Mass Reconstruction]
+{Inferring Lensing Mass in the Universe from Photometric Catalog Data}
+    
+\author[Collett \etal]{%
+  Thomas~J.~Collett$^{1}$\thanks{\collettemail},
+  Philip~J.~Marshall$^{2}$,
+  Matthew~W.~Auger$^{1}$,
+  Stefan~Hilbert$^{3}$,
+\newauthor{%
+  Sherry~H.~Suyu$^{4}$,
+  Zachary~Greene$^{4}$,
+  Tommaso~Treu$^{4}$\thanks{\packard},
+  Christopher~D.~Fassnacht$^{5}$,}
+\newauthor{%
+  L\`eon~V.~E.~Koopmans$^{6}$,
+  Roger~D.~Blandford$^{3}$} 
+  \medskip\\
+  $^1$\ioa\\
+  $^2$\oxford\\
+  $^3$\kipac\\
+  $^4$\ucsb\\
+  $^5$\davis\\
+  $^6$\kapteyn
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+             
+\date{to be submitted to MNRAS}
+\pagerange{\pageref{firstpage}--\pageref{lastpage}}\pubyear{2012}
+
+\maketitle           
+
+\label{firstpage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+
+Strong gravitational lenses can provide high precision cosmological distance
+measurements; one of the most important sources of systematic error in these
+estimates is the additional mass along the line of sight to the source. Weak
+lensing by galaxies and groups in this beam can contribute an ``external
+convergence'' $\xkappa$ that dominates the  uncertainty in the inferred
+distances; likewise, it may also contaminate estimates of the luminosity of
+objects at high redshift (such as reionisation-era proto-galaxies, and type Ia
+supernovae standard candles).  We characterise this uncertainty by marginalising
+over a probability density function for $\xkappa$: here, we investigate the use
+of a simple halo model to estimate $\Pr(\xkappa)$ given noisy estimates of the
+photometric redshift and stellar mass of galaxies observed in optical imaging
+surveys of the field in question. Tests using mock catalogs from the Millenium
+Simulation and comparing to ray-traced $kappa$ values, we find that \ldots 
+The $\Pr(\xkappa)$ from this reconstruction process are narrower than the
+expected distribution of $\xkappa$ values over an ensemble of time delay lenses:
+incorporating the photometric catalogs in a joint analysis of 100 lenses 
+leads to an increase in precision of factor of 1.X over simple averaging. We
+investigate several sources of bias and determine \ldots
+\end{abstract}
+
+% Full list of options at http://www.journals.uchicago.edu/ApJ/instruct.key.html
+
+\begin{keywords}
+  gravitational lensing   --
+  methods: statistical    --
+  galaxies: halos         --
+  gaaxies: mass function  --
+  cosmology: observations
+\end{keywords}
+
+\setcounter{footnote}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+What is the problem - reconstructing kappa. Why is this problem relevant? Time
+delay distances. Magnification. 
+
+Previous work on environments: Auger, Momcheva,
+others. Hilbert et al.'s raytracing plus Fassnacht \& Koopmans density, Suyu et
+al's kappa pdf. 
+
+Why these approaches may be insufficient - information provided in
+future surveys. 
+
+Questions asked in this paper:
+How much of the total external convergence in a time delay lens system comes from visible galaxies? How does this change as a function of magnitude cut?
+Where are the most important galaxies? Do the massive galaxies dominate, or is it the the galaxies nearest the optical axis, or some combination of these? How many galaxies account for 50%, and 95% of the convergence on a typical line of sight?
+Can the Hilbert (ray-traced) convergence be recovered by halo model lightcone reconstruction? With what scatter and bias? Which recipes are the dominant sources of these uncertainties?
+
+This paper is organized as follows. \Sref{sec:}.   
+
+Throughout this paper magnitudes are given in the AB system \citep{Oke74} and
+we adopt standard ``concordance'' parameters for our reference cosmology, \ie
+$h=0.7$, $\Omega_m=0.3$ and $\Omega_\Lambda=0.7$, where the symbols indicate
+the Hubble Constant in units of 100 km s$^{-1}$ Mpc$^{-1}$ and the matter and
+dark energy density of the Universe in units of the critical density
+\citep[e.g.\ ][]{Kom++09}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Theoretical Background}
+\label{sec:theory}
+
+Time delay distances, and the mass sheet degeneracy - how kappa is degenerate in
+strong lens models (and magnifications). Weak lensing by NFW halos. Accounting
+for mass along the line of sight.  Approximations to full ray tracing: combining
+kappas: simple sum, Keeton scaling, comments. Example ray traced kappa map from Stefan. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Halo Model}
+\label{sec:model}
+
+Halos. N-body sims provide mass framework. MS halo catalog. Truncated spherical
+NFW approx based on virial masses. Stellar mass. Halo map corresponding to
+ray-traced kappa map, for illustration. Small-scale structure 
+
+Not all DM is in halo catalog. Smooth component approximation.  How voids
+produce a negative kappa - filled beam distances require halos and voids to
+provide density contrast relative to mean. How we correct for voids. Comments on
+reasonable, but unphysical nature of this approach, tests to follow. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Tests with known halo mass and redshift}
+\label{sec:} 
+
+Raytracing through n-body particles as 'truth'. Motivation for assuming perfect
+knowledge of halo mass and z = testing model of previous section. Deterministic
+prediction of kappa.
+
+Is truncation choice important? How deep and wide does a reconstruction need to
+go? What is the irreducible uncertainty on kappa from this halo model? (Bias and
+scatter) Can use the ideal reconstruction to ask: Where does the kappa come
+from? Close to the LoS? Bright objects? How many objects are important? What
+error is made by considering subsets of available objects? 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Tests on mock catalogs}
+\label{sec:}
+
+Consider three sources of scatter in the halo model: zphot, Mstar|zphot, and
+Mhalo|Mstar,zphot. Mechanism for including scatter in model: draw samples from
+PDFs. Result is not one predicted kappa, but one P(kappa) for each lightcone.
+This is what is required by single-lens analyses. 
+
+We can draw samples from this PDF and ask:
+
+How is the kappa inference offset and blurred by uncertainty on redshift, Mstar
+and Mhalo? 
+
+What is the effect of using the wrong Mstar-Mhalo relation? 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Time Delay Distances}
+\label{sec:} 
+
+Folding the kappa uncertainties into time delay distance uncertainties. Toy
+model: same zl and zs, allows simple product of pdfs to obtain estimate of P(D).
+
+What is the expected bias and scatter (centroid position and width) of P(D) as a
+function of N lenses? How does reconstruction compare with P(D) derived using
+P(kappa|N45) for each lightcone? How does reconstruction compare with P(D)
+derived assuming kappa=0 for each lightcone?
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+\label{sec:}
+
+Why reconstruction works or doesn't work
+Major sources of uncertainty
+Ideas for improving the procedure
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+\label{sec:}
+
+
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{figure}
+% \centering\includegraphics[width=0.99\linewidth]{figs/something.png}
+% \caption{An example figure.}
+% \label{fig:sizemass}
+% \end{figure}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{}
+\label{sec:}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Summary}
+\label{sec:summary}
+
+
+Our conclusions can be summarised as follows:
+
+\begin{itemize}
+
+\item We found this.
+
+\item And we found this too.
+
+\end{itemize}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  ACKNOWLEDGMENTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgments}
+ 
+We thank Risa Wechsler and Peter Behroozi for useful discussions and 
+suggestions.
+\input{acknowledgments.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  APPENDICES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+\section{Truncated \LCDM halos}
+\label{appendix:halos}
+
+\section{Deriving the $\Mstar=\Mhalo$ relation}
+\label{appendix:MSMH}
+
+\section{Smooth component models}
+\label{appendix:smooth}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  REFERENCES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MNRAS does not use bibtex, input .bbl file instead. 
+% Generate this in the makefile using bubble script in scriptutils:
+
+% bubble -f paper-lcr.tex references.bib 
+% \input{paper-lcr.bbl}
+
+\bibliographystyle{apj}
+\bibliography{references}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\label{lastpage}
+\bsp
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
