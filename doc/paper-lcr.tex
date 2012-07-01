@@ -22,7 +22,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \title[Line of Sight Mass Reconstruction]
-{Inferring Lensing Mass in the Universe from Photometric Catalog Data}
+{Inferring Lensing Mass in the Universe \\
+from Photometric Catalog Data}
     
 \author[Collett \etal]{%
   Thomas~J.~Collett$^{1}$\thanks{\collettemail},
@@ -97,22 +98,110 @@ investigate several sources of bias and determine \ldots
 
 \section{Introduction}
 
-What is the problem - reconstructing kappa. Why is this problem relevant? Time
-delay distances. Magnification. 
+Averaged over large areas of sky, the weak gravitational lensing effect can be
+used to constrain the statistical properties of the matter density in the
+Universe: every distant object we observe has had its shape distorted, and size
+and total brightness magnified (or demagnified) by a compound lens constructed
+from all the mass distributed between us and it.
 
-Previous work on environments: Auger, Momcheva,
-others. Hilbert et al.'s raytracing plus Fassnacht \& Koopmans density, Suyu et
-al's kappa pdf. 
+This fact makes gravitational lensing a potentially important source of
+systematic error for any estimate of luminosity or distance, an issue addressed
+for \eg type Ia supernovae by \citet[][]{Holz+Wald,Linder+Holz} and for high
+redshift galaxies by \citet{Loeb} among others. In time delay lens cosmography
+the effect can be particularly important. \citet{Suyu2010} found that  the
+lensing effect of mass structures along the (unusually over-dense)  line of
+sight to the quadruply-imaged radio source B1608$+$656, the so-called ``external
+convergence,'' was the dominant source of uncertainty in the inferred
+cosmological parameters. 
 
-Why these approaches may be insufficient - information provided in
-future surveys. 
+How can we correct for the line of sight lensing error, and make accurate
+measurements through the Universe? As \citeauthor{LH} noted, when inferring
+global quantities (such as the cosmological parameters), averaging the results
+from a large number of independent objects will tend to reduce the error, as the
+ensemble-averaged convergence approaches zero for an unbiased sample
+\citep{xxx}. If the sample is biased, however, some residual systematic error
+will remain while the statistical uncertainty decreases -- and this will be the
+case for any sample selected by the brightness of the lensed object, or any
+other quantity that depends on $\xkappa$. The latter class includes time delay
+lenses, which are detected based on the separation of their images, which
+increases with $\kappa$. Large samples of lenses are expected to be discovered
+in the next decade in ground-based optical imaging surveys
+\citep{Oguri+Marshll2010} -- but these samples will be image separation-limited,
+due to the surveys' relatively poor ($\sim 1$~arcsec) image quality. Some of the
+current sample of known time delay lenses were detected in surveys like this: we
+might expect them to be somewhat biased towards high values of $\xkappa$.
 
-Questions asked in this paper:
-How much of the total external convergence in a time delay lens system comes from visible galaxies? How does this change as a function of magnitude cut?
-Where are the most important galaxies? Do the massive galaxies dominate, or is it the the galaxies nearest the optical axis, or some combination of these? How many galaxies account for 50%, and 95% of the convergence on a typical line of sight?
-Can the Hilbert (ray-traced) convergence be recovered by halo model lightcone reconstruction? With what scatter and bias? Which recipes are the dominant sources of these uncertainties?
+There are two broad approaches one could take at this point. First, one could
+seek to characterise the lensed objects' selection function, and use this
+understanding to derive a suitable correction to cosmological parameters
+inferred assuming no $\xkappa$ at all. To do this, one needs information about
+the unlensed population of objects, and the population of lenses, and how the
+objects were detected -- or to infer these hierarchically during the analysis.
+Alternatively, one could simply accept all lenses provided, regardless of their
+selection, and try to use any additional information that is available to
+estimate the external convergence in each system on a case by case basis, and
+hence optimize their joint analysis to produce a better-constrained result. In
+this work we follow the second approach, and use measurements of the positions,
+magnitude and colours of galaxies close to time delay lens lines of sight to try
+to infer the external convergence at the lens position. 
 
-This paper is organized as follows. \Sref{sec:}.   
+The first attempts at reconstructing the line of sight mass distribution in
+strong lens fields were \ldots. \flag{More needed here. Previous work on
+environments: Keeton, Zabludoff, Auger, Momcheva, Wong, others. Spectroscopic
+surveys, modelling mass along line of sight.}
+
+These observational investigations provided useful insight into the problem. 
+Coming from the opposite direction, \citet{Hilbert++2009} performed ray-tracing
+experiments through the Millenium Simulation, generating a predicted $\xkappa$
+at every position in a simulated sky. The first step towards using this
+excellent calibration resource was taken by \citet{Suyu++2010}, who selected
+Millenium lines of sight that a) were found to contain a strong lens and b) had
+comparable apparent galaxy overdensity in a 45 arcsec radius aperture down to $i
+< 24$. This overdensity could be compared to the overdensity of the B1608$+$656
+line of sight \citep{Fass+Koop2010}, and hence an estimate of the probability
+density function (PDF) $\Pr(\xkappa)$ could be made. This PDF is the key
+quantity for any ensemble analysis, since by marginalising over it we can
+correctly propagate the uncertainties due to weak lensing by line of sight mass
+structure. 
+
+In this paper we use the Millenium Simulation mock galaxy catalogs and
+ray-traced lensing effects to test the accuracy of line of sight mass
+reconstructions. Probabilistically ssigning mass and redshift to every observed
+galaxy in the field around a time delay lens, we generate Monte Carlo sample
+line of sight mass distributions, and estimate the external convergence due to
+each one. This gives us a $\Pr(\xkappa)$ that can be propagated into further
+joint inferences. We focus on time delay lens cosmography, and quantify our
+results in terms of the uncertainty on the mean time delay distance to a test
+sample of $N$ lenses (where for clarity each lens has the same deflector and
+source redshift, and the same lens model and time delay uncertainty).
+
+We aim to answer the following questions:
+\begin{itemize}
+\item Faint galaxies and other dark structures will not appear in a photometric
+object catalog, but they will contribute convergence at some level. How much of
+the total external convergence in a time delay lens system comes from visible
+galaxies? How does this change as a function of magnitude cut? 
+\item Can the true (ray-traced) convergence be recovered by halo model
+reconstruction? What scatter and residual bias are induced in the ensemble 
+distance estimate? Which aspects of the model dominate these uncertainties? 
+\item When faced with a newly-detected lens, surrounded by galaxies on the sky,
+we have some choices to make when planning follow-up observations.
+Which are the most important galaxies, with regard to the external convergence
+produced? Can nearby groups and clusters be straightforwardly accounted for? If
+lenses with such massive structures nearby are discarded, what impact does that
+have on the distance accuracy?
+\end{itemize}
+
+This paper is organized as follows. In~\Sref{sec:theory} we review the relevant
+gravitational lensing theory, before introducing our simple reconstruction 
+model in \Sref{sec:model}.  We then test this model in two phases: first, in
+\Sref{sec:knownMh+z}, with known redshift and halo mass for every galaxy in a
+lens field, in order to quantify the irreducible uncertainty due to unseen mass,
+and second, in \Sref{sec:obsMstar+z}, with realistic observational uncertainties
+on the field galaxies' stellar masses and redshifts. We then propagate all these
+uncertainties through to the time delay distance in a toy sample of 100 lenses,
+in \Sref{sec:distances}. We discuss our results in \Sref{sec:discuss} before
+concluding in \Sref{sec:conclude}.
 
 Throughout this paper magnitudes are given in the AB system \citep{Oke74} and
 we adopt standard ``concordance'' parameters for our reference cosmology, \ie
@@ -150,7 +239,7 @@ reasonable, but unphysical nature of this approach, tests to follow.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Tests with known halo mass and redshift}
-\label{sec:} 
+\label{sec:knownMh+z} 
 
 Raytracing through n-body particles as 'truth'. Motivation for assuming perfect
 knowledge of halo mass and z = testing model of previous section. Deterministic
@@ -166,7 +255,7 @@ error is made by considering subsets of available objects?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Tests on mock catalogs}
-\label{sec:}
+\label{sec:obsMstar+z}
 
 Consider three sources of scatter in the halo model: zphot, Mstar|zphot, and
 Mhalo|Mstar,zphot. Mechanism for including scatter in model: draw samples from
@@ -194,21 +283,14 @@ function of N lenses? How does reconstruction compare with P(D) derived using
 P(kappa|N45) for each lightcone? How does reconstruction compare with P(D)
 derived assuming kappa=0 for each lightcone?
 
+Also: compare with simple averaging. This will fail if lenses are selected to
+live on over-dense lines of sight. Stefan's plot in Suyu et al shows effect of
+selection - what is the resulting bias? Few percent? This is the target to beat,
+need to find it out.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Discussion}
-\label{sec:}
-
-Why reconstruction works or doesn't work
-Major sources of uncertainty
-Ideas for improving the procedure
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{}
-\label{sec:}
+Make mock sample of lenses, all wit B1608 zd and zs, but with different kappas.
+Draw kappas from Stefan's *lens* distribution. Can we correct for the selection
+effect?
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -219,17 +301,25 @@ Ideas for improving the procedure
 % \end{figure}
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{}
-\label{sec:}
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Summary}
-\label{sec:summary}
+\section{Discussion}
+\label{sec:discuss}
 
+Why reconstruction works or doesn't work.
+
+Major sources of uncertainty.
+
+Ideas for improving the procedure
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusions}
+\label{sec:conclude}
+
+To remind you, this is what we did.
 
 Our conclusions can be summarised as follows:
 
@@ -241,6 +331,21 @@ Our conclusions can be summarised as follows:
 
 \end{itemize}
 
+% \item Faint galaxies and other dark structures will not appear in a photometric
+% object catalog, but they will contribute convergence at some level. How much of
+% the total external convergence in a time delay lens system comes from visible
+% galaxies? How does this change as a function of magnitude cut? 
+
+% \item Can the true (ray-traced) convergence be recovered by halo model
+% reconstruction, and with what scatter and residual bias? Which aspects of the 
+% model dominate these uncertainties?
+
+% \item When faced with a newly-detected lens, surrounded by galaxies on the sky,
+% we have some choices to make when planning follow-up observations.
+% Which are the most important galaxies, with regard to the external convergence
+% produced? Can nearby groups and clusters be straightforwardly accounted for? If
+% lenses with such massive structures nearby are discarded, what impact does that
+% have on the distance accuracy?
 
 
 

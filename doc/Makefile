@@ -8,10 +8,6 @@ clean:
 
 paper: paper-lcr.pdf
 
-paper-lcr.bbl: paper-lcr.tex references.bib
-	bubble -f paper-lcr.tex references.bib >& paper-lcr.bbl.log
-	cat paper-lcr.bbl.log
-
 paper-lcr.pdf: paper-lcr.bbl paper-lcr.tex macros.tex
 	pdflatex paper-lcr.tex
 	pdflatex paper-lcr.tex
@@ -19,6 +15,10 @@ paper-lcr.pdf: paper-lcr.bbl paper-lcr.tex macros.tex
 	pdflatex paper-lcr.tex
 	pdflatex paper-lcr.tex
 
+# paper-lcr.bbl: paper-lcr.tex references.bib
+# 	bubble -f paper-lcr.tex references.bib >& paper-lcr.bbl.log
+# 	cat paper-lcr.bbl.log
+# 
 # paper-lcr.dvi: paper-lcr.bbl paper-lcr.tex macros.tex
 # 	latex paper-lcr.tex
 # 	latex paper-lcr.tex
