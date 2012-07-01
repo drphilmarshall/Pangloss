@@ -8,7 +8,7 @@ setup(
     version="n/a",
     author="Tom Collett (IoA) & Phil Marshall (Oxford)",
     author_email="",
-    packages=["pangloss"],
+    packages=["Pangloss"],
     ext_modules = [],
     url="",
     license="GPLv2",
