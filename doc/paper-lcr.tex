@@ -256,8 +256,8 @@ defined as
 \be \label{eq:FP}
 \phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right], 
 \ee
-where $\psi(\bmath{\theta}$ is the lens potential, derived from the projected dimensionless
-surface mass density, $\kappa(\bmath{\theta})$, and the physical projected surface mass density,
+where $\psi(\bmath{\theta})$ is the lens potential, derived from the projected dimensionless
+surface mass density, $\kappa(\bmath{\theta})$, or the physical projected surface mass density,
 $\Sigma(D_{\rm d} \bmath{\theta})$, by 
 \be \label{eq:psikappa}
 \kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}),
@@ -277,11 +277,11 @@ makes a partial allignment -- with the additional structure acting as a weak len
 a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that there
 are no empty lightcones in a realistic universe. These additional structures induce an external shear
 which can be recovered in the mass-modelling of the lens, but they can also introduce a convergence that
-is undetectable from the image positions, shapes and relative fluxes; the mass sheet-degeneracy \citep[see e.g.][for details]{Falco1985,Schneider2006}. Similar to Eq. \ref{eq:psikappa}, the convergence from an isolated mass sheet is given by the projected surface mass density devided by the critical density, which is a function of redshift. 
+is undetectable from the image positions, shapes and relative fluxes; {\it the mass sheet-degeneracy} \citep[see e.g.][for details]{Falco1985,Schneider2006}. Similar to Eq. \ref{eq:psikappa} the convergence from an isolated mass sheet is by the ratio of the projected surface mass density devided by the critical density at the redshift of the mass sheet.
 \flag{but is this the kappa that enters the lens modelling?}
-In the case of several mass sheets at redshifts $\{z_p\}$, with surface mass densities $\{\Sigma_p\}$, the effective convergence is given by the \flag{weighted?} sum :
+In the case of several mass sheets at redshifts $\{z_{\mathrm{p}}\}$, with surface mass densities $\{\Sigma_{\mathrm{p}}\}$, the effective convergence is given by the \flag{weighted?} sum :
 \be \label{eq:kappasum}
-\kappax=\frac{4\pi G}{c^2}\sum_p\frac{\Sigma_p(D_p\vec\theta)D_p D_{p{\rm s}}}{D_{\rm s}}.
+\kappax=\frac{4\pi G}{c^2}\sum_{\mathrm{p}}\frac{\Sigma_{\mathrm{p}}D_{\mathrm{p}} D_{{\rm ps}}}{D_{\rm s}}.
 \ee
 
 If the source brightness changes, the observed brightness in each image does not change
@@ -292,7 +292,10 @@ invariant, and so the time delay changes. As such it is necessary to include $\k
 in our lens modelling, if cosmological parameters are to be estimated accurately and
 precisely \citep{suyu2010} from observed time delays.
 
-The time-delay distance is defined as $\Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds}$,
+The time-delay distance is defined as
+\be \label{eq:dt}
+\Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds},
+\ee
 with which Equation \ref{eq:Tsimp} can be rephrased as
 \be
 \Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c},
@@ -317,7 +320,7 @@ In this work our aim is to quantify the lensing contribution from mass sheets th
 are not physically associated with the lens galaxy -- mass-sheets lying infront or behind
 the lens. We also aim to quantify how uncertainties in the estimations of kappa
 propogate into uncertainties on the cosmological parametres which can be inferred
-from measurements of $\Dt$
+from measurements of $\Dt$.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -358,7 +361,7 @@ but there is some scatter; we use the relation of \citet{neto2007} to estimate $
 from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. $\rho_0$ is calculated 
 by the critical density and concentration parameter:
 \be
-$\rho_0$ = \rho_{\mathrm{crit}}(z\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
+\rho_0 = \rho_{\mathrm{crit}}(z\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
 \ee
 
 From the NFW density profile, \citet{wrightbrainerd1999} derive the following quantities
