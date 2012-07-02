@@ -236,14 +236,29 @@ dark energy density of the Universe in units of the critical density
 \section{Theoretical Background}
 \label{sec:theory}
 
-%Time delay distances[✓], and the mass sheet degeneracy[✓] - how kappa is degenerate in
+%Time delay distances, and the mass sheet degeneracy - how kappa is degenerate in
 %strong lens models (and magnifications).
+
+
+Define: convergence.
+
+Where does it crop up? where is it important?
+
+The convergence from an isolated mass sheet is the ratio of the projected surface mass density devided by the critical density at the redshift of the mass sheet.
+\be
+\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}
+\ee
+where 
+\be \label{eq:sigcrit} 
+\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\ee
+
 
 Strong lensing occurs when a massive object and background source are almost perfectly
 aligned along a line of sight. The light from the background source is deflected by the
 lens galaxy; this deflection allows multiple images of the background source to form
 at stationary points of the time delay function. For an isolated lens, the time delay
-function can be calculated from calculated from 
+function can be calculated from
 \be \label{eq:T} 
 \Delta t(\bmath{\theta},\bmath{\beta}) = \frac {1}{c} \frac{D_{\rm d} D_{\rm s}}{D_{\rm ds}} (1+z_{\rm d})\, \phi(\bmath{\theta},\bmath{\beta}),
 \ee
@@ -252,7 +267,6 @@ unlensed source position, $z_{\rm d}$ is the redshift of the lens, $\phi(\bmath{
 the Fermat potential, and $D_{\rm d}$, $D_{\rm s}$, and $D_{\rm ds}$
 are, respectively, the angular diameter distances from observer to the lens, from observer
 to the source, and from the lens to the source. The Fermat potential is given by
-defined as
 \be \label{eq:FP}
 \phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right], 
 \ee
@@ -260,11 +274,7 @@ where $\psi(\bmath{\theta})$ is the lens potential, derived from the projected d
 surface mass density, $\kappa(\bmath{\theta})$, or the physical projected surface mass density,
 $\Sigma(D_{\rm d} \bmath{\theta})$, by 
 \be \label{eq:psikappa}
-\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}),
-\ee
-where 
-\be \label{eq:sigcrit} 
-\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}).
 \ee
 
 Strong lenses sit in our real Universe -- they are not truely isolated;
@@ -277,8 +287,7 @@ makes a partial allignment -- with the additional structure acting as a weak len
 a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that there
 are no empty lightcones in a realistic universe. These additional structures induce an external shear
 which can be recovered in the mass-modelling of the lens, but they can also introduce a convergence that
-is undetectable from the image positions, shapes and relative fluxes; {\it the mass sheet-degeneracy} \citep[see e.g.][for details]{Falco1985,Schneider2006}. Similar to Eq. \ref{eq:psikappa} the convergence from an isolated mass sheet is by the ratio of the projected surface mass density devided by the critical density at the redshift of the mass sheet.
-\flag{but is this the kappa that enters the lens modelling?}
+is undetectable from the image positions, shapes and relative fluxes; {\it the mass sheet-degeneracy} \citep[see e.g.][for details]{Falco1985,Schneider2006}.
 In the case of several mass sheets at redshifts $\{z_{\mathrm{p}}\}$, with surface mass densities $\{\Sigma_{\mathrm{p}}\}$, the effective convergence is given by the \flag{weighted?} sum:
 \be \label{eq:kappasum}
 \kappax=\frac{4\pi G}{c^2}\sum_{\mathrm{p}}\frac{\Sigma_{\mathrm{p}}D_{\mathrm{p}} D_{{\rm ps}}}{D_{\rm s}}.
@@ -290,19 +299,19 @@ each image. Despite the invariance of the image positions and fluxes, under the 
 of an external convergence the relative Fermat potential between the images is {\it not}
 invariant, and so the time delay changes. As such it is necessary to include $\kappax$
 in our lens modelling, if cosmological parameters are to be estimated accurately and
-precisely \citep{suyu2010} from observed time delays.
+precisely from observed time delays \citep{suyu2010}.
 
 The time-delay distance is defined as
 \be \label{eq:dt}
 \Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds},
 \ee
-with which Equation \ref{eq:Tsimp} can be rephrased as
+with which Equation \ref{eq:T} can be rephrased as
 \be
-\Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c},
+\Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c} \, \phi(\bmath{\theta},\bmath{\beta})    ,
 \ee 
-Since the time delays are proportional to $1/ (1+ \kappax)$, if there is any external convergence, $\kappax$, that is not included in the lens
+Since the time delays are proportional to $1/ (1+ \kappax)$, if there is any external convergence, that is not included in the lens
 modeling, then the time delay distance -- inferred assuming $\kappax = 0$ -- will be
-$1-\kappax$ less than the true value of $\Dt$.
+$(1-\kappax)$ less than the true value of $\Dt$.
 \be 
 \label{eq:MassSheet:H0bias}
 \Dt^{\rm{true}}=(1-\kappax) \Dt^{{\kappax = 0}}.
@@ -313,10 +322,9 @@ For mass-sheets that are physically associated with the lens galaxy, the mass sh
  affects the stellar dynamics of the
 lens galaxy, so dynamical observations can break the internal
 mass-sheet degeneracy by providing an additional estimate of the lens galaxy's mass
-\citep[e.g.,][]{GroginNarayan96a, GroginNarayan96b, TonryFranx99, KoopmansTreu02,
- TreuKoopmans02, BarnabeKoopmans07, suyu2010}. 
+\citep[e.g.,][]{citations}. 
 
-In this work our aim is to quantify the lensing effect of mass-sheets that are physically associated with the lens galaxy -- mass-sheets
+In this work our aim is to quantify the lensing effect of mass-sheets that are not physically associated with the lens galaxy -- mass-sheets
 lying infront or behind the lens -- and the uncertainties induced by reconstructing
 those mass-sheets using simple prescriptions applied to potential astronomical observables.
 We also aim to quantify how uncertainties in the
@@ -343,7 +351,7 @@ Cosmological dark matter simulations can be used to generate mock lines of sight
 With this catalogue of halos, positions, redshifts etc. it is possible to attempt
 a reconstruction of the convergernce induced by every halo near a line of sight.
 Cosmological dark matter simulations have shown that dark matter halos are well
-approximated by NFW halos \citep{NFW1997}, with a density profile given by
+approximated by NFW profiles \citep{NFW1997}, with a density profile given by
 \be\label{eq:rhonfw}
 \rho(r) = 
 \frac{\rho_0}{\left(r/r_{s}\right)
@@ -351,7 +359,7 @@ approximated by NFW halos \citep{NFW1997}, with a density profile given by
 \ee
 where $r_{s}$ is a characteristic radius of the cluster, representing where
 the density slope transitions from $r^{-1}$ to $r^{-3}$. This radius is related
-to the virial radius of the halo by $r_{s} = r_{200}/c$, where $r_{200}$ is the radius at 
+to the virial radius of the halo by $r_{s}~=~r_{200}/c$, where $r_{200}$ is the radius at 
 which 
 \be
 \rho(r_{200}) = 200\rho_{{\mathrm{crit}}}(z), \text{ where } \rho_{\mathrm{crit}}(z) \equiv \frac{3H^{2}(z)}{8\pi G}
@@ -362,7 +370,7 @@ but there is some scatter; we use the relation of \citet{neto2007} to estimate $
 from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. $\rho_0$ is calculated 
 by the critical density and concentration parameter:
 \be
-\rho_0 = \rho_{\mathrm{crit}}(z\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
+\rho_0 = \rho_{\mathrm{crit}}(z)\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
 \ee
 
 From the NFW density profile, \citet{wrightbrainerd1999} derive the following quantities
