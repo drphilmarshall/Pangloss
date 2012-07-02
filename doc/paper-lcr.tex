@@ -256,10 +256,16 @@ defined as
 \be \label{eq:FP}
 \phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right], 
 \ee
-where $\psi(\bmath{\theta}$ is the lens potential.
-%The two term in Eq. \ref{eq:FP} comes from the geometric path difference as a result of
-%the deflection, and the second term is the gravitational delay
-%described by the lens potential $\psi(\bmath{\theta})$.  
+where $\psi(\bmath{\theta}$ is the lens potential, derived from the projected dimensionless
+surface mass density, $\kappa(\bmath{\theta})$, and the physical projected surface mass density,
+$\Sigma(D_{\rm d} \bmath{\theta})$, by 
+\be \label{eq:psikappa}
+\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}),
+\ee
+where 
+\be \label{eq:sigcrit} 
+\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\ee
 
 Strong lenses sit in our real Universe -- they are not truely isolated;
 there is some mass along the line of sight coming from intervening structures.
@@ -271,21 +277,13 @@ makes a partial allignment -- with the additional structure acting as a weak len
 a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that there
 are no empty lightcones in a realistic universe. These additional structures induce an external shear
 which can be recovered in the mass-modelling of the lens, but they can also introduce a convergence that
-is undetectable from the image positions, shapes and relative fluxes. The mass-sheet degeneracy
-\citep[see e.g.][for details]{Falco1985,Schneider2006}. This is a degeneracy in the strong lens
-modeling corresponding to the addition of a mass sheet that contributes a convergence and
-zero shear which, combined with a re-scaling of the original mass distribution, leaves the
-predicted image positions and magnifications unchanged.
-%Given a lens
-%model $\kappa_{\rm lens}(\bmath{\theta})$, an alternative model described by the
-%transformation 
-%\be\label{eq:transform}
-%\widetilde{\kappa}_{\rm lens}(\bmath{\theta}) = \lambda + (1-\lambda)\kappa_{\rm lens}(\bmath{\theta}),
-%\ee
-%where $\lambda$ is a constant, would fit the image positions, shapes and relative fluxes equally well. Physic%ally $\lambda$
-%is the \flag{effective?} convergence of the mass-sheet and can take any real value. The mass-sheet degeneracy
-%corresponds to a degeneracy between this external convergence ($\kappax$) and the mass
-%normalization of the lens galaxy.
+is undetectable from the image positions, shapes and relative fluxes; the mass sheet-degeneracy \citep[see e.g.][for details]{Falco1985,Schneider2006}. Similar to Eq. \ref{eq:psikappa}, the convergence from an isolated mass sheet is given by the projected surface mass density devided by the critical density, which is a function of redshift. 
+\flag{but is this the kappa that enters the lens modelling?}
+In the case of several mass sheets at redshifts $\{z_p\}$, with surface mass densities $\{\Sigma_p\}$, the effective convergence is given by the \flag{weighted?} sum :
+\be \label{eq:kappasum}
+\kappax=\frac{4\pi G}{c^2}\sum_p\frac{\Sigma_p(D_p\vec\theta)D_p D_{p{\rm s}}}{D_{\rm s}}.
+\ee
+
 If the source brightness changes, the observed brightness in each image does not change
 simultaneously - there is a time delay, $\Delta t$, between the brightness change in
 each image. Despite the invariance of the image positions and fluxes, under the addition
@@ -294,92 +292,32 @@ invariant, and so the time delay changes. As such it is necessary to include $\k
 in our lens modelling, if cosmological parameters are to be estimated accurately and
 precisely \citep{suyu2010} from observed time delays.
 
-
-
-\flag{How do kappas combine? this is what Sherry said in suyuetal2010 - To be specific, the prescription that we adopt for
-  combining the effects of many mass sheets at redshifts $z_i$ with
-  surface mass densities $\Sigma_i$ is $\kappax=\frac{4\pi
-    G}{c^2}\displaystyle\sum_i\frac{\Sigma_i(D_i\vec\theta)D_i D_{i{\rm s}}}{D_{\rm s}}$.}
-
-
-
-
-
-
-
-
-\be\label{eq:phitransform}
-\Delta \widetilde{\phi_{\rm }}(\bmath{\theta},\widetilde{\bmath{\beta}_{\rm }}) 
-= 
-(1-\lambda) \Delta \phi_{\rm }
-(\bmath{\theta},\bmath{\beta}_{\rm }).
-\ee
- Thus if
-there is any external convergence, $\kappax$, that is not included in the lens
-modeling, then the value of $H_0$ --inferred assuming $\kappax = 0$ -- will be
-$1-\kappax$ less than the true value of $H_0$:
-\be 
-\label{eq:MassSheet:H0bias}
-H_0^{\rm{true}}=(1-\kappax) H_0^{{\kappax = 0}}.
-\ee
-This degeneracy is present because lensing observations only deliver
-relative positions and fluxes. However we can overcome this degeneracy 
-if we have knowledge of $\kappax$.
-
-
-
-
-
-
-
-
-The lens potential, $\psi(\bmath{\theta})$, is related to the projected dimensionless
-surface mass density, $\kappa(\bmath{\theta})$, and the physical projected surface mass density,
-$\Sigma(D_{\rm d} \bmath{\theta})$, by 
-\be \label{eq:psiKappaDiffRelan}
-\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}),
-\ee
-where 
-\be \label{eq:sigcrit} 
-\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
-\ee
-Equation \ref{eq:Tsimp} can be rephrased as
+The time-delay distance is defined as $\Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds}$,
+with which Equation \ref{eq:Tsimp} can be rephrased as
 \be
 \Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c},
 \ee 
-where $\Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds}$ is the time-delay distance.
-Angular diameter distances are given by
-\begin{equation}
-D_{\mathrm{ij}}~=~ {c/H_0 \over {(1+z_{\mathrm{j}})}}\left( {\mathrm{sinn}\!\left( \sqrt{|\Omega_k|} \int_{z_{\mathrm{i}}}^{z_{\mathrm{j}}} {\mathrm{d} z \over E(z)}\right)\over \sqrt{|\Omega_k|}}\right)
-\label{eq:Da}
-\end{equation}
-where $\mathrm{sinn}(x)~=~\sin(x)$, $x$, or $\sinh(x)$ for open, flat, or closed universes respectively, and $E(z)$ is the normalised Hubble parameter:
-\begin{subequations}\label{Eq:Ez}
-\begin{align}
-E(z) &\equiv {H(z) \over H_0}\\
-E^{\Lambda{CDM}}&~=~\!\sqrt{{\Omega_{\mathrm{M}}(1\!+\!z)^{3}\!+\!\Omega_k(1\!+\!z)^2\!+\!\Omega_{\Lambda}}}
-\end{align}
-\end{subequations}
-Since angular diameter distances are proportional to the inverse of the Hubble constant, $1/H_0$,
-so is $\Dt$ proportional to $1/H_0$, hence a measurement of $\Dt$ can be used to infer $H_0$
-and also the other parameters in Equations \ref{eq:Da} and \ref{eq:Ez}. 
+Since the time delays are proportional to $1/ (1+ \kappax)$, if there is any external convergence, $\kappax$, that is not included in the lens
+modeling, then the time delay distance -- inferred assuming $\kappax = 0$ -- will be
+$1-\kappax$ less than the true value of $\Dt$.
+\be 
+\label{eq:MassSheet:H0bias}
+\Dt^{\rm{true}}=(1-\kappax) \Dt^{{\kappax = 0}}.
+\ee
+We can overcome this degeneracy if we have additional knowledge of $\kappax$.
 
-
-
-
-
-For mass-sheets that are physically
-associated with the lens galaxy, the mass sheet affects the stellar dynamics of the
+For mass-sheets that are physically associated with the lens galaxy, the mass sheet
+ affects the stellar dynamics of the
 lens galaxy, so dynamical observations can break the internal
 mass-sheet degeneracy by providing an additional estimate of the lens galaxy's mass
 \citep[e.g.,][]{GroginNarayan96a, GroginNarayan96b, TonryFranx99, KoopmansTreu02,
  TreuKoopmans02, BarnabeKoopmans07, suyu2010}. 
 
-
-
 In this work our aim is to quantify the lensing contribution from mass sheets that
 are not physically associated with the lens galaxy -- mass-sheets lying infront or behind
-the lens \citep{FassnachtEtal06}.
+the lens. We also aim to quantify how uncertainties in the estimations of kappa
+propogate into uncertainties on the cosmological parametres which can be inferred
+from measurements of $\Dt$
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
