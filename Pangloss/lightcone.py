@@ -252,10 +252,24 @@ class lens_lightcone(lightcone):
         c200 = Rel.MCrelation(M200,MCerror=errors)
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
 
+        self.galaxies.add_column('r200',r200)
+
         #print (M200/self.galaxies['M_Subhalo[M_sol/h]']).max()
 
 
         r_s = r200/c200
+        self.galaxies.add_column('rscale',r_s)
+
+
+        
+        r_s_arcmin  = (r_s / self.galaxies.Da_d) * rad2arcmin
+        r200_arcmin = (r200 / self.galaxies.Da_d) * rad2arcmin
+
+        self.galaxies.add_column('rscale_arcmin',r_s_arcmin)
+        self.galaxies.add_column('r200_arcmin',r200_arcmin)
+
+
+
         rho_s = LP.delta_c(c200)*self.galaxies.rho_crit
         kappa_s = rho_s * r_s /self.galaxies.sigma_crit
     
@@ -327,14 +341,41 @@ class lens_lightcone(lightcone):
         return None
 
 # ----------------------------------------------------------------------------
+#      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+    def massplot(self,AX):
+       for i in range(len(self.galaxies.x)):
+           trunc=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=3*self.galaxies.r200_arcmin[i],fill=True,fc="b",alpha=0.01)
+           AX.add_patch(trunc)
+       for i in range(len(self.galaxies.x)):
+           core=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rscale_arcmin[i],fill=True,fc="r",alpha=0.1)
+           AX.add_patch(core)
+       #for i in range(len(self.galaxies.x)):
+       #    if 3*self.galaxies.r200_arcmin[i]>self.galaxies.r[i]:
+       #        AX.scatter(self.galaxies.x[i], self.galaxies.y[i],c='k',s=10,edgecolor='none')
+       #    #elif 4*self.galaxies.r200_arcmin[i]>self.galaxies.r[i]:
+       #    #    TruncR=pylab.Circle([self.galaxies.x[i],self.galaxies.y[i]],radius=3*self.galaxies.r200_arcmin[i],fill=False,alpha=0.1)
+       #    #    AX.add_patch(TruncR)
+       for i in range(len(self.galaxies.x)):
+           if self.galaxies.kappa_Scaled[i]>0.0001:
+               AX.scatter(self.galaxies.x[i], self.galaxies.y[i],c='k',s=5,edgecolor='none')
+
+
+       circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
+       AX.add_patch(circ)
+       AX.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+       AX.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+       plt.xlabel('x / arcmin')
+       plt.ylabel('y / arcmin')
+
+#      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
    # 2-panel plot, showing view from Earth and also line of sight section:
     def plot(self,starlight=False,dmglow=False,kappa_indiv=False,kappa_keeton=False,observed_light=True):
        scale=numpy.max([ numpy.absolute((numpy.min(self.galaxies.kappa_Scaled))), numpy.max(self.galaxies.kappa_Scaled)])/200
        scale2= (numpy.max(self.galaxies.kappa))/200
        # Galaxy positions:
-       ax1=plt.subplot(2,1,1, aspect ='equal')
-       plt.subplot(2,1,1,aspect='equal')
+       ax1=plt.subplot(2,2,1, aspect ='equal')
+       plt.subplot(2,2,1,aspect='equal')
        empty = True
 
        # plot different properties depending on options:
@@ -368,6 +409,9 @@ class lens_lightcone(lightcone):
        ax1.add_patch(circ)
        ax1.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
 
+       for i in range(len(self.galaxies.x)):
+           if self.galaxies.kappa_Scaled[i]>0.0001:
+               plt.scatter(self.galaxies.x[i], self.galaxies.y[i],c='k',s=5,edgecolor='none')
 
        # Labels:
        plt.xlabel('x / arcmin')
@@ -380,11 +424,39 @@ class lens_lightcone(lightcone):
 
 
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+       #The mass plot
+       
+       plt.subplot(2,2,2,aspect='equal')
+       ax2=plt.subplot(2,2,2, aspect ='equal')
+       
+       self.massplot(ax2)
+
+       """
+       for i in range(len(self.galaxies.x)):
+           core=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=3*self.galaxies.r200_arcmin[i],fill=True,fc="b",alpha=0.01)
+           ax2.add_patch(core)
+       for i in range(len(self.galaxies.x)):
+           trunc=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rscale_arcmin[i],fill=True,fc="r",alpha=0.1)
+           ax2.add_patch(trunc)
+       for i in range(len(self.galaxies.x)):
+           if 3*self.galaxies.r200_arcmin[i]>self.galaxies.r[i]:
+               #TruncR=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=3*self.galaxies.r200_arcmin[i],fill=False,alpha=1)
+               #ax2.add_patch(TruncR)
+               plt.scatter(self.galaxies.x[i], self.galaxies.y[i],c='k',s=3,edgecolor='none')
+
+       circ=pylab.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
+       ax2.add_patch(circ)
+       ax2.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=10)
+       ax2.axis([self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1])
+       plt.xlabel('x / arcmin')
+       plt.ylabel('y / arcmin')
+       """
+#      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
 
        # Phil Marshall's subplot  View along redshift axis: 
 
-       plt.subplot(2,1,2)
+       plt.subplot(2,2,(3,4))
        empty = True
        
 
@@ -430,6 +502,10 @@ class lens_lightcone(lightcone):
        plt.axis([0,zmax+0.1,-self.rmax-0.1,self.rmax+0.1])
 
        # Add lines marking source and lens plane, and optical axis:
+       for i in range(len(self.galaxies.x)):
+           if self.galaxies.kappa_Scaled[i]>0.0001:
+               plt.scatter(self.galaxies.z_spec[i], self.galaxies.y[i],c='k',s=5,edgecolor='none')
+
        plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
        plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
        plt.axhline(y=0.0, xmin=0.0, xmax=zmax, color='black', ls='dashed')
@@ -501,6 +577,7 @@ class lens_lightcone(lightcone):
           plt.xlim([16,26])
        plt.ylabel('$\kappa_{ext}$ (cumulative)')
 
+ 
 
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
 
@@ -609,7 +686,7 @@ def test1(catalog):
 
 def test2(catalog): 
 
-    rmax = 5
+    rmax = 4.5
     truncationscale=3
 
     xmax = catalog['pos_0[rad]'].max()
@@ -636,12 +713,26 @@ def test2(catalog):
     grid.Behroozigrid(MFs)
 
 
-    klen=1000
+    klen=10
     kappa_Scaled=numpy.zeros(klen)
+
+
 
     lc = lens_lightcone(catalog,rmax,xc,zl,zs,grid=grid)
     lc.make_kappa_contributions(truncationscale=truncationscale,hardcut="RVir",scaling="add",errors=False,Mh2Mh=False)
     kappaTruth=lc.kappa_Scaled_total
+
+    #show me the lightcone
+    lc.rmax=3
+    axi=plt.subplot(1,1,1,aspect="equal")
+    lc.massplot(axi)
+    plt.show()
+
+
+    lc.plot()
+    plt.show()
+
+
 
     for k in range(klen):
         if k % 20 ==0 : print k,"of",klen
@@ -650,8 +741,7 @@ def test2(catalog):
         kappa_Scaled[k] =lc.kappa_Scaled_total
 
 
-    lc.plot()
-    plt.show()
+
     print numpy.std(kappa_Scaled)
     print numpy.mean(kappa_Scaled)
     plt.hist(kappa_Scaled)

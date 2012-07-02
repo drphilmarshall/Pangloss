@@ -14,6 +14,8 @@
 \input psfig.sty
 \usepackage{xspace}
 \usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
 
 % Macros:
 \input{macros.tex}
@@ -26,7 +28,7 @@
 from Photometric Catalog Data}
     
 \author[Collett \etal]{%
-  Thomas~J.~Collett$^{1}$\thanks{\collettemail},
+  Thomas~E.~Collett$^{1}$\thanks{\collettemail},
   Philip~J.~Marshall$^{2}$,
   Matthew~W.~Auger$^{1}$,
   Stefan~Hilbert$^{3}$,
@@ -74,7 +76,7 @@ over a probability density function for $\xkappa$: here, we investigate the use
 of a simple halo model to estimate $\Pr(\xkappa)$ given noisy estimates of the
 photometric redshift and stellar mass of galaxies observed in optical imaging
 surveys of the field in question. Tests using mock catalogs from the Millenium
-Simulation and comparing to ray-traced $kappa$ values, we find that \ldots 
+Simulation and comparing to ray-traced $\kappa$ values, we find that \ldots 
 The $\Pr(\xkappa)$ from this reconstruction process are narrower than the
 expected distribution of $\xkappa$ values over an ensemble of time delay lenses:
 incorporating the photometric catalogs in a joint analysis of 100 lenses 
@@ -234,10 +236,217 @@ dark energy density of the Universe in units of the critical density
 \section{Theoretical Background}
 \label{sec:theory}
 
-Time delay distances, and the mass sheet degeneracy - how kappa is degenerate in
-strong lens models (and magnifications). Weak lensing by NFW halos. Accounting
-for mass along the line of sight.  Approximations to full ray tracing: combining
-kappas: simple sum, Keeton scaling, comments. Example ray traced kappa map from Stefan. 
+%Time delay distances[✓], and the mass sheet degeneracy - how kappa is degenerate in
+%strong lens models (and magnifications). Weak lensing by NFW halos. Accounting
+%for mass along the line of sight.  Approximations to full ray tracing: combining
+%kappas: simple sum, Keeton scaling, comments. Example ray traced kappa map from Stefan. 
+
+Strong lensing occurs when a massive object and background source are almost perfectly
+aligned along a line of sight. The light from the background source is deflected by the
+lens galaxy; this deflection allows multiple images of the background source to form
+at stationary points of the time delay function. For a strong lens system in an otherwise
+homogeneous Robertson--Walker universe, the excess time delay of an image at angular position
+$\bmath{\theta}=(\theta_1,\theta_2)$ with unlensed source position $\bmath{\beta}=(\beta_1,\beta_2)$ is
+\be \label{eq:T} 
+\Delta t(\bmath{\theta},\bmath{\beta}) = \frac {1}{c} \frac{D_{\rm d} D_{\rm s}}{D_{\rm ds}} (1+z_{\rm d})\, \phi(\bmath{\theta},\bmath{\beta}),
+\ee
+where $z_{\rm d}$ is the redshift of the lens, $\phi(\bmath{\theta},\bmath{\beta})$ is
+the Fermat potential, and $D_{\rm d}$, $D_{\rm s}$, and $D_{\rm ds}$
+are, respectively, the angular diameter distance from observer to the lens, from observer
+to the source, and from the lens to the source. The Fermat potential is
+defined as
+\be \label{eq:FP}
+\phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right]. 
+\ee
+The first term in Eq. \ref{eq:FP} comes from the geometric path difference as a result of
+the deflection, and the second term is the gravitational delay
+described by the lens potential $\psi(\bmath{\theta})$.  
+
+The lens potential, $\psi(\bmath{\theta})$, is related to the projected dimensionless
+surface mass density, $\kappa(\bmath{\theta})$, and the physical projected surface mass density,
+$\Sigma(D_{\rm d} \bmath{\theta})$, by 
+\be \label{eq:psiKappaDiffRelan}
+\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}),
+\ee
+where 
+\be \label{eq:sigcrit} 
+\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\ee
+
+Equation \ref{eq:T} can be rephrased as
+\be
+\Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c},
+\ee 
+where $\Dt \equiv (1+\zd) D_{\rm d} D_{\rm s}/D_{\rm ds}$ is the time-delay distance.
+Angular diameter distances are given by
+\begin{equation}
+D_{\mathrm{ij}}~=~ {c/H_0 \over {(1+z_{\mathrm{j}})}}\left( {\mathrm{sinn}\!\left( \sqrt{|\Omega_k|} \int_{z_{\mathrm{i}}}^{z_{\mathrm{j}}} {\mathrm{d} z \over E(z)}\right)\over \sqrt{|\Omega_k|}}\right)
+\label{eq:Da}
+\end{equation}
+where $\mathrm{sinn}(x)~=~\sin(x)$, $x$, or $\sinh(x)$ for open, flat, or closed universes respectively, and $E(z)$ is the normalised Hubble parameter:
+\begin{subequations}\label{Eq:Ez}
+\begin{align}
+E(z) &\equiv {H(z) \over H_0}\\
+E^{\Lambda{CDM}}&~=~\!\sqrt{{\Omega_{\mathrm{M}}(1\!+\!z)^{3}\!+\!\Omega_k(1\!+\!z)^2\!+\!\Omega_{\Lambda}}}
+\end{align}
+\end{subequations}
+Since angular diameter distances are proportional to the inverse of the Hubble constant, $1/H_0$,
+so is $\Dt$ proportional to $1/H_0$, hence a measurement of $\Dt$ can be used to infer $H_0$
+and also the other parameters in Equations \ref{eq:Da} and \ref{eq:Ez}. 
+
+
+\subsection{Mass-sheet degeneracy}
+\label{sec:H0theory:MSD}
+
+A dificulty with using time delay distances to contrain $H_0$ is the so called
+Mass-sheet degeneracy \citep[see e.g.][for details]{Falco1985,Schneider2006}.
+This is a degeneracy in the strong lens modeling corresponding to the addition of a
+mass sheet that contributes a convergence and zero shear which combined with a
+re-scaling of the original mass distribution leaves the predicted image positions and
+magnifications unchanged. Given a lens
+model $\kappa_{\rm lens}(\vec{\theta})$, an alternative model described by the
+transformation $\tilde{\kappa}_{\rm lens}(\vec{\theta}) = \lambda + (1-\lambda)
+\kappa_{\rm lens}(\vec{\theta})$, where $\lambda$ is a constant,
+would fit the image positions, shapes and relative fluxes equally well. Physically $\lambda$
+is the convergence of the mass-sheet and can take any real value.
+
+
+Since strong lenses sit in our real Universe, they are not truely isolated;
+there is some mass along the line of sight coming from intervening structures.
+These structures may be physically associated with the lens e.g. other members
+of a group or cluster, or they may be the result of chance alignments at any redshift. 
+Whilst it is rare for three galaxies to line up well enough for both of the background sources
+to be strongly lensed \citep{gavazzi2008,collett2012}, the shear scale of dark matter halos
+makes a partial allignment -- with the additional structure acting as a weak lens -- 
+a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that there
+are no empty lightcones in a realistic universe, as such the 
+
+it is clear that 
+the mass-sheet degeneracy corresponds to a degeneracy between this
+external convergence ($\kext$) and the mass normalization of the lens 
+galaxy.\footnote{To be specific, the prescription that we adopt for
+  combining the effects of many mass sheets at redshifts $z_i$ with
+  surface mass densities $\Sigma_i$ is $\kext=\frac{4\pi
+    G}{c^2}\displaystyle\sum_i\frac{\Sigma_i(D_i\vec\theta)D_i D_{i{\rm s}}}{D_{\rm s}}$.}
+
+Despite the invariance of the image positions, shapes and relative fluxes
+under a mass-sheet transformation, the relative Fermat potential between the
+images changes according to $\Delta \phi_{\rm trans}(\vec{\theta},
+\vec{\beta}_{\rm trans}) = (1-\lambda) \Delta \phi_{\rm
+  model}(\vec{\theta},\vec{\beta}_{\rm model})$.  Therefore, given measured
+relative time delays $\Delta t$, which are inversely proportional to $H_0$ and
+proportional to the relative Fermat potential (Equation \ref{eq:TsimpH0}), the
+transformed model $\kappa_{\rm trans}$ would lead to an $H_0$ that is a factor
+$(1-\lambda)$ lower than that of the initial $\kappa_{\rm model}$ (for fixed
+$\OM$, $\OL$, and $w$).  In other words, if there is physically any external
+convergence $\kext$ due to the lens' local environment or mass structure along the
+line of sight
+to the lens system that is not incorporated in the lens
+modeling, then
+\be 
+\label{eq:MassSheet:H0bias}
+H_0^{\rm{true}}=(1-\kext) H_0^{\rm{model}}.
+\ee
+
+This degeneracy is present because lensing observations only deliver
+relative positions and fluxes.  The degeneracy can be broken, allowing us to
+measure $H_0$, if (i) we
+know the magnitude or angular size of the source in absence of lensing,
+(ii) we have information on
+the mass normalization of the lens,
+or (iii) we can compare the measured shear in the lens with the
+observed distribution of mass to calibrate $\kext$.
+For most of the strong lens systems including \ourlens, 
+case (i) does not apply, so
+circumventing the mass-sheet degeneracy requires the input of more
+information, either about the lensing galaxy itself, or its three-dimensional
+environment.
+We distinguish between two kinds of mass sheets: \textit{internal}
+and \textit{external}.  
+%
+Internal mass 
+sheets, which are physically associated with the lens galaxy, are due
+to nearby, physically associated galaxies, 
+groups or clusters which, crucially, 
+affect the stellar dynamics of the
+lens galaxy. External mass sheets describe mass
+distributions that are not physically associated with the
+lens galaxy and, by definition, do not affect the stellar dynamics.  
+Typically these will 
+lie along the line of sight to the lens \citep{FassnachtEtal06}. 
+We identify $\kext$ as the net convergence of this external mass sheet.
+
+Two methods for breaking the mass-sheet degeneracy are then: 
+\renewcommand{\theenumi}{\roman{enumi}}
+\begin{enumerate}
+\item \textit{Stellar dynamics of the lens galaxy.}  Stellar dynamics
+  can be used jointly with lensing to break the internal mass-sheet degeneracy
+  by providing an estimate of the enclosed mass at a radius different
+  from the Einstein radius, which is approximately the radius of the
+  lensed images from the lens galaxy
+  \citep[e.g.,][]{GroginNarayan96a, GroginNarayan96b, TonryFranx99,
+    KoopmansTreu02, TreuKoopmans02, BarnabeKoopmans07}.  We note that
+  for a given stellar velocity dispersion, there is a degeneracy in
+  the mass and the stellar orbit anisotropy (which characterizes the amount of
+  tangential velocity dispersion relative to radial dispersion).  Nonetheless,
+  the mass-isotropy degeneracy is nearly orthogonal to the mass-sheet
+  degeneracy, so a combination of the mass within the effective radius
+  (from the stellar velocity dispersion) and the mass within the Einstein
+  radius (from lensing) effectively breaks both the mass-isotropy and
+  the internal mass-sheet degeneracies. We describe how this works within the
+  context of our chosen mass model in Section~\ref{sec:H0theory:Dynamics}
+  below.
+\item \textit{Studying the environment and the line of sight to the lens galaxy.}  
+  Observations of the field around lens galaxies allow a rough picture of the
+  projected mass distribution to be built up. Many lens galaxies lie in galaxy
+  groups, which can be identified either by their spectra or, more cheaply
+  (but less accurately), by their colors and magnitudes.    By modeling the
+  mass distribution of the groups and galaxies in the lens plane and along the
+  line of sight  to the lens galaxy, one can estimate the external
+  convergence~$\kext$  at the redshift of the lens \citep[e.g.][and references
+  therein]{MomchevaEtal06, FassnachtEtal06, AugerEtal07}.  The group modeling
+  requires (i) identification of the  galaxies that belong to the group of the
+  lens galaxy, and (ii) estimates of the group centroid and velocity
+  dispersion.  A number of recipes can be followed. For example,
+  \citet{KeetonZabludoff04} considered two extremes: (i) the group is
+  described by a single smooth mass distribution, and (ii) the masses are
+  associated with individual galaxy group members with no common halo.  The
+  realistic mass distribution for a galaxy group should be somewhere between
+  these two extremes.  
+  The experience to date  is that 
+  modeling lens environments accurately is very difficult, with uncertainties
+  of 100\% typical \citep[e.g.][]{MomchevaEtal06, FassnachtEtal06}.    
+  In Section \ref{sec:LensEnv}, we describe an
+  alternative approach for quantifying the external convergence in a
+  statistical manner: ray-tracing through numerical simulations of large-scale
+  structure \citep{HilbertEtal07}.
+  In this section 
+  we also present a first attempt at tailoring the ray-tracing results 
+  to our one line of sight, using the relative galaxy number counts in the
+  field.
+\end{enumerate}
+
+We emphasize that the mass-sheet degeneracy is simply one of the
+several parameter degeneracies in the lens modeling that has been
+given a special name.  When power-laws ($\kappa \sim b R^{1-\slope}$,
+where $R$ is the radial distance from the lens center, $b$ is the
+normalization of the lens, and $\slope$ is the radial slope in the
+mass profile) are used to describe the lens mass distribution, one
+often finds a $H_0$-$\slope$ degeneracy in addition to the
+$H_0$-$b$-$\kext$ (mass-sheet) degeneracy (for fixed $\OM$, $\OL$ and
+$w$; more generally, $\tdist$ would be in place of $H_0$).  These two
+degeneracies are of course related via $H_0$.  The $H_0$-$\slope$
+degeneracy primarily occurs in lens systems with symmetric
+configurations due to a lack of information on $\slope$.  In contrast,
+lens systems with images spanning a range of radii or with extended
+images provide information on $\slope$
+\citep[e.g.][]{WucknitzEtal04,DyeEtal08}, and so the $H_0$-$\slope$
+degeneracy is broken.  Nonetheless, the $H_0$-$b$-$\kext$ degeneracy
+is still present unless we provide information from dynamics and lens
+environment studies.  
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

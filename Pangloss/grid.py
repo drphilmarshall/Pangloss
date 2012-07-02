@@ -126,7 +126,7 @@ class lensgrid(grid):
    def Behroozigrid(self,MFs):
        #Calculate the Behroozi relation and scatter on each plane.
        
-       Mh = numpy.linspace(10.,25.,2501)
+       Mh = numpy.linspace(9.,25.,1601)
        Ms = numpy.linspace(5.5,12.5,801)
        sigma = 0.15
        self.Mh=Mh
@@ -190,7 +190,7 @@ class lensgrid(grid):
              return (N-TCHM)[aa:-bb][C]/TCHM[aa:-bb][C]**0.5
           if ZPD != zpd:
              coeff,ier = optimize.leastsq(getPL,[14.56,-1.])
-          ZPD=zpd*1.0
+
 
           HMF = 10**(coeff[0]+Mh*coeff[1])
 
@@ -201,9 +201,43 @@ class lensgrid(grid):
              pdf[:,i] = numpy.exp(-0.5*(Ms-MsMean[i])**2/sigma**2)/norm
 
           #multiply pdf by Halo Mass Function
+
+
+          plotting=False
+          if plotting:
+             if zpd==3 and ZPD != 3:
+                pdfm=pdf[50:751,100:601]
+                plt.imshow(pdfm,origin="lower",extent = [Mh[100:601].min(), Mh[100:601].max(), Ms[50:751].min(), Ms[50:751].max()])
+                plt.xlabel("log$_{10}$(M$_{\mathrm{halo}}$/M$_{\odot}$)")
+                plt.ylabel("log$_{10}$(M$_{\mathrm{stellar}}$/M$_{\odot}$)")
+                plt.title("P(M$_{\mathrm{stellar}}$|M$_{\mathrm{halo}}$) - Behroozi Relation")
+                plt.savefig("Behroozi.png")
+                plt.show()
+
           for i in range(Mh.size):
               pdf[:,i]*=HMF[i]
- 
+          if zpd==3 and ZPD != 3:
+          #   #plt.subplot(212)
+          #   plt.imshow(pdf,origin="lower",extent = [Mh.min(), Mh.max(), Ms.min(), Ms.max()])
+          #   plt.xlabel("log$_{10}$(M$_{\mathrm{halo}}$/M$_{\odot}$)")
+          #   plt.ylabel("log$_{10}$(M$_{\mathrm{stellar}}$/M$_{\odot}$)")
+          #   plt.show()
+
+             if plotting:
+                pdfl=pdf*1.0
+                for i in range(len(numpy.sum(pdf,1))):
+                   pdfl[i,:]/=numpy.sum(pdf,1)[i]
+                   
+                pdfl=pdfl[50:751,100:601]
+                plt.title("P(M$_{\mathrm{halo}}$|M$_{\mathrm{stellar}}$)")
+                plt.imshow(pdfl,origin="lower",extent = [Mh[100:601].min(), Mh[100:601].max(), Ms[50:751].min(), Ms[50:751].max()])
+                plt.xlabel("log$_{10}$(M$_{\mathrm{halo}}$/M$_{\odot}$)")
+                plt.ylabel("log$_{10}$(M$_{\mathrm{stellar}}$/M$_{\odot}$)")
+                plt.savefig("BehrooziInverse.png")
+                plt.show()
+
+
+
           cdf = numpy.cumsum(pdf,1).astype(numpy.float32)
           cdf/= numpy.max(cdf)
           cdf = (cdf.T-cdf[:,0]).T
@@ -212,6 +246,7 @@ class lensgrid(grid):
           if vb: print cdf
           MhaloFromMstar = {}
 
+          
           for i in range(Ms.size):
              tmp = numpy.round(cdf[i]*1e5).astype(numpy.int64)/1e5
              lo = tmp[tmp==0].size-1
@@ -221,12 +256,14 @@ class lensgrid(grid):
 
 
 
-
+          ZPD=zpd*1.0
           MstarFromMhalo_given_z[self.zplane[p]] = invModel
           MhaloFromMstar_given_z[self.zplane[p]] = MhaloFromMstar
        self.MhaloDist = MhaloFromMstar_given_z
        self.Mstar_given_halo= MstarFromMhalo_given_z
        # Use like: MhaloFromMstar_given_z[z][Ms]
+
+
 
    def drawMhalo(self,Mstar,z,r=None):
       if len(Mstar)!=len(z): print "Draw MHalo takes a list of Mstars and redshifts. The redshifts must be snapped."

@@ -79,8 +79,8 @@ def MScompare(argv):
       return
 
    vb = False
-   Ncones = 1000
-   Rcone = 3 # arcmin
+   Ncones = 10
+   Rcone = 5 # arcmin
    truncationscale=3   # *R_200 halo truncation
   
    scaling = "add" 
@@ -218,8 +218,9 @@ def MScompare(argv):
 
    #so now lets draw the cones that we want to creat pdfs for.
 
-   Npdf=1000 #how many pdf's do we want?
-   print time.clock()
+   Npdf=10 #how many pdf's do we want?
+   #Ncones=1000 #How many realisations? 
+
    xn = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Npdf)
    yn = rnd.uniform(ymin+Rcone*arcmin2rad,ymax-Rcone*arcmin2rad,Npdf)
 
@@ -250,14 +251,32 @@ def MScompare(argv):
    #------------------------------------------------------------------
 
       #Now lets plot the pdfs!
-      #print numpy.std(kappa_Reconstruct_n[n,:])
-      #plt.hist(kappa_Reconstruct_n[n,:])
-      #plt.axvline(x=kappa_hilbert_n[n],ymin=0,ymax=1,c='k',ls='dashed',label="$\kappa$ Hilbert")
-      #plt.axvline(x=kappa_Truth_n[n],ymin=0,ymax=1,c='k',ls='dotted',label="$\kappa$ Perfect Mass")
-      #plt.legend(loc=1)
-      #plt.show()
+      colors=["b","g","r","y","purple"]
+      if n < 5:
+         #print numpy.std(kappa_Reconstruct_n[n,:])
+         #print blurfactor
+         #lc.plot()
+         #plt.savefig("plot.png")
+         ##plt.show()
+         #plt.clf()
+         #AX=plt.subplot(1,1,1, aspect ='equal')
+         #lc.massplot(AX)
+         #plt.savefig("massplot.png")
+         #plt.show()
+         #plt.clf()
 
-   F=open("pdfs.dat","wb")
+         bins=numpy.linspace(-0.2,0.6,41)
+         plt.hist(kappa_Reconstruct_n[n,:],bins=bins,color=colors[n],alpha=0.3)
+         plt.axvline(x=kappa_hilbert_n[n],ymin=0,ymax=1,c=colors[n],ls='dashed',label="$\kappa$ Hilbert")
+         plt.axvline(x=kappa_Truth_n[n],ymin=0,ymax=1,c=colors[n],ls='dotted',label="$\kappa$ Perfect Mass")
+         plt.legend(loc=1)
+         plt.savefig("singlepdf.png")
+   plt.show()
+
+
+
+   #output results
+   F=open("pdflist.dat","wb")
    results = kappa_hilbert_n,kappa_Truth_n,kappa_Reconstruct_n
    cPickle.dump(results,F,protocol=2)
 
