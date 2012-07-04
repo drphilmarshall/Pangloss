@@ -271,7 +271,7 @@ class lensgrid(grid):
       Mh=numpy.zeros(len(Mstar))
       z=self.snap(z)[0]
       for i in range(len(Mstar)):
-         r = numpy.random.random()
+         if r==None: r = numpy.random.random()
          Mstr = numpy.round(Mst[i]*100.0)/100.
          #print Mstr
          zed=z[i]
@@ -341,9 +341,9 @@ if __name__ == '__main__':
     MFs=cPickle.load(FILE)
     lg.Behroozigrid(MFs)
     
-    MhTrue=10**(numpy.linspace(10,13,20000))
+    MhTrue=10**(numpy.linspace(10,13,2000))
     print MhTrue
-
+    """
     for i in range(len(lg.zplane)):
        Ms=lg.drawMstar(MhTrue,(numpy.ones(len(MhTrue))*lg.zplane[i]))
        #plt.scatter(numpy.log10(MhTrue),numpy.log10(Ms))
@@ -361,4 +361,41 @@ if __name__ == '__main__':
        #plt.show()
     
     #print lg.drawMhalo([  5.75568442e+10,   1.06243864e+11], [ 1.01593,   0.963173])
+    """
+
+    i=4
+    Ms=lg.drawMstar(MhTrue,(numpy.ones(len(MhTrue))*lg.zplane[i]))
+    plt.plot(numpy.log10(MhTrue),numpy.log10(Ms),c='k')
+    plt.plot(numpy.log10(MhTrue),numpy.log10(Ms)+0.15,c='k',ls="dashed")
+    plt.plot(numpy.log10(MhTrue),numpy.log10(Ms)-0.15,c='k',ls="dashed")
+    plt.plot(numpy.log10(MhTrue),numpy.log10(Ms)+0.30,c='k',ls="dotted")
+    plt.plot(numpy.log10(MhTrue),numpy.log10(Ms)-0.30,c='k',ls="dotted")
+    plt.xlabel("log$_{10}$(M$_{\mathrm{halo}}$/M$_{\odot}$)")
+    plt.ylabel("log$_{10}$(M$_{\mathrm{stellar}}$/M$_{\odot}$)")
+    plt.title("P(M$_{\mathrm{stellar}}$|M$_{\mathrm{halo}}$) - Behroozi Relation")
+    plt.savefig("BehrooziConf.png")
+    plt.show()
+
+    MsTrue=10**(numpy.linspace(6,12,200))
+    Mh=lg.drawMhalo(MsTrue,(numpy.ones(len(MsTrue))*lg.zplane[i]),r=0.5)
+    Mh1=lg.drawMhalo(MsTrue,(numpy.ones(len(MsTrue))*lg.zplane[i]),r=0.16)
+    Mh2=lg.drawMhalo(MsTrue,(numpy.ones(len(MsTrue))*lg.zplane[i]),r=0.84)
+    Mh3=lg.drawMhalo(MsTrue,(numpy.ones(len(MsTrue))*lg.zplane[i]),r=0.025)
+    Mh4=lg.drawMhalo(MsTrue,(numpy.ones(len(MsTrue))*lg.zplane[i]),r=0.975)
+
+    plt.plot(numpy.log10(MsTrue),numpy.log10(Mh),c='k')
+    plt.plot(numpy.log10(MsTrue),numpy.log10(Mh1),c='k',ls="dashed")
+    plt.plot(numpy.log10(MsTrue),numpy.log10(Mh2),c='k',ls="dashed")
+    plt.plot(numpy.log10(MsTrue),numpy.log10(Mh3),c='k',ls="dotted")
+    plt.plot(numpy.log10(MsTrue),numpy.log10(Mh4),c='k',ls="dotted")
+    plt.ylabel("log$_{10}$(M$_{\mathrm{halo}}$/M$_{\odot}$)")
+    plt.xlabel("log$_{10}$(M$_{\mathrm{stellar}}$/M$_{\odot}$)")
+    plt.title("P(M$_{\mathrm{halo}}$|M$_{\mathrm{stellar}}$)")
+    plt.savefig("InvBehrooziConf.png")
+    plt.show()
+
+
+
+
+
 # ============================================================================

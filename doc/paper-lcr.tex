@@ -240,19 +240,21 @@ dark energy density of the Universe in units of the critical density
 %strong lens models (and magnifications).
 
 
-Define: convergence.
-
-Where does it crop up? where is it important?
-
-The convergence from an isolated mass sheet is the ratio of the projected surface mass density devided by the critical density at the redshift of the mass sheet.
+Convergence, or Ricci focusing, occurs when a gravitational lens focuses the rays in a raybundle.
+This focussing can cause distant objects to appear brighter, and larger than they would if the lens
+ were removed.
+The convergence from an isolated mass sheet is the ratio of the projected surface mass density
+(\Sigma) devided by the critical density at the redshift of the mass sheet (\Sigma_{\rm cr}),
 \be
-\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}
+\kappa(\bmath{\theta})= \frac {{\Sigma} {\Sigma_{\rm cr}(z)}
 \ee
 where 
 \be \label{eq:sigcrit} 
-\Sigma_{\rm cr} \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\Sigma_{\rm cr}(z) \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
 \ee
-
+and $D_{\rm d}$, $D_{\rm s}$, and $D_{\rm ds}$ are, respectively, the angular diameter distances from observer to the mass sheet, from observer to the source, and from the mass sheet to the source. If the surface mass density of the sheet exceeds $\Sigma_{\rm cr}$, multiple images of the source can
+occur, otherwise only one image will be observed, although that image will still be perturbed
+relative to the unlensed case.
 
 Strong lensing occurs when a massive object and background source are almost perfectly
 aligned along a line of sight. The light from the background source is deflected by the
@@ -264,9 +266,7 @@ function can be calculated from
 \ee
 where $\bmath{\theta}$ is the observed source position, $\bmath{\beta}$ is the 
 unlensed source position, $z_{\rm d}$ is the redshift of the lens, $\phi(\bmath{\theta},\bmath{\beta})$ is
-the Fermat potential, and $D_{\rm d}$, $D_{\rm s}$, and $D_{\rm ds}$
-are, respectively, the angular diameter distances from observer to the lens, from observer
-to the source, and from the lens to the source. The Fermat potential is given by
+the Fermat potential. The Fermat potential is given by
 \be \label{eq:FP}
 \phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right], 
 \ee
@@ -372,15 +372,31 @@ by the critical density and concentration parameter:
 \be
 \rho_0 = \rho_{\mathrm{crit}}(z)\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
 \ee
+Defining $x$ as the dimensionless projected radial distance $R/r_{s}$ , \citet{bartelmann1996} derives the projected mass density, which is given by:
+\be\label{eq:kappanfw}
+\Sigma_{\rm NFW}(x) = 
+\begin{cases}
+  \frac{2r_{s}\delta_{c}\rho_{c}}{x^{2}-1}
+  \left(1-\frac{2}{\sqrt{1-x^{2}}}{\rm arctanh}\sqrt{\frac{1-x}{1+x}}\right)\hspace{0.15cm}
+  & \left(x < 1\right) \\
+\\
+  \frac{2r_{s}\delta_{c}\rho_{c}}{3}
+  & \left(x = 1\right)\\
+\\
+  \frac{2r_{s}\delta_{c}\rho_{c}}{x^{2}-1}
+  \left(1-\frac{2}{\sqrt{x^{2}-1}}\arctan\sqrt{\frac{x-1}{1+x}}
+  \right) 
+  & \left(x > 1\right) 
+\end{cases}
+\ee
+and the convergence is given by $\Sigma_{\rm NFW}(x) / \Sigma_{\rm cr}(z)$.
 
-From the NFW density profile, \citet{wrightbrainerd1999} derive the following quantities
-which are necessary for our line of sight reconstruction:
+Distrubingly, if one integrates the density profile of an NFW profile, the total mass is divergent.
+Similarly, if the universe is homogeneously populated with NFW halos, the projected surface mass along any
+line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}.
+Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low \{}
 
-The mass enclosed within radius is given by:
-
-The projected mass density is given by:
-
-The shear is given by:
+%Hayashi2002 - truncation of satellites
 
 
 

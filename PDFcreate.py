@@ -79,7 +79,7 @@ def MScompare(argv):
       return
 
    vb = False
-   Ncones = 10
+   Ncones = 1000
    Rcone = 5 # arcmin
    truncationscale=3   # *R_200 halo truncation
   
@@ -218,7 +218,7 @@ def MScompare(argv):
 
    #so now lets draw the cones that we want to creat pdfs for.
 
-   Npdf=10 #how many pdf's do we want?
+   Npdf=1000 #how many pdf's do we want?
    #Ncones=1000 #How many realisations? 
 
    xn = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Npdf)
@@ -249,7 +249,7 @@ def MScompare(argv):
       #last term comes from the intrinsic difference in kappa_hilbert vs kappa_reconstruct_truth
 
    #------------------------------------------------------------------
-
+         """
       #Now lets plot the pdfs!
       colors=["b","g","r","y","purple"]
       if n < 5:
@@ -272,11 +272,11 @@ def MScompare(argv):
          plt.legend(loc=1)
          plt.savefig("singlepdf.png")
    plt.show()
-
+   """
 
 
    #output results
-   F=open("pdflist.dat","wb")
+   F=open("pdfs1000e.dat","wb")
    results = kappa_hilbert_n,kappa_Truth_n,kappa_Reconstruct_n
    cPickle.dump(results,F,protocol=2)
 
