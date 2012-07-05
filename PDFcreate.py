@@ -79,7 +79,7 @@ def MScompare(argv):
       return
 
    vb = False
-   Ncones = 1000
+   Ncones = 100
    Rcone = 5 # arcmin
    truncationscale=3   # *R_200 halo truncation
   
@@ -110,9 +110,12 @@ def MScompare(argv):
          assert False, "unhandled option"
 
    # Check for datafiles in array args:
-   if len(args) == 2:
+   if len(args) == 4:
       catalog = args[0]
       kappafile = args[1]
+      gammafile1 = args[2]
+      gammafile2 = args[3]
+
       if vb:
          print "Reconstructing convergence in lightcones from:",catalog
          print "Comparing to convergence in:",kappafile
@@ -136,7 +139,9 @@ def MScompare(argv):
     
    MSconvergence = Pangloss.kappamap(kappafile)
    if vb: print "Read in true kappa map, dimension",MSconvergence.NX
-
+   MSshear1 = Pangloss.kappamap(gammafile1)
+   MSshear2 = Pangloss.kappamap(gammafile2)
+   if vb: print "Read in true gamma map, dimension",MSshear.NX
 
    # --------------------------------------------------------------------
 
@@ -162,6 +167,8 @@ def MScompare(argv):
    kappa_Scaled = numpy.zeros(Ncones)
    kappa_Scaled_truth = numpy.zeros(Ncones)
    kappa_hilbert = numpy.zeros(Ncones)
+   gamma_hilbert_2 = numpy.zeros(Ncones)
+   gamma_hilbert_1 = numpy.zeros(Ncones)
    errors=True
 
 
@@ -181,6 +188,8 @@ def MScompare(argv):
 
       # Hilbert Truth:
       kappa_hilbert[k] = MSconvergence.at(x[k],y[k],coordinate_system='physical')
+      gamma_hilbert_1[k] =MSshear1.at(x[k],y[k],coordinate_system='physical')
+      gamma_hilbert_2[k] =MSshear2.at(x[k],y[k],coordinate_system='physical')
       # THE CATALOGUES NEED TRANSPOSING!!!! (don't make that mistake again!)
 
 
@@ -205,12 +214,13 @@ def MScompare(argv):
 
 
    #sanity check - do hilbert and reconstruction look correlated?
-   plt.scatter(kappa_hilbert,kappa_Scaled_truth)
-   plt.show()
+   #plt.scatter(kappa_hilbert,kappa_Scaled_truth)
+   #plt.show()
 
    blurfactor=numpy.std(kappa_hilbert-kappa_Scaled_truth)
-   plt.scatter(kappa_hilbert-kappa_Scaled_truth,kappa_Scaled)
-   plt.show()
+   print blurfactor
+   #plt.scatter(kappa_hilbert-kappa_Scaled_truth,kappa_Scaled)
+   #plt.show()
 
    #------------------------------------------------------------------
 
@@ -218,8 +228,8 @@ def MScompare(argv):
 
    #so now lets draw the cones that we want to creat pdfs for.
 
-   Npdf=1000 #how many pdf's do we want?
-   #Ncones=1000 #How many realisations? 
+   Npdf=10 #how many pdf's do we want?
+   #Ncones=100 #How many realisations? 
 
    xn = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Npdf)
    yn = rnd.uniform(ymin+Rcone*arcmin2rad,ymax-Rcone*arcmin2rad,Npdf)
@@ -276,8 +286,8 @@ def MScompare(argv):
 
 
    #output results
-   F=open("pdfs1000e.dat","wb")
-   results = kappa_hilbert_n,kappa_Truth_n,kappa_Reconstruct_n
+   F=open("pdftest.dat","wb")
+   results = kappa_hilbert_n,kappa_Truth_n,kappa_Reconstruct_n,gamma_hilbert_1,gamma_hilbert_2
    cPickle.dump(results,F,protocol=2)
 
 

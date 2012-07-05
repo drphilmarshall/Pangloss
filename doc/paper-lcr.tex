@@ -337,6 +337,15 @@ which can be inferred from measurements of $\Dt$.
 \section{Halo Model and Mass distribution}
 \label{sec:model}
 
+%Weak lensing by NFW halos. Accounting for mass along the line of sight.
+%Approximations to full ray tracing:
+%
+%Halos. N-body sims provide mass framework. MS halo catalog. Truncated spherical
+%NFW approx based on virial masses. Stellar mass. Halo map corresponding to
+%ray-traced kappa map, for illustration. Small-scale structure 
+
+
+
 For real lines of sight, it is nearly impossible to know the true $\kappax$ for a
 line of sight, and without a knowledge of $\kappax^{\mathrm{true}}$ it is hard to
 quantify if there is a bias induced by using different $\kappax$ estimators.
@@ -346,7 +355,8 @@ would break the mass-sheet degeneracy and provide a value for $\kappax$, but
 \flag{no?} such systems are currently known.
 
 Cosmological dark matter simulations can be used to generate mock lines of sight...
-\flag{Stefan's section on how halos are extracted from the MS n-body particles}
+\flag{Stefan's section on how the ray tracing was done and how halos are extracted from
+ the MS n-body particles}
 
 With this catalogue of halos, positions, redshifts etc. it is possible to attempt
 a reconstruction of the convergernce induced by every halo near a line of sight.
@@ -365,10 +375,10 @@ which
 \rho(r_{200}) = 200\rho_{{\mathrm{crit}}}(z), \text{ where } \rho_{\mathrm{crit}}(z) \equiv \frac{3H^{2}(z)}{8\pi G}
 \ee
  and $c$ is the concentration parameter, which can be estimated from the halo's mass,
-using a mass--concentration relation. Typically more massive halos are more concentrated,
+using a mass--concentration relation. Typically more massive halos are less concentrated,
 but there is some scatter; we use the relation of \citet{neto2007} to estimate $c$
 from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. $\rho_0$ is calculated 
-by the critical density and concentration parameter:
+from the critical density and concentration parameter:
 \be
 \rho_0 = \rho_{\mathrm{crit}}(z)\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
 \ee
@@ -391,29 +401,25 @@ Defining $x$ as the dimensionless projected radial distance $R/r_{s}$ , \citet{b
 \ee
 and the convergence is given by $\Sigma_{\rm NFW}(x) / \Sigma_{\rm cr}(z)$.
 
-Distrubingly, if one integrates the density profile of an NFW profile, the total mass is divergent.
+Disturbingly, if one integrates the density profile of an NFW profile, the total mass is divergent.
 Similarly, if the universe is homogeneously populated with NFW halos, the projected surface mass along any
 line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}.
-Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low \{}
+Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight. We will limit our truncations to hard cut--offs, where the density drops to 0 beyond the truncation radius $r_t$. This gives 
 
-%Hayashi2002 - truncation of satellites
+\flag{kappa truncated NFW}
 
-
-
-
-
-
-Weak lensing by NFW halos. Accounting for mass along the line of sight.
-Approximations to full ray tracing:
-
-Halos. N-body sims provide mass framework. MS halo catalog. Truncated spherical
-NFW approx based on virial masses. Stellar mass. Halo map corresponding to
-ray-traced kappa map, for illustration. Small-scale structure 
 
 Not all DM is in halo catalog. Smooth component approximation.  How voids
 produce a negative kappa - filled beam distances require halos and voids to
 provide density contrast relative to mean. How we correct for voids. Comments on
 reasonable, but unphysical nature of this approach, tests to follow. 
+
+\flag{kappa smooth correction.}
+
+Thus the total $\kappax$ for a line of sight is given by 
+\be
+\kappax = \left(\Sum_{halos} \kappa_{halos}\right)-\kappa{smooth}.
+\ee
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -421,15 +427,39 @@ reasonable, but unphysical nature of this approach, tests to follow.
 \section{Tests with known halo mass and redshift}
 \label{sec:knownMh+z} 
 
-Raytracing through n-body particles as 'truth'. Motivation for assuming perfect
-knowledge of halo mass and z = testing model of previous section. Deterministic
-prediction of kappa.
+%Raytracing through n-body particles as 'truth'. Motivation for assuming perfect
+%knowledge of halo mass and z = testing model of previous section. Deterministic
+%prediction of kappa.
+%
+%Is truncation choice important? How deep and wide does a reconstruction need to
+%go? What is the irreducible uncertainty on kappa from this halo model? (Bias and
+%scatter) Can use the ideal reconstruction to ask: Where does the kappa come
+%from? Close to the LoS? Bright objects? How many objects are important? What
+%error is made by considering subsets of available objects? 
 
-Is truncation choice important? How deep and wide does a reconstruction need to
-go? What is the irreducible uncertainty on kappa from this halo model? (Bias and
-scatter) Can use the ideal reconstruction to ask: Where does the kappa come
-from? Close to the LoS? Bright objects? How many objects are important? What
-error is made by considering subsets of available objects? 
+
+Given the halo mass catalogue from the Millenium Simulation, and convergence maps produced by
+ray-tracing through the MS's n-body particles, 
+it is possible to test the validity of using a truncated NFW halo model to estimate 
+the external convergence along any given line of sight. 
+
+For every halo and subhalo in the catalogue, we estimate a concentration according to
+the best fit relation of \citet{neto2007}:
+\be
+c_{200} = 4.67 (M_{200}/10^{14} h^{-1} \Msun)^{-0.11}
+\ee
+
+Lines of sight are then chosen from random positions in the catalogue, and for each line of
+sight we reconstruct the convergences from every halo within 5 arcminutes and compare the reconstructed
+kappas with those from the ray tracing results of Hilbert et al. We do this for a range of
+truncations, as a function of both the virial and NFW scale radius. The scatter is 
+shown in Figure \ref{fig:ScattervsTruncation}. It is clear from Figure \ref{fig:ScattervsTruncation} 
+that as long as the truncation is greater than the virial radius, the choice of truncation
+radius does not broadly affect the scatter on $\kappah$-$kapparec$; from now on we choose 
+to truncate the halos at three times their virial radius.
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -448,6 +478,12 @@ How is the kappa inference offset and blurred by uncertainty on redshift, Mstar
 and Mhalo? 
 
 What is the effect of using the wrong Mstar-Mhalo relation? 
+
+
+
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

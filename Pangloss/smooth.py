@@ -102,7 +102,9 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
 
 
 
-      c200 = Rel.MCrelation(M200,MCerror=errors)
+      c200 = Rel.MCrelation(M200,MCerror=False)
+
+
       #cat.add_column('NetoC', c200)
       snappedz,planes=lg.snap(cat['z_spec'])
       #cat.add_column("snappedplane",planes)
@@ -125,11 +127,27 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
          R_trunc[cat.Type == 1]=(r200[cat.Type == 1])*truncationscale
       else: print "what hardcut did you mean?"  
 
+      #circular mass - not coded in yet.
+      #mass=4*3.14159*rhos*(rs**3)  *     \
+      #    (  numpy.log(1+(R_trunc)/rs) - \
+      #          R_trunc/(rs+R_trunc)    \
+      #          )
 
-      mass=4*3.14159*rhos*(rs**3)  *     \
-          (  numpy.log(1+(R_trunc)/rs) - \
-                R_trunc/(rs+R_trunc)    \
-                )
+      xtrunc=R_trunc/rs
+      print c200.max()
+      print c200[M200>1e10].min()
+
+      print xtrunc.max()
+      print xtrunc[M200>1e11].min()
+
+      mass=4*rs*rhos*(
+         (2/(xtrunc**2-1)**.5)
+         *
+         numpy.arctan(((xtrunc-1.)/(xtrunc+1))**.5)
+         +
+         numpy.log(xtrunc/2)
+         )
+
       cat.add_column('Mtrunc', mass)
  
 
@@ -157,14 +175,14 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
 
 #-------------------------------------------
 if __name__ == '__main__':
-  test1=False
-  #test2=True
+  test1=True
+  test2=False
 
 
   if test1 ==True:
    #print "running"
 # Kappa Smooth as a function of magnitude cut:
-   d1= "catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
+   d1= "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
    datafile=[atpy.Table(d1, type='ascii')]
    """
    maglist=numpy.linspace(19,25,15,endpoint=True)

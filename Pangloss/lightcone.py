@@ -286,15 +286,27 @@ class lens_lightcone(lightcone):
 
 
         
+      #circular mass - not coded in yet.
+      #mass=4*3.14159*rhos*(rs**3)  *     \
+      #    (  numpy.log(1+(R_trunc)/rs) - \
+      #          R_trunc/(rs+R_trunc)    \
+      #          )
 
-        mass=4*3.14159*rho_s*(r_s**3)  *     \
-            (  numpy.log(1+(R_trunc)/r_s) - \
-                   R_trunc/(r_s+R_trunc)    \
+
+        xtrunc=R_trunc/rs
+
+        mass=4*rs*rhos*(
+            (2/(x**2-1)**.5)
+            *
+            numpy.arctan(((x-1.)/(x+1))**.5)
+            +
+            numpy.log(x/2)
             )
 
-        #print "boo"
+
+ 
         self.galaxies.add_column('Mtrunc', mass)
-        #print "hoo"
+ 
 
         kappaNFW=kappa_s*1.0
         shearNFW=kappa_s*1.0
