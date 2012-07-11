@@ -34,11 +34,12 @@ def MScompare(argv):
 
    vb = False
    Rcone = 5 # arcmin
-   truncationscale=numpy.linspace(0.5,20,30) # *R_200 halo truncation
+   truncationscale=numpy.linspace(0.5,6,20) # *R_200 halo truncation
+   truncationscale=numpy.append(truncationscale,[7,8,9,10,12,14,16,18,20])
    adoptedtruncationscale=10
    Ntruncs=len(truncationscale)
    Ncones=1000
-   magcuts=numpy.linspace(14,27,50)
+   magcuts=numpy.linspace(14,26,50)
 
 
    scaling = "add" 
@@ -354,12 +355,15 @@ def MScompare(argv):
    if investigateT:
       results =  x,y,kappa_hilbert,truncationscale,kappa_scatter_truth,kappa_Scaled_truth
       cPickle.dump(results,F,protocol=2)
+      F.close()
    if investigateM:
       results =  x,y,kappa_hilbert,magcuts,kappa_16_M,kappa_50_M,kappa_84_M,kappa_Scaled_truth_M
-      cPickle.dump(results,F,protocol=2)
+      cPickle.dump(results,G,protocol=2)
+      G.close()
    if investigateR:
       results =  x,y,kappa_hilbert,Rcuts,kappa_16_R,kappa_50_R,kappa_84_R,kappa_Scaled_truth_R
       cPickle.dump(results,H,protocol=2)
+      H.close()
 # ======================================================================
 
 if __name__ == '__main__':

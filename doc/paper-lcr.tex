@@ -409,56 +409,55 @@ which
 and $c$ is the concentration parameter, which can be estimated from the halo's mass,
 using a mass--concentration relation. Typically more massive halos are less concentrated,
 but there is some scatter; we use the relation of \citet{neto2007} to estimate $c$
-from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. $\rho_0$ is calculated 
-from the critical density and concentration parameter:
+from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. The best fit relation of \citet{neto2007} is given by
+\be
+c_{200} = 4.67 (M_{200}/10^{14} h^{-1} \Msun)^{-0.11}.
+\ee
+$\rho_0$ is calculated from the critical density and concentration parameter:
 \be
 \rho_0 = \rho_{\mathrm{crit}}(z)\frac{200}{3}\frac{c^{3}}{\ln(1+c)-c/(1+c)}.
 \ee
-Defining $x$ as the dimensionless projected radial distance $R/r_{s}$ , \citet{bartelmann1996} derives the projected mass density, which is given by:
-\be\label{eq:kappanfw}
-\Sigma_{\rm NFW}(x) = 
-\begin{cases}
-  \frac{2r_{s}\delta_{c}\rho_{c}}{x^{2}-1}
-  \left(1-\frac{2}{\sqrt{1-x^{2}}}{\rm arctanh}\sqrt{\frac{1-x}{1+x}}\right)\hspace{0.15cm}
-  & \left(x < 1\right) \\
-\\
-  \frac{2r_{s}\delta_{c}\rho_{c}}{3}
-  & \left(x = 1\right)\\
-\\
-  \frac{2r_{s}\delta_{c}\rho_{c}}{x^{2}-1}
-  \left(1-\frac{2}{\sqrt{x^{2}-1}}\arctan\sqrt{\frac{x-1}{1+x}}
-  \right) 
-  & \left(x > 1\right) 
-\end{cases}
-\ee
-and the convergence is given by $\Sigma_{\rm NFW}(x) / \Sigma_{\rm cr}(z)$.
 
 Disturbingly, if one integrates the density profile of an NFW profile, the total mass is divergent.
 Similarly, if the universe is homogeneously populated with NFW halos, the projected surface mass along any
-line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}.
-Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight, using the truncated NFW profile of \citet{BMO}
+line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}.Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight, using the truncated NFW profile of \citet{BMO}
 \be\label{eq:bmoprofile}
 \rho(r) = 
-\frac{\rho_0}{\left(r/r_{s}\right)
-\left(1+r/r_{s}\right)^{2}},
+\frac{\rho_{\rm NFW} (r)}{1+\left(r/r_{t}\right)^2},
 \ee
-
-
-\flag{kappa truncated NFW}
-
-
-Not all DM is in halo catalog. Smooth component approximation.  How voids
-produce a negative kappa - filled beam distances require halos and voids to
-provide density contrast relative to mean. How we correct for voids. Comments on
-reasonable, but unphysical nature of this approach, tests to follow. 
-
-\flag{kappa smooth correction.}
-
-Thus the total $\kappax$ for a line of sight is given by 
-\be
-\kappax = \left(\sum_{halos} \kappa_{halos}\right)-\kappa{smooth}.
+which is the same as the NFW profile in the limit that $r_t$ goes to infinity. Defining $x$ as the dimensionless projected radial distance $R/r_{s}$ and $\tau$ as the dimensionless truncation radius $r_{t}/r_{s}$, \citet{BMO} derives the projected mass density, which is given by:
+\begin{align}\label{eq:kappaBMO}
+\Sigma_{\rm BMO}(x) = {2\tau^2 \over (\tau^2+1)^2}\left(
+        {\tau^2+1\over x^2-1}\left(1-\mathcal{F}(x)\right)
+        +
+        2\mathcal{F}(x)\right.\nonumber\\
+        -
+        \left. {\pi \over \sqrt{\tau^2+x^2}}
+        +
+        {(\tau^2-1)\mathcal{L}(x,\tau)
+        \over
+        \tau\sqrt{\tau^2+x^2}}\right)
+\end{align}
+where $\mathcal{F}(x)$ and $\mathcal{L}(x,\tau)$ are defined as
+\be\label{eq:F} 
+\mathcal{F}(x) \equiv \begin{cases}  \frac{{\rm cos}^{-1} (1/x)}{\sqrt{x^2-1}} \hspace{0.2cm} & (x>1) \\
+\\
+\frac{4-x^2}{3}  & (x=1)\\
+\\
+\frac{ {\rm cosh}^{-1} (1/x)}{\sqrt{1-x^2}} & (x<1)
+\end{cases}
 \ee
+\be\label{eq:L}
+\mathcal{L}(x,\tau) = \ln\left(\frac{x}{\sqrt{\tau^2+x^2}+\tau}\right)
+\ee
+%the convergence is given by $\Sigma_{\rm BMO}(x) / \Sigma_{\rm cr}(z)$.
 
+Whilst halos contribute a positive convergence to $\kappax$, voids contribute a negative convergence. When a raybundle passes through a 
+region of space that is less dense than $\rho_{\rm cr}(z)$ the rays are de-focused\footnote{In principle, the convergence caused by halos, is also caused by the overdensity, but we neglect this effect since halos are typically much more dense than the intergalactic medium}. Whilst the 
+full raytraced solution takes into account the effect of voids, our reconstruction cannot -- the halo catalogue does not include voids. In principle the absence of a halo could be taken to infer a void, but the under-density of such a void is hard to infer. Instead, we shift our $\kappax$ values so that $\langle\kappax\rangle=0$. We refer to this corrective term as $\kappav$. The void correction introduces a source of error, since the inferred value of $\kappav$ will depend on the properties of the sightlines reconstructed, but this error shrinks with the number of sightlines reconstructed. To avoid potential biases we calculate $\kappav$ from randomly selected sightlines. The total $\kappax$ along the line of sight is given by 
+\be \label{eq:totalkappax}
+\kappax = \left(\sum_{\rm halos} \kappa_{\rm halo}\right)-\kappav.
+\ee
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -481,20 +480,14 @@ ray-tracing through the MS's n-body particles,
 it is possible to test the validity of using a truncated NFW halo model to estimate 
 the external convergence along any given line of sight. 
 
-For every halo and subhalo in the catalogue, we estimate a concentration according to
-the best fit relation of \citet{neto2007}:
-\be
-c_{200} = 4.67 (M_{200}/10^{14} h^{-1} \Msun)^{-0.11}
-\ee
 
 Lines of sight are then chosen from random positions in the catalogue, and for each line of
 sight we reconstruct the convergences from every halo within 5 arcminutes and compare the reconstructed
-kappas with those from the ray tracing results of Hilbert et al. We do this for a range of
-truncations, as a function of both the virial and NFW scale radius. The scatter is 
+kappas with those from the ray tracing results. The standard deviation on  
 shown in Figure \ref{fig:ScattervsTruncation}. It is clear from Figure \ref{fig:ScattervsTruncation} 
-that as long as the truncation is greater than the virial radius, the choice of truncation
-radius does not broadly affect the scatter on $\kappah$-$kapparec$; from now on we choose 
-to truncate the halos at three times their virial radius.
+that as long as the truncation is greater than a few virial radii, the choice of truncation
+radius does not broadly affect the scatter on $\kapparay$-$kapparec$; from now on we choose 
+to truncate the halos at ten times their virial radius.
 
 
 
