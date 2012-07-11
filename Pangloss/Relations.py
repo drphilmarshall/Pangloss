@@ -13,9 +13,9 @@ def logerr(l,m,s):
 
 def MCrelation(M200,MCerror=False):
       if MCerror==False:
-         c_200 = 4.67*(M200/(10**14))**0.11 #Neto et al. equation 5
+         c_200 = 4.67*(M200/(10**14))**-0.11 #Neto et al. equation 5
       if MCerror==True:
-       c_200=4.67*(M200/(10**14))**0.11
+       c_200=4.67*(M200/(10**14))**-0.11
        logc_200=numpy.log10(c_200)
        lM200 = numpy.log10(M200)
        c_new = c_200*10**(rnd.normal(1,0.2,len(M200)))/10**(1+(0.2**2)/2)

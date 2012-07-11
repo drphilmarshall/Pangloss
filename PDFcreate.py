@@ -79,10 +79,10 @@ def MScompare(argv):
       return
 
    vb = False
-   Ncones = 100
    Rcone = 5 # arcmin
-   truncationscale=3   # *R_200 halo truncation
-  
+   truncationscale=10 # *R_200 halo truncation
+   Ncones=1000
+
    scaling = "add" 
    #scaling = "tom"
    # Defaults are for B1608 (CHECK):
@@ -146,7 +146,7 @@ def MScompare(argv):
    # --------------------------------------------------------------------
 
    #build grid, populate it and invert the behroozi relation on each plane.
-   grid=Pangloss.lensgrid(zl,zs,nplanes=5,cosmo=[0.25,0.75,0.73])
+   grid=Pangloss.lensgrid(zl,zs,nplanes=200,cosmo=[0.25,0.75,0.73])
    grid.populatelensgrid()
    FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
    MFs=cPickle.load(FILE)
@@ -174,6 +174,7 @@ def MScompare(argv):
 
    #!#!#!# Don't change from these defaults, without good reason!
    #{Mstar2Mh=False,Mh2Mh=True,perfectsatellites=False,centralsonly=False}
+   hardcut="BMO"
    Mstar2Mh=False
    Mh2Mh=True             
    perfectsatellites=False
@@ -194,12 +195,18 @@ def MScompare(argv):
 
 
       # Reconstruction Truth, with perfect knowledge of halo mass: 
-      tc= Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
-      tc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
 
+      t0= time.clock()
+   
+      tc= Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
+      t1 = time.clock()
+      #print t1-t0
+      tc.make_kappa_contributions(hardcut=hardcut,truncationscale=truncationscale,scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
+      t2= time.clock()
+      #print t2-t1
       # Reconstruction, with Behroozi blurred halo masses:
       lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
-      lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,centralsonly=centralsonly,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
+      lc.make_kappa_contributions(hardcut=hardcut,truncationscale=truncationscale,scaling=scaling,errors=errors,centralsonly=centralsonly,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
 
  
       kappa_Scaled[k] = lc.kappa_Scaled_total
@@ -218,21 +225,21 @@ def MScompare(argv):
    #plt.show()
 
    blurfactor=numpy.std(kappa_hilbert-kappa_Scaled_truth)
-   print blurfactor
-   #plt.scatter(kappa_hilbert-kappa_Scaled_truth,kappa_Scaled)
-   #plt.show()
-
+   print "kappa0 =",kappa_empty
+   print "kappatruth =",kappa_empty_truth
+   print "delta_intrinsic=",blurfactor
    #------------------------------------------------------------------
 
    #Now we have the void corrections, for both kappa_truth, and kappa_reconstruction
-
    #so now lets draw the cones that we want to creat pdfs for.
 
-   Npdf=10 #how many pdf's do we want?
-   #Ncones=100 #How many realisations? 
+   Npdf=100 #how many pdf's do we want?
+   Ncones=1000 #How many realisations? 
 
    xn = rnd.uniform(xmin+Rcone*arcmin2rad,xmax-Rcone*arcmin2rad,Npdf)
    yn = rnd.uniform(ymin+Rcone*arcmin2rad,ymax-Rcone*arcmin2rad,Npdf)
+
+   #------------------------------------------------------------------
 
 
    kappa_hilbert_n = numpy.zeros(Npdf)
@@ -247,14 +254,14 @@ def MScompare(argv):
       kappa_hilbert_n[n] = MSconvergence.at(xn[n],yn[n],coordinate_system='physical')
       #Reconstruction Truth:
       tc= Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
-      tc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
+      tc.make_kappa_contributions(hardcut=hardcut,truncationscale=truncationscale,scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
       kappa_Truth_n[n]=tc.kappa_Scaled_total-kappa_empty_truth
 
       #pdf:
       for k in range(Ncones):
          if k % 200 == 0:  print ("realization %i of %i for pdf number %i of %i" %(k,Ncones,n,Npdf))
          lc = Pangloss.lens_lightcone(master,Rcone,xc,zl,zs,grid=grid)
-         lc.make_kappa_contributions(hardcut="RVir",truncationscale=truncationscale,scaling=scaling,errors=errors,centralsonly=centralsonly,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
+         lc.make_kappa_contributions(hardcut=hardcut,truncationscale=truncationscale,scaling=scaling,errors=errors,centralsonly=centralsonly,perfectsatellites=perfectsatellites,Mh2Mh=Mh2Mh,Mstar2Mh=Mstar2Mh)
          kappa_Reconstruct_n[n,k] = lc.kappa_Scaled_total-kappa_empty+rnd.normal(0,blurfactor)
       #last term comes from the intrinsic difference in kappa_hilbert vs kappa_reconstruct_truth
 
@@ -286,18 +293,15 @@ def MScompare(argv):
 
 
    #output results
-   F=open("pdftest.dat","wb")
+   F=open("pdftesttrunc%i.dat"%truncationscale,"wb")
    results = kappa_hilbert_n,kappa_Truth_n,kappa_Reconstruct_n,gamma_hilbert_1,gamma_hilbert_2
    cPickle.dump(results,F,protocol=2)
 
 
 # ======================================================================
 
-
-
 if __name__ == '__main__':
   MScompare(sys.argv[1:])
   #print "check your fiducial cosmology?"
-
 
 # ======================================================================

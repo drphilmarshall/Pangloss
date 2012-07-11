@@ -247,6 +247,9 @@ class lens_lightcone(lightcone):
             M200[self.galaxies.Type==2]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==2]
 
 
+        M200=M200[M200>1e1]
+        self.galaxies=self.galaxies.where(M200>1e1)
+
         self.galaxies.add_column('M200',M200)
 
         c200 = Rel.MCrelation(M200,MCerror=errors)
@@ -260,16 +263,6 @@ class lens_lightcone(lightcone):
         r_s = r200/c200
         self.galaxies.add_column('rscale',r_s)
 
-
-        
-        r_s_arcmin  = (r_s / self.galaxies.Da_d) * rad2arcmin
-        r200_arcmin = (r200 / self.galaxies.Da_d) * rad2arcmin
-
-        self.galaxies.add_column('rscale_arcmin',r_s_arcmin)
-        self.galaxies.add_column('r200_arcmin',r200_arcmin)
-
-
-
         rho_s = LP.delta_c(c200)*self.galaxies.rho_crit
         kappa_s = rho_s * r_s /self.galaxies.sigma_crit
     
@@ -277,52 +270,72 @@ class lens_lightcone(lightcone):
         
         if hardcut == "Rvir" or hardcut=="RVir" or hardcut == "r_vir" or hardcut == "rvir":
             R_trunc=truncationscale*r200
+            print "oi leave it"
         elif hardcut == "rs" or hardcut=="Rs" or hardcut == "R_s" or hardcut == "r_s":
             R_trunc=truncationscale*r_s
         elif hardcut== "subhalo":
             R_trunc=3*r200
             R_trunc[self.galaxies.Type == 1]=(r200[self.galaxies.Type == 1])*truncationscale
+        elif hardcut== "BMO" or hardcut== "BMO1" or hardcut== "bmo":
+            R_trunc=truncationscale*r200
+
         else: print "what hardcut did you mean?"
 
 
-        
-      #circular mass - not coded in yet.
-      #mass=4*3.14159*rhos*(rs**3)  *     \
-      #    (  numpy.log(1+(R_trunc)/rs) - \
-      #          R_trunc/(rs+R_trunc)    \
-      #          )
 
 
-        xtrunc=R_trunc/rs
+        R_trunc_arcmin=(R_trunc / self.galaxies.Da_d) * rad2arcmin
+        r_s_arcmin  = (r_s / self.galaxies.Da_d) * rad2arcmin
+        r200_arcmin = (r200 / self.galaxies.Da_d) * rad2arcmin
+        self.galaxies.add_column('rscale_arcmin',r_s_arcmin)
+        self.galaxies.add_column('r200_arcmin',r200_arcmin)
+        self.galaxies.add_column('rtrunc_arcmin',R_trunc_arcmin)
 
-        mass=4*rs*rhos*(
-            (2/(x**2-1)**.5)
-            *
-            numpy.arctan(((x-1.)/(x+1))**.5)
-            +
-            numpy.log(x/2)
-            )
+        xtrunc=R_trunc/r_s
 
+        #!#!#! check this section!!!
 
- 
-        self.galaxies.add_column('Mtrunc', mass)
- 
+        kappaHalo=kappa_s*1.0
+        shearHalo=kappa_s*1.0
 
-        kappaNFW=kappa_s*1.0
-        shearNFW=kappa_s*1.0
-        for i in range(len(x)):
+        if hardcut == "RVir" or  hardcut == "Rvir":
+        #cylindrical mass
+            mass=4*3.14159*(r_s**3)*rho_s*(
+                (2/(x**2-1)**.5)
+                *
+                numpy.arctan(((x-1.)/(x+1))**.5)
+                +
+                numpy.log(x/2)
+                )
+            for i in range(len(x)):
                #treat as NFW if within truncation radius:
                if self.galaxies.rphys[i]<R_trunc[i]: 
-                   kappaNFW[i]*=LP.Ffunc([x[i]])
-                   shearNFW[i]*=LP.Gfunc([x[i]])
+                   kappaHalo[i]*=LP.Ffunc([x[i]])
+                   shearHalo[i]*=LP.Gfunc([x[i]])
                #treat as point mass if outside truncation radius:
                else:
-                   kappaNFW[i]*=0.0
-                   shearNFW[i]=(((mass[i])\
+                   kappaHalo[i]*=0.0
+                   shearHalo[i]=(((mass[i])\
                                     /(3.14159*( self.galaxies.rphys[i])**2))\
                                     /self.galaxies.sigma_crit[i])
-                                    
-        
+
+
+
+
+        elif hardcut== "BMO" or hardcut== "BMO1" or hardcut== "bmo":
+            kappaHalo[x<3*xtrunc]*=LP.BMO1Ffunc(x[x<3*xtrunc],xtrunc[x<3*xtrunc])
+            #hack to speed up calculations
+            kappaHalo[x>3*xtrunc]*=0.0
+            #placeholders incase needed
+
+            shearHalo=0.0
+            mass=0*shearHalo
+
+
+
+        self.galaxies.add_column('Mtrunc', mass)
+
+
         #-------------------------------------------------------
         # Now computer starlight lensing component.
 
@@ -336,8 +349,8 @@ class lens_lightcone(lightcone):
         # This is disabled currently - it gives silly answers for a minority of LoS that get very close to the galaxies (SL lines where keeton approximation breaks.)
 
         #-------------------------------------------------------
-        kappa = kappaNFW #+ kappaStar
-        shear = shearNFW #+ shearStar
+        kappa = kappaHalo #+ kappaStar
+        shear = shearHalo #+ shearStar
 
         self.galaxies.add_column('kappa',kappa)
         self.galaxies.add_column('gamma',shear)
@@ -356,7 +369,7 @@ class lens_lightcone(lightcone):
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
     def massplot(self,AX):
        for i in range(len(self.galaxies.x)):
-           trunc=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=3*self.galaxies.r200_arcmin[i],fill=True,fc="b",alpha=0.01)
+           trunc=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rtrunc_arcmin[i],fill=True,fc="b",alpha=0.01)
            AX.add_patch(trunc)
        for i in range(len(self.galaxies.x)):
            core=pylab.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rscale_arcmin[i],fill=True,fc="r",alpha=0.1)
@@ -698,8 +711,9 @@ def test1(catalog):
 
 def test2(catalog): 
 
-    rmax = 4.5
-    truncationscale=3
+    rmax = 1
+    truncationscale=10
+    hardcut="BMO"
 
     xmax = catalog['pos_0[rad]'].max()
     xmin = catalog['pos_0[rad]'].min()
@@ -731,25 +745,25 @@ def test2(catalog):
 
 
     lc = lens_lightcone(catalog,rmax,xc,zl,zs,grid=grid)
-    lc.make_kappa_contributions(truncationscale=truncationscale,hardcut="RVir",scaling="add",errors=False,Mh2Mh=False)
+    lc.make_kappa_contributions(truncationscale=truncationscale,hardcut=hardcut,scaling="add",errors=False,Mh2Mh=False)
     kappaTruth=lc.kappa_Scaled_total
 
     #show me the lightcone
     lc.rmax=3
     axi=plt.subplot(1,1,1,aspect="equal")
-    lc.massplot(axi)
-    plt.show()
+    #lc.massplot(axi)
+    #plt.show()
 
 
-    lc.plot()
-    plt.show()
+    #lc.plot()
+    #plt.show()
 
 
 
     for k in range(klen):
         if k % 20 ==0 : print k,"of",klen
         lc = lens_lightcone(catalog,rmax,xc,zl,zs,grid=grid)
-        lc.make_kappa_contributions(truncationscale=truncationscale,hardcut="RVir",scaling="add",errors=errors,Mh2Mh=Mh2Mh)
+        lc.make_kappa_contributions(truncationscale=truncationscale,hardcut=hardcut,scaling="add",errors=errors,Mh2Mh=Mh2Mh)
         kappa_Scaled[k] =lc.kappa_Scaled_total
 
 
@@ -864,7 +878,7 @@ def test3(catalog):
 if __name__ == '__main__':
 
 # Simulated (Millenium) lightcone data from Hilbert:
-    datafile = "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
+    datafile = "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_3_3_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
 
 # First 99 lines of the same, for testing:
 #    datafile = "test.txt"

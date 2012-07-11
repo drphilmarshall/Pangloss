@@ -244,15 +244,15 @@ Convergence, or Ricci focusing, occurs when a gravitational lens focuses the ray
 This focussing can cause distant objects to appear brighter, and larger than they would if the lens
  were removed.
 The convergence from an isolated mass sheet is the ratio of the projected surface mass density
-(\Sigma) devided by the critical density at the redshift of the mass sheet (\Sigma_{\rm cr}),
+($\Sigma(D_{\mathrm{od}}\bmath{\theta})$) devided by the critical surface mass density at the redshift of the mass sheet ($\Sigma_{\rm cr}$),
 \be
-\kappa(\bmath{\theta})= \frac {{\Sigma} {\Sigma_{\rm cr}(z)}
+\kappa(\bmath{\theta})= \frac {\Sigma(D_{\mathrm{od}}\bmath{\theta})}{\Sigma_{\rm cr}(z)}
 \ee
 where 
 \be \label{eq:sigcrit} 
-\Sigma_{\rm cr}(z) \equiv \frac{c^2 D_{\rm s}}{4 \pi G D_{\rm d} D_{\rm ds}}.
+\Sigma_{\rm cr}(z) \equiv \frac{c^2 D_{\rm os}}{4 \pi G D_{\rm od} D_{\rm ds}}.
 \ee
-and $D_{\rm d}$, $D_{\rm s}$, and $D_{\rm ds}$ are, respectively, the angular diameter distances from observer to the mass sheet, from observer to the source, and from the mass sheet to the source. If the surface mass density of the sheet exceeds $\Sigma_{\rm cr}$, multiple images of the source can
+and the D's are the angular diameter distances between the objects refered to in the subscripts: o is the observer, d is the deflector and s is the source. If the surface mass density of the sheet exceeds $\Sigma_{\rm cr}$, multiple images of the source can
 occur, otherwise only one image will be observed, although that image will still be perturbed
 relative to the unlensed case.
 
@@ -262,7 +262,7 @@ lens galaxy; this deflection allows multiple images of the background source to 
 at stationary points of the time delay function. For an isolated lens, the time delay
 function can be calculated from
 \be \label{eq:T} 
-\Delta t(\bmath{\theta},\bmath{\beta}) = \frac {1}{c} \frac{D_{\rm d} D_{\rm s}}{D_{\rm ds}} (1+z_{\rm d})\, \phi(\bmath{\theta},\bmath{\beta}),
+\Delta t(\bmath{\theta},\bmath{\beta}) = \frac {1}{c} \frac{D_{\rm od} D_{\rm os}}{D_{\rm ds}} (1+z_{\rm d})\, \phi(\bmath{\theta},\bmath{\beta}),
 \ee
 where $\bmath{\theta}$ is the observed source position, $\bmath{\beta}$ is the 
 unlensed source position, $z_{\rm d}$ is the redshift of the lens, $\phi(\bmath{\theta},\bmath{\beta})$ is
@@ -271,10 +271,9 @@ the Fermat potential. The Fermat potential is given by
 \phi(\bmath{\theta},\bmath{\beta})\equiv \left[\frac{(\bmath{\theta}-\bmath{\beta})^2}{2}-\psi(\bmath{\theta}) \right], 
 \ee
 where $\psi(\bmath{\theta})$ is the lens potential, derived from the projected dimensionless
-surface mass density, $\kappa(\bmath{\theta})$, or the physical projected surface mass density,
-$\Sigma(D_{\rm d} \bmath{\theta})$, by 
+surface mass density, $\kappa(\bmath{\theta})$, by 
 \be \label{eq:psikappa}
-\kappa(\bmath{\theta})= \frac {\Sigma(D_{\rm d} \bmath{\theta})} {\Sigma_{\rm cr}}=\frac{1}{2}\nabla^2\psi(\bmath{\theta}).
+\kappa(\bmath{\theta})=\frac{1}{2}\nabla^2\psi(\bmath{\theta}).
 \ee
 
 Strong lenses sit in our real Universe -- they are not truely isolated;
@@ -288,18 +287,51 @@ a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that
 are no empty lightcones in a realistic universe. These additional structures induce an external shear
 which can be recovered in the mass-modelling of the lens, but they can also introduce a convergence that
 is undetectable from the image positions, shapes and relative fluxes; {\it the mass sheet-degeneracy} \citep[see e.g.][for details]{Falco1985,Schneider2006}.
-In the case of several mass sheets at redshifts $\{z_{\mathrm{p}}\}$, with surface mass densities $\{\Sigma_{\mathrm{p}}\}$, the effective convergence is given by the \flag{weighted?} sum:
-\be \label{eq:kappasum}
-\kappax=\frac{4\pi G}{c^2}\sum_{\mathrm{p}}\frac{\Sigma_{\mathrm{p}}D_{\mathrm{p}} D_{{\rm ps}}}{D_{\rm s}}.
-\ee
 
-If the source brightness changes, the observed brightness in each image does not change
+
+If the intrinsic source brightness changes, the observed brightness in each image does not change
 simultaneously - there is a time delay, $\Delta t$, between the brightness change in
 each image. Despite the invariance of the image positions and fluxes, under the addition
 of an external convergence the relative Fermat potential between the images is {\it not}
 invariant, and so the time delay changes. As such it is necessary to include $\kappax$
 in our lens modelling, if cosmological parameters are to be estimated accurately and
 precisely from observed time delays \citep{suyu2010}.
+
+If the mass sheet is not physically associated with the lens galaxy, it can lie at any redshift. The effects of such a mass-sheet can be projected back onto the lens plane in the form of an effective convergence. We define this effective convergence in two limits.
+\begin{itemize}
+\item No significant perturbations along the line of sight, and \\
+\item A single dominant perturber, relative to which all other perturbations are small.
+\end{itemize}
+We will refer to these cases as the magnification case (subscript $\mu$ in formulae), and the strong lensing case (subscript SL in formulae), respectively. We will ignore the additional case, of a compound lens, with several significant perturbers. 
+
+The magnification case has no primary lens plane, and is chiefly relevant for the magnifications of distant objects. In the absence of a primary lens plane, we are free to define the effective convergence on any point; the effective convergence is the same, independant of the plane choosen. It can be shown \citep[\eg][]{xxx} that if there are several mass sheets at redshifts $\{z_{p}\}$, with convergences $\{\kappa_p =\Sigma_{p}/\Sigma_{\mathrm{cr}}(z_p)\}$, the effective convergence is given by
+\be \label{eq:kappasummu}
+\kappa_{\mathrm{effective,\mu}}=\sum_{p}\kappa_p.
+\ee
+
+In the stong lensing case, the presence of a significant perturber alters the geometry of the system, and provides a primary lens plane. It is the primary lens plane upon which we need to know $\kappa_{\mathrm{effective}}$, since this is where the mass-sheet degeneracy is defined. Following Equations 20--32 of \citet{keeton2003}\flag{keeton2003}, it can be shown that the relevant effective convergence is given by 
+\be \label{eq:kappasumSL}
+\kappa_{\mathrm{effective,SL}}=
+{  
+(1-\beta_{12})(\kappa-\beta_{12}(\kappa^2-\gamma^2))
+\over
+(1-\beta_{12}\kappa)^2-(\beta_{12}\gamma)^2
+}
+\ee
+where $\kappa$ and $\gamma$ are, respectively, the convergence and shear caused by the perturber, in their own plane and $\beta_{12}$ is a geometrical scaling factor defined by
+\be\label{eq:beta}
+\beta_{12}={
+D_{12} D_{\mathrm{os}}
+\over
+D_{\mathrm{o}1} D_{1\mathrm{s}}
+}
+\ee
+where the D's are again angular diameter distances: the 1 (2) in the subscript refers to the lower (higher) redshift object of the lens and perturber. For the case that the mass sheet is in the lens plane, $\beta_{12} = 0$ and $\kappa_{\mathrm{eff}}=\kappa$; if the mass-sheet is in the plane of the observer, or source, $\beta_{12} = 1$ and $\kappa_{\mathrm{eff}}=0$; for a mass-sheet at any other redshift $0<\beta_{12}<1$. In the case of several mass sheets the effective convergences sum. In the limit that both $\kappa$ and $\gamma$ are small, Equation \ref{eq:kappasumSL} reduces to 
+\be \label{eq:kappasumSLweak}
+\kappa_{\mathrm{effective,SL}}=(1-\beta_{12})\kappa;
+\ee
+it is this $\kappa_{\mathrm{effective,SL}}$ that we use as $\kappax$ for the strong lensing time delay analysis in \ref{sec:Dt}.
+
 
 The time-delay distance is defined as
 \be \label{eq:dt}
@@ -374,7 +406,7 @@ which
 \be
 \rho(r_{200}) = 200\rho_{{\mathrm{crit}}}(z), \text{ where } \rho_{\mathrm{crit}}(z) \equiv \frac{3H^{2}(z)}{8\pi G}
 \ee
- and $c$ is the concentration parameter, which can be estimated from the halo's mass,
+and $c$ is the concentration parameter, which can be estimated from the halo's mass,
 using a mass--concentration relation. Typically more massive halos are less concentrated,
 but there is some scatter; we use the relation of \citet{neto2007} to estimate $c$
 from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. $\rho_0$ is calculated 
@@ -404,7 +436,13 @@ and the convergence is given by $\Sigma_{\rm NFW}(x) / \Sigma_{\rm cr}(z)$.
 Disturbingly, if one integrates the density profile of an NFW profile, the total mass is divergent.
 Similarly, if the universe is homogeneously populated with NFW halos, the projected surface mass along any
 line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}.
-Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight. We will limit our truncations to hard cut--offs, where the density drops to 0 beyond the truncation radius $r_t$. This gives 
+Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight, using the truncated NFW profile of \citet{BMO}
+\be\label{eq:bmoprofile}
+\rho(r) = 
+\frac{\rho_0}{\left(r/r_{s}\right)
+\left(1+r/r_{s}\right)^{2}},
+\ee
+
 
 \flag{kappa truncated NFW}
 
@@ -418,7 +456,7 @@ reasonable, but unphysical nature of this approach, tests to follow.
 
 Thus the total $\kappax$ for a line of sight is given by 
 \be
-\kappax = \left(\Sum_{halos} \kappa_{halos}\right)-\kappa{smooth}.
+\kappax = \left(\sum_{halos} \kappa_{halos}\right)-\kappa{smooth}.
 \ee
 
 
@@ -489,7 +527,7 @@ What is the effect of using the wrong Mstar-Mhalo relation?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Time Delay Distances}
-\label{sec:} 
+\label{sec:Dt} 
 
 Folding the kappa uncertainties into time delay distance uncertainties. Toy
 model: same zl and zs, allows simple product of pdfs to obtain estimate of P(D).

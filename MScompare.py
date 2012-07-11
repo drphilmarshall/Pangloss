@@ -78,7 +78,7 @@ def MScompare(argv):
       return
 
    vb = False
-   Ncones = 1000
+   Ncones = 100
    Rcone = 3 # arcmin
    truncationscale=3   # *R_200 halo truncation
   

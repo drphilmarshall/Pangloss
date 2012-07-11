@@ -17,9 +17,16 @@ arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
 # ------------------------------------------------------------------------
 def F(x):
-    return numpy.arccos(1/x)/((x**2-1)**.5)
+    z=numpy.ones(len(x))
+    z[x>1]=numpy.arccos(1/x[x>1])/((x[x>1]**2-1)**.5)
+    lowx=x[x<1]
+    z[x<1]=numpy.arccosh(1/x[x<1])/((1-x[x<1]**2)**.5)
+    A=1.+1e-5
+    z[x==1]=numpy.arccos(1/A)/((A**2-1)**.5)
+    return z
+
 def L(x,t):
-    return numpy.log(x/((t**2+x**2)**.5+t))
+    return numpy.log(x/(((t**2+x**2)**.5)+t))
 #=========================================================================
 # NFW profile functions.
 
@@ -77,50 +84,37 @@ def Gfunc(x):
        return z
 
 # ========================================================================
-# BMO1 profile functions.
+# BMO profile functions.
 # ------------------------------------------------------------------------
 def BMO1Ffunc(x,t):
+    #t=float(t)
     z=numpy.zeros(len(x))
-    for i in range(len(x)):
-        X=x[i]
-        T=t[i]
-        if x[i]>1:
-            z[i]= (T**2/(T**2+1)**2)              * ( \
-                (T**2+1)/(X**2-1)*(1-F(X))+2*F(X) -   \
-                3.14159/(T**2+X**2)               +   \
-                ((T**2-1)/(T*(T**2+X**2)**.5))*L(X,T) )
-        else: 
-            z[i]=Ffunc([x[i]])
-        if z[i] < 0: print 'warning BMO1Ffunc'
-    #if len(z) > 1: print z
-    return z
+    z[x!=1]=t**2/(2*(t**2+1)**2)*(
+        ((t**2+1)/(x[x!=1]**2-1))*(1-F(x[x!=1]))
+        +
+        2*F(x[x!=1])
+        -
+        3.14159/(t**2+x[x!=1]**2)**.5
+        +
+        (t**2-1)*L(x[x!=1],t)
+        /
+        (t*(t**2+x[x!=1]**2)**.5)
+        )
+    delta=numpy.array([1.+1e-5])
+    z[x==1]=t**2/(2*(t**2+1)**2)*(
+        ((t**2+1)/(delta**2-1))*(1-F(delta))
+        +
+        2*F(delta)
+        -
+        3.14159/(t**2+delta**2)**.5
+        +
+        (t**2-1)*L(delta,t)
+        /
+        (t*(t**2+delta**2)**.5)
+        )
 
-def BMO1Gfunc(x,t):    ### I AM DEFINITELY WRONG ### I GIVE SILLY ANSWERS IF X~1. ####
-    z=numpy.zeros(len(x))
-    for i in range(len(x)):                               
-        X=x[i]
-        T=t[i]
-        if x[i]>1:
-            z[i] = (T**2/(T**2+1)**2)                    * ( \
-                (T**2+1+2*(X**2-1))*F(X)+T*3.14159       +   \
-                (T**2-1)*numpy.log(T)                    +   \
-                ((T**2+X**2)**.5)*((T-1./T)*L(X,T)-3.14159)) \
-                    - BMO1Ffunc([X],[T])
-            if z[i] < 0:
-                print T
-                print X
-                print z[i]
-                print (T**2/(T**2+1)**2) 
-                print (T**2+1+2*(X**2-1))*F(X)+T*3.14159
-                print (T**2-1)*numpy.log(T)
-                print ((T**2+X**2)**.5)*(((T**2-1)/T)*L(X,T)-3.14159)
-                print (T**2/(T**2+1)**2) * ((T**2+1+2*(X**2-1))*F(X)+T*3.14159 +(T**2-1)*numpy.log(T)+((T**2+X**2)**.5)*((T-1./T)*L(X,T)-3.14159)) 
-                print BMO1Ffunc([X],[T])
-        else: 
-            z[i]=Gfunc([x[i]])
-        if z[i] < 0: print 'warning BMO1Gfunc'
-    #print z
-    return z
+    return 4*z
+# ------------------------------------------------------------------------
 
 # ========================================================================
 # BMO2 profile functions.
@@ -153,3 +147,21 @@ def sersic(r,re,amp=1.,n=4.):
 # ========================================================================
 # 
 # ------------------------------------------------------------------------
+if __name__ == '__main__':
+    l=numpy.linspace(0.001,48,1001)
+    t=numpy.ones(len(l))*10
+    #print F(l)
+    #print L(l,t)
+    t0=clock()
+    f1=BMO1Ffunc(l,t)
+    t1=clock()
+    print t1-t0
+    f2=Ffunc(l)
+    t2=clock()
+    print t2-t1
+    plt.plot(l,numpy.log10(f2))
+    plt.plot(l,numpy.log10(f1))
+    plt.show()
+    plt.plot(l,f1/f2)
+    plt.show()
+

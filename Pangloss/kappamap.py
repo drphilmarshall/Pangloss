@@ -232,8 +232,8 @@ class kappamap:
       
 # ============================================================================
 if __name__ == '__main__':
- test1=True
- test2=False
+ test1=False
+ test2=True
  if test1==True:
 # Self-test: read in map from Stefan, and look up some convergence values.
    vb = True
@@ -266,11 +266,11 @@ if __name__ == '__main__':
 # ============================================================================
  if test2 ==True:
     kappafiles=[]
-    kappafiles +=  ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_1_1_N_4096_ang_4_rays_to_plane_37_f.fits"]
-    kappafiles += ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_7_7_N_4096_ang_4_rays_to_plane_37_f.fits"]
+    #kappafiles +=  ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_1_1_N_4096_ang_4_rays_to_plane_37_f.fits"]
+    kappafiles += ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_5_5_N_4096_ang_4_rays_to_plane_37_f.kappa"]
 
     l=4096
-    U=1
+    U=4
 
 
     kappa = numpy.zeros((l/U,l/U,len(kappafiles)))
@@ -278,7 +278,7 @@ if __name__ == '__main__':
 
 
     for k in range(len(kappafiles)):
-       convergence = kappamap(kappafiles[k],FITS=True)
+       convergence = kappamap(kappafiles[k],FITS=False)
        for i in range(l/U):
           if i % 500 ==0 : print k,",",i
           for j in range(l/U):

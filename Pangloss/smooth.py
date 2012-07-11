@@ -21,7 +21,7 @@ rad2arcmin = 1.0/arcmin2rad
 
 # ======================================================================
 
-def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=100,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="add",errors=True,grid=None,BehrooziSpline=None,eBer=1e-99,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
+def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=100,hardcut="RVir",cosmo=[0.25,0.75,0.73],scaling="add",errors=True,grid=None,centralsonly=False, Mh2Mh=False, perfectsatellites=False):
    #print time.clock()
    if grid==None:
       lg=GRID.lensgrid(zl,zs,nplanes=nplanes,cosmo=cosmo)
@@ -74,18 +74,29 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
       cat['M_Subhalo[M_sol/h]'][cat['M_Subhalo[M_sol/h]']==0.0]=1.0
 
       if Mh2Mh:
-            if BehrooziSpline==None:
-               HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=Rel.Behroozi_Spline()
-            else:
-               HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz=BehrooziSpline[0],BehrooziSpline[1],BehrooziSpline[2],BehrooziSpline[3]
+         Mstar = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'])
 
-            M200 = Rel.Mhalo_to_Mhalo(cat['M_Subhalo[M_sol/h]'],cat['z_spec'],HALOSTARlowz,STARHALOlowz,HALOSTARhighz,STARHALOhighz,eBer=eBer)
-      elif Mstar2Mh:
-            Mstar=10**(numpy.log10(cat['M_Stellar[M_sol/h]'])+rnd.normal(0,eBer,len(cat.z_spec)))
-            M200=Rel.Mstar_to_M200(Mstar,cat['z_spec'],scatter=False)
+         Mstore=Mstar*1.0
 
-            #Mt=Rel.Mstar_to_M200(cat['M_Stellar[M_sol/h]'],cat['z_spec'],scatter=False)
-            #print numpy.max(numpy.log10(Mt/M200)[Mt>10**13])
+         #Now give the Mstars a scatter for observational errors:
+         Mstar = 10**(numpy.log10(Mstar)+rnd.normal(0,0.15,len(Mstar)))
+
+         Mstar[numpy.log10(Mstar)>12.45]=10**12.46
+
+         self.galaxies.add_column("Mstar",Mstar)
+         #trim out very low stellar mass halos:
+         cat=cat.where(numpy.log10(Mstar)>7)
+
+         M200  = self.grid.drawMhalo(self.galaxies.Mstar,self.galaxies['z_spec'])
+         
+
+         # This should never print anything.
+         if len(M200[numpy.isnan(M200)==True]!=0):
+            M200[numpy.isnan(M200)==True]=self.grid.drawMhalo(10**(numpy.log10(self.galaxies.Mstar[numpy.isnan(M200)==True])),self.galaxies['z_spec'][numpy.isnan(M200)==True]+0.001)
+            print "boo"
+            if len(M200[numpy.isnan(M200)==True]!=0):
+               print numpy.log10(Mstar[numpy.isnan(M200)==True])
+               print numpy.log10(Mstore[numpy.isnan(M200)==True])
 
 
       else: M200 = cat['M_Subhalo[M_sol/h]']
@@ -94,11 +105,11 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
                     M200[cat.Type==1]=cat['M_Subhalo[M_sol/h]'][cat.Type==1]
                     M200[cat.Type==2]=cat['M_Subhalo[M_sol/h]'][cat.Type==2]
 
- 
+      #weed out stefans 'massless' halos.
+      cat=cat.where(M200>1e1)
+      M200=M200[M200>1e1]
 
 
-
-      #print numpy.std((numpy.log10(M200[M200>1e15]/cat['M_Subhalo[M_sol/h]'][M200>1e15])))
 
 
 
@@ -127,26 +138,26 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
          R_trunc[cat.Type == 1]=(r200[cat.Type == 1])*truncationscale
       else: print "what hardcut did you mean?"  
 
-      #circular mass - not coded in yet.
-      #mass=4*3.14159*rhos*(rs**3)  *     \
-      #    (  numpy.log(1+(R_trunc)/rs) - \
-      #          R_trunc/(rs+R_trunc)    \
-      #          )
-
+      #spherical mass - not coded in yet.
       xtrunc=R_trunc/rs
-      print c200.max()
-      print c200[M200>1e10].min()
 
-      print xtrunc.max()
-      print xtrunc[M200>1e11].min()
+      sphmass=4*3.14159*rhos*(rs**3)  *     \
+          (  numpy.log(1+xtrunc) - \
+                xtrunc/(1 + xtrunc)    \
+                )
 
-      mass=4*rs*rhos*(
+
+      #cylindrical mass
+      cylmass=4*rhos*3.14159*(rs**3)*(
          (2/(xtrunc**2-1)**.5)
          *
          numpy.arctan(((xtrunc-1.)/(xtrunc+1))**.5)
          +
          numpy.log(xtrunc/2)
          )
+
+
+      mass=cylmass
 
       cat.add_column('Mtrunc', mass)
  
@@ -161,17 +172,14 @@ def smooth(zl,zs,catalogues,truncationscale=10,magnitudecut=99,band='r',nplanes=
    
    lg.smoothcomponent=smoothcomponent
    lg.kappa=lg.smoothcomponent/lg.sigma_crit_p
+
+
    lg.kappaScaled=LF.KappaScale_beta(lg.beta_p,lg.kappa,0,scaling=scaling)
 
    cat.remove_columns('Mtrunc')
    
    return numpy.sum(lg.kappaScaled)
    
-
-#d1= "../../data/GGL_los_8_0_0_1_1_N_4096_ang_4_STARS_SA_galaxies_ANALYTIC_SA_galaxies_on_plane_27_to_63.images.txt"
-#datafile=[d1]
-#Smooth(0.6,1.4,datafile,truncationscale=5,nplanes=20)
-   #print "finished",time.clock()
 
 #-------------------------------------------
 if __name__ == '__main__':
@@ -182,7 +190,7 @@ if __name__ == '__main__':
   if test1 ==True:
    #print "running"
 # Kappa Smooth as a function of magnitude cut:
-   d1= "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_0_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
+   d1= "/data/tcollett/Pangloss/catalogs/GGL_los_8_7_7_3_0_N_4096_ang_4_SA_galaxies_on_plane_27_to_63.images.txt"
    datafile=[atpy.Table(d1, type='ascii')]
    """
    maglist=numpy.linspace(19,25,15,endpoint=True)
@@ -200,19 +208,18 @@ if __name__ == '__main__':
    """
    n=10
 
-   #smoothlist0=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=50,eBer=1e-99)
+   smoothlist0=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=200,errors=False)
+   print smoothlist0
 
+   """
    smoothlist1=numpy.zeros(n)
    smoothlist2=numpy.zeros(n)
    smoothlist3=numpy.zeros(n)
    smoothlist4=numpy.zeros(n)
    for i in range(n):
 
-      smoothlist1[i]=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=20,eBer=0.18,scaling='add')
-      print smoothlist1[i]
-      #smoothlist2[i]=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=50,eBer=0.19)
-      #smoothlist3[i]=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=50,eBer=0.20)
-      #smoothlist4[i]=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=50,eBer=0.21)
+      smoothlist1[i]=smooth(0.6,1.4,datafile,truncationscale=3,nplanes=20,scaling='add')
+      #print smoothlist1[i]
       if i%(n/10)==0:print i, "of", n
 
    a= numpy.std(smoothlist1)
@@ -221,24 +228,12 @@ if __name__ == '__main__':
    d= numpy.std(smoothlist4)
 
    bins=numpy.linspace(0,1.0,60)
-   #plt.subplot(411)
    plt.hist(smoothlist1,bins,label="$\sigma\mathrm{[M*]}=0.15$")
    plt.legend(title="$\sigma(\kappa)$=%.3f"%a)
-   #plt.subplot(412)
-   #plt.hist(smoothlist2,bins,label="$\sigma\mathrm{[M*]}=0.19$")
-   #plt.legend(title="$\sigma(\kappa)$=%.3f"%b)
-   #plt.subplot(413)
-   #plt.hist(smoothlist3,bins,label="$\sigma\mathrm{[M*]}=0.20$")
-   #plt.legend(title="$\sigma(\kappa)$=%.3f"%c)
-   #plt.subplot(414)
-   #plt.hist(smoothlist4,bins,label="$\sigma\mathrm{[M*]}=0.21$")
-   #plt.legend(title="$\sigma(\kappa)$=%.3f"%d)
-
-
    plt.xlabel("$\kappa_{\mathrm{smooth}}$")
    plt.savefig("smoothvsmasserror")
    plt.show()
-
+   """
 
   if test2 ==True:
    print "running"
