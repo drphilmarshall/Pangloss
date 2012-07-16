@@ -185,7 +185,7 @@ def MScompare(argv):
             tc.make_kappa_contributions(hardcut=hardcut,truncationscale=truncationscale[T],scaling=scaling,errors=False,centralsonly=False,perfectsatellites=True,Mh2Mh=False,Mstar2Mh=False)
             kappa_Scaled_truth[k,T]=tc.kappa_Scaled_total
          #keep only the columns that we don't need to overwrite
-            tc.galaxies.keep_columns(['GalID','HaloID','SubhaloID','Type','PlaneNumber','z_spec','pos_0[rad]','pos_1[rad]','Dc_los[Mpc/h]','M_Halo[M_sol/h]','M_Subhalo[M_sol/h]','M_Stellar[M_sol/h]','mag_SDSS_u','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','mag_SDSS_z','mag_J','mag_H','mag_K','x','y','r','zsnapped','psnapped','Da_d','Da_ds','Da_dl','beta','rho_crit','sigma_crit','rphys'])
+            tc.galaxies.keep_columns(['GalID','HaloID','SubhaloID','Type','PlaneNumber','z_spec','pos_0[rad]','pos_1[rad]','Dc_los[Mpc/h]','M_Halo[M_sol/h]','M_Subhalo[M_sol/h]','M_Stellar[M_sol/h]','mag_SDSS_u','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','mag_SDSS_z','mag_J','mag_H','mag_K','x','y','r','zsnapped','psnapped','Da_d','Da_ds','Da_dl','beta','rho_crit','sigma_crit','rphys',"mag_F814W"])
 
       #now do magnitude cut catalogues
       if investigateM or investigateR:
@@ -207,7 +207,7 @@ def MScompare(argv):
 
 
       #keep only the columns that we don't need to overwrite
-      tc.galaxies.keep_columns(['GalID','HaloID','SubhaloID','Type','PlaneNumber','z_spec','pos_0[rad]','pos_1[rad]','Dc_los[Mpc/h]','M_Halo[M_sol/h]','M_Subhalo[M_sol/h]','M_Stellar[M_sol/h]','mag_SDSS_u','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','mag_SDSS_z','mag_J','mag_H','mag_K','x','y','r','zsnapped','psnapped','Da_d','Da_ds','Da_dl','beta','rho_crit','sigma_crit','rphys'])
+      tc.galaxies.keep_columns(['GalID','HaloID','SubhaloID','Type','PlaneNumber','z_spec','pos_0[rad]','pos_1[rad]','Dc_los[Mpc/h]','M_Halo[M_sol/h]','M_Subhalo[M_sol/h]','M_Stellar[M_sol/h]','mag_SDSS_u','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','mag_SDSS_z','mag_J','mag_H','mag_K','x','y','r','zsnapped','psnapped','Da_d','Da_ds','Da_dl','beta','rho_crit','sigma_crit','rphys',"mag_F814W"])
 
    #------------------------------------------------------------------
    #zero correct, and do some statistics

@@ -329,6 +329,13 @@ if __name__ == '__main__':
     zl,zs=0.6,1.4    
     lg=lensgrid(zl,zs,nplanes=20)
     lg.populatelensgrid()
+    plt.plot(lg.zplane,lg.beta_p)
+    plt.show()
+
+    print numpy.mean(lg.beta_p)
+
+
+
     #filename='lensgrid_zl%.2f_zs%.2f.pcl'%(zl,zs)
     #filename='test1.test'
 
@@ -341,6 +348,9 @@ if __name__ == '__main__':
     MFs=cPickle.load(FILE)
     lg.Behroozigrid(MFs)
     
+
+
+
     MhTrue=10**(numpy.linspace(10,13,2000))
     print MhTrue
     """

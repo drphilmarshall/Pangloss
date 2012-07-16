@@ -10,6 +10,8 @@ to-do
 import numpy, os, string
 import struct, pyfits
 import pylab as plt
+import random as rnd
+import cPickle
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -267,11 +269,12 @@ if __name__ == '__main__':
  if test2 ==True:
     kappafiles=[]
     #kappafiles +=  ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_1_1_N_4096_ang_4_rays_to_plane_37_f.fits"]
-    kappafiles += ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_5_5_N_4096_ang_4_rays_to_plane_37_f.kappa"]
+    for i in range(7):
+       for j in range(7):
+          kappafiles += ["/data/tcollett/Pangloss/kappafiles/GGL_los_8_%i_%i_N_4096_ang_4_rays_to_plane_37_f.kappa"%(i+1,j+1)]
 
     l=4096
-    U=4
-
+    U=16
 
     kappa = numpy.zeros((l/U,l/U,len(kappafiles)))
     print numpy.shape(kappa)
@@ -286,7 +289,15 @@ if __name__ == '__main__':
 
     kappa=kappa.ravel()
 
+    F=open("kappalist.dat","wb")
+    cPickle.dump(kappa,F,protocol=2)
     print numpy.mean(kappa)
+
+
+    #estimating kappa from a subset of n lines:
+
+
+
 
 
     plt.hist(kappa)
