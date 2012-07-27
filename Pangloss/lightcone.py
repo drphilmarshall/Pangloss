@@ -87,6 +87,7 @@ class lightcone(object):
         self.galaxies.add_column('x',x)
         self.galaxies.add_column('y',y)
         self.galaxies.add_column('r',r)
+        self.galaxies.add_column('z_true',self.galaxies.z_spec)
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
         F814 = (self.galaxies.mag_SDSS_i + self.galaxies.mag_SDSS_z)/2. #approximate F814 colour.
         self.galaxies.add_column("mag_F814W",F814)
@@ -137,7 +138,7 @@ class lightcone(object):
 # ============================================================================
 
 class lens_lightcone(lightcone):
-    def __init__(self,catalog,position,radius,zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r",grid=None):
+    def __init__(self,catalog,position,radius,zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73],magnitudecut=99,band="r",grid=None,photozerr=False):
         self.name = 'Snapped Lens Lightcone through the observed Universe'
         lightcone.__init__(self,catalog,radius,position,magnitudecut=magnitudecut,band=band)
         if grid==None:
@@ -147,15 +148,6 @@ class lens_lightcone(lightcone):
             MFs=cPickle.load(FILE)
             self.grid.Behroozigrid(MFs)
         else: self.grid=grid
-
-
-        #correct M_subhalos that == 0
-        #Msub=self.galaxies['M_Subhalo[M_sol/h]']
-        #Mhal=self.galaxies['M_Halo[M_sol/h]']
-        #Msub[Msub==0]=Mhal[Msub==0]
-        #self.galaxies.remove_columns("M_Subhalo[M_sol/h]")
-        #self.galaxies.add_column("M_Subhalo[M_sol/h]",Msub)
-
 
         self.galaxies=self.galaxies.where(self.galaxies.z_spec < zs)
 
@@ -187,7 +179,21 @@ class lens_lightcone(lightcone):
 
 # ----------------------------------------------------------------------------
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False): 
+    def mimik_photozerror(self, photozerr=True):
+        if photozerr==True:
+            z=self.galaxies.z_true
+            z_obs=z+(1+z)*(rnd.normal(0,0.1,len(z)))
+            self.galaxies.remove_columns('z_spec')
+            self.galaxies.add_column('z_spec',z_obs)
+        if photozerr==False:
+            z=self.galaxies.z_true
+            z_obs=z
+            self.galaxies.remove_columns('z_spec')
+            self.galaxies.add_column('z_spec',z_obs)
+        self.photozerr=photozerr
+        return None
+
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
 
         if centralsonly==True:
             self.galaxies=self.galaxies.where(self.galaxies.Type==0)
@@ -196,35 +202,26 @@ class lens_lightcone(lightcone):
         #drop the A-Centrals
         self.galaxies=self.galaxies.where(self.galaxies.Type!=2)
 
-
         self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies['M_Subhalo[M_sol/h]']==0.0]=1.0
 
         if Mh2Mh:
                 #de-strip (dress?) some satellites: Do we need/want to do this?
                 #self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]*=1+(0.05*rnd.poisson(4,len(self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1])))
 
-
-
-                Mstar = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'])
-
+                Mstar = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'],photozerr=self.photozerr)
                 Mstore=Mstar*1.0
 
-                #Now give the Mstars a scatter for observational errors:
-                Mstar = 10**(numpy.log10(Mstar)+rnd.normal(0,0.15,len(Mstar)))
-
-                Mstar[numpy.log10(Mstar)>12.45]=10**12.46
+                # This should never print anything.
+                if len(Mstar[numpy.log10(Mstar)>12.45])!=0:
+                    print Mstar[numpy.log10(Mstar)>12.45]
+                    Mstar[numpy.log10(Mstar)>12.45]=10**12.46
 
                 self.galaxies.add_column("Mstar",Mstar)
+
                 #trim out very low stellar mass halos:
                 self.galaxies=self.galaxies.where(numpy.log10(self.galaxies.Mstar)>7)
 
-        
-
-
-
-
                 M200  = self.grid.drawMhalo(self.galaxies.Mstar,self.galaxies['z_spec'])
-
 
                 # This should never print anything.
                 if len(M200[numpy.isnan(M200)==True]!=0):
@@ -234,18 +231,16 @@ class lens_lightcone(lightcone):
                         print numpy.log10(Mstar[numpy.isnan(M200)==True])
                         print numpy.log10(Mstore[numpy.isnan(M200)==True])
 
-
+        #========================== Don't use this =====================#
         elif Mstar2Mh:
                 Mstar=10**(numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])+rnd.normal(0,eBer,len(self.galaxies.z_spec)))
                 M200=Rel.Mstar_to_M200(Mstar,self.galaxies['z_spec'],scatter=False,)
 
         else: M200=self.galaxies['M_Subhalo[M_sol/h]']
-
-
         if perfectsatellites==True:
             M200[self.galaxies.Type==1]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]
             M200[self.galaxies.Type==2]=self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==2]
-
+        #===============================================================#
 
         M200=M200[M200>1e1]
         self.galaxies=self.galaxies.where(M200>1e1)

@@ -36,7 +36,7 @@ def MScompare(argv):
    Rcone = 5 # arcmin
    truncationscale=numpy.linspace(0.5,6,20) # *R_200 halo truncation
    truncationscale=numpy.append(truncationscale,[7,8,9,10,12,14,16,18,20])
-   adoptedtruncationscale=10
+   adoptedtruncationscale=5
    Ntruncs=len(truncationscale)
    Ncones=1000
    magcuts=numpy.linspace(14,26,50)
@@ -350,8 +350,8 @@ def MScompare(argv):
 
    #output results
    F=open("truncresults%i.dat"%oneseven,"wb")
-   G=open("magresults%i.dat"%oneseven,"wb")
-   H=open("radresults%i.dat"%oneseven,"wb")
+   G=open("magresults%i_%i.dat"%(oneseven,adoptedtruncationscale),"wb")
+   H=open("radresults%i_%i.dat"%(oneseven,adoptedtruncationscale),"wb")
    if investigateT:
       results =  x,y,kappa_hilbert,truncationscale,kappa_scatter_truth,kappa_Scaled_truth
       cPickle.dump(results,F,protocol=2)
@@ -368,7 +368,7 @@ def MScompare(argv):
 
 if __name__ == '__main__':
    everything = True
-   investigateT=True
+   investigateT=False
    investigateR=True
    investigateM=True
    oneseven=1 #calculate on patch 1_1 or 7_7?

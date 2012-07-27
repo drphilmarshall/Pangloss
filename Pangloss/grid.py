@@ -264,6 +264,60 @@ class lensgrid(grid):
        # Use like: MhaloFromMstar_given_z[z][Ms]
 
 
+   def gaussian(self,x,mu,sig):
+      return numpy.exp(-0.5*((x-mu)/sig)**2)/(sig*(2*3.14159)**.5)
+
+   def SMF(self,M,z):
+      M0 = 11.16
+      M1 =  0.17
+      M2 = -0.07
+      a0 = -1.18
+      a1 = -0.082
+      phi0 = 0.0035
+      phi1 = -2.2
+      phi=phi0*((1+z)**phi1)
+      Mz=M0+M1*z+M2*z**2
+      alphaz=a0+a1*z
+      DM=M-Mz
+      GSMF=phi * numpy.log(10) * ((10**(M-Mz)) ** (1+alphaz)) * numpy.exp(-(10 ** (M-Mz)))
+      return GSMF
+
+   def SMFgrid(self):
+      MstarFromMstarOBS15zed = {}
+      MstarFromMstarOBS45zed = {}
+      self.Mstarwidth=0.01
+      Msbins=numpy.linspace(3.5,16.5,1301)
+      for z in self.zplane:
+         MstarFromMstarOBS15 = {}
+         MstarFromMstarOBS45 = {}
+         for i in range(len(Msbins)):
+            Ms=Msbins[i]
+            Ms=numpy.around(Ms, decimals=2)
+            Mses=numpy.arange(Ms-3.,Ms+3.,self.Mstarwidth)
+            P1=self.SMF(Mses,z)
+            P2a=self.gaussian(Mses,Ms,0.15)
+            P2b=self.gaussian(Mses,Ms,0.45)
+            Pa=P1*P2a
+            Pb=P1*P2b
+            if len(Pa[Pa<0])+len(Pb[Pb<0])==0:
+               CDFa=numpy.cumsum(Pa)/numpy.sum(Pa)     
+               CDFb=numpy.cumsum(Pb)/numpy.sum(Pb)  
+               A=((CDFa != 0.0) & (CDFa!=1.0))
+               Msesa=Mses[A]
+               CDFa=CDFa[A]
+               B=((CDFb!=0.0)&(CDFb!=1.0))
+               Msesb=Mses[B]
+               CDFb=CDFb[B]
+               MstarFromMstarOBS15[int(numpy.around(Msbins[i]*100))]=interpolate.splrep(CDFa,Msesa)
+               MstarFromMstarOBS45[int(numpy.around(Msbins[i]*100))]=interpolate.splrep(CDFb,Msesb)
+
+         MstarFromMstarOBS15zed[z]=MstarFromMstarOBS15     
+         MstarFromMstarOBS45zed[z]=MstarFromMstarOBS45  
+
+      self.MstarFromMstarOBS15=MstarFromMstarOBS15zed
+      self.MstarFromMstarOBS45=MstarFromMstarOBS45zed
+      return None
+
 
    def drawMhalo(self,Mstar,z,r=None):
       if len(Mstar)!=len(z): print "Draw MHalo takes a list of Mstars and redshifts. The redshifts must be snapped."
@@ -271,7 +325,7 @@ class lensgrid(grid):
       Mh=numpy.zeros(len(Mstar))
       z=self.snap(z)[0]
       for i in range(len(Mstar)):
-         if r==None: r = numpy.random.random()
+         r = numpy.random.random()
          Mstr = numpy.round(Mst[i]*100.0)/100.
          #print Mstr
          zed=z[i]
@@ -303,36 +357,52 @@ class lensgrid(grid):
 
       return Mh
 
-   def drawMstar(self,Mhalo,z,r=None,scatter=False):
+   def drawMstar(self,Mhalo,z,r=None,photozerr=False):
       if len(Mhalo)!=len(z): print "DrawMstar takes a list of Mhalos and redshifts. The redshifts must be snapped."
       Mh=numpy.log10(Mhalo)
       Mst=numpy.zeros(len(Mhalo))
       z=self.snap(z)[0]
       for i in range(len(Mhalo)):
          zed=z[i]
-         if scatter==False:
-            Mst[i]=10**(interpolate.splev(Mh[i],self.Mstar_given_halo[zed]))
-         else:
-            Mst[i]=10**(interpolate.splev(Mh[i],self.Mstar_given_halo[zed])+rnd.normal(0,0.15))
-            
+         Mst[i]=(interpolate.splev(Mh[i],self.Mstar_given_halo[zed]))
+         Mst[i]=numpy.around(Mst[i],decimals=2)
 
-      #print numpy.log10(Mst)
-      #print numpy.log10(Mhalo)
-      #plt.hist(numpy.log10(Mst))
-      #plt.show()
-      #plt.scatter(Mst)
-
+         
+         r = numpy.random.random()
+         if photozerr==False:
+            CDF=self.MstarFromMstarOBS15[zed][int(numpy.around(Mst[i]*100))]
+            Mst[i]=interpolate.splev(r,CDF)
+         if photozerr==True:
+            CDF=self.MstarFromMstarOBS45[zed][int(numpy.around(Mst[i]*100))]
+            Mst[i]=interpolate.splev(r,CDF)
+         Mst[i]=10**Mst[i]
       return Mst
+
+
+
 # ============================================================================
 
 if __name__ == '__main__':
-    zl,zs=0.6,1.4    
-    lg=lensgrid(zl,zs,nplanes=20)
-    lg.populatelensgrid()
-    plt.plot(lg.zplane,lg.beta_p)
-    plt.show()
 
-    print numpy.mean(lg.beta_p)
+
+
+
+    zl,zs=0.6,1.4    
+    lg=lensgrid(zl,zs,nplanes=5)
+    lg.populatelensgrid()
+    FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
+    MFs=cPickle.load(FILE)
+    lg.Behroozigrid(MFs)
+    lg.SMFgrid()
+    a=numpy.ones(10000)*10**15
+    print numpy.mean(numpy.log10(lg.drawMstar(a,numpy.ones(len(a)),photozerr=True)))
+    
+
+
+    #plt.plot(lg.zplane,lg.beta_p)
+    #plt.show()
+
+    #print numpy.mean(lg.beta_p)
 
 
 
@@ -343,7 +413,7 @@ if __name__ == '__main__':
     #cPickle.dump(lg,f,2)
     #f.close()
 
-
+    """
     FILE=open("/home/tcollett/Pangloss/Pangloss/MHMS.data")
     MFs=cPickle.load(FILE)
     lg.Behroozigrid(MFs)
@@ -353,7 +423,10 @@ if __name__ == '__main__':
 
     MhTrue=10**(numpy.linspace(10,13,2000))
     print MhTrue
-    """
+    
+
+
+    
     for i in range(len(lg.zplane)):
        Ms=lg.drawMstar(MhTrue,(numpy.ones(len(MhTrue))*lg.zplane[i]))
        #plt.scatter(numpy.log10(MhTrue),numpy.log10(Ms))
@@ -371,7 +444,7 @@ if __name__ == '__main__':
        #plt.show()
     
     #print lg.drawMhalo([  5.75568442e+10,   1.06243864e+11], [ 1.01593,   0.963173])
-    """
+    
 
     i=4
     Ms=lg.drawMstar(MhTrue,(numpy.ones(len(MhTrue))*lg.zplane[i]))
@@ -403,7 +476,7 @@ if __name__ == '__main__':
     plt.title("P(M$_{\mathrm{halo}}$|M$_{\mathrm{stellar}}$)")
     plt.savefig("InvBehrooziConf.png")
     plt.show()
-
+    """
 
 
 

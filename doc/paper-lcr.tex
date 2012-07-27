@@ -427,7 +427,7 @@ line sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \p
 \ee
 which is the same as the NFW profile in the limit that $r_t$ goes to infinity. Defining $x$ as the dimensionless projected radial distance $R/r_{s}$ and $\tau$ as the dimensionless truncation radius $r_{t}/r_{s}$, \citet{BMO} derives the projected mass density, which is given by:
 \begin{align}\label{eq:kappaBMO}
-\Sigma_{\rm BMO}(x) = {2\tau^2 \over (\tau^2+1)^2}\left(
+\Sigma_{\rm}(x) = {2\tau^2 \over (\tau^2+1)^2}\left(
         {\tau^2+1\over x^2-1}\left(1-\mathcal{F}(x)\right)
         +
         2\mathcal{F}(x)\right.\nonumber\\
@@ -494,6 +494,11 @@ this figure is inflated by a few outliers in the tails of $\pr\left(\kapparay-\k
 focus on shear in this work, such outliers would likely be rejected by their reconstructed shear not matching the
 shear of the lens model (see \citet{wong} for the practicalities of this), this makes our estimate of the intrinsic error pessimistic.
 
+\begin{figure}\label{fig:ScattervsTruncation}
+\includegraphics[width=\columnwidth]{truncation_scatter.eps}
+\caption[magcut]{}
+\end{figure}
+
 
 \tom{this paragraph is phrased badly}
 If $\kapparec$ is to be used in a real survey it is important that it is not a biased estimator of the true $\kappax$. 
@@ -507,19 +512,40 @@ equal zero. We find this error to be
 \sigma(\kappav) \simeq 0.036 / N^{\frac{1}{2}},
 \ee
  where $N$ is the number of lines of sight, although $\pr(\kappav)$ has positive skew for small $N$.
- Care must be taken that the callibration lines of sight are not biased in $\kappax$ or the final $\pr(\kappav)$ will also be biased. For the rest of this work we use 1000  randomly chosen calibration lines of sight to calculate $\kappav$, introducing an error on $\kappax$ of $0.001$. 1000 callibration lines of sight is unfeasable currently, but should be reasonable in the LSST era. Since the true $\langle \kapparay \rangle$ = -0.00014 is two orders of magnitude smaller than intrinsic error of the halo prescription, $\kapparec$ can be seen as unbiased given a large enough sample of lines of sight. For an individual line of sight $\kapparec$ can also be shown
+ Care must be taken that the callibration lines of sight are not biased in $\kappax$ or the final $\pr(\kappav)$ will also be biased. For the rest of this work we use 1000  randomly chosen calibration lines of sight to calculate $\kappav$, introducing an error on $\kappax$ of $0.001$. 1000 callibration lines of sight is unfeasable currently, but should be reasonable in the LSST era. Since the true $\langle \kapparay \rangle$ = -0.00014 is two orders of magnitude smaller than intrinsic error of the halo prescription, $\kapparec$ can be seen as unbiased given a large enough sample of lines of sight and Figure \ref{fig:bias} shows that there is no statistically significant evidence that $\kapparec$ is a biased estimator, regardless of the individual value of $\kapparec$.
+
+\begin{figure}\label{fig:isitbiased}
+\includegraphics[width=\columnwidth]{isitbiased.eps}
+\caption[Biased?]{}
+\end{figure}
 \begin{figure}\label{fig:magcut}
 \includegraphics[width=\columnwidth]{mag_scatter.eps}
+\caption[magcut]{}
 \end{figure}
 \begin{figure}\label{fig:radcut}
 \includegraphics[width=\columnwidth]{radius_scatter.eps}
+\caption[radius cut]{}
 \end{figure}
+
+
 The error from the void correction, and the intrinsic error from the halo based prescription are unavoidable errors, even with perfect knowledge of halo mass and position. Before investigating the errors caused by imperfect knowledge of halo mass and redshift, we investigate the errors induced by a magnitude limited reconstruction and a field of view limited reconstruction. The halos in our catalogue are given magnitudes by the semi-analytic model of \citet{SAM} and by applying magnitude cuts to our catalogue, we can investigate the scatter caused by unobserved halos. The majority of the convergence comes from halos with an $i$ magnitude between 18 and 24. Figure \ref{fig:magcut} shows that the width of $\kapparec-\kapparay$ decreases quickly between $i=18$ and $i=24$. Objects brighter than $i=18$ are either too rare or too close to the observer to make a significant contribution to the convergence. Objects fainter than $i=24$ are too small to be important unless they are extremely close to the line of sight where it is likely that neglecting stellar mass and using a spherical NFW prescription are too naive to adequately reconstruct $\kappax$ - it is likely that these ultra-faint halos (or substructures) are the major source of the scatter in $\kapparec-\kapparay$, but a deeper survey will not be sufficient to decrease the size of this scatter. Since a large number of callibration lines of sight are needed to shrink the width of $\pr(\kappav)$, it may prove unrealistic to reconstruct the calibration lines of sight out to 5 arcminutes. \citet{Auger2007} showed that the majority significant perturbers are within 15 arcseconds of the lens. Figure \ref{fig:radcut} shows the width of $\kapparec-\kapparay$ as a function of reconstruction radius; in almost all cases there is no significant contribution to $\kappa$ from halos that are centred more than 1 arcminute away, although large groups or clusters can sometimes still make a contribution as far out as four arcminutes. For the rest of this work we will continue to model all of the halos out to 5 arminutes with an $i$ magnitude greater than 26, although a reconstruction with fields going out to two arcminutes and down to $i<24$ would do almost as well.
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Tests on mock catalogs}
 \label{sec:obsMstar+z}
+
+Real attempts to reconstruct the convergence along a line of sight will not have direct access to the masses of dark matter halo, 
+and will likely not have access to their spectroscopic redshift either. Instead these properties must be inferred from astrophysical
+observables. In principle the only observables are astrometric positions, photometric colours and possibly spectra. In this section we
+quantify the errors induced by inferring the halo mass and redshift from the observables. Much work has already focused on using
+photometric colours to infer stellar mass \citep[\eg][]{augerstellarpops} and redshifts \citep[\eg][]{BPZ}, in line with these we shall use
+stellar mass and photometric redshifts (with appropriate errors), as the observables that must be converted into an estimate
+of $\kappax$. We will investigate three main sources of error: inferring halo mass given observed stellar mass; halos at the wrong redshift
+due to photometric redshift error, and; the combination of both redshift and stellar mass errors.
+
 
 Consider three sources of scatter in the halo model: zphot, Mstar|zphot, and
 Mhalo|Mstar,zphot. Mechanism for including scatter in model: draw samples from
