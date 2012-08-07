@@ -541,10 +541,21 @@ Real attempts to reconstruct the convergence along a line of sight will not have
 and will likely not have access to their spectroscopic redshift either. Instead these properties must be inferred from astrophysical
 observables. In principle the only observables are astrometric positions, photometric colours and possibly spectra. In this section we
 quantify the errors induced by inferring the halo mass and redshift from the observables. Much work has already focused on using
-photometric colours to infer stellar mass \citep[\eg][]{augerstellarpops} and redshifts \citep[\eg][]{BPZ}, in line with these we shall use
+photometric colours to infer stellar mass \citep[\eg][]{xxx} and redshifts \citep[\eg][]{BPZ}, in line with these we shall use
 stellar mass and photometric redshifts (with appropriate errors), as the observables that must be converted into an estimate
 of $\kappax$. We will investigate three main sources of error: inferring halo mass given observed stellar mass; halos at the wrong redshift
 due to photometric redshift error, and; the combination of both redshift and stellar mass errors.
+
+We generate a stellar mass for each halo according to the stellar mass-halo mass relation of \citet{behroozi2010}. From this stellar mass we simulate 
+an observed stellar mass by drawing a stellar mass from $\pr(M*_{\mathrm {obs}}|M*_{\mathrm {true}})$. We draw our samples from $\pr(\log(M*_{\mathrm {obs}})|\log(M*_{\mathrm {true}}))$ is given by the product of the galaxy stellar mass function (GSMF) of \citet{Fontana2006} and a Gaussian of width $\sigma_{M*}$ centred on $\log(M*_{\mathrm {true}})$. Where a spectroscopic redshift exists stellar masses can be estimated with a typical uncertainties of 0.15 dex \citep{xxx}, however with photometric redshifts stellar mass uncertainties are typically three times as large; we use $\sigma_{M*}=0.15$ for halos with a spectroscopic redshift and $\sigma_{M*}=0.45$ otherwise. The \citet{Fontana2006} GSMF is given by a Schechter function with redshift evolving parameters
+\be
+\label{eq:GSMF}
+{\dee N \over \dee M*} \propto \left(10^{(M*-M_0(z))}\right)^(1+\alpha(z))) \exp \left(-(10^(M*-M_0(z)))\right)
+\ee 
+where $M_0(z)=11.16+0.17*z-0.07*z**2$ and $\alpha(z)=-1.18-0.082*z$.
+
+
+
 
 
 Consider three sources of scatter in the halo model: zphot, Mstar|zphot, and

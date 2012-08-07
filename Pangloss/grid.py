@@ -60,7 +60,7 @@ class grid(distances.Distance):
        self.cosmo=cosmo
 
    def snap(self,z):
-      snapped_p=numpy.digitize(z,self.zplane-self.dz)-1
+      snapped_p=numpy.digitize(z,self.zplane-(self.dz)/2)-1
       snapped_z=self.zplane[snapped_p]
       return snapped_z,snapped_p
 

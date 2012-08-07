@@ -36,9 +36,9 @@ def MScompare(argv):
    Rcone = 5 # arcmin
    truncationscale=numpy.linspace(0.5,6,20) # *R_200 halo truncation
    truncationscale=numpy.append(truncationscale,[7,8,9,10,12,14,16,18,20])
-   adoptedtruncationscale=5
+   adoptedtruncationscale=10
    Ntruncs=len(truncationscale)
-   Ncones=1000
+   Ncones=100000
    magcuts=numpy.linspace(14,26,50)
 
 
@@ -79,7 +79,7 @@ def MScompare(argv):
          print "Reconstructing convergence in lightcones from:",catalog
          print "Comparing to convergence in:",kappafile
          print "Number of lightcones to be reconstructed:",Ncones
-   else:
+   elif everything != True:
       print MScompare.__doc__
       return
 
@@ -368,7 +368,7 @@ def MScompare(argv):
 
 if __name__ == '__main__':
    everything = True
-   investigateT=False
+   investigateT=True
    investigateR=True
    investigateM=True
    oneseven=1 #calculate on patch 1_1 or 7_7?

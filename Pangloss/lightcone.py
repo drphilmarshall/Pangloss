@@ -148,7 +148,6 @@ class lens_lightcone(lightcone):
             MFs=cPickle.load(FILE)
             self.grid.Behroozigrid(MFs)
         else: self.grid=grid
-
         self.galaxies=self.galaxies.where(self.galaxies.z_spec < zs)
 
         zsnapped,psnapped=self.grid.snap(self.galaxies.z_spec)
@@ -360,6 +359,13 @@ class lens_lightcone(lightcone):
         
         return None
 
+    def fastmode(self,kappamin):
+        #a=numpy.sum(self.galaxies.kappa_Scaled)
+        #lena=len(self.galaxies.kappa_Scaled)
+        self.galaxies=self.galaxies.where(self.galaxies.kappa_Scaled>kappamin)
+        #b=numpy.sum(self.galaxies.kappa_Scaled)
+        #print kappamin,a,b,(a-b)/a, (1.0*lena-len(self.galaxies.kappa_Scaled))/(1.0*lena)
+        return None
 # ----------------------------------------------------------------------------
 #      -.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
     def massplot(self,AX):
