@@ -8,7 +8,7 @@ clean:
 
 paper: paper-lcr.pdf
 
-paper-lcr.pdf: paper-lcr.bbl paper-lcr.tex macros.tex
+paper-lcr.pdf: paper-lcr.tex macros.tex
 	pdflatex paper-lcr.tex
 	pdflatex paper-lcr.tex
 	bibtex paper-lcr
