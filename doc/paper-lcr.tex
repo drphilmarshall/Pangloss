@@ -282,12 +282,11 @@ These structures may be physically associated with the lens e.g. other members
 of a group or cluster, or they may be the result of chance alignments at any redshift. 
 Whilst it is rare for three galaxies to line up well enough for both of the background sources
 to be strongly lensed \citep{gavazzi2008,collett2012}, the shear scale of dark matter halos
-makes a partial allignment -- with the additional structure acting as a weak lens -- 
+makes a partial alignment -- with the additional structure acting as a weak lens -- 
 a near certainty, indeed \citet{valewhite2003} and \citet{hilbert2007} find that there
 are no empty lightcones in a realistic universe. These additional structures induce an external shear
 which can be recovered in the mass-modelling of the lens, but they can also introduce a convergence that
 is undetectable from the image positions, shapes and relative fluxes; {\it the mass sheet-degeneracy} \citep[see e.g.][for details]{Falco1985,Schneider2006}.
-
 
 If the intrinsic source brightness changes, the observed brightness in each image does not change
 simultaneously - there is a time delay, $\Delta t$, between the brightness change in
@@ -310,7 +309,12 @@ The magnification case has no primary lens plane, and is chiefly relevant for th
 \kappa_{\mathrm{effective,\mu}}=\sum_{p}\kappa_p.
 \ee
 
-In the stong lensing case, the presence of a significant perturber alters the geometry of the system, and provides a primary lens plane. It is the primary lens plane upon which we need to know $\kappa_{\mathrm{effective}}$, since this is where the mass-sheet degeneracy is defined. Following Equations 20--32 of \citet{keeton2003}\flag{keeton2003}, it can be shown that the relevant effective convergence is given by 
+In the stong lensing case, the presence of a significant perturber alters the
+geometry of the system, and provides a primary lens plane. It is the primary
+lens plane upon which we need to know $\kappa_{\mathrm{effective}}$, since
+this is where the mass-sheet degeneracy is defined. Following Equations 20--32
+of \citet{keeton2003}\flag{keeton2003}, it can be shown that the relevant
+effective convergence is given by 
 \be \label{eq:kappasumSL}
 \kappa_{\mathrm{effective,SL}}=
 {  
@@ -319,7 +323,9 @@ In the stong lensing case, the presence of a significant perturber alters the ge
 (1-\beta_{12}\kappa)^2-(\beta_{12}\gamma)^2
 }
 \ee
-where $\kappa$ and $\gamma$ are, respectively, the convergence and shear caused by the perturber, in their own plane and $\beta_{12}$ is a geometrical scaling factor defined by
+where $\kappa$ and $\gamma$ are, respectively, the convergence and shear
+caused by the perturber, in their own plane and $\beta_{12}$ is a geometrical
+scaling factor defined by
 \be\label{eq:beta}
 \beta_{12}={
 D_{12} D_{\mathrm{os}}
@@ -327,12 +333,25 @@ D_{12} D_{\mathrm{os}}
 D_{\mathrm{o}1} D_{1\mathrm{s}}
 }
 \ee
-where the D's are again angular diameter distances: the 1 (2) in the subscript refers to the lower (higher) redshift object of the lens and perturber. For the case that the mass sheet is in the lens plane, $\beta_{12} = 0$ and $\kappa_{\mathrm{eff}}=\kappa$; if the mass-sheet is in the plane of the observer, or source, $\beta_{12} = 1$ and $\kappa_{\mathrm{eff}}=0$; for a mass-sheet at any other redshift $0<\beta_{12}<1$. In the case of several mass sheets the effective convergences sum. In the limit that both $\kappa$ and $\gamma$ are small, Equation \ref{eq:kappasumSL} reduces to 
+where the D's are again angular diameter distances: the 1 (2) in the subscript
+refers to the lower (higher) redshift object of the lens and perturber. For
+the case that the mass sheet is in the lens plane, $\beta_{12} = 0$ and
+$\kappa_{\mathrm{eff}}=\kappa$; if the mass-sheet is in the plane of the
+observer, or source, $\beta_{12} = 1$ and $\kappa_{\mathrm{eff}}=0$; for a
+mass-sheet at any other redshift $0<\beta_{12}<1$. In the case of several mass
+sheets the effective convergences sum. In the limit that both $\kappa$ and
+$\gamma$ are small, Equation \ref{eq:kappasumSL} reduces to 
 \be \label{eq:kappasumSLweak}
 \kappa_{\mathrm{effective,SL}}=(1-\beta_{12})\kappa;
 \ee
-it is this $\kappa_{\mathrm{effective,SL}}$ that we use as $\kappax$ for the strong lensing time delay analysis in \ref{sec:Dt}.
+it is this $\kappa_{\mathrm{effective,SL}}$ that we use as $\kappax$ for the
+strong lensing time delay analysis in \ref{sec:Dt}.
 
+\flag{The all-important calibration of the reconstruction has to be done
+against Stefan's ray-traced kappas though -- so it is these that we have to
+predict PDFs for, first and foremost. THEN we have to consider the question of
+which kappa to use to correct the time delay distances: Stefan's kappa (as in
+B1608 or RXJ1131), or kappa-keeton.}
 
 The time-delay distance is defined as
 \be \label{eq:dt}
@@ -377,24 +396,46 @@ which can be inferred from measurements of $\Dt$.
 %NFW approx based on virial masses. Stellar mass. Halo map corresponding to
 %ray-traced kappa map, for illustration. Small-scale structure 
 
+For real lines of sight, 
+\phil{we would like to estimate the external convergence as best we can given all
+data available. Typically this data is in the form of a photometric galaxy
+catalog, containing positions, brightnesses, colours, and other type
+information for each galaxy in the field of the lens, down to some magnitude
+limit. Since we do not observe halo mass directy, we need some way estimating
+the mass of each galaxy in the catalog, so that we can compute its
+contribution to $\kappax$. This mass assignment recipe will be uncertain, but
+can be calibrated to cosmological simulations.} 
 
+% PJM: What is this defeatism?!
+% it is nearly impossible to know the true $\kappax$ for a
+% line of sight, and without a knowledge of $\kappax^{\mathrm{true}}$ it is hard to
+% quantify if there is a bias induced by using different $\kappax$ estimators.
+%
+% A source with known unlensed brightness e.g. a strongly lensed type Ia
+% Supernova \flag{cite some SNe papers} or a source of known unlensed size \flag{ideas?}
+% would break the mass-sheet degeneracy and provide a value for $\kappax$, but
+% \flag{no?} such systems are currently known.
 
-For real lines of sight, it is nearly impossible to know the true $\kappax$ for a
-line of sight, and without a knowledge of $\kappax^{\mathrm{true}}$ it is hard to
-quantify if there is a bias induced by using different $\kappax$ estimators.
-A source with known unlensed brightness e.g. a strongly lensed type Ia
-Supernova \flag{cite some SNe papers} or a source of known unlensed size \flag{ideas?}
-would break the mass-sheet degeneracy and provide a value for $\kappax$, but
-\flag{no?} such systems are currently known.
-
-Cosmological dark matter simulations can be used to generate mock lines of sight...
+Cosmological dark matter simulations can be used to generate mock lines of
+sight...
 \flag{Stefan's section on how the ray tracing was done and how halos are extracted from
  the MS n-body particles}
 
-With this catalogue of halos, positions, redshifts etc. it is possible to attempt
-a reconstruction of the convergernce induced by every halo near a line of sight.
-Cosmological dark matter simulations have shown that dark matter halos are well
-approximated by NFW profiles \citep{NFW1997}, with a density profile given by
+\phil{Transforming the photometometric galaxy catalogue into a}  catalogue of
+halo masses, positions, and redshifts, will enable us to attempt a
+reconstruction of the convergence induced by every halo near a line of sight.
+This is the subject of the first subsection below. We also need to account for
+the mass in the Universe that is not associated with the galaxies we can see
+-- this is the subject of the second subsection below. 
+
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Halos}
+
+Cosmological dark matter simulations have shown that dark matter
+halos are well approximated by NFW profiles \citep{NFW1997}, with a density
+profile given by
 \be\label{eq:rhonfw}
 \rho(r) = 
 \frac{\rho_0}{\left(r/r_{s}\right)
@@ -428,12 +469,35 @@ line of sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw}
 \ee
 which is the same as the NFW profile in the limit that $r_t$ goes to infinity. The convergence and shear for the BMO profile are given in Appendix \ref{appendix:halos}.
 
-Whilst halos contribute a positive convergence to $\kappax$, voids contribute a negative convergence. When a raybundle passes through a 
-region of space that is less dense than $\rho_{\rm cr}(z)$ the rays are de-focused\footnote{In principle, the convergence caused by halos, is also caused by the overdensity, but we neglect this effect since halos are typically much more dense than the intergalactic medium}. Whilst the 
-full raytraced solution takes into account the effect of voids, our reconstruction cannot -- the halo catalogue does not include voids. In principle the absence of a halo could be taken to infer a void, but the under-density of such a void is hard to infer. Instead, we shift our $\kappax$ values so that $\langle\kappax\rangle=0$. We refer to this corrective term as $\kappav$. The void correction introduces a source of error, since the inferred value of $\kappav$ will depend on the properties of the sightlines reconstructed, but this error shrinks with the number of sightlines reconstructed. To avoid potential biases we calculate $\kappav$ from randomly selected sightlines. The total $\kappax$ along the line of sight is given by 
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Voids}
+
+Whilst halos contribute a positive convergence to $\kappax$, voids contribute
+a negative convergence. When a raybundle passes through a  region of space
+that is less dense than $\rho_{\rm cr}(z)$ the rays are de-focused\footnote{In
+principle, the convergence caused by halos, is also caused by the overdensity,
+but we neglect this effect since halos are typically much more dense than the
+intergalactic medium}. Whilst the  full raytraced solution takes into account
+the effect of voids, our reconstruction cannot -- the halo catalogue does not
+include voids. In principle the absence of a halo could be taken to infer a
+void, but the under-density of such a void is hard to infer. Instead, we shift
+our $\kappax$ values so that $\langle\kappax\rangle=0$. We refer to this
+corrective term as $\kappav$. The void correction introduces a source of
+error, since the inferred value of $\kappav$ will depend on the properties of
+the sightlines reconstructed, but this error shrinks with the number of
+sightlines reconstructed. To avoid potential biases we calculate $\kappav$
+from randomly selected sightlines. The total $\kappax$ along the line of sight
+is given by 
 \be \label{eq:totalkappax}
 \kappax = \left(\sum_{\rm halos} \kappa_{\rm halo}\right)-\kappav.
 \ee
+
+\flag{Need to draw a convergence from the void distribution, such that 1) the
+intrinsic distribution of kappas is returned in the case where we have no
+data, and 2) the mean density parameter over all lines of sight is $\Omega_m$.
+The mass budget has to be balanced!}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -614,6 +678,19 @@ What is the effect of using the wrong Mstar-Mhalo relation?
 Folding the kappa uncertainties into time delay distance uncertainties. Toy
 model: same zl and zs, allows simple product of pdfs to obtain estimate of P(D).
 
+Make mock sample of lenses, all wit B1608 zd and zs, but with different kappas.
+Draw kappas from Stefan's *lens* distribution. Can we correct for the selection
+effect?
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+\subsection{Comparison with Other Treatments of $\kappax$}
+\label{sec:Dt:selection} 
+
+\phil{How does distance accuracy compare with simple averaging? eg assuming
+$\kappax = 0$ for all lenses. How does it compare with the no data situation?
+eg where the intrinsic distribution of kappa is used as $Pr(\kappax)$.}
+
 What is the expected bias and scatter (centroid position and width) of P(D) as a
 function of N lenses? How does reconstruction compare with P(D) derived using
 P(kappa|N45) for each lightcone? How does reconstruction compare with P(D)
@@ -624,9 +701,36 @@ live on over-dense lines of sight. Stefan's plot in Suyu et al shows effect of
 selection - what is the resulting bias? Few percent? This is the target to beat,
 need to find it out.
 
-Make mock sample of lenses, all wit B1608 zd and zs, but with different kappas.
-Draw kappas from Stefan's *lens* distribution. Can we correct for the selection
-effect?
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+\subsection{The Impact of Selection Effects}
+\label{sec:Dt:selection} 
+
+\phil{How does distance accuracy vary with:}
+\begin{itemize}
+\item Depth of catalog? mlim = 22, 24, 26?
+\item Overdensity cuts? Remove underdense fields, overdense fields (from
+reconstructed kappa)
+\item Shear-sensitive selection? What if we only selected quads?
+\end{itemize}
+
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+
+\subsection{Improving the Accuracy with More Information}
+\label{sec:Dt:selection} 
+
+\phil{How does distance accuracy improve with:}
+\begin{itemize}
+\item Spectroscopic coverage? For galaxies above some mlim? For targets with
+high kappa contribution (based on photometry)?
+\item IR coverage for all objects? Improves photo-z and Mstar.
+\item Including shear information from lens model? Assume accurate but
+uncertain extertanl shear.
+\end{itemize}
+
+
 
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -644,11 +748,8 @@ effect?
 \label{sec:discuss}
 
 Why reconstruction works or doesn't work.
-
 Major sources of uncertainty.
-
-Ideas for improving the procedure
-
+Ideas for improving the procedure.
 Emphasize that this can be done before monitoring time is invested.
 
 
