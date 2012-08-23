@@ -41,11 +41,14 @@ rad2arcmin = 1.0/arcmin2rad
 vb = False
 
 # ============================================================================
-    
 
 class grid(distances.Distance):
-   def __init__(self,zmax=3,nplanes=100,cosmo=[0.25,0.75,0.73]): 
+   def __init__(self,zmax=3,nplanes=100,cosmo=[0.25,0.75,0.73],filename=None):
        distances.Distance.__init__(self,cosmo=cosmo)
+       """ Allow for empty instantiation """
+       if filename is not None:
+           self.load(filename)
+           return
        self.name = '1D Redshift grid, with precalculated quantities '
        self.zmax=zmax
        self.nplanes=nplanes    
@@ -63,6 +66,16 @@ class grid(distances.Distance):
       snapped_p=numpy.digitize(z,self.zplane-(self.dz)/2)-1
       snapped_z=self.zplane[snapped_p]
       return snapped_z,snapped_p
+
+
+   def save(self,filename):
+      f = open(filename,'wb')
+      cPickle.dump([self.name,self.zmax,self.nplanes,self.redshiftbins],f,2)
+      f.close()
+
+   def load(self,filename):
+      self.name,self.zmax,self.nplanes,self.redshiftbins = numpy.load(filename)
+
 
 # ----------------------------------------------------------------------------
 

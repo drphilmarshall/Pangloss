@@ -99,6 +99,9 @@ class lightcone(object):
             col = "mag_%s" % band
         self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < magnitudecut)
 
+        self.ISrun=False
+
+
         return None
 
 # ----------------------------------------------------------------------------
@@ -173,6 +176,18 @@ class lens_lightcone(lightcone):
         #calculate rphys
         self.galaxies.add_column('rphys',self.galaxies.Da_d*self.galaxies.r*arcmin2rad) #units 
 
+        #copy columns that need to change with photoz
+        self.galaxies.add_column('Tzsnapped',zsnapped)
+        self.galaxies.add_column('Tpsnapped',psnapped)
+        self.galaxies.add_column('TDa_d', self.grid.Da_p[p])
+        self.galaxies.add_column('TDa_ds', self.grid.Da_ps[p])
+        self.galaxies.add_column('TDa_dl', self.grid.Da_pl[p])
+        self.galaxies.add_column('Tbeta', self.grid.beta_p[p])
+        self.galaxies.add_column('Trho_crit',  self.grid.rho_crit_p[p])    # Mpc
+        self.galaxies.add_column('Tsigma_crit', self.grid.sigma_crit_p[p]) #solarmasses per Mpc^2
+        self.galaxies.add_column('Trphys',self.galaxies.Da_d*self.galaxies.r*arcmin2rad) #units 
+
+
 
         return None
 
@@ -182,17 +197,32 @@ class lens_lightcone(lightcone):
         if photozerr==True:
             z=self.galaxies.z_true
             z_obs=z+(1+z)*(rnd.normal(0,0.1,len(z)))
+            if self.ISrun==True:
+                z_obs[self.galaxies.IS==True]=self.galaxies.z_true[self.galaxies.IS==True]
             self.galaxies.remove_columns('z_spec')
             self.galaxies.add_column('z_spec',z_obs)
+
+
         if photozerr==False:
             z=self.galaxies.z_true
             z_obs=z
             self.galaxies.remove_columns('z_spec')
             self.galaxies.add_column('z_spec',z_obs)
         self.photozerr=photozerr
+
+
+
+
         return None
 
-    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False):
+    def keep(self):
+        self.galaxies.keep_columns(['Type','z_spec','pos_0[rad]','pos_1[rad]','M_Halo[M_sol/h]','M_Subhalo[M_sol/h]','M_Stellar[M_sol/h]','mag_SDSS_u','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','mag_SDSS_z','mag_J','mag_H','mag_K','x','y','r','zsnapped','psnapped','Da_d','Da_ds','Da_dl','beta','rho_crit','sigma_crit','rphys',"mag_F814W","z_true",'IS'])
+
+
+
+
+
+    def make_kappa_contributions(self,BehrooziHalos=False,hardcut="Rvir",truncationscale=5,scaling="add",errors=True,centralsonly=False, Mh2Mh=False, Mstar2Mh=False, perfectsatellites=False,somespec=False):
 
         if centralsonly==True:
             self.galaxies=self.galaxies.where(self.galaxies.Type==0)
@@ -208,6 +238,10 @@ class lens_lightcone(lightcone):
                 #self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1]*=1+(0.05*rnd.poisson(4,len(self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.Type==1])))
 
                 Mstar = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'],self.galaxies['z_spec'],photozerr=self.photozerr)
+                if self.ISrun==True:
+                    if len(Mstar[self.galaxies.IS==True])>0:
+                        Mstar[self.galaxies.IS==True] = self.grid.drawMstar(self.galaxies['M_Subhalo[M_sol/h]'][self.galaxies.IS==True],self.galaxies['z_spec'][self.galaxies.IS==True],photozerr=False)
+
                 Mstore=Mstar*1.0
 
                 # This should never print anything.
@@ -355,8 +389,18 @@ class lens_lightcone(lightcone):
         self.kappa_Scaled_total=numpy.sum(kappa_Scaled)
         
         kappa_fail=kappa_Scaled[kappa_Scaled<0]
-        #if kappa_fail!=[]:print kappa_fail
+        if len(kappa_fail)!=0: print kappa_fail
         
+        return None
+
+    def ImportantSpecable(self):
+        Important = self.galaxies['mag_SDSS_i']<23.
+        Specable  = self.galaxies['kappa_Scaled']>0.001
+        IS = ((self.galaxies['mag_SDSS_i']<23.) & (self.galaxies['kappa_Scaled']>0.001))
+        self.galaxies.add_column('IS',IS)
+
+        self.ISnumber=len(IS[IS==True])
+        self.ISrun=True
         return None
 
     def fastmode(self,kappamin):
