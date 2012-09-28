@@ -502,9 +502,10 @@ where $\tilde{\kappa}_{\rm halos}$ is the median of the reconstructed $\sumkappa
 Primed qunatities refer to all of the calibration sightlines and unprimed refers to the specific line of sight.
 $W(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos})$ is a weight function given by
 \be
+\label{eq:weighting}
 W(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos})=\exp\left(-\frac{1}{2}\left(\frac{\left(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos}\right)^2}{\sigma^2}\right)\right)
 \ee
-We take $\sigma$ as 0.01- this is an overestimate of the uncertainty on $\tilde\kappa_{\rm halos}$, but ensures that the full distibution of void corrections is sampled, despite the finite number of calibration sightlines.
+We take $\sigma$ as 0.005- this is an overestimate of the uncertainty on $\tilde\kappa_{\rm halos}$, but ensures that the full distibution of void corrections is sampled, despite the finite number of calibration sightlines.
 
 
 
@@ -650,7 +651,7 @@ The intrinsic error between the results of the halo based prescription and the r
 \label{fig:radcut}
 \end{figure}
 
-The final test that we apply to the perfect knowledge reconstruction is to apply the marginalization outlined in Section \ref{subsec:voids}. Taking the reconstructed $\sumkappah$ for $1\times 10^{-5}$ lines of sight we form the joint distribution, P$(\kapparay,\sumkappah)$ and marginalize over all sightlines with a similar $\sumkappah$ to give P($\kappax$). We define the bias as the difference between the expectation value of $\kappax$ and the known true value of $\kapparay$ for each Line of sight. From $1\times 10^{4}$ reconstructed lines of sight we find the the bias to have mean of $2.0\times 10^{-5}$ and standard deviation of 0.0193. In the case where one assumes P$(\kappax)$ is given by the global P$^{\rm global}(\kappax)$, the same $1e4$ lines of sight show a mean bias of $7.7\times 10^{-4}$ and the bias has a standard deviation of 0.0346. Within the statistical error both methods are unbiased, but for any individual line of sight the bias is typically 1.8 times smaller with the reconstructed P$^{\rm reconstruction}(\kappax)$, rather than global P$^{\rm global}(\kappax)$. 
+The final test that we apply to the perfect knowledge reconstruction is to apply the marginalization outlined in Section \ref{subsec:voids}. Taking the reconstructed $\sumkappah$ for $1\times 10^{5}$ lines of sight we form the joint distribution, P$(\kapparay,\sumkappah)$ and marginalize over all sightlines with a similar $\sumkappah$ to give P($\kappax$). We define the bias as the difference between the expectation value of $\kappax$ and the known true value of $\kapparay$ for each Line of sight and we define the reconstruction width as half the width of the interval containing the central $68\%$ of the probability P($\kappax$). From $1\times 10^{4}$ reconstructed lines of sight we find the the bias to have mean of $-9.5\times 10^{-6}$ and a mean reconstruction width of 0.0132. In the case where one assumes P$(\kappax)$ is given by the global P$^{\rm global}(\kappax)$, the same $1\times 10^{5}$ lines of sight show a mean bias of $4.3\times 10^{-5}$ and mean reconstruction width of 0.237. Within the statistical error both methods are unbiased, but for any individual line of sight the bias is typically 1.8 times smaller with the reconstructed P$^{\rm reconstruction}(\kappax)$, rather than global P$^{\rm global}(\kappax)$. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -663,62 +664,47 @@ observables. In principle the only observables are astrometric positions, photom
 quantify the errors induced by inferring the halo mass and redshift from the observables. Much work has already focused on using
 photometric colours to infer stellar mass \citep[\eg][]{xxx} and redshifts \citep[\eg][]{BPZ}, in line with these we shall use
 stellar mass and photometric redshifts (with appropriate errors), as the observables that must be converted into an estimate
-of $\kappax$. We will investigate two main sources of error: inferring halo mass given observed stellar mass and the combination of stellar mass errorsand placing halos at the wrong redshift due to photometric redshift error.
+of $\kappax$. We will investigate two main sources of error: inferring halo mass given observed stellar mass and placing halos at the wrong redshift due to photometric redshift error.
 
 We generate a stellar mass for each halo according to the stellar mass--halo mass relation of \citet{behroozi2010}. From this stellar mass we simulate 
-an observed stellar mass by drawing a sample from $\pr(\log(M_{* \mathrm {obs}})|\log(M_{* \mathrm {true}}))$ which is given by the product of the galaxy stellar mass function (GSMF) of \citet{Fontana2006} and a Gaussian of width $\sigma_{M_*}$ centred on $\log(M*_{\mathrm {true}})$. Where a spectroscopic redshift exists stellar masses can be estimated with typical uncertainties of 0.15 dex \citep{xxx}, however with photometric redshifts stellar mass uncertainties are typically three times as large \citep{xxx}; we use $\sigma_{M_*}=0.15$ for halos with a spectroscopic redshift and $\sigma_{M_*}=0.45$ otherwise. The \citet{Fontana2006} GSMF is given by a Schechter function with redshift evolving parameters
+an observed stellar mass by drawing a sample from $\pr(\log(M_{* \mathrm {obs}})|\log(M_{* \mathrm {true}}))$ which is given by \comments{ the product of the galaxy stellar mass function (GSMF) of \citet{Fontana2006} and} a Gaussian of width $\sigma_{M_*}$ centred on $\log(M*_{\mathrm {true}})$. Where a spectroscopic redshift exists stellar masses can be estimated with typical uncertainties of 0.15 dex \citep{xxx}, however with photometric redshifts stellar mass uncertainties are typically three times as large \citep{xxx}; we use $\sigma_{M_*}=0.15$ for halos with a spectroscopic redshift and $\sigma_{M_*}=0.45$ otherwise. \comments{The \citet{Fontana2006} GSMF is given by a Schechter function with redshift evolving parameters
 \be
 \label{eq:GSMF}
 {\dee N \over \dee M_*} \propto \left(10^{(M_*-M_0(z))}\right)^{(1+\alpha(z))} \exp \left(-10^{(M_*-M_0(z))}\right)
 \ee 
-where $M_0(z)=11.16+0.17z-0.07z^2$ and $\alpha(z)=-1.18-0.082z$. For photometric redshift errors we draw a redshift from $\pr(z_{\rm true}|z_{\rm obs})$ which we take as a Gaussian of width $0.1(1+z_{\rm spec})$ centred on $z_{\rm spec}$, where $z_{\rm spec}$ is the halo's true redshift in the \MS catalogue
+where $M_0(z)=11.16+0.17z-0.07z^2$ and $\alpha(z)=-1.18-0.082z$.} For photometric redshift errors we draw a redshift from $\pr(z_{\rm true}|z_{\rm obs})$ which we take as a Gaussian of width $0.1(1+z_{\rm spec})$ centred on $z_{\rm spec}$, where $z_{\rm spec}$ is the halo's true redshift in the \MS catalogue
 
-For each investigated source of error, we reconstruct 10000 lines of sight and each of the reconstructed $\pr(\sumkappah)$ is summarized by their mean $\sumkappah$, and their half-width containing $68\%$ of the probability, $\sigt$.
-Reconstructing the lines of sight with perfect knowledge of the redshift but an uncertain stellar mass, we find that $\sigt$ grows with $\sumkappah$; this is not surprising since the low $\sumkappah$ lines of sight are relatively empty and so there are few opportunities for uncertainties in the halo masses to propogate into $\sumkappah$ uncertainties. The means and widths of these reconstructions are summarized in Figure \ref{fig:width1}, before and after applying the void correction and global prior ${\rm U}(\kappax)$. Before applying the void correction, the width of the reconstructions are roughly proportional to the mean of $\sumkappah$; they are well fit by a straight line given by 
-\be
-\sigt=-0.003+0.25 \langle\sumkappah\rangle.
-\label{eq:Mstarfit}
-\ee
-After applying the void correction the expected bias is $-1.7\times 10^{-4}$ and the standard deviation for the bias is given by 0.0231; this is 1.2 times worse than the reconstruction given perfect knowledge of the halo masses and redshifts but still 1.5 times better than using the global P$^{\rm global}(\kappax)$; this is the reconstruction error that could be expected from a complete spectroscopic survey of the field. A complete spetroscopic survey is unrealistic, but Equation \ref{eq:Mstarfit2} represents a lower limit on the reconstruction error. For a randomly selected line of sight, the expectation value for the uncertainty on the reconstruction is 0.017 and the expectation value for the bias on E$(\kapparec)-\kapparay$ is 0.004.
+For each  source of error, we reconstruct 40000 calibration lines of sight and 10000 mock lens lines of sight, following the proceedure outlined in Section \ref{sec:model}. Reconstructing the lines of sight with perfect knowledge of the redshift but an uncertain stellar mass, we find that the width of $\Pr\left(\sumkappah \right)$ grows with the expectation value of $\sumkappah$; this is not surprising since the low $\sumkappah$ lines of sight are relatively empty and so there are few opportunities for uncertainties in the halo masses to propogate into $\sumkappah$ uncertainties. After applying the void correction the expected bias from our 10000 mock lenses is $6.7\times 10^{-5}$ and the mean reconstruction width is 0.0145; this is the typical reconstruction error that could be expected from a complete spectroscopic survey of the field, it is ten percent worse than the reconstruction given perfect knowledge of the halo masses and redshifts but still 1.6 times better than using the global P$^{\rm global}(\kappax)$ although a complete spetroscopic survey is still unrealistic. The distribution of the widths of $\Pr\left(\kappax \right)$ is shown in Figure \ref{fig:width1}
+
 
 \begin{figure}
-\includegraphics[width=\columnwidth]{kappaspectro.eps}
-\caption[radius cut]{Means and widths of $\kapparec$ for a complete spectroscopic survery of all halos down $to i=26$ and within 5 arcminutes of the line of sight. Results for 10000 lines of sight are shown. Red is the width and mean after summing up all the reconstructed halo contributions. Blue is the width of mean after correcting for voids. Green is the result after weighting the PDFs so that the universal kappa distribution is recovered}
+\includegraphics[width=\columnwidth]{cornerplot.eps}
+\caption{68 \% and 95 \% contours of the joint distribution $\pr(\kapparay, \tilde\kappa_{\rm halos})$ given a mock reconstruction of our 40000 calibration lines of sight. $\tilde\kappa_{\rm halos}$ is the median of $\pr(\sumkappah)$ given a spectroscopic redshift for each halo. $\kapparay$ and $\tilde\kappa_{\rm halos}$ are strongly correlated, despite the blurring effect of uncertain halo masses.}
+\label{fig:corner}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{widths.eps}
+\caption{Widths of $\pr(\kappax)$ after applying our reconstruction of all halos down $to i=26$ and within 5 arcminutes of the line of sight. Results for 10000 lines of sight are shown. Green is for a reconstruction given perfect knowledge of halo mass and redshift, blue is for a reconstruction given a spectroscopic redshift for every halo, and red is for a reconstruction with photometric redshifts only. The dashed black line shows the width of the global $\pr(\kappax)$ distribution; the reconstruction process provides roughly a factor of 2 improvement for the majority of lines of sight. Spectroscopic redshifts improve the reconstruction, but at signifcant observational cost.}
 \label{fig:width1}
 \end{figure}
 
-\begin{figure}
-\includegraphics[width=\columnwidth]{kappasmall.eps}
-\caption[radius cut]{As figure \ref{width1}, but for a photometric reconstruction of all halos down $to i=24$ and within 2 arcminutes of the line of sight}
-\label{fig:width2}
-\end{figure}
-
-For fixed halo masses at unknown redshifts, we follow the same proceedure as the previous paragraph. We again find that $\sigt$ grows with $\kapparec$, but the error is small compared to the typical uncertainties for the reconstruction of halos at fixed redshifts but with uncertain masses. The fit is gven by
-\be
-\sigt=-0.002+0.15 \langle\kapparec^{\rm halos}\rangle.
-\label{eq:Mstarfit}
-\ee
-Whilst redshift errors are a subdominant uncertainty at fixed halo mass, the true halo mass of an astronomical object is an unknown. Inferring the stellar mass of a galaxy from its magnitude and colours requires an estimate of how far away the galaxy is; without a spectroscopic redshift the the infered stellar mass is less precise. One should expect that given uncertain redshift and stellar mass the $\kappax$ reconstruction will be significantly more uncertain than a quadrature sum of the individual uncertainties. In principle the photometric redshift is correlated with the infered stellar mass, however we do not model this since the redshift error produces a small effect on the recovered $\pr(\kappa)$ when compared to the effect of uncertain stellar masses. For a complete photometric survey down to $i=26$ our halo reconstructions are fit by the line
-\be
-\sigt=-0.003+0.47\langle\kapparec^{\rm halos}\rangle
-\label{eq:bothfit}
-\ee
-With only photometric redshifts the uncertainty on $\kapparec^{\rm halos}$ is much larger than the spectrocopic case, and this propogates into a much larger bias after applying the void correction. The expectation for the bias is -0.008 which is statistically signifiant given 10000 cones and a standard deviation of 0.0235. The reason for this bias relates to the difficulty of reconstructing halo masses given only a photometric redsshift. There are many massive halos that are intermediate distances from the line of sight; they do not contribute significantly to the true $\kappax$, but without spectroscopic reshifts their highly uncertain stellar masses propogate into broad $\pr(\Mhalo)$ and into a small probability of large individual $\kappax$ contributions. Since there are typically several hundred such objects within 5 arcminutes of the line of sight, their net contribution dominates the width of the photometrically generated $\pr \left(\sum_{\rm halos}\kappa_{\rm halo}\right)$, and artificially increases the mean of $\sumkappah$ despite the fact that they do not contribute much to the true $\kappax$. In equation \ref{eq:weighting} we assumed a symmetry for the weighting scheme used to form P($\kappax$) from $\pr(\kapparay,\tilde\kappa_{\rm halos})$. The assumption of symmetry is not valid since $\pr(\sumkappah)$ given perfect knowledge of the halo mass and redshift does not map linearly onto $\pr(\sumkappah)$ given only a photometric survey of the field. 
+Inferring the stellar mass of a galaxy from its magnitude and colours requires an estimate of how far away the galaxy is; without a spectroscopic redshift the the infered stellar mass is less precise. In principle the photometric redshift is correlated with the infered stellar mass, however we do not model this effect since the convergence from the outskirts of an individual halo is only weakly dependant on redshift at fixed mass: the redshift error is small effect on the recovered $\pr(\kappa)$ when compared to the effect of uncertain stellar masses.  With only photometric redshifts the uncertainty on $\sum\kapparec^{\rm halos}$ is much larger than the spectrocopic case, but this does not propogate into a much larger bias after applying the void correction; with a purely photometric reconstruction of the 10000 mock lightcones the results have a mean bias of $1.1\times 10^{-4}$ and a mean width of 0.0158. On average a purely photometric reconstruction of the field gives an unbiased $\pr(\kappax)$ that is 1.5 times tighter than assuming the global $\pr^{\rm global}(\kappax)$. 
 
 
 \subsection{Reconstructions of Smaller and Shallower Fields}
-Reconstructions of real lines of sight may not have access to the deep, large calibration fields that we have used upto this point. We can perform the same reconstruction but for a more modest survey. Given the results of Section \ref{sec:knownMh+z} we predicted that a reconstruction of the field out to 2 arcminutes and a magnitude limit of $i$=24 would provide similar constraints to a reconstruction going out to 5 arcminutes and going down to $i$=26. For the purely photometric reconstruction the uncertainty on the halo reconstruction is given
+
+\begin{figure}
+\includegraphics[width=\columnwidth]{widths2.eps}
+\caption{Widths of $\pr(\kappax)$ after a photometric reconstruction of all halos within different fields. The different field sizes and depths are given in the legend. As the field becomes smaller or shallower, fewer halos are being reconstructed and so the width of $\pr(\kappax)$ grows.}
+\label{fig:width2}
+\end{figure}
 
 
+Reconstructions of real lines of sight may not have access to the deep, large calibration fields that we have used upto this point. We can perform the same reconstruction but for a more modest mock survey. Given the results of Section \ref{sec:knownMh+z} we predicted that a reconstruction of the field out to 2 arcminutes and a magnitude limit of $i$=24 would provide similar constraints to a reconstruction going out to 5 arcminutes and going down to $i$=26. We find the mean reconstruction width to be 0.0163 for a photometric reconstruction of all the halos within 2 arcminutes that have $i<24$, this is only marginally worse than 0.0158 which was the typical width after the deeper and wider reconstruction of the previous section. The reconstruction widths for our 10000 mock lens lines of sight are shown in Figure \ref{fig:widths2}. If only photometry for halos with $i<24$ and within 1 arcminute of the line of sight is availble then the typical width of the reconstructed $\pr(\kappax)$ is 0.173. Whilst a complete spectroscopic survey of a large field would be unlikely, a hybrid strategy of obtaining spectra for a subset of objects may be feasible. Photometric redshifts are sufficient to asertain the halos which are likely to contribute most of the convergence on any given line of sight, and on average there are only $\sim 6 \pm 6$ halos per line of sight that individually contribute more than 0.002 to $\sumkappah$. We investigate a hybrid strategy of obtaining spectroscopic redshifts for all of the $i<24$ halos which contribute an individual $\kappa$ of at least 0.002 combined with a photometric redshift for all other $i<24$ halos within 2 arcminutes. For the hybrid strategy the typical width of the reconstructed $\pr(\kappax)$ is 0.0151. The observational cost of obtaining spectroscopic redshifts for several 24th magnitude galaxies may make the hybrid strategy unlikley, but obtaining photometry of a 4$\times$4 arcminute patch of sky down to $i=24$ is fast with modern telescopes. The mean reconstruction width for a photometric reconstruction of all the halos within 2 arcminutes that have $i<24$ represents an improvement of 1.5 over using the global $\pr(\kappax)$ and should be achievable at minimal observational cost.
 
-Without an improved model of halos and/or reconstruction of voids, a field of 2 arcminute radius and depth of $i=24$ is sufficient to adequately reconstruct the external convergence.
+%\subsection{Reconstructing Biased Lines of Sight}
 
-\subsection{Reconstructing Biased Lines of Sight}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%\section{Reconstructed Kappa as a tracer of Rayraced Kappa}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \comments{
@@ -794,6 +780,11 @@ uncertain extertanl shear.
 
 \section{Discussion}
 \label{sec:discuss}
+
+
+The uncertainties in our reconstruction is dominated by a 
+
+
 
 Why reconstruction works or doesn't work.
 Major sources of uncertainty.
