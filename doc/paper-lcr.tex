@@ -75,13 +75,16 @@ supernovae standard candles).  We characterise this uncertainty by marginalising
 over a probability density function for $\xkappa$: here, we investigate the use
 of a simple halo model to estimate $\Pr(\xkappa)$ given noisy estimates of the
 photometric redshift and stellar mass of galaxies observed in optical imaging
-surveys of the field in question. Tests using mock catalogs from the Millenium
-Simulation and comparing to ray-traced $\kappa$ values, we find that \ldots 
-The $\Pr(\xkappa)$ from this reconstruction process are narrower than the
-expected distribution of $\xkappa$ values over an ensemble of time delay lenses:
-incorporating the photometric catalogs in a joint analysis of 100 lenses 
-leads to an increase in precision of factor of 1.X over simple averaging. We
-investigate several sources of bias and determine \ldots
+surveys of the field in question. We use mock catalogs from the Millenium
+Simulation and compare our reconstructed $\Pr(\xkappa)$ to ray-traced $\kappa$ values,
+we find that our model produces an unbiased estimator of $\kappax$,
+For each lightcone the individual $\Pr(\xkappa)$ from this reconstruction process are
+typically 1.8 times narrower than the global distribution of $\xkappa$ given perfect knowledge 
+of the halo mass and redshift. After incorporating uncertainties on redshift and halo and stellar masses
+we typically find that the reconstruction yields an improvement factor of 1.5. For each line of sight the
+ $\Pr(\xkappa)$ can be formed before the investment of light-curve monitoring. By following up only the 
+most costrained lines of sight a factor of 2 improvement over the global $\pr(\kappax)$ should be 
+achievable.
 \end{abstract}
 
 % Full list of options at http://www.journals.uchicago.edu/ApJ/instruct.key.html
@@ -505,7 +508,7 @@ $W(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos})$ is a weight function giv
 \label{eq:weighting}
 W(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos})=\exp\left(-\frac{1}{2}\left(\frac{\left(\tilde\kappa_{\rm halos}-\tilde\kappa'_{\rm halos}\right)^2}{\sigma^2}\right)\right)
 \ee
-We take $\sigma$ as 0.005- this is an overestimate of the uncertainty on $\tilde\kappa_{\rm halos}$, but ensures that the full distibution of void corrections is sampled, despite the finite number of calibration sightlines.
+We take $\sigma$ as 0.002- this is an overestimate of the uncertainty on $\tilde\kappa_{\rm halos}$, but ensures that the full distibution of void corrections is sampled, despite the finite number of calibration sightlines.
 
 
 
@@ -781,32 +784,33 @@ uncertain extertanl shear.
 \section{Discussion}
 \label{sec:discuss}
 
+We have shown that reconstructing the matter due to halos along any line of sight can give meaningful and unbiased constraints on the external convergence along that line of sight. The total convergence along a line of sight is strongly correlated with the reconstructed $\sumkappah$. However since our model ignores voids and assumes all halos follow a spherical truncated-NFW profile our model does not include all of the relevant physics, hence the width of our resulting $\pr(\kappax)$ is still typically $\sim$0.01, even with a perfect knowledge of every halo's virial mass and redshift. To make further progress a more advanced treatment of both voids and halos will be necessary. Interestingly, we have found that the most empty lines of sight can be reconstructed with the most precision. $\kappax$ for empty lines of sight have little contributions from halos and a large contribution from voids; since they have the tightest PDFs after the reconstruction it seems that our model's biggest uncertainties are driven by naively reconstructing halos rather than neglecting voids. With a photometric reconstruction of the field there is only a small broadening compared to the perfect knowledge reconstruction; it seems that deviations from sphericity and dark matter clumping within the main halo are the dominant uncertainies rather than uncertainties in the halo mass. Inferring halo ellipticity and dark matter clumping will likely always remain a difficulty for line of sight reconstruction; as Figures \ref{fig:magcut} and \ref{fig:width2} show observing deeper than 24th magnitude does not signifcantly help the reconstruction. Because our reconstruction is mostly limited by the model, spectroscopic coverage can only provide a modest improvement to the reconstruction and at significant observational cost.
 
-The uncertainties in our reconstruction is dominated by a 
+For a small fraction of lines of sight, $\pr(\kappax)$ remains very broad even after applying our reconstruction; these lines of sight are typically the most overdense lines of sight in the universe. For time-delay cosmography the most observationally expensive task is the lightcurve monitoring, whilst making photometric observations of a 4$\times$4 arcminute patch of sky survey down to 24th magnitude is a relatively cheap. We have shown that with a single epoch observation of the region around a strong lens it is possible to infer $\pr(\kappax)$. If a line of sight has a broad $\pr(\kappax)$ it can be rejected {\it before} the investment of longterm lightcurve monitoring.
+
+The method we have outlined can also be used to estimate the external shear along a line of sight. Shear is an observable that can be extracted from strong lens modelling, however there is a degeneracy between internal and external shear. Progress has been made in disentangelling external and internal shear \citep[\eg][]{xxx} but there are still significant uncertainties: \citet{Wong} attempted to match the shear from strong lens models with a reconstruction of the local lens group environment, but found a tension between the strong lens model and the reconstruction of the environment. Since \citet{Wong} only reconstructed the local lens group, rather than the full line of sight contribution, it is unclear whether the external shear from lens models can be reconciled with a line of sight reconstruction. {\it If} external shear can be measured, it provides an additional constraint on which of the Millenium Simulation lines of sight are similar to the reconstructed line of sight. \citet{suyu2012b} found that for RXJ1131 combining shear constriants with galaxy number count overdensity, gave a significantly different $\pr(\kappax|\gamma,N_{45})$ copmpared to the PDFfrom number count overdensity alone, $\pr(\kappax|N_{45})$. 
 
 
-
-Why reconstruction works or doesn't work.
-Major sources of uncertainty.
-Ideas for improving the procedure.
-Emphasize that this can be done before monitoring time is invested.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusions}
 \label{sec:conclude}
 
-To remind you, this is what we did.
+In this work we have taken mock lines of sight from the Millenium Simulation and estimated the external convergence along those lines of sight using a simple halo model prescription. We have used the ray traced convergence as a calibration, allowing us to relate the total convergence along a line of sight with the sum of convergences from each halo in our catalogue. Our model uses a truncated spherical NFW profile for each dark matter halo and neglects voids, but despite the model's simplicity the reconstructed $\sumkappah$ is a good tracer of $\kappax$. Using Millenium Simulation lightcones allowed us to test the reconstruction process given perfect knowledge of halo mass and redshift. We found that with perfect knowledge of the halo mass and redshift, the reconstruction gives an unbiased estimator of $\pr(\kappax)$ that is almost almost a factor of 2 less broad to the global $\pr(\kappax)$. For the most overdense lines of sight, the reconstruction produces a very broad PDF, but since the reconstruction can be performed before follow-up time is invested it is possible to discard the most uncertain lines of sight and prevent the waste of follow-up time. 
 
-Our conclusions can be summarised as follows:
+Having found that the reconstruction process is effective given perfect knowledge of halo mass and redshift, we investigated the effects of reasonable uncertainties in the stellar mass and redshift of each halo, and propogated these uncertainties into a $\pr\left(\sumkappah\right)$ for each line of sight. With complete spectroscopic redshift coverage we find that the median of $\pr\left(\sumkappah\right)$ can be converted into an estimate of $\pr(\kappax)$; the PDFS are roughly 10\% broader than given perfect knowledge of halo mass and redshift; given only photometric redshifts (which in turn causes much less certain stellar masss estimates) causes another $\sim$10\% increase to the width of $\pr(\kappax)$.
 
-\begin{itemize}
+We found that it is very rare for halos further than 2 arcminutes to make a significant contribution to $\kappax$. We also found that including halos whose host galaxy is less luminous than $i=24$ does not significantly improve our reconstruction proceedure. As such a photometric survey of a 4$\times$4 arcminute patch around the lens gets close to the limiting uncertainties of our simple reconstruction recipe. Such a reconstruction produces $\pr(\kappax)$ that have a meanwidth of 0.0163 which is a 1.5 times less broad than the global $\pr(\kappax)$, but by following-up only the most certain cosmological value per lens can be increased further. We find that the lines of sight with the sharpest $\pr(\kappax)$ are typically under-dense.
 
-\item We found this.
+With a photometric reconstruction of all lens fields, and following up only the lenses with the most constraining $\pr(\kappax)$, the width of the dominant statistical uncertainty in time-delay cosmography can be halved, whilst at the same time decreaing any potentail for a systematic error due to lenses being biased in $\kappax$.
 
-\item And we found this too.
 
-\end{itemize}
+%Our conclusions can be summarised as follows:
+%\begin{itemize}
+%\item With perfect 
+%\item And we found this too.
+%\end{itemize}
 
 % \item Faint galaxies and other dark structures will not appear in a photometric
 % object catalog, but they will contribute convergence at some level. How much of
@@ -882,8 +886,8 @@ where $\mathcal{F}(x)$ and $\mathcal{L}(x,\tau)$ are defined as
 \section{Deriving the $\Mstar=\Mhalo$ relation}
 \label{appendix:MSMH}
 
-\section{Smooth component models}
-\label{appendix:smooth}
+%\section{Smooth component models}
+%\label{appendix:smooth}
 
 
 
