@@ -157,7 +157,8 @@ strong lens models.  The probability density function (PDF) $\Pr(\xkappa)$ is
 the target for any reconstruction analysis, and the key quantity for any
 ensemble analysis, since by marginalising over it we can correctly propagate
 the uncertainties due to weak lensing by line of sight mass structure. 
-\flag{More needed here. Previous work on environments: Keeton, Zabludoff,Auger, Momcheva, Wong, others.}
+\todo{Tom, Matt}{More needed here. Previous work on environments: Keeton,
+Zabludoff,Auger, Momcheva, Wong, others.}
 Most recently, \citet{Wong++2011} ran Monte
 Carlo reconstructions of the mass in nine lens fields, and compared the
 resulting predicted shear distributions with the lens model external shear.
@@ -171,7 +172,7 @@ the strong lens modelling itself.
 These observational investigations have provided very useful insight into the
 problem.  Coming from the opposite direction, large numerical simulations have
 been used to predict, from first principles the distribution of likely
-external shears and convergences along strong lens lines of sight. \flag{More
+external shears and convergences along strong lens lines of sight. \todo{Phil}{More
 needed here. Holder \& Schechter, Dalal \& Watson}. \citet{Hilbert++2009}
 performed ray-tracing experiments through the Millenium Simulation, generating
 a predicted $\xkappa$ at every position in a simulated sky. The first step
@@ -297,7 +298,7 @@ each image. Despite the invariance of the image positions and fluxes, under the 
 of an external convergence (and appropriate re-scaling of the lens potential) the relative Fermat potential between the images is {\it not}
 invariant, and so the time delay changes. As such it is necessary to include $\kappax$
 in the lens modelling, if cosmological parameters are to be estimated accurately and
-precisely from observed time delays \citep{suyu2010}.
+precisely from observed time delays \citep{Suyu2010}.
 
 \comments{
 If the mass sheet is not physically associated with the lens galaxy, it can lie at any redshift. The effects of such a mass-sheet can be projected back onto the lens plane in the form of an effective convergence. We define this effective convergence in two limits.
@@ -353,7 +354,7 @@ strong lensing time delay analysis in \ref{sec:Dt}.
 
 
 
-\flag{The all-important calibration of the reconstruction has to be done
+\tom{The all-important calibration of the reconstruction has to be done
 against Stefan's ray-traced kappas though -- so it is these that we have to
 predict PDFs for, first and foremost. THEN we have to consider the question of
 which kappa to use to correct the time delay distances: Stefan's kappa (as in
@@ -424,7 +425,7 @@ can be calibrated to cosmological simulations.}
 
 Cosmological dark matter simulations can be used to generate mock lines of
 sight...
-\flag{Stefan's section on how the ray tracing was done and how halos are extracted from
+\todo{Stefan}{Write section on how the ray tracing was done and how halos are extracted from
  the MS n-body particles}
 
 \phil{Transforming the photometometric galaxy catalogue into a}  catalogue of
@@ -468,7 +469,12 @@ $\rho_0$ is calculated from the critical density and concentration parameter:
 
 Unphysically, if one integrates the density profile of an NFW profile, the total mass is divergent.
 Similarly, if the universe is homogeneously populated with NFW halos, the projected surface mass along any
-line of sight will also be divergant\footnote{At large radius, $\Sigma_{\rm nfw} \propto R^{-2}$, but the differential number of halos centred within an annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$, so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which diverges logarithmically}. Since infinite mass is unphysical, the profile must be truncated at some point. \flag{previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight, using the truncated NFW profile of \citet{BMO}
+line of sight will also be divergant\footnote{At large radius, $\Sigma_{\rm
+nfw} \propto R^{-2}$, but the differential number of halos centred within an
+annulus of width $\dee R$ is given by $\dee N_{\rm annulus} \propto R \dee R$,
+so  $\Sigma_{\rm total} \propto \int_{0}^{\infty} R^{-1} \dee R$, which
+diverges logarithmically}. Since infinite mass is unphysical, the profile must
+be truncated at some point. \todo{Tom}{Add notes on previous truncation results}. Several truncation profiles have been suggested \citep[e.g][]{BMO}, but beyond several virial radii, the amount of matter associated with a halo is likely to be low; \citet{Nandra2012} showed that the Universe's expansion can place an upper limit on the radius of NFW halos -- for cluster scale halos, this happens at around 25 times the NFW scale radius. In \Sref{sec:knownMh+z} we investigate how different truncations affect the recovered total convergence for a line of sight, using the truncated NFW profile of \citet{BMO}
 \be\label{eq:bmoprofile}
 \rho(r) = 
 \frac{\rho_{\rm NFW} (r)}{1+\left(r/r_{t}\right)^2},
@@ -624,7 +630,7 @@ zero, it is clear that out halo based prescription does not perfectly replicate 
  The intrinsic error has a standard deviation of $\sigi \sim 0.018$, although
 this figure is inflated by a few outliers in the tails of $\pr\left(\kapparay-\kapparec\right)$. Such outliers would 
 likely be rejected by their reconstructed shear not matching the shear of the lens model 
-(see \citet{wong} for the practicalities of this);
+(see \citet{Wong} for the practicalities of this);
  this makes our estimate of the intrinsic error pessimistic. We do not include any additional constraints on P($\kappax$), given prior knowledge of the external shear in this work.
 
 \begin{figure}
@@ -788,7 +794,20 @@ We have shown that reconstructing the matter due to halos along any line of sigh
 
 For a small fraction of lines of sight, $\pr(\kappax)$ remains very broad even after applying our reconstruction; these lines of sight are typically the most overdense lines of sight in the universe. For time-delay cosmography the most observationally expensive task is the lightcurve monitoring, whilst making photometric observations of a 4$\times$4 arcminute patch of sky survey down to 24th magnitude is a relatively cheap. We have shown that with a single epoch observation of the region around a strong lens it is possible to infer $\pr(\kappax)$. If a line of sight has a broad $\pr(\kappax)$ it can be rejected {\it before} the investment of longterm lightcurve monitoring.
 
-The method we have outlined can also be used to estimate the external shear along a line of sight. Shear is an observable that can be extracted from strong lens modelling, however there is a degeneracy between internal and external shear. Progress has been made in disentangelling external and internal shear \citep[\eg][]{xxx} but there are still significant uncertainties: \citet{Wong} attempted to match the shear from strong lens models with a reconstruction of the local lens group environment, but found a tension between the strong lens model and the reconstruction of the environment. Since \citet{Wong} only reconstructed the local lens group, rather than the full line of sight contribution, it is unclear whether the external shear from lens models can be reconciled with a line of sight reconstruction. {\it If} external shear can be measured, it provides an additional constraint on which of the Millenium Simulation lines of sight are similar to the reconstructed line of sight. \citet{suyu2012b} found that for RXJ1131 combining shear constriants with galaxy number count overdensity, gave a significantly different $\pr(\kappax|\gamma,N_{45})$ copmpared to the PDFfrom number count overdensity alone, $\pr(\kappax|N_{45})$. 
+The method we have outlined can also be used to estimate the external shear
+along a line of sight. Shear is an observable that can be extracted from
+strong lens modelling, however there is a degeneracy between internal and
+external shear. Progress has been made in disentangelling external and
+internal shear \citep[\eg][]{xxx} but there are still significant
+uncertainties: \citet{Wong} attempted to match the shear from strong lens
+models with a reconstruction of the local lens group environment, but found a
+tension between the strong lens model and the reconstruction of the
+environment. Since \citet{Wong} only reconstructed the local lens group,
+rather than the full line of sight contribution, it is unclear whether the
+external shear from lens models can be reconciled with a line of sight
+reconstruction. {\it If} external shear can be measured, it provides an
+additional constraint on which of the Millenium Simulation lines of sight are
+similar to the reconstructed line of sight. \citet{Suyu2012b} found that for RXJ1131 combining shear constriants with galaxy number count overdensity, gave a significantly different $\pr(\kappax|\gamma,N_{45})$ copmpared to the PDFfrom number count overdensity alone, $\pr(\kappax|N_{45})$. 
 
 
 
@@ -797,13 +816,63 @@ The method we have outlined can also be used to estimate the external shear alon
 \section{Conclusions}
 \label{sec:conclude}
 
-In this work we have taken mock lines of sight from the Millenium Simulation and estimated the external convergence along those lines of sight using a simple halo model prescription. We have used the ray traced convergence as a calibration, allowing us to relate the total convergence along a line of sight with the sum of convergences from each halo in our catalogue. Our model uses a truncated spherical NFW profile for each dark matter halo and neglects voids, but despite the model's simplicity the reconstructed $\sumkappah$ is a good tracer of $\kappax$. Using Millenium Simulation lightcones allowed us to test the reconstruction process given perfect knowledge of halo mass and redshift. We found that with perfect knowledge of the halo mass and redshift, the reconstruction gives an unbiased estimator of $\pr(\kappax)$ that is almost almost a factor of 2 less broad to the global $\pr(\kappax)$. For the most overdense lines of sight, the reconstruction produces a very broad PDF, but since the reconstruction can be performed before follow-up time is invested it is possible to discard the most uncertain lines of sight and prevent the waste of follow-up time. 
+In this work we have investigated a simple halo model prescription for
+reconstructing all the mass along a line of sight to an intermediate redshift
+source. We have used the ray-traced lensing convergence along lines of sight
+through the Millenium Simulation to test this approach, and to calibrate
+estimates of the total convergence along a line of sight to an observed
+distant galaxy made by summing the convergences due to each object in a
+photometric catalogue. Having found that the reconstruction process is effective given perfect
+knowledge of halo mass and redshift, we investigated the effects of reasonable
+uncertainties in the stellar mass and redshift of each halo, and propogated
+these uncertainties into a $\pr\left(\sumkappah\right)$ for each line of
+sight. We draw the following conclusions:
 
-Having found that the reconstruction process is effective given perfect knowledge of halo mass and redshift, we investigated the effects of reasonable uncertainties in the stellar mass and redshift of each halo, and propogated these uncertainties into a $\pr\left(\sumkappah\right)$ for each line of sight. With complete spectroscopic redshift coverage we find that the median of $\pr\left(\sumkappah\right)$ can be converted into an estimate of $\pr(\kappax)$; the PDFS are roughly 10\% broader than given perfect knowledge of halo mass and redshift; given only photometric redshifts (which in turn causes much less certain stellar masss estimates) causes another $\sim$10\% increase to the width of $\pr(\kappax)$.
+\begin{itemize} 
 
-We found that it is very rare for halos further than 2 arcminutes to make a significant contribution to $\kappax$. We also found that including halos whose host galaxy is less luminous than $i=24$ does not significantly improve our reconstruction proceedure. As such a photometric survey of a 4$\times$4 arcminute patch around the lens gets close to the limiting uncertainties of our simple reconstruction recipe. Such a reconstruction produces $\pr(\kappax)$ that have a meanwidth of 0.0163 which is a 1.5 times less broad than the global $\pr(\kappax)$, but by following-up only the most certain cosmological value per lens can be increased further. We find that the lines of sight with the sharpest $\pr(\kappax)$ are typically under-dense.
+\item Our model uses a truncated spherical NFW profile for
+each dark matter halo and neglects voids, but despite the model's simplicity
+the reconstructed $\sumkappah$ is a good tracer of $\kappax$.  We found that
+with perfect knowledge of the halo mass and redshift (from the Millenium
+Simulation catalogs), the reconstruction gives an unbiased estimate of
+$\pr(\kappax)$ for a single line of sight that is almost almost a factor of 2
+less broad than the global $\pr(\kappax)$. 
 
-With a photometric reconstruction of all lens fields, and following up only the lenses with the most constraining $\pr(\kappax)$, the width of the dominant statistical uncertainty in time-delay cosmography can be halved, whilst at the same time decreaing any potentail for a systematic error due to lenses being biased in $\kappax$.
+\item  For the most overdense lines of sight, the reconstruction produces a
+very broad PDF, but since the reconstruction can be performed before follow-up
+time is invested it will be possible to discard the most uncertain lines of
+sight and prevent the waste of follow-up time. 
+
+\item With complete spectroscopic redshift coverage and just an empirical
+stellar mass to halo mass relation, we find that the median of
+$\pr\left(\sumkappah\right)$ is a useful indicator for generating an estimate
+of $\pr(\kappax)$ from the ensemble of simulated lines of sight. The resulting
+PDF tends to be around 10\% broader than it would have been given perfect
+knowledge of both halo mass and redshift; given only photometric redshifts
+(which in turn give rise to much less certain stellar masss estimates) causes
+another $\sim$10\% increase to the width of $\pr(\kappax)$.
+
+\item It is very rare for halos further than 2 arcminutes to make a
+significant contribution to $\kappax$. We also found that including halos
+whose host galaxy is less luminous than $i=24$ does not significantly improve
+our reconstruction proceedure. A photometric survey to this depth of a
+4$\times$4 arcminute patch around the lens would approach the limiting
+uncertainties of our simple reconstruction recipe, and yield a 
+$\pr(\kappax)$ that has, on average, a width of 0.0163 --
+50\% less broad than the global $\pr(\kappax)$.
+
+\item We find that the lines of sight with the sharpest $\pr(\kappax)$ are
+typically under-dense. With a photometric reconstruction of all lens fields,
+and following up only the lenses with the most constraining $\pr(\kappax)$,
+the width of the dominant statistical uncertainty in time-delay cosmography
+can be halved, whilst at the same time decreasing any potentail for a
+systematic error due to lenses being biased in $\kappax$.
+
+\end{itemize}
+
+\todo{Tom}{Add more conclusions about bias in a large sample of lenses...}
+
+\todo{Tom}{Wrap up}
 
 
 %Our conclusions can be summarised as follows:
@@ -877,7 +946,7 @@ where $\mathcal{F}(x)$ and $\mathcal{L}(x,\tau)$ are defined as
 \ee
 %the convergence is given by $\Sigma_{\rm BMO}(x) / \Sigma_{\rm cr}(z)$.
 
-\flag{SHEAR HERE}
+\todo{Tom}{More on shear here.}
 
 
 
