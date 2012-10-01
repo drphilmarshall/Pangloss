@@ -368,7 +368,7 @@ with which Equation \ref{eq:T} can be rephrased as
 \be
 \Delta t(\bmath{\theta},\bmath{\beta})  =  \frac{\Dt}{c} \, \phi(\bmath{\theta},\bmath{\beta})    ,
 \ee 
-Since the time delays are proportional to $1/ (1+ \kappax)$, if there is any external convergence, that is not included in the lens
+Since the time delays are proportional to $1/ (1- \kappax)$, if there is any external convergence, that is not included in the lens
 modeling, then the time delay distance -- inferred assuming $\kappax = 0$ -- will be
 $(1-\kappax)$ less than the true value of $\Dt$.
 \be 
@@ -386,9 +386,9 @@ mass-sheet degeneracy by providing an additional estimate of the lens galaxy's m
 In this work our aim is to quantify the lensing effect of mass-sheets that are not physically associated with the lens galaxy -- mass-sheets
 lying infront or behind the lens -- and the uncertainties induced by reconstructing
 those mass-sheets using simple prescriptions applied to potential astronomical observables.
-We also aim to quantify how uncertainties in the
+\comments{We also aim to quantify how uncertainties in the
 estimations of $\kappax$ propogate into uncertainties on the cosmological parametres
-which can be inferred from measurements of $\Dt$.
+which can be inferred from measurements of $\Dt$.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -408,7 +408,7 @@ For real lines of sight,
 data available. Typically this data is in the form of a photometric galaxy
 catalog, containing positions, brightnesses, colours, and other type
 information for each galaxy in the field of the lens, down to some magnitude
-limit. Since we do not observe halo mass directy, we need some way estimating
+limit. Since we do not observe halo mass directy, we need some way of estimating
 the mass of each galaxy in the catalog, so that we can compute its
 contribution to $\kappax$. This mass assignment recipe will be uncertain, but
 can be calibrated to cosmological simulations.} 
@@ -479,7 +479,7 @@ be truncated at some point. \todo{Tom}{Add notes on previous truncation results}
 \rho(r) = 
 \frac{\rho_{\rm NFW} (r)}{1+\left(r/r_{t}\right)^2},
 \ee
-which is the same as the NFW profile in the limit that $r_t$ goes to infinity. The convergence and shear for the BMO profile are given in Appendix \ref{appendix:halos}.
+which is the same as the NFW profile in the limit that the truncation radius, $r_t$ goes to infinity. The convergence and shear for the BMO profile are given in Appendix \ref{appendix:halos}.
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
