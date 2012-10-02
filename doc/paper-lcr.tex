@@ -608,18 +608,18 @@ it is possible to test the validity of the prescription outlined in Section \ref
 
 The reconstruction prescription is tested given perfect
 knowledge of the halos' virial masses and redshifts; this provides us with a measure of the intrinsic
-errors induced by treating matter as truncated NFW halos. In this Section we do not apply the void correction of
+errors induced by treating matter as truncated NFW halos. For our first tests we do not apply the void correction of
 Section \label{subsec:voids}, instead we shift $\sumkappah$ for all our sightlines by a fixed negative offset such that the ensemble mean
 is zero, i.e.
 \be \label{eq:totalkappax}
 \kapparec = \left(\sum_{\rm halos} \kappa_{\rm halo}\right)-\kappav,
 \ee
-where $\kappav$ is a positive constant. This us allows us to test the halo reconstruction directly, without the uncertainty of the void correction
-obscuring any inadequacies of our halo based prescription.
+where $\kappav$ is a positive constant. This us allows us to test the correlation of $\sumkappah$ with $\kapparay$, without
+ the uncertainty of the void correction obscuring any inadequacies of our halo based prescription.
 
 We choose 100000 lines of sight from random positions in the catalogue, and for each line of sight we reconstruct the
 convergences from every halo within 5 arcminutes and compare the reconstructed
-$\kapparec$ with those from the ray tracing results. The standard deviation on $\kapparay$-$\kapparec$ 
+$\kapparec$ with those from the ray tracing results. The standard deviation on $\kapparay$-$\kapparec$ is
 shown in Figure \ref{fig:ScattervsTruncation} as a function of the radius at which the halo is truncated.
  It is clear from Figure \ref{fig:ScattervsTruncation} 
 that as long as the truncation is greater than a few virial radii, the choice of truncation
@@ -639,11 +639,11 @@ likely be rejected by their reconstructed shear not matching the shear of the le
 \label{fig:ScattervsTruncation}
 \end{figure}
 
-For $\kapparec$ to provide useful constraints on $\kapparay$, it is important that $\kapparay$ and $\kapparec$ are as similar as possible. Figure \ref{fig:bias} shows that indeed $\kapparec$ is a good estimator, regardless of the individual value of $\kapparec$, but that the scatter increases with $\kapparec$. The curve in $\kapparec-\kapparay$ at high $\kapparec$ shows that the reconstruction does not perfectly reproduce the physics of the most overdense lines of sight. Since most lines of sight have $\kappax<0.05$, $\kapparec$ is an acceptable estimator of $\kapparay$, although there is some scope for improvement at the highest $\kappax$.
+For $\sumkappah$ to provide useful constraints on $\kapparay$, it is important that $\kapparay$ and $\sumkappah$ are as similar as possible. Figure \ref{fig:bias} shows that indeed $\sumkappah$ is a good estimator, regardless of the individual value of $\sumkappah$, although the scatter increases with $\sumkappah$.
 
 \begin{figure}
-\includegraphics[width=\columnwidth]{isitbiased.eps}
-\caption[Biased?]{$\kapparec$ minus $\kapparay$ as a function of $\kapparec$, for 10000 reconstructed lines of sight. The points are put into bins of width 0.01 in $\kapparec$, except the last bin containing all reconstructions with $\kapparec>0.14$. The errorbars show the population standard deviation for each bin. Since all of the errorbars are consistant with zero, there is no evidence for $\kapparec$ being a biased estimator of $\kapparay$}
+\includegraphics[width=\columnwidth]{perfectc.eps}
+\caption[Biased?]{$\$ minus $\kapparay$ as a function of $\kapparec$, for 10000 reconstructed lines of sight. The points are put into bins of width 0.01 in $\kapparec$, except the last bin containing all reconstructions with $\kapparec>0.14$. The errorbars show the population standard deviation for each bin. Since all of the errorbars are consistant with zero, there is no evidence for $\kapparec$ being a biased estimator of $\kapparay$}
 \label{fig:isitbiased}
 \end{figure}
 
