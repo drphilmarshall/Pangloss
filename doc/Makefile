@@ -2,31 +2,34 @@
 all: paper
 
 clean:
-	-rm -f *.aux *.log *.dvi *.blg *.out *.bbl *.ps *pdf
+	-rm -f *.aux *.log *.dvi *.blg *.out *.bbl paper-lcr.ps paper-lcr.pdf
 
 # ----------------------------------------------------------------------------
 
 paper: paper-lcr.pdf
 
-paper-lcr.pdf: paper-lcr.tex macros.tex
-	pdflatex paper-lcr.tex
-	pdflatex paper-lcr.tex
-	bibtex paper-lcr
-	pdflatex paper-lcr.tex
-	pdflatex paper-lcr.tex
+# paper-lcr.pdf: paper-lcr.tex macros.tex
+# 	pdflatex paper-lcr.tex
+# 	pdflatex paper-lcr.tex
+# 	bibtex paper-lcr
+# 	pdflatex paper-lcr.tex
+# 	pdflatex paper-lcr.tex
 
 # paper-lcr.bbl: paper-lcr.tex references.bib
 # 	bubble -f paper-lcr.tex references.bib >& paper-lcr.bbl.log
 # 	cat paper-lcr.bbl.log
-# 
-# paper-lcr.dvi: paper-lcr.bbl paper-lcr.tex macros.tex
+
+paper-lcr.dvi: paper-lcr.tex macros.tex
+	latex paper-lcr.tex
+	latex paper-lcr.tex
+# 	bibtex paper-lcr
 # 	latex paper-lcr.tex
 # 	latex paper-lcr.tex
-# 
-# paper-lcr.pdf: paper-lcr.dvi
-# # 	\dvipdf -sPAPERSIZE=a4 paper-lcr.dvi
-# 	\dvipdf -sPAPERSIZE=letter paper-lcr.dvi
-# 
+
+paper-lcr.pdf: paper-lcr.dvi
+# 	\dvipdf -sPAPERSIZE=a4 paper-lcr.dvi
+	\dvipdf -sPAPERSIZE=letter paper-lcr.dvi
+
 # paper-lcr.ps: paper-lcr.dvi
 # # 	\dvips -t a4 -o paper-lcr.ps paper-lcr.dvi
 # 	\dvips -t letter -o paper-lcr.ps paper-lcr.dvi
