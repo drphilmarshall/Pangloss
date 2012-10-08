@@ -403,15 +403,15 @@ which can be inferred from measurements of $\Dt$.}
 %NFW approx based on virial masses. Stellar mass. Halo map corresponding to
 %ray-traced kappa map, for illustration. Small-scale structure 
 
-For real lines of sight, 
-\phil{we would like to estimate the external convergence as best we can given all
+For real lines of sight, we would like to estimate the external convergence as best we can given all
 data available. Typically this data is in the form of a photometric galaxy
-catalog, containing positions, brightnesses, colours, and other type
-information for each galaxy in the field of the lens, down to some magnitude
-limit. Since we do not observe halo mass directy, we need some way of estimating
-the mass of each galaxy in the catalog, so that we can compute its
-contribution to $\kappax$. This mass assignment recipe will be uncertain, but
-can be calibrated to cosmological simulations.} 
+catalog, containing positions, brightnesses, colours, and possibly spectra for each galaxy in the
+field of the lens, down to some magnitude
+limit. Since we can not observe the surface mass density of each halo
+directy, we need some way of estimating
+the mass of each halo in the catalog, so that we can compute its
+contribution to the total $\kappax$ along the line of sight. This mass assignment recipe will be uncertain, but
+can be calibrated with cosmological simulations.
 
 % PJM: What is this defeatism?!
 % it is nearly impossible to know the true $\kappax$ for a
@@ -424,11 +424,12 @@ can be calibrated to cosmological simulations.}
 % \flag{no?} such systems are currently known.
 
 Cosmological dark matter simulations can be used to generate mock lines of
-sight...
+sight and can be raytraced through to give each mock sightline a $\kappax$ value...
 \todo{Stefan}{Write section on how the ray tracing was done and how halos are extracted from
  the MS n-body particles}
 
-\phil{Transforming the photometometric galaxy catalogue into a}  catalogue of
+
+Transforming the photometometric galaxy catalogue into a  catalogue of
 halo masses, positions, and redshifts, will enable us to attempt a
 reconstruction of the convergence induced by every halo near a line of sight.
 This is the subject of the first subsection below. We also need to account for
