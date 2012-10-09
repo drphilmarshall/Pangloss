@@ -944,6 +944,8 @@ suggestions.
 
 \appendix
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Truncated NFW halos}
 \label{appendix:halos}
 
@@ -976,8 +978,45 @@ where $\mathcal{F}(x)$ and $\mathcal{L}(x,\tau)$ are defined as
 
 
 
-\section{Deriving the $\Mstar=\Mhalo$ relation}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Inferring $\Mhalo$ given a noisy measurement of $\Mstarobs$}
 \label{appendix:MSMH}
+
+Given a noisy estimate of the stellar mass of a galaxy, $\Mstarobs$, how can
+we infer the galaxy's halo mass? We seek the posterior PDF
+$\Pr(\Mhalo|\Mstarobs)$, which can be expanded as follows:
+
+\begin{eqnarray}
+&& \Pr(\Mhalo|\Mstarobs) = \notag\\
+&& \int d\Mstar \Pr(\Mhalo|\Mstar) \Pr(\Mstar|\Mstarobs), \notag\\
+&\propto& \int d\Mstar \Pr(\Mstarobs|\Mstar) \Pr(\Mstar|\Mhalo) \Pr(\Mhalo),
+\label{eq:mhalo-mstar}
+\end{eqnarray}
+where we have used Bayes Theorem twice to replace
+$\Pr(\Mstar|\Mhalo) \Pr(\Mhalo)$ with $\Pr(\Mhalo|\Mstar) \Pr(\Mstar)$, and 
+to invert $\Pr(\Mstar|\Mstarobs)$ into the sampling
+distribution $\Pr(\Mstar|\Mstarobs)$, which we recognise as the likelihood
+function for the observed stellar mass. Note that the ``true'' $\Mstar$ of the
+galaxy is marginalised out: we are only interested in reconstructing the halo
+mass. The last two terms in
+\eqref{eq:mhalo-mstar} are the $\Mstar-\Mhalo$ relation from
+\citet{BehrooziEtal2010}, and the halo mass function $\Pr(\Mhalo)$. We can
+tabulate the product of these two from our Millenium Simulation catalog,
+constructing a two-dimensional histogram of halo masses and their associated
+true stellar masses (drawn from the Behroozi relation). 
+
+For each galaxy, we compute the likelihood function for its $\Mstarobs$ as a
+function of the unknown $\Mstar$, and multiply it by our tabulated joint PDF.
+This heavily downweights halos with $\Mstar$ values outside the observed
+range. We then do the marginalisation integral by Monte Carlo, drawing
+(two-dimensional) sample parameter vectors
+from the downweighted histogram, discarding the $\Mstar$ values, and
+constructing a one-dimensional histogram that is an estimate of
+$\Pr(\Mhalo|\Mstarobs)$.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\section{Smooth component models}
 %\label{appendix:smooth}
