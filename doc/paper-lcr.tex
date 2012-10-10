@@ -1017,6 +1017,9 @@ from the downweighted histogram, discarding the $\Mstar$ values, and
 constructing a one-dimensional histogram that is an estimate of
 $\Pr(\Mhalo|\Mstarobs)$.
 
+\todo{Matt}{Edit the above text to add a note on how we do the sampling in
+practice, via the CDF.}
+
 If the redshift of the galaxy is uncertain, we need to take this uncertainty
 into account; for example, for each sample drawn from the photometric redshift
 posterior PDF $\Pr(z|{\rm colors})$, we can draw a sample $\Mhalo$ using the
@@ -1025,9 +1028,86 @@ above procedure.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%\section{Smooth component models}
-%\label{appendix:smooth}
+\section{Accounting for uncatalogued low mass halos, and voids}
+\label{appendix:smooth}
 
+Our halo model allows us to infer a halo mass $\Mhalo$ for each galaxy in a
+photometric catalog; under the weak lensing approximation described in
+\Sref{sec:theory} we can compute the contribution of each of these halos to
+the overall convergence and shear amplitude, assuming a homogeneous
+Friedman-Robertson-Walker metric and the concordance $\Lambda$CDM cosmological
+parameters for the angular diameter distances to calculate the critical
+density for each lens plane. Clearly this approach will tend to over-estimate
+the convergence, since we are placing massive halos into a volume that has
+already been assumed to be full of homogeneously distributed matter with the 
+mean cosmological density. In practice, the space between massive halos will
+contain a) low mass halos that are not bright enough to be detected and b)
+empty space where the density is below that of the mean. A rigorous treatment
+of this complex situation is beyond the scope of this paper, but is being
+investigated (Blandford et al, in preparation). In this appendix we describe
+our empirical approach to accounting for the missing mass and voids. 
+
+Let the summed convergence due to halos in our galaxy catalog be $\kappah$.
+Given some assumptions about halo density profile and shape, this parameter
+can be inferred from a set of uncertain halo mass estimates (which have in
+turn been inferred from noisy measurements of galaxy redshift and stellar mass
+as described in \Aref{appendix:MSMH}). We assume each halo to be a
+spherically-symmetric NFW profile, and neglect the contribution of the stellar
+mass to the convergence. The halo mass inference for the $k^{\rm th}$ galaxy 
+is stored as a list of sample values of $\Mhalok$ drawn from the posterior PDF
+$\Pr(\Mhalok|\Mstarobsk,z_k)$; computing the contribution to the convergence
+due to this halo at the target line of sight for each sample gives, in turn, 
+a set of
+samples drawn from the PDF $\Pr(\kappahk|\Mstarobsk,z_k)$. We then generate
+samples from $\Pr(\kappah|\{\Mstarobsk,z_k\})$ by drawing a sample $\kappahk$
+for each halo, summing over halos to get $\kappah$, discarding those
+samples and moving down the lists.
+
+The PDF $\Pr(\kappah|\{\Mstarobsk,z_k\})$ will, in general, be broad (due to
+the uncertainties involved in halo mass estimation). It will also be shifted
+towards high values of convergence, due to the FRW approximation described
+above. What we really want is an inference of $\Pr(\kappa|\{\Mstarobsk,z_k\})$
+instead. We can obtain this by considering the expansion:
+\begin{equation}
+\Pr(\kappa|\{\Mstarobsk,z_k\}) = \int d\kappah 
+   \Pr(\kappa|\kappah) \Pr(\kappah|\{\Mstarobsk,z_k\})
+\label{eq:kappaconv}   
+\end{equation}
+The first term in the integrand relates the summed  convergence due to model
+halos, $\kappah$, to the true summed convergence, $\kappa$.  In the Millenium
+Simulation catalogs, we can compute a single value of $\kappah$ for each
+selected line of sight from the true halo mass and redshift (and our same
+assumptions of halo profile and shape), and tabulate the two-dimensional PDF
+$\Pr(\kappa|\kappah)$ as a sequence of one-dimensional PDFs for $\kappa$ in a
+bin at fixed $\kappah$. Note that this PDF captures the ``intrinsic scatter''
+of $\kappah$ due to our assumptions about the clumpiness of mass in the
+Universe; the integral is the convolution of this distribution with that
+arising from our observational uncertainties.
+
+For any given observed catalog then, we infer
+$\Pr(\kappah|\{\Mstarobsk,z_k\})$ as described above, and then
+multiply it by $\Pr(\kappa|\kappah)$; we
+again do the marginalisation over $\kappah$ by Monte Carlo, drawing samples
+from the two-dimensional grid and keeping only the $\kappa$ values, to form
+our final result, $\Pr(\kappa|\{\Mstarobsk,z_k\})$. 
+This PDF will describe, by construction, an accurate (i.e., unbiased)
+measurement of $\kappa$ in the case where the Millenium Simulation halo
+catalog and Behroozi et al $\Mstar-\Mhalo$ relation are themselves accurate
+descriptions of galaxies and their distribution. In \Sref{sec:tests} we
+investigate the amplitude of the systematic errors incurred if these
+assumptions are not valid.
+
+\todo{Matt}{Add text describing whatever sampling shortcut you derive! :-)}
+
+% Finally, we note that \Eref{eq:kappaconv} and the method for evaluating the
+% integral in it can be generalized to yield 
+% $\Pr(\kappa,|\gamma||\{\Mstarobsk,z_k\})$, where $|\gamma|$ is the amplitude
+% of the complex shear. The amplitude of the shear due to halos, $|\gammah|$ is
+% needed in this calculation, and marginalised over -- $\gammah$ is computed by
+% simple summation of its components, as in \Sref{sec:theory}. In
+% \Sref{sec:includinggamma} we explore the impact that knowing $\gamma$ (from,
+% for example, a strong lens model)  has on the inference of $kappa$, and how
+% severe the systematic errors from getting this wrong might be.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

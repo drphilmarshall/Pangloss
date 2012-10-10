@@ -30,6 +30,7 @@
 \def\Tref#1{Table~\ref{#1}\xspace}
 \def\Eref#1{Equation~\ref{#1}\xspace}
 \def\Eqref#1{Eq.~(\ref{#1})\xspace}
+\def\Aref#1{Appendix~\ref{#1}\xspace}
 
 % UNITS
 \newcommand{\kms}{\ifmmode  \,\rm km\,s^{-1} \else $\,\rm km\,s^{-1}  $ \fi }
@@ -62,9 +63,13 @@
 \def\kapparay{\kappa_{\rm raytrace}}
 \def\kapparec{\kappa_{\rm reconstruction}}
 \def\kappatrue{\kappa_{\rm true}}
-\def\kappat{\kappa_{\rm true}}
-\def\kappah{\kappa_{\rm halo}}
-\def\kappahalos{\kappa_{\rm halo}}
+\def\kappahalo{\kappa_{\rm halo}}
+
+\def\kappah{\kappa_{\rm h}}
+\def\kappahk{\kappa_{{\rm h},k}}
+\def\gammah{\gamma_{\rm h}}
+
+
 \def\sumkappah{\sum_{\rm halos} \kappa_{\rm halo}}
 \def\sigt{\tilde{\sigma}}
 
@@ -73,8 +78,10 @@
 \def\Mstar{M^{*}}
 \def\logMstar{\log_{10}\left(\Mstar/\Msun\right)}
 \def\Mstarobs{\Mstar_{\rm obs}}
-\def\Mhalo{M_{\rm 200}}
+\def\Mstarobsk{\Mstar_{{\rm obs},k}}
+\def\Mhalo{M_{200}}
 \def\logMhalo{\log_{10}\left(\Mhalo/\Msun\right)}
+\def\Mhalok{M_{200,k}}
 \def\Rhalo{R_{200}}
 \def\chalo{c_{200}}
 
