@@ -82,16 +82,63 @@ abstract
 
 \section{Introduction}
 \todo{Phil,(+ Tom)}{Update introduction to reflect the scope of this paper}
+
+Every distant object we observe has had its shape distorted, and size
+and total brightness magnified (or demagnified) by a compound lens constructed
+from all the mass distributed between us and it. As \citet{valewhite2003} and \citet{hilbert}
+showed, there are no empty lightcones in our universe. This fact makes gravitational lensing a potentially important source of systematic error for any estimate of luminosity or distance.
+
+\citet{suyu} found that in time delay lens cosmography the
+lensing effect of mass structures along the (unusually over-dense) line of
+sight to the quadruply-imaged radio source B1608$+$656, the so-called ``external
+convergence'' $\kappax$, was the dominant source of uncertainty in the inferred
+cosmological parameters. The problem is that one simply doesn't know
+how magnified and distorted the source has been because the unlensed source is unobservable. The external shear can potentially be recovered in the mass-modelling of the lens, but the convergence is undetectable from the image positions, shapes and relative fluxes; this is the famous {\emph{  mass sheet-degeneracy}} \citep[see e.g.][for details]{falco}.
+
+\notes{Previous work, what we are doing, why it will help}
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Theoretical Background}
 \label{sec:theory}
-\todo{Phil,(+ Tom)}{Modify the current theory section, emphasiszing how $\kappax$ effects inferred parameters. Justify how we combine individual $\kappa$s to give a total $kappah$ - note that this is the weak lensing limit.}
+\todo{Phil,(+ Tom)}{Modify the current theory section}
+
+\notes{what is $\kappa$ from a single object, how does it combine given lots of objects along the line of sight, why kappa can't be extracted - mass sheet degeneracy, how $\kappa$ effects inferred parameters}
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Estimating external convergence: The halo model approximation}
 \label{sec:model}
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\notes{given perfect knowledge of the density near a line of sight it is possible to raytrace, but this can't be done for a real line of sight, since the mass distribution isn't known. Galaxies are known due to their light. Need to infer z and $\Mstar$ and turn these into $\Mh$ which can be used to infer $\kappah$ for each halo. Will never know voids, filaments or other dark structures, so a calibration is needed to convert $\kappah$ into $\kappa$}
+
+
+\subsection{Halos}
+\label{subsec:halos}
+\todo{Tom,Phil}{Check}
+
+\notes{halo profile; justfication, choice of truncation. Infer concentration from halo mass using a relation.}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Correcting for voids, filaments and dark structures}
+\label{subsec:voids}
+
+\notes{Outline EXPLICITLY the proceedure we use to correct for voids etc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Using the Millenium Simulation to test the halo model approximation with known halo mass and redshift}
+\label{sec:knownMh+z} 
+
+In order to justify the reconstruction proceedure outlined in Section \ref{sec:model}, we would like to apply it to lines of sight with known $\kappa$.\notes{can't use real los, have to use \MS} 
+
 
 \subsection{Ray-tracing through simulated Lines of Sight}
 \label{subsec:raytracing}
@@ -100,33 +147,21 @@ abstract
 \subsection{Generating mock lightcones from simulations}
 \todo{Stefan}{Write section on how halos are extracted from the MS n-body particles}
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\notes{view of a lightcone figure should go at the end of this section}
+\subsection{How does $\kappah$ relate to $\kappa$?}
+Given the halo mass catalogue from the Millenium Simulation, 
+and convergence maps produced by ray-tracing through the MS's n-body particles, 
+it is possible to test the validity of the prescription outlined
+ in Section \ref{sec:model}. We test the model by comparing $\kappah$ against
+ the ray-traced $\kappa$. If the reconstruction process is to be
+ succesfull the two quantities should be closely related, although we expect $\kappah$ to be offset from $\kappa$ since the former does not include the divergence due to voids.
 
-\subsection{Halos}
-\label{subsec:halos}
-\todo{Tom,Phil}{Check}
 
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+\subsubsection{How does $\gammah$ relate to $\gamma$?}
 
-\subsection{Calibration: Recovering the global $\pr(\kappax)$ using a void correction}
-\label{subsec:voids}
+\subsection{How succesful is the calibration at converting $\kappah$ into $\kappa$?}
 
-\todo{tom}{Outline _EXPLICITLY_ the proceedure we use to correct for voids etc}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Testing the halo model approximation with known halo mass and redshift}
-\label{sec:knownMh+z} 
-
-\subsection{How does $\kappah$ relate to $\kappax$?}
-Done?
-\subsubsection{How does $\gammah$ relate to $\gammax$?}
-\todo{tom}{do}
-\subsection{Does converting from $\kappah$ to $\kappax$ work?}
-\todo{tom}{do}
-
-\subsection{Where does $\kappah$ come from?}
-\todo{tom}{do}
+\subsection{Which halos dominate the $\kappah$ distribution?}
 \subsubsection{Magnitude}
 \subsubsection{Distance}
 \subsubsection{Redshift}
@@ -137,6 +172,14 @@ Done?
 \section{Applying the Halo Model approximation to mock catalogs}
 \label{sec:obsMstar+z}
 \todo{tom}{redo - using new Mhalo-Mstar code}
+
+\subsubsection{Reconstructing $\kappa$ given a spectroscopic redshift for every object}
+
+\subsubsection{Reconstructing $\kappa$ from photometry alone}
+
+\subsubsection{Reconstructing $\kappa$ with a }
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -147,12 +190,16 @@ Done?
 \subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
 \subsubsection{Selecting only high shear lines of sight}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Improving precision by including additional information}
+\notes{placeholder for shear}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Discussion}
 \label{sec:discuss}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusions}
 \label{sec:conclude}
