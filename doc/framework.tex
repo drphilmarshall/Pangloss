@@ -1,0 +1,207 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Pangloss: Testing the reconstruction paper
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[useAMS,usenatbib]{mn2e}
+%% letterpaper
+%% a4paper
+
+% \voffset=-0.8in
+
+% Packages:
+\input psfig.sty
+\usepackage{xspace}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+% Macros:
+\input{macros.tex}
+\input{addresses.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\title[Line of Sight Mass Reconstruction]
+{Inferring Lensing Mass in the Universe \\
+from Photometric Catalog Data}
+    
+\author[Collett \etal]{%
+  Thomas~E.~Collett$^{1}$\thanks{\collettemail},
+  Philip~J.~Marshall$^{2}$,
+  Matthew~W.~Auger$^{1}$,
+  Stefan~Hilbert$^{3}$,
+\newauthor{%
+  Sherry~H.~Suyu$^{4}$,
+  Zachary~Greene$^{4}$,
+  Tommaso~Treu$^{4}$\thanks{\packard},
+  Christopher~D.~Fassnacht$^{5}$,}
+\newauthor{%
+  L\`eon~V.~E.~Koopmans$^{6}$,
+  Roger~D.~Blandford$^{3}$} 
+  \medskip\\
+  $^1$\ioa\\
+  $^2$\oxford\\
+  $^3$\kipac\\
+  $^4$\ucsb\\
+  $^5$\davis\\
+  $^6$\kapteyn
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+             
+\date{to be submitted to MNRAS}
+\pagerange{\pageref{firstpage}--\pageref{lastpage}}\pubyear{2012}
+
+\maketitle           
+
+\label{firstpage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{abstract} 
+abstract
+\end{abstract}
+
+% Full list of options at http://www.journals.uchicago.edu/ApJ/instruct.key.html
+
+\begin{keywords}
+  gravitational lensing   --
+  methods: statistical    --
+  galaxies: halos         --
+  gaaxies: mass function  --
+  cosmology: observations
+\end{keywords}
+
+\setcounter{footnote}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}
+\todo{Phil,(+ Tom)}{Update introduction to reflect the scope of this paper}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Theoretical Background}
+\label{sec:theory}
+\todo{Phil,(+ Tom)}{Modify the current theory section, emphasiszing how $\kappax$ effects inferred parameters. Justify how we combine individual $\kappa$s to give a total $kappah$ - note that this is the weak lensing limit.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Estimating external convergence: The halo model approximation}
+\label{sec:model}
+
+\subsection{Ray-tracing through simulated Lines of Sight}
+\label{subsec:raytracing}
+\todo{Stefan}{Write section on how the ray tracing was done}
+
+\subsection{Generating mock lightcones from simulations}
+\todo{Stefan}{Write section on how halos are extracted from the MS n-body particles}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Halos}
+\label{subsec:halos}
+\todo{Tom,Phil}{Check}
+
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
+
+\subsection{Calibration: Recovering the global $\pr(\kappax)$ using a void correction}
+\label{subsec:voids}
+
+\todo{tom}{Outline _EXPLICITLY_ the proceedure we use to correct for voids etc}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Testing the halo model approximation with known halo mass and redshift}
+\label{sec:knownMh+z} 
+
+\subsection{How does $\kappah$ relate to $\kappax$?}
+Done?
+\subsubsection{How does $\gammah$ relate to $\gammax$?}
+\todo{tom}{do}
+\subsection{Does converting from $\kappah$ to $\kappax$ work?}
+\todo{tom}{do}
+
+\subsection{Where does $\kappah$ come from?}
+\todo{tom}{do}
+\subsubsection{Magnitude}
+\subsubsection{Distance}
+\subsubsection{Redshift}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Applying the Halo Model approximation to mock catalogs}
+\label{sec:obsMstar+z}
+\todo{tom}{redo - using new Mhalo-Mstar code}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Testing for Systematic errors}
+\todo{tom}{do}
+\subsection{Using the wrong M$_{\rm halo}$-M$_{*}$ relation}
+\subsection{Selecting bias from a subset of lines of sight?}
+\subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
+\subsubsection{Selecting only high shear lines of sight}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Discussion}
+\label{sec:discuss}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Conclusions}
+\label{sec:conclude}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  ACKNOWLEDGMENTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section*{Acknowledgments}
+ 
+TC thanks Vasily Belokurov for guidance and discussions.
+We thank Risa Wechsler and Peter Behroozi for useful discussions and 
+suggestions.
+\input{acknowledgments.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  APPENDICES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\appendix
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Inferring $\Mhalo$ given a noisy measurement of $\Mstarobs$}
+\label{appendix:MSMH}
+
+\todo{Phil}{Check that what's written is correct}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  REFERENCES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% MNRAS does not use bibtex, input .bbl file instead. 
+% Generate this in the makefile using bubble script in scriptutils:
+
+% bubble -f paper-lcr.tex references.bib 
+% \input{paper-lcr.bbl}
+
+% \bibliographystyle{apj}
+% \bibliography{references}
+
+\input{references.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\label{lastpage}
+\bsp
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

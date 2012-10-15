@@ -417,7 +417,7 @@ which can be inferred from measurements of $\Dt$.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Halo Model and Mass distribution}
+\section{Estimating external convergence: The halo model approximation}
 \label{sec:model}
 
 %Weak lensing by NFW halos. Accounting for mass along the line of sight.
@@ -437,33 +437,35 @@ the mass of each halo in the catalog, so that we can compute its
 contribution to the total $\kappax$ along the line of sight. This mass assignment recipe will be uncertain, but
 can be calibrated with cosmological simulations.
 
-% PJM: What is this defeatism?!
-% it is nearly impossible to know the true $\kappax$ for a
-% line of sight, and without a knowledge of $\kappax^{\mathrm{true}}$ it is hard to
-% quantify if there is a bias induced by using different $\kappax$ estimators.
-%
 % A source with known unlensed brightness e.g. a strongly lensed type Ia
 % Supernova \flag{cite some SNe papers} or a source of known unlensed size \flag{ideas?}
 % would break the mass-sheet degeneracy and provide a value for $\kappax$, but
 % \flag{no?} such systems are currently known.
 
+\subsection{Ray-tracing through simulated Lines of Sight}
+\label{subsec:raytracing}
 Cosmological dark matter simulations can be used to generate mock lines of
 sight and can be raytraced through to give each mock sightline a $\kappax$ value...
-\todo{Stefan}{Write section on how the ray tracing was done and how halos are extracted from
- the MS n-body particles}
+\todo{Stefan}{Write section on how the ray tracing was done}
+
+\subsection{Generating mock lightcones from simulations}
+
+\todo{Stefan}{Write section on how halos are extracted from the MS n-body particles}
+
 
 
 Transforming the photometometric galaxy catalogue into a  catalogue of
 halo masses, positions, and redshifts, will enable us to attempt a
 reconstruction of the convergence induced by every halo near a line of sight.
-This is the subject of the first subsection below. We also need to account for
+This is the subject of \ref{subsec:halos}. We also need to account for
 the mass in the Universe that is not associated with the galaxies we can see
--- this is the subject of the second subsection below. 
+-- this is the subject of \ref{subsec:voids}. 
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 \subsection{Halos}
+\label{subsec:halos}
 
 Cosmological dark matter simulations have shown that dark matter
 halos are well approximated by NFW profiles \citep{NFW}, with a density
@@ -611,8 +613,22 @@ is given by
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Tests with known halo mass and redshift}
+\section{Testing the halo model approximation with known halo mass and redshift}
 \label{sec:knownMh+z} 
+
+\subsection{How does $\kappah$ relate to $\kappax$?}
+
+
+\subsection{Does converting from $\kappah$ to $\kappax$ work?}
+
+
+
+\subsection{Where does $\kappah$ come from?}
+\subsubsection{Magnitude}
+\subsubsection{Distance}
+\subsubsection{Redshift}
+
+
 
 %Raytracing through n-body particles as 'truth'. Motivation for assuming perfect
 %knowledge of halo mass and z = testing model of previous section. Deterministic
@@ -689,7 +705,7 @@ The final test that we apply to the perfect knowledge reconstruction is to apply
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Tests on mock catalogs}
+\section{Applying the Halo Model approximation to mock catalogs}
 \label{sec:obsMstar+z}
 
 Real attempts to reconstruct the convergence along a line of sight will not have direct access to the masses of dark matter halos, 
@@ -726,7 +742,7 @@ For each  source of error, we reconstruct 40000 calibration lines of sight and 1
 Inferring the stellar mass of a galaxy from its magnitude and colours requires an estimate of how far away the galaxy is; without a spectroscopic redshift the the infered stellar mass is less precise. In principle the photometric redshift is correlated with the infered stellar mass, however we do not model this effect since the convergence from the outskirts of an individual halo is only weakly dependant on redshift at fixed mass: the redshift error is small effect on the recovered $\pr(\kappa)$ when compared to the effect of uncertain stellar masses.  With only photometric redshifts the uncertainty on $\sum\kapparec^{\rm halos}$ is much larger than the spectrocopic case, but this does not propogate into a much larger bias after applying the void correction; with a purely photometric reconstruction of the 10000 mock lightcones the results have a mean bias of $1.1\times 10^{-4}$ and a mean width of 0.0158. On average a purely photometric reconstruction of the field gives an unbiased $\pr(\kappax)$ that is 1.5 times tighter than assuming the global $\pr^{\rm global}(\kappax)$. 
 
 
-\subsection{Reconstructions of Smaller and Shallower Fields}
+%\subsection{Reconstructions of Smaller and Shallower Fields}
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/widths2.eps}
@@ -737,22 +753,18 @@ Inferring the stellar mass of a galaxy from its magnitude and colours requires a
 
 Reconstructions of real lines of sight may not have access to the deep, large calibration fields that we have used upto this point. We can perform the same reconstruction but for a more modest mock survey. Given the results of Section \ref{sec:knownMh+z} we predicted that a reconstruction of the field out to 2 arcminutes and a magnitude limit of $i$=24 would provide similar constraints to a reconstruction going out to 5 arcminutes and going down to $i$=26. We find the mean reconstruction width to be 0.0163 for a photometric reconstruction of all the halos within 2 arcminutes that have $i<24$, this is only marginally worse than 0.0158 which was the typical width after the deeper and wider reconstruction of the previous section. The reconstruction widths for our 10000 mock lens lines of sight are shown in Figure \ref{fig:widths2}. If only photometry for halos with $i<24$ and within 1 arcminute of the line of sight is availble then the typical width of the reconstructed $\pr(\kappax)$ is 0.173. Whilst a complete spectroscopic survey of a large field would be unlikely, a hybrid strategy of obtaining spectra for a subset of objects may be feasible. Photometric redshifts are sufficient to asertain the halos which are likely to contribute most of the convergence on any given line of sight, and on average there are only $\sim 6 \pm 6$ halos per line of sight that individually contribute more than 0.002 to $\sumkappah$. We investigate a hybrid strategy of obtaining spectroscopic redshifts for all of the $i<24$ halos which contribute an individual $\kappa$ of at least 0.002 combined with a photometric redshift for all other $i<24$ halos within 2 arcminutes. For the hybrid strategy the typical width of the reconstructed $\pr(\kappax)$ is 0.0151. The observational cost of obtaining spectroscopic redshifts for several 24th magnitude galaxies may make the hybrid strategy unlikley, but obtaining photometry of a 4$\times$4 arcminute patch of sky down to $i=24$ is fast with modern telescopes. The mean reconstruction width for a photometric reconstruction of all the halos within 2 arcminutes that have $i<24$ represents an improvement of 1.5 over using the global $\pr(\kappax)$ and should be achievable at minimal observational cost.
 
-%\subsection{Reconstructing Biased Lines of Sight}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Testing for Systematic errors}
+\subsection{Using the wrong M$_{\rm halo}$-M$_{*}$ relation}
+\subsection{Selecting bias from a subset of lines of sight?}
+\subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
+\subsubsection{Selecting only high shear lines of sight}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \comments{
-\section{Time Delay Distances}
-\label{sec:Dt} 
-
-Folding the kappa uncertainties into time delay distance uncertainties. Toy
-model: same zl and zs, allows simple product of pdfs to obtain estimate of P(D).
-
-Make mock sample of lenses, all wit B1608 zd and zs, but with different kappas.
-Draw kappas from Stefan's *lens* distribution. Can we correct for the selection
-effect?
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 \subsection{Comparison with Other Treatments of $\kappax$}
 \label{sec:Dt:selection} 
@@ -771,23 +783,6 @@ live on over-dense lines of sight. Stefan's plot in Suyu et al shows effect of
 selection - what is the resulting bias? Few percent? This is the target to beat,
 need to find it out.
 
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-
-\subsection{The Impact of Selection Effects}
-\label{sec:Dt:selection} 
-
-\phil{How does distance accuracy vary with:}
-\begin{itemize}
-\item Depth of catalog? mlim = 22, 24, 26?
-\item Overdensity cuts? Remove underdense fields, overdense fields (from
-reconstructed kappa)
-\item Shear-sensitive selection? What if we only selected quads?
-\end{itemize}
-
-
-% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-
 \subsection{Improving the Accuracy with More Information}
 \label{sec:Dt:selection} 
 
@@ -799,16 +794,6 @@ high kappa contribution (based on photometry)?
 \item Including shear information from lens model? Assume accurate but
 uncertain extertanl shear.
 \end{itemize}
-
-
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{figure}
-% \centering\includegraphics[width=0.99\linewidth]{figs/something.png}
-% \caption{An example figure.}
-% \label{fig:sizemass}
-% \end{figure}
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 }
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
