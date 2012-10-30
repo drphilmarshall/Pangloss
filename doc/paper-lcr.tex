@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-% Pangloss: Testing the reconstruction paper
+% Pangloss: Testing the reconstruction method
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -21,10 +21,10 @@
 \input{macros.tex}
 \input{addresses.tex}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \title[Line of Sight Mass Reconstruction]
-{Inferring Lensing Mass in the Universe \\
+{Reconstructing the Lensing Mass in the Universe \\
 from Photometric Catalog Data}
     
 \author[Collett \etal]{%
@@ -49,7 +49,7 @@ from Photometric Catalog Data}
   $^6$\kapteyn
 }
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
              
@@ -60,9 +60,12 @@ from Photometric Catalog Data}
 
 \label{firstpage}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract} 
+
+\todo{PJM}{Make abstract match conclusions.}
+
 Strong gravitational lenses can provide high precision cosmological distance
 measurements; one of the most important sources of systematic error in these
 estimates is the additional mass along the line of sight to the source. Weak
@@ -82,8 +85,9 @@ typically 1.8 times more precise than the global distribution of $\kappa$ given 
 of the halo mass and redshift. After incorporating uncertainties on redshift and halo and stellar masses
 we typically find that the reconstruction yields an improvement factor of 1.4. For each line of sight the
  $\Pr(\kappa)$ can be formed before the investment of light-curve monitoring: by following up only the 
-most costrained lines of sight a factor of 2 improvement over the global $\pr(\kappax)$ should be 
+most constrained lines of sight a factor of 2 improvement over the global $\pr(\kappax)$ should be 
 achievable.
+
 \end{abstract}
 
 % Full list of options at http://www.journals.uchicago.edu/ApJ/instruct.key.html
@@ -102,50 +106,62 @@ achievable.
 
 \section{Introduction}
 
-Every distant object we observe has had its shape distorted, and size
-and total brightness magnified (or demagnified) by a compound lens constructed
-from all the mass distributed between us and it. As \citet{Vale+White2003} and \citet{HilbertEtal2007}
-showed, there are no empty lightcones in our universe. This fact makes gravitational lensing a potentially important source of systematic error for any estimate of luminosity or distance, an issue
-raised for \eg type Ia supernovae by \citet[][]{Holz+Wald1998,Linder+Holz2004}, for
-gamma ray bursts by \citet[][]{Oguri+Takahashi2006,Wang+Dai2011}, 
-and for high redshift galaxies by \citet{BradacEtal2009}, among others. 
+Every distant object we observe has had its apparent shape distorted,
+and size and total brightness magnified (or demagnified) by a compound
+weak gravitational lens constructed from all the mass distributed
+between us and it. As \citet{Vale+White2003} and \citet{HilbertEtal2007}
+showed, there are no empty lines of sight through our universe. This
+fact makes gravitational lensing a potentially important source of
+systematic error for any estimate of luminosity (or distance), an issue
+raised for \eg type Ia supernovae by
+\citet[][]{Holz+Wald1998,Linder+Holz2004}, for gamma ray bursts by
+\citet[][]{Oguri+Takahashi2006,Wang+Dai2011},  and for high redshift
+galaxies by \citet{BradacEtal2009}, among others. 
 
-Along lines of sight containing strong gravitational lenses,
-the effect has been found to be
-particularly important, with foreground and background structures
+Along lines of sight containing strong gravitational lenses, the
+perturbative effects of line of sight mass structure have been found to
+be particularly important, with foreground and background structures
 having a significant effect on the inferred lensing cross-section
-\citep[\eg][]{WongEtal2012} and distance ratios \citep[][]{DalalEtal2005}.
-\citet{SuyuEtal2010} found that in time delay lens cosmography the
-lensing effect of mass structures along the (unusually over-dense) line of
-sight to the quadruply-imaged radio source B1608$+$656, the so-called ``external
-convergence'' $\kappax$, was the dominant source of uncertainty in 
-their 6\% measurement of Hubble's constant.
+\citep[\eg][]{WongEtal2012} and distance ratios
+\citep[][]{DalalEtal2005}. Indeed, \citet{SuyuEtal2010} found that in
+time delay lens cosmography the so-called ``external convergence''
+$\kappa$ due to mass structures along the (unusually over-dense) line
+of sight to the quadruply-imaged radio source B1608$+$656 was the
+dominant source of uncertainty in their 6\% measurement of Hubble's
+constant. The problem is that one simply doesn't know how magnified and
+distorted the source has been, because the unlensed source is
+unobservable. The external shear can potentially be recovered in the
+mass-modelling of the lens, but the convergence is undetectable from the
+image positions, shapes and relative fluxes; this is the famous {\emph{ 
+mass sheet-degeneracy}} \citep[see e.g.][for details]{FalcoEtal1985}.
 
+How can we correct for this perturbative lensing and make accurate
+measurements through the Universe? When inferring global quantities
+(such as the cosmological parameters), combining the results from a
+large number of independent objects will tend to reduce the uncertainty
+due to external convergence, as the ensemble-averaged magnification
+approaches zero for an unbiased sample \citep[\eg][]{Holz+Linder2005}.
+If the sample is biased, however, some residual systematic error will
+remain even as the statistical uncertainty decreases. Lensing bias will
+be present (to varying degrees) in any sample {\it selected} by
+brightness (which includes magnification), or any other quantity that
+depends on $\kappa$. This bias may be introduced either at the object
+detection stage, or later on when making decisions about which objects
+to study further.  Moreover, we expect these biases to be strongest in
+the strong lens systems, where magnification is highest. Large samples
+of lenses are expected to be discovered in the next decade in
+ground-based optical imaging surveys \citep{Oguri+Marshall2010}: both
+the detectability of these lenses,  and the selection of sub-samples of
+them for further observation, could be sensitive to the external
+convergence. 
 
-The problem is that one simply doesn't know
-how magnified and distorted the source has been because the unlensed
-source is unobservable. The external shear can potentially be recovered
-in the mass-modelling of the lens, but the convergence is undetectable
-from the image positions, shapes and relative fluxes; this is the
-famous {\emph{  mass sheet-degeneracy}} \citep[see e.g.][for details]{FalcoEtal1985}.
+Several attempts have been made to do better than simply constructing a
+large sample of objects, and averaging over the resulting convergence
+distribution. The weak lensing effect can be detected by measuring the
+small distortions it induces on the images of many background galaxies
+in the field. \todo{PJM}{Write about Bernstein project in 0957.}
 
-How can we correct for this perturbative lensing and make
-accurate measurements through the Universe? When inferring global quantities
-(such as the cosmological parameters), averaging the results from a large
-number of independent objects will tend to reduce the uncertainty, as the
-ensemble-averaged convergence approaches zero for an unbiased sample
-\citep[\eg][]{Linder+Holz2004}. If the sample is biased, however, some
-residual systematic error will remain while the statistical uncertainty
-decreases -- and this will be the case for any sample selected by the
-brightness of the lensed object, or any other quantity that depends on
-$\kappa$. Large
-samples of lenses are expected to be discovered in the next decade in
-ground-based optical imaging surveys \citep{Oguri+Marshall2010} -- but these
-samples will be image separation-limited, due to the surveys' relatively poor
-($\sim 1$~arcsec) image quality. There is a possibility that
-they are somewhat biased towards high values of $\kappa$, although 
-\citet{Fassnacht+Lubin2002} \todo{Anyone}{check this is the right Fassnacht paper} found no evidence of lenses lying along over-dense lines of sight.
-
+\todo{PJM}{Rearrange following section. After lunch.}
 
 To date, attempts at reconstructing the local and line of sight mass
 distribution in strong lens fields (what \citeauthor{WongEtal2011} call ``the
@@ -460,12 +476,15 @@ halos, $\kappah$, to the true convergence, $\kappa$. In the Millenium
 Simulation catalogs, we can compute $\kappah$ for each
 selected line of sight and combine multiple lines of sight to calculate $\Pr(\kappa|\kappah)$.
 
-Given an uncertain stellar mass to halo mass conversion, the $\pr(\kappah|\{\Mstar,z\})$ can shift 
-relative to $\pr(\kappah|\{\Mhalo,z\})$; this is because of the highly asymetric conversion from
-stellar mass through halo mass into $\kappah$. If this shift is ignored the resulting $\Pr(\kappa)$
-can become highly biased. To calibrate this effect we reconstruct each of our calibration
-sightlines, in the same way as the observed sightlines to generate
- $\pr(\kappa,\kappah|\{\Mstar,z\})$, for each calibration sightline we use the median of $\pr(\kappah|\{\Mstar,z\})$ to form a de-biased $\Pr(\kappa|\kappah)$.
+Given an uncertain stellar mass to halo mass conversion, the
+$\pr(\kappah|\{\Mstar,z\})$ can shift  relative to
+$\pr(\kappah|\{\Mhalo,z\})$; this is because of the highly asymetric
+conversion from stellar mass through halo mass into $\kappah$. If this shift
+is ignored the resulting $\Pr(\kappa)$ can become highly biased. To calibrate
+this effect we reconstruct each of our calibration sightlines, in the same way
+as the observed sightlines to generate $\pr(\kappa,\kappah|\{\Mstar,z\})$, for
+each calibration sightline we use the median of $\pr(\kappah|\{\Mstar,z\})$ to
+form a de-biased $\Pr(\kappa|\kappah)$.
 
 For any given line of sight we can then infer
 $\Pr(\kappah|\mathcal{D})$ as described above, and then
