@@ -105,6 +105,7 @@ achievable.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
+\label{sec:intro}
 
 Every distant object we observe has had its apparent shape distorted,
 and size and total brightness magnified (or demagnified) by a compound
@@ -161,10 +162,10 @@ large sample of objects, and averaging over the resulting convergence
 distribution. The weak lensing effect can be detected observationally 
 by measuring the
 small distortions it induces on the images of many background galaxies
-in the field \citep[see e.g.][for a review]{SaasFee2006}. In a 30''
+in the field \citep[see e.g.][for a review]{Schneider2006}. In a 30''
 radius aperture around the strong lens Q0957$+$561,
 \citet{NakajimaEtal2009} used deep HST imaging to measure a weak lensing
-convergence of $0.17/pm0.06$, which was used in the time delay distance
+convergence of $0.17\pm0.06$, which was used in the time delay distance
 measurement of \citep{FadelyEtal2009}. While this system has an
 unusually high external convergence due to its location on the edge of a
 cluster of galaxies, the precision with which the convergence at the
@@ -257,7 +258,7 @@ $\Pr(\kappa)$, which was then marginalised over when inferring the time
 delay distance in this system. 
 % B1608$+$656 is indeed a high $\kappa$
 % line of sight, but it does not reside in a massive cluster environment.
-In a companion paper to this one, \citet{GreeneEtal2012} investigated
+In a companion paper to this one, Greene et al (submitted) investigate
 improvements to this method by weighting the galaxy counts by galaxy
 mass, and perpendicular distance to the line of sight, again using the
 \MS mock catalogs and their associated $\kappa$ values to construct
@@ -265,7 +266,7 @@ $\Pr(\kappa|\data)$.
 
 In this paper, we combine the halo model reconstruction approach of
 \citeauthor{GunnarssonEtal2006} and \citeauthor{WongEtal2011}, with the
-idea of calibrating to simulations from \citeauthor{SuyuEtal2009}, in
+idea of calibrating to simulations from \citeauthor{SuyuEtal2010}, in
 order to put the halo model for  estimating the weak lensing convergence
 due to mass along the line of sight to a distant source into a sound
 framework for evaluating this important source of systematic
@@ -367,7 +368,8 @@ critical surface mass density at the redshift of the mass sheet
                               {\Sigma_{\rm cr}(\zd,\zs)}
 \ee
 where 
-\be \label{eq:sigcrit} 
+\be 
+\label{eq:sigcrit} 
 \Sigma_{\rm cr}(\zd,\zs) \equiv \frac{c^2 D_{\rm os}}{4 \pi G D_{\rm od} D_{\rm ds}}.
 \ee
 and the $D$'s are the angular diameter distances between the objects
@@ -446,12 +448,13 @@ uncertainty with which time-delay distances can be \infered.
 The relationship between convergence $\kappa$ and magnification $\mu$ is
 \bea 
 \mu &=&       \frac{1}{(1-\kappa)^2 - |\gamma|^2}, \notag \\
-    &\approx& \frac{1}{(1-2\kappa)}
+    &\approx& (1+2\kappa)
 \label{eq:MassSheet:mag}
 \eea
-where we have used the fact that the magnitude of the gravitational
+where we have used the facts that the magnitude of the gravitational
 shear at any point is typically comparable to the magnitude of the 
-convergence. For small $\kappa$, the fractional uncertainty in the
+convergence, and that both are typically small. 
+Under these assumptions, the fractional uncertainty in the
 inferred luminosity of a magnified source will be approximately  twice
 the absolute uncertainty in the convergence~$\kappa$. These
 relationships will allow us to put our results on convergence estimation
@@ -614,21 +617,22 @@ which is the same as the NFW profile in the limit that the truncation radius, $r
 The projected surface mass density $\Sigma(r)$ for this mass profile is derived in \citet{BMO}. Each halo in our catalogue then contributes to the line of sight convergence by
 \be
 \label{eq:kappai}
-\kappa_i =\Sigma_{i}/\Sigma_{\mathrm{cr}}(z_i),
+\kappa_i =\Sigma_{i}/\Sigma_{\mathrm{cr}}(z_i,\zs),
 \ee
- where $\Sigma_{\rm cr}(z)$ is the critical surface density given by:
-\be \label{eq:sigcrit} 
-\Sigma_{\rm cr}(z) \equiv \frac{c^2 D_{\rm os}}{4 \pi G D_{\rm od} D_{\rm ds}},
-\ee
- the D's are the angular diameter distances between the objects refered to in the subscripts: o is the observer, d is the deflector and s is the source. We take the total convergence from all the halos along the line of sight to be given by
-\be \label{eq:kappasummu}
-\kappah=\sum_{i}\kappa_i.
+where the critical surface density was defined in \Eref{eq:sigcrit}.
+Following the first order approximation of \citet{HilbertEtal2009}
+outlined in \Sref{sec:MS} above, we compute 
+the total convergence from all the halos along the line
+of sight using
+\be 
+\label{eq:kappasummu}
+\kappah = \sum_{i} \kappa_i.
 \ee
 
 To estimate a halo's contribution to $\kappah$ we must first know the halo's mass.
 For the calibration sightlines of the \MS halo masses are known, but for 
 real lines of sight this can only be infered from the stellar masses of the
-galaxies within a halo. We use the relation of \citet{BehrooziEtal2009} to generate 
+galaxies within a halo. We use the relation of \citet{BehrooziEtal2010} to generate 
 halo masses from stellar masses; the details of this proceedure are outlined in
 Appendix \ref{appendix:MSMH}.
 
@@ -760,10 +764,10 @@ halo mass and redshift, we investigate the uncertainties induced by a
 magnitude limited reconstruction and a field of view limited
 reconstruction. The halos in our catalogue are populated by galaxies and
 given magnitudes according to the semi-analytic model of
-\citet{deLucia+Blaizot2007} and by applying magnitude cuts to our
+\citet{DeLucia+Blaizot2007} and by applying magnitude cuts to our
 catalogue, we can investigate the scatter caused by unobserved halos.
 The majority of the convergence comes from halos with an $i$ magnitude
-between 18 and 24. Figure \ref{fig:where} shows the cumulative
+between 18 and 24. \Fref{fig:where} shows the cumulative
 contribution to $\kappah$ as a function of projected distance from the
 line of sight, magnitude and redshift. Unsurprisingly we find that most
 of the convergence comes from halos whose galaxies are close to the line
@@ -804,10 +808,19 @@ photometric colours to infer stellar mass \citep[\eg][]{AugerEtal2009} and redsh
 stellar mass and photometric redshifts (with appropriate errors), as the observables that must be converted into an estimate
 of $\kappax$. We will investigate two main sources of error: inferring halo mass given observed stellar mass and placing halos at the wrong redshift due to photometric redshift error.
 
-We generate a stellar mass for each halo according to the stellar mass--halo mass relation of \citet{BehrooziEtal2009}. From this stellar mass we simulate 
+We generate a stellar mass for each halo according to the stellar mass--halo mass relation of 
+\citet{BehrooziEtal2010}. From this stellar mass we simulate 
 an observed stellar mass by drawing a sample from $\pr(\log(M_{* \mathrm {obs}})|\log(M_{* \mathrm {true}}))$ which is given by a Gaussian of width $\sigma_{M_*}$ centred on $\log(M*_{\mathrm {true}})$. Where a spectroscopic redshift exists stellar masses can be estimated with typical uncertainties of 0.15 dex \citep{AugerEtal2009}, however with photometric redshifts stellar mass uncertainties are typically three times as large; we use $\sigma_{M_*}=0.15$ for halos with a spectroscopic redshift and $\sigma_{M_*}=0.45$ otherwise. For photometric redshift errors we draw a redshift from $\pr(z_{\rm true}|z_{\rm obs})$ which we take as a Gaussian of width $0.1(1+z_{\rm spec})$ centred on $z_{\rm spec}$, where $z_{\rm spec}$ is the halo's true redshift in the \MS catalogue.
 
-Given an uncertain stellar mass and redshift it is possible to infer a halo mass using the stellar mass--halo mass relation of \citet{BehrooziEtal2009}. This proceedure requires an inversion of the relation given in \citet{BehrooziEtal2009} and correctly inverting the relation's uncertainties requires care: the proceedure we use to do this is given in Appendix \ref{appendix:MSMH}. By drawing sample halo masses and redshifts, we can infer a sample $\kappah$ using the proceedure of Section \ref{sec:model}; repeatedly drawing samples allows us to estimate P$(\kappah)$ for each reconstructed line of sight.
+Given an uncertain stellar mass and redshift it is possible to infer a
+halo mass using the stellar mass--halo mass relation of
+\citet{BehrooziEtal2010}. This proceedure requires an inversion of the
+relation given in \citet{BehrooziEtal2010} and correctly inverting the
+relation's uncertainties requires care: the proceedure we use to do this
+is given in Appendix \ref{appendix:MSMH}. By drawing sample halo masses
+and redshifts, we can infer a sample $\kappah$ using the proceedure of
+Section \ref{sec:model}; repeatedly drawing samples allows us to
+estimate P$(\kappah)$ for each reconstructed line of sight.
 
 \subsection{Reconstructing $\kappa$ given a spectroscopic redshift for every object}
 
@@ -856,7 +869,7 @@ of sight. The central plot shows sight lines randomly selected from the
 third of lines whose P($\kappa$) is most tightly constrained. The right
 hand plot shows only lines of sight with external shear of 0.03 or
 greater.}
-\label{fig:where}
+\label{fig:biasplots}
 \end{figure*}
 
 Whilst it is good to reconstruct $\kappa$ precisely it is vital that $\kappa$ is reconstructed accurately. A precise, inaccurate $\kappa$ estimator is worse than useless for cosmology. We test the accuracy of our reconstructed $\pr(\kappa)$ in the following way: for each line of sight we shift the reconstructed $\pr(\kappa)$ by the line of sight's raytraced $\kappa$ to give $\pr(\kappa-\kapparay)$. Since the $\pr(\kappa-\kapparay)$ for each line of sight is an independant estimator of zero, the PDFs can be combined according to
@@ -872,17 +885,55 @@ We quantify the bias as the size of the deviation in the expectation value of $\
 %\subsection{Using the wrong M$_{\rm halo}$-M$_{*}$ relation}
 \subsection{Selection bias from a subset of lines of sight?}
 
-First we test for systematic errors in the reconstruction of a randomly selected subset of samples. With the purely photometric reconstruction there is a small bias towards underestimating $\kappa$,  combining 6 lenses the half-width and bias of $\mathcal{P}_{6}$ both equal 0.007. With targeted spectroscopic follow up this improves slightly, for the combination of 8 lenses the half-width and expectation value  $\mathcal{P}_{8}$ equal 0.005. Since strong lens modelling uncertainties are typically at the 3\% level, several hundred lenses are needed to reach this level of precision, but at that point a 0.005 bias in $\kappa$ estimation would become the limiting factor on time-delay cosmography.
+First we test for systematic errors in the reconstruction of a randomly
+selected subset of samples. With the purely photometric reconstruction
+there is a small bias towards underestimating $\kappa$,  combining 6
+lenses the half-width and bias of $\mathcal{P}_{6}$ both equal 0.007.
+With targeted spectroscopic follow up this improves slightly, for the
+combination of 8 lenses the half-width and expectation value 
+$\mathcal{P}_{8}$ equal 0.005. Since strong lens modelling uncertainties
+are typically at the 3\% level, several hundred lenses are needed to
+reach this level of precision, but at that point a 0.005 bias in
+$\kappa$ estimation would become the limiting factor on time-delay
+cosmography.
 
 
 \subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
 \label{sec:tightPDF}
 
-Since lens monitoring campaigns are expensive, it is likely that only a subset of lenses will be observed. By pre-selecting the lenses with the most well constrained $\pr(\kappax)$, the cosmological value per lens can be increased, however this has the potential to induce a bias. It is probable that only photometry will be available at the time of lens selection (although spectroscopic follow-up might be conducted at a later date). We mimik such a selection by drawing lines of sight only from those in the lowest third of $\sigma_{\kappa}$ given a photomtric reconstruction of their fields. We find that selecting the most tightly constrained lines of sight {\it decreases} the bias - our reconstruction is most succesful for the lowest $\kappa$ lines of sight. With photometry alone the bias is at the 0.0028 level. With a targeted spectroscopic follow-up of the selected lines of sight there is negligible improvement, since the best constrained lines of sight are the most empty, but it is the high-$\kappa$ lines of sight that benefit the most from spectroscopy. Photometry of the field is sufficient to adequately select the best lines of sight for cosmology - and doing so greatly increases both the precision and accuracy of the cosmological constraints per lens.
+Since lens monitoring campaigns are expensive, it is likely that only a
+subset of lenses will be observed. By pre-selecting the lenses with the
+most well constrained $\pr(\kappax)$, the cosmological value per lens
+can be increased, however this has the potential to induce a bias. It is
+probable that only photometry will be available at the time of lens
+selection (although spectroscopic follow-up might be conducted at a
+later date). We mimik such a selection by drawing lines of sight only
+from those in the lowest third of $\sigma_{\kappa}$ given a photomtric
+reconstruction of their fields. We find that selecting the most tightly
+constrained lines of sight {\it decreases} the bias - our reconstruction
+is most succesful for the lowest $\kappa$ lines of sight. With
+photometry alone the bias is at the 0.0028 level. With a targeted
+spectroscopic follow-up of the selected lines of sight there is
+negligible improvement, since the best constrained lines of sight are
+the most empty, but it is the high-$\kappa$ lines of sight that benefit
+the most from spectroscopy. Photometry of the field is sufficient to
+adequately select the best lines of sight for cosmology - and doing so
+greatly increases both the precision and accuracy of the cosmological
+constraints per lens.
 
 \subsubsection{Selecting only high shear lines of sight}
 \todo{phil}{Write up why lenses are likely to be gamma biased}
-\notes{The uncertainties from modeling a strong lens system depends on the comfiguration of the source images. With only two point images ofthe source the lens slope and mass are degenerate; the mass-slope degeneracy\citep{mass-slope degeneracy} cite saha?. Where lensed arcs or four point images are present the mass-slope degeneracy can be broken and cosmology can be extracted, \citep{Suyu2012a}. The detectability of arcs depend on the source, but the presence of four images (so called quads) depend on the shear of the lens model - a high shear is needed to produce a quad. The shear is almost certainly dominated by the lens model itself, but it is possible that quads are biased towards high external shear.} 
+\notes{The uncertainties from modeling a strong lens system depends on
+the comfiguration of the source images. With only two point images ofthe
+source the lens slope and mass are degenerate; the mass-slope
+degeneracy\citep[need citation][Saha?]{mass-slope degeneracy}. Where lensed arcs or
+four point images are present the mass-slope degeneracy can be broken
+and cosmology can be extracted, \citep{Suyu2012a}. The detectability of
+arcs depend on the source, but the presence of four images (so called
+quads) depend on the shear of the lens model - a high shear is needed to
+produce a quad. The shear is almost certainly dominated by the lens
+model itself, but it is possible that quads are biased towards high
+external shear.} 
 
 By selecting only lines of sight with an external shear of $\gamma>0.03$ we can test the effect of shear selection. We find that in all cases $\kappa$ is underestimated at the $\sim$0.01 level. Part of this effect is mitigated if only the lines of sight with both $\gamma>0.03$ and sharp $\pr(\kappax)$ are used but biases at the $\sim$0.005 level remain. Since our model does not include shear constraints it is not surprising that selecting based on shear can induce a bias. A more sophisticated model that includes the shear recovered from the lens modelling may not be susceptable to this bias. The toy model of this section ($\gamma>0.03$) is likely to be a much stronger selection than reality, but it is worth noting that the reconstruction proceedure will be biased if lens selection functions are extreme and unaccounted.
 
@@ -1009,9 +1060,8 @@ source of error.
 
 \section*{Acknowledgments}
  
-TC thanks Vasily Belokurov for guidance and discussions.
-We thank Risa Wechsler and Peter Behroozi for useful discussions and 
-suggestions.\notes{do we?}
+We thank Vasily Belokurov, Risa Wechsler and Peter Behroozi 
+for useful discussions and suggestions.
 \input{acknowledgments.tex}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
