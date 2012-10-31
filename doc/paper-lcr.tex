@@ -562,16 +562,16 @@ will be uncertain, but can be calibrated with cosmological simulations.
 Transforming an observed photometometric galaxy catalogue into a 
 catalogue of halo masses, positions, and redshifts, will enable us to
 attempt a reconstruction of the convergence induced by every halo near a
-line of sight. This is the subject of Section \ref{subsec:halos}. We
+line of sight. This is the subject of Section \ref{sec:model:halos}. We
 also need to account for the mass in the Universe that is not associated
 with the galaxies we can see -- this is the subject of Section
-\ref{subsec:voids}. 
+\ref{sec:model:voids}. 
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 \subsection{Halos}
-\label{subsec:halos}
+\label{sec:model:halos}
 
 Cosmological dark matter simulations have shown that dark matter
 halos are well-approximated by NFW profiles \citep{NFW}, with a density
@@ -665,34 +665,46 @@ this \proceedure allows us to build up a histogram of $\kappah$ values
 consistent with the data, and hence characterize $\pr(\kappah|\data)$. 
 
 This PDF contains a hidden assumption of an uninformative prior PDF for
-$kappah$ -- in the case of infinitely poorly measured stellar masses and
-redshifts, $\pr(\kappah|\data)$ will have very long tails that we do not
-belive to exist. The resolution of this is to apply an additional prior
-on $\kappah$, given by the global underlying $\kappah$ distribution from
-the simulation, $\pr(\kappah)$. In the limiting  case of very poor
-photometric data, $\pr(\kappah|\data)$ then defaults to this
-distribution. \todo{All}{Discuss this. It ties us to the simulation --
-but is not unreasonable. Is the argument about poor data valid? Tom?}
+$\kappah$ -- in the case of infinitely poorly measured stellar masses and
+redshifts, $\pr(\kappah|\data)$ will have very long tails corresponding to
+very overdense sightlines that we do not believe exist. The resolution of this
+is to divide out the effective prior PDF that was applied during the halo mass
+estimation process (which is broad, and hance close to uniform), and apply an
+additional prior on $\kappah$, given by the global underlying $\kappah$
+distribution from the simulation. In the limiting  case of very poor
+photometric data, $\pr(\kappah|\data)$ then defaults to this distribution.
+\todo{All}{Discuss this. It ties us to the simulation, but only weakly. Is the
+argument about poor data valid? Tom?}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-\subsection{Accounting for voids, filaments and dark structures}
-\label{subsec:voids}
+\subsection{Accounting for voids, filaments and other dark structures}
+\label{sec:model:voids}
 
-Whilst halos contribute a positive convergence to $\kappa$, voids contribute
-a negative convergence. When a raybundle passes through a  region of space
-that is less dense than $\rho_{\rm cr}(z)$ the rays are de-focused\footnote{In
-principle, the convergence caused by halos, is also caused by the overdensity,
+While halos contribute a positive convergence to $\kappa$, voids contribute
+a negative convergence. When a ray bundle passes through a  region of space
+that is less dense than $\rho_{\rm mean}(z)$ the rays are de-focused\footnote{In
+principle, the convergence caused by halos is also caused by the overdensity,
 but we neglect this effect since halos are typically much more dense than the
-intergalactic medium}. Whilst the  full raytraced solution takes into account
+intergalactic medium}. Whilst the  full ray-traced solution takes into account
 the effect of voids, our reconstruction cannot -- the halo catalogue does not
 include voids. In principle the absence of a halo could be taken to infer a
 void, but the under-density of such a void is hard to infer. Neglecting voids
-would lead to a heavily biased estimate of $\kappa$. 
+would lead to a heavily biased estimate of $\kappa$. Moreover, the halos in 
+the model only add mass to the background density, and that background density
+already accounts for all the mass in the Universe! In order to make voids
+negative relative to the mean density, we must subtract a significant smooth
+mass component. The problem is that we do not have a good model for the
+density structure of that smooth component. 
 
-The \proceedure outlined in Section \ref{subsec:halos} allows us to estimate 
-the convergence due to halos given observations of mass, redshift and position
+The solution we present here is to calibrate the relationship between halo
+convergence $\kappah$ and underlying convergence $\kappa$ (as calculated
+during full ray tracing) using the simulations themselves.
+The halo modelling \proceedure outlined in \Sref{sec:model:halos} allows 
+us to estimate 
+the convergence due to halos given observations of 
+mass, redshift and position,
 $\pr(\kappah|\mathcal{D})$, but what we are interested in is the total convergence
 along the line of sight $\pr(\kappa|\mathcal{D})$. We can obtain this by
 considering the expression:
@@ -701,133 +713,207 @@ considering the expression:
    \Pr(\kappa|\kappah) \Pr(\kappah|\mathcal{D})
 \label{eq:kappaconv}   
 \end{equation}
-The first term in the integrand relates the summed convergence due to model
-halos, $\kappah$, to the true convergence, $\kappa$. In the Millenium
-Simulation catalogs, we can compute $\kappah$ for each
-selected line of sight and combine multiple lines of sight to calculate $\Pr(\kappa|\kappah)$.
+The first term in the integrand relates the convergence due to model halos,
+$\kappah$, to the true convergence, $\kappa$. This conditional distribution
+can be constructed from the Millennium Simulation catalogs, by computing
+$\kappah$ for each selected line of sight using the true values of the halo
+parameters,  and accumulating $\kappah$ and $\kappa$ along a large number of
+such lines of
+sight to  characterize $\Pr(\kappa|\kappah)$.
+For any given line of sight we can then estimate
+$\pr(\kappah|\mathcal{D})$ as described above, and then
+multiply it by $\Pr(\kappa|\kappah)$ and integrate out the intermediate
+nuisance parameter $\kappah$. 
+% We can do the marginalisation over $\kappah$
+% by drawing samples from the two-dimensional grid and keeping only the
+% $\kappa$ values, to form our final result, $\Pr(\kappa|\mathcal{D})$.
 
-Given an uncertain stellar mass to halo mass conversion, the
-$\pr(\kappah|\{\Mstar,z\})$ can shift  relative to
-$\pr(\kappah|\{\Mhalo,z\})$; this is because of the highly asymetric
-conversion from stellar mass through halo mass into $\kappah$. If this shift
-is ignored the resulting $\Pr(\kappa)$ can become highly biased. To calibrate
-this effect we reconstruct each of our calibration sightlines, in the same way
-as the observed sightlines to generate $\pr(\kappa,\kappah|\{\Mstar,z\})$, for
-each calibration sightline we use the median of $\pr(\kappah|\{\Mstar,z\})$ to
-form a de-biased $\Pr(\kappa|\kappah)$.
+However, given an uncertain stellar mass to halo mass conversion, the PDF
+$\pr(\kappah|\{\Mstar,z\})$ can become skewed relative to
+$\pr(\kappah|\{\Mhalo,z\})$; this is because of the assymetry in the
+conversion from stellar mass through halo mass into $\kappah$. A long tail of
+high halo masses gives rise to a tendency to overestimate $\kappah$.
+If this shift is ignored, the resulting $\Pr(\kappa|\data)$ will be 
+biased towards high values of $\kappa$. 
 
-For any given line of sight we can then infer
-$\Pr(\kappah|\mathcal{D})$ as described above, and then
-multiply it by $\Pr(\kappa|\kappah)$; we do the marginalisation over $\kappah$
-by drawing samples from the two-dimensional grid and keeping only the
-$\kappa$ values, to form our final result, $\Pr(\kappa|\mathcal{D})$.
+We find that we can correct this bias to some extent by artificially 
+suppressing the tails of $\pr(\kappah|\{\Mstar,z\})$. Let the median of
+this PDF be denoted $\kappah^{\rm med}$. We again take a large number of
+calibration sightlines from the \MS catalogs, but this time generate a mock
+stellar mass catalog for each one. We then reconstruct each lightcone in the
+same way as we would an observed field,
+estimate $\pr(\kappah|\{\Mstar,z\})$, and extract its median. Accumulating
+these samples and their corresponding true values of $kappa$, we can form the 
+conditional distribution $\pr(\kappa|\kappah^{\rm med})$. 
+Then, when inferring $\kappa$ from an observed photometric catalog, we would
+estimate $\pr(\kappah|\{\Mstar,z\}_{\rm obs})$ 
+using the halo model, compute the median value 
+$\kappa_{\rm h,obs}^{\rm med}$, and then use the following alternative
+version of 
+\Eref{eq:kappaconv} to infer $\kappa$: 
+\bea
+\Pr(\kappa|\mathcal{D}) &=& \int \dee\kappah^{\rm med} 
+   \Pr(\kappa|\kappah^{\rm med}) \Pr(\kappah^{\rm med}|\mathcal{D}) \notag \\
+                        &=& \Pr(\kappa|\kappa_{\rm h,obs}^{\rm med}).
+\label{eq:calkappaconv}   
+\eea
+Here, we have replaced $\Pr(\kappah^{\rm med}|\mathcal{D})$ with a delta
+function centred at the observed median value $\kappa_{\rm h,obs}$. 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Calibrating the halo model}
+\section{Results: Perfect Halo Data}
 \label{sec:knownMh+z} 
 
-In order to test the reconstruction \proceedure outlined in Section
-\ref{sec:model}, we now apply it to mock galaxy catalogs generated in
-regions on the sky around lines of sight with known
-$\kappa$ in the Millenium Simulation. 
+We now put the reconstruction \proceedure outlined above into practice, first
+inferring $\kappa$ from $\kappah$ in the case of hypothetical galaxy catalogs
+with noiseless redshifts and halo masses. The reason for doing this is to
+check the validity of the calibration process, and then also to  investigate
+the primary sources of the convergence. It will also provide us with a measure
+of the intrinsic uncertainty introduced by our assumption of all halos being
+spherically-symmetric truncated NFW halos with Neto et al concentration--mass
+relation.
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-\subsection{How does $\kappah$ relate to $\kappa$?}
+\subsection{How is $\kappah$ related to $\kappa$?}
 
-Given the halo mass catalogue from the Millenium Simulation, 
-and convergence maps produced by ray-tracing through the MS's n-body particles, 
-it is possible to test the validity of the prescription outlined
-in Section \ref{sec:model}. In this section we test reconstruction prescription given perfect
-knowledge of the halos' virial masses and redshifts; this provides us with a measure of the intrinsic uncertainty induced by treating matter as truncated NFW halos. 
-We test the model by comparing $\kappah$ against
-the ray-traced $\kappa$. If the reconstruction process is to be
-succesfull the two quantities should be closely related, although
-we expect $\kappah$ to be offset from $\kappa$ since the former 
-does not include the divergence due to voids. Figure \ref{fig:isitbiased} shows that indeed $\kappah$ is a good estimator, regardless of the individual value of $\kappah$. At fixed $\kappah$ we find that the scatter in $\kapparay$ grows with $\kappah$; our reconstruction is better at reproducing underdense lines of sight than overdense lines of sight.
+\Fref{fig:jointkh-k} shows the joint distribution of $\kappah$ and $\kappa$
+values for 100,000 randomly selected \MS lines of sight, assuming noise-free
+halo masses and redshifts. In this case, the PDF $\pr(\kappah|\data)$ is a
+delta function: to read off $\pr(\kappa|\data)$ we must take a thin horizontal
+slice across this joint distribution. Note that the joint PDF plotted in this
+figure is the product of  the conditional distribution that we need for
+calibration, and also the prior PDF for $\kappah$ that we need to ensure that
+the global distribution of $\kappah$ values is defaulted to in the case of
+poor observational data. At fixed $\kappah$ we find in \Fref{fig:jointkh-k}
+that the scatter in $\kapparay$ grows with $\kappah$; our reconstruction is
+better at reproducing underdense lines of sight than overdense lines of sight.
+The effect of ignoring voids and the smooth mass component is evident in this
+plot: $\kappah$ is significantly higher than $\kappa$, at any given $\kappa$
+value. Multiplying by $\pr(\kappah|\data)$ and integrating over $\kappah$
+gives a PDF for $\kappa$ centred at the correct place, by construction.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/cornerplot.eps}
-\caption[Biased?]{$\kappah$ verses $\kappa$ for 100000 reconstructed lines of sight. $\kappah$ traces $\kappa$, but with a non-zero offset which is due to the negative convergence from voids. At fixed $\kappah$ the scatter in $\kappa$ grows with $\kappah$.}
-\label{fig:isitbiased}
+\caption[Biased?]{The joint distribution of 
+$\kappah$ and $\kappa$, from 100,000 reconstructed lines of
+sight. $\kappah$ traces $\kappa$, but with a positive offset which arises from
+$\kappah$ not accounting for any voids, dark structures or smooth mass
+component. At fixed $\kappah$ the scatter in $\kappa$ grows with $\kappah$.}
+\label{fig:jointkh-k}
 \end{figure}
 
-%\subsubsection{How does $\gammah$ relate to $\gamma$?}
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
-\subsection{How succesful is the calibration at converting $\kappah$ into $\kappa$?}
+\subsection{How accurate is the $\kappah - \kappa$ calibration?}
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/globaldist.eps}
-\caption[magcut]{Comparison of the global P($\kappa$) from $10^{5}$ lines of sight to $10^{5}$ random samples drawn each from P($\kappax|\{M_{200},z\}$) for a reconstructed lines of sight. Red is the global P($\kappa$) and black is a histogram of the samples. Given perfect knowledge of halo mass and redshift the reconstruction appears to be correct globally.}
+\caption[magcut]{Recovering the global $\pr(\kappa)$, shown in red, 
+from $10^{5}$ ray-traced lines of
+sight. The black curve shows a histogram of 
+sample reconstructed 
+$\kappa$ values, each one drawn from an inferred PDF 
+$P(\kappa|\{\Mhalo,z\}$)
+in one of $10^{5}$ reconstructed lines of sight. 
+The reconstructions were performed given
+perfect knowledge of halo mass and redshift -- in this case
+the reconstruction recovers the correct convergence.}
 \label{fig:globaldist}
 \end{figure}
 
 \begin{figure*}
 \includegraphics[width=\textwidth]{figs/where_is_the_kappa.eps}
-\caption[magcut]{Which objects dominate the external convergence for a line of sight? From left to right the three figures show the cumulative contribution to convergence from indvidual halos as a function of distance from the line of sight, magnitude and redshift. The solid line is the median cumulative contribution, whilst dashed and dot-dashed show the 68 and 95 percent confidence intervals repectively. The majority of convergence comes from halos within the central 30 arcseconds. The convergence is dominated by halos with $i$ magnitudes between 20 and 24, halos brighter than 20 are rare, whilst fainter halos (at $z<1.4$) must be low mass, so can only contribute to the convergence if they are very close to the line of sight. Halos at all redshifts contribute to the convergence but the largest contribution comes from halos with $z \sim z_{\rm source}/2$.}
+\caption[magcut]{Which objects dominate the external convergence for a line of
+sight? From left to right, the three figures show the cumulative contribution
+to the total  convergence from individual halos ($\kappah$) as a function of
+1)  distance from the line of sight, 2) magnitude and 3) redshift.   In each
+panel, the solid line is the median cumulative contribution over a large
+sample of sightlines, while dashed and dot-dashed show the ranges enclosing 68
+and 95 percent of the sightlines repectively.}
 \label{fig:where}
 \end{figure*}
 
-Since voids are not included in the halo model approximation $\kappah$
-is a biased estimator of $\kappa$, but this can be calibrated for useing
-the \proceedure of Section \ref{subsec:voids}. Taking the reconstructed
-$\kappah$ for $1\times 10^{5}$ lines of sight we form the joint
-distribution, P$(\kappa,\kappah)$ and marginalize over P$(\kappah)$ to
-give P($\kappa$). We define the bias as the difference between the
-expectation value of $\kappa$ and the known true value of $\kapparay$
-for each Line of sight and we define the reconstruction width,
-$\sigma_{\kappa}$,as half the width of the interval containing the
-central $68\%$ of the probability P($\kappax$). From $1\times 10^{4}$
-reconstructed lines of sight we find the the bias to have mean of
-$-9.5\times 10^{-6}$ and a mean reconstruction width of 0.0132 which is
-roughly 1.8 times smaller than the width of the global P$(\kappax)$. We
-find that our $\kappa$ distributions are consistent with the global
-$\kappa$ distribution; Figure \ref{fig:globaldist} shows that sampling
-from $\pr(\kappa)$ for 100000 lines of sight is very similar to the
-global $\pr(\kappa)$. Given perfect knowledge of halo mass and redshift,
-the calibration \proceedure provides an unbiased estimate of $\kappa$
-that is $\sim$2 times as precise than using the global $\pr(\kappa)$.
+% Since voids are not included in the halo model approximation, $\kappah$
+% is a biased estimator of $\kappa$, but this can be calibrated for using
+% the \proceedure of \Sref{sec:model:voids}. Taking the reconstructed
+% $\kappah$ for $10^{5}$ lines of sight we form the joint
+% distribution, $\pr(\kappa,\kappah)$ and marginalize over $\pr(\kappah)$ to
+% give $\pr(\kappa)$. 
+%
+% PJM: WTF? We just went through all of this in the previous section!
+% We need to check that we are doing what we say we are.
+
+In this section, let us define the ``bias'' of the reconstruction of a given
+line of sight as the difference between the expectation value of $\kappa$ over
+the inferred PDF $\pr(\kappa|\data)$ and the known true value $\kappatrue$.
+Let us also define the ``width,'' $\sigma_{\kappa}$, to be half the width of
+the interval containing the central $68\%$ of the posterior probability
+$\pr(\kappa|\data)$. 
+
+In an ensemble of $10^{4}$ reconstructed lines of sight, we find the the mean
+bias to be $-9.5\times 10^{-6}$, and the mean width to be 0.0132. This is
+approximately 1.8 times smaller than the width of the global $\pr(\kappa)$. 
+We find that our inferred $\kappa$ PDFs are consistent with the global
+$\kappa$ distribution; Figure \ref{fig:globaldist} shows that sampling from
+$\pr(\kappa|\data)$ in 100,000 reconstructed lines of sight produces a
+distribution of $\kappa$ values over the sky identical to the global
+$\pr(\kappa)$. Given perfect knowledge of halo mass and redshift, the
+calibration \proceedure provides an unbiased estimate of $\kappa$ that is
+$\sim$2 times as precise as using the global $\pr(\kappa)$.
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
 
 \subsection{Which halos dominate the $\kappah$ distribution?}
 
-Before investigating the uncertainties caused by imperfect knowledge of
-halo mass and redshift, we investigate the uncertainties induced by a
-magnitude limited reconstruction and a field of view limited
-reconstruction. The halos in our catalogue are populated by galaxies and
-given magnitudes according to the semi-analytic model of
-\citet{DeLucia+Blaizot2007} and by applying magnitude cuts to our
-catalogue, we can investigate the scatter caused by unobserved halos.
-The majority of the convergence comes from halos with an $i$ magnitude
-between 18 and 24. \Fref{fig:where} shows the cumulative
-contribution to $\kappah$ as a function of projected distance from the
-line of sight, magnitude and redshift. Unsurprisingly we find that most
-of the convergence comes from halos whose galaxies are close to the line
-of sight. As a function of magnitude, we find that $\kappah$ is
-dominated by objects with magnitudes between $i=18$ and $i=24$. Objects
-brighter than $i=18$ are either too rare or too close to the observer to
-make a significant contribution to the convergence. Objects fainter than
-$i=24$ are too small to be important, unless they are extremely close to
-the line of sight, but we find that including including halos fainter
-than $i=24$ does not improve our reconstruction. Figure \ref{fig:magcut}
-shows the scatter on $\kappah-\kappa$ (where $\kappah$ is shifted so
-that it's mean is zero) as a function of reconstruction magnitude limit.
-Since these objects must be extremely close to the line of sight to make
-a non-zero $\kappah$ contribution it is likely that neglecting stellar
-mass and using a spherical NFW prescription are too naive to adequately
-reconstruct $\kappax$; thus we do not expect a deeper survey to decrease
-the size of the uncertainty in mapping $\kappah$ onto $\kappa$. We find
-that halos at all redshifts contribute to the convergence, but halos at
-redshifts of $z \sim z_{\rm source}/2$ contribute the most.  
+Before investigating the uncertainties caused by imperfect knowledge of halo
+mass and redshift, we investigate the uncertainties induced by a limits on the
+magnitude of the observed galaxy sample, and on the field of view. The halos
+in our catalogue are populated by galaxies and given magnitudes according to
+the semi-analytic model of \citet{DeLucia+Blaizot2007}: by applying magnitude
+cuts to our catalogue, we can investigate the amount of scatter caused by
+unobserved halos. 
+
+\Fref{fig:where} shows the cumulative contribution to $\kappah$ as a function
+of projected distance from the line of sight, magnitude and redshift.
+We find that most of the convergence comes from halos whose
+galaxies are close to the line of sight. 
+Over half of the  convergence
+typically comes from halos within 30 arcseconds of the line of sight; by 2
+arcminutes, this fraction is XX\%. \todo{Tom}{Put a number on this.} 
+As a function of magnitude, we find
+that $\kappah$ is dominated by objects with magnitudes between $i=18$ and
+$i=24$. Objects brighter than $i=18$ are either too rare, or too close to the
+observer, to make a significant contribution to the convergence. Objects
+fainter than $i=24$ are too small to be important, unless they are extremely
+close to the line of sight, but we find that including halos fainter than
+$i=24$ does not improve the reconstruction.  \Fref{fig:magcut} shows the
+scatter on $\kappah-\kappa$ (where $\kappah$ is shifted so that its mean is
+zero) as a function of reconstruction magnitude limit. 
+%
+% Since these objects
+% must be extremely close to the line of sight to make a non-zero $\kappah$
+% contribution, it is likely that neglecting stellar mass and using a spherical
+% NFW prescription are too naive to adequately reconstruct $\kappax$.
+%
+% PJM: the sentence above does not make sense!
+%
+We do
+not expect a deeper survey to decrease the size of the uncertainty in mapping
+$\kappah$ onto $\kappa$. Halos at all redshifts out to the source redshift
+(1.4, here) contribute to the convergence, but the largest contribution comes from
+halos with $z \sim z_{\rm source}/2$.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/mag_scatter.eps}
-\caption[magcut]{The 16, 50 and 84\% confidence intervals on $\kappah$ minus $\kappa$ as a function of the limiting $i$ band depth of the halo reconstruction. $\kappah$ has been shifted such that $\left\langle\kappah\right\rangle=0$. The majority of the constraining power comes from reconstructing halos with magnitudes between $18<i<24$.}
+\caption[magcut]{The 16, 50 and 84\% confidence intervals on $\kappah$ minus
+$\kappa$ as a function of the limiting $i$ band depth of the halo
+reconstruction. $\kappah$ has been shifted such that
+$\left\langle\kappah\right\rangle=0$. The majority of the constraining power
+comes from reconstructing halos with magnitudes between $18<i<24$.}
 \label{fig:magcut}
 \end{figure}
 
@@ -1038,6 +1124,14 @@ If a line of sight has a broad $\pr(\kappax)$ it can be rejected {\it
 before} the investment of longterm lightcurve monitoring. We find that
 selecting only the lines of sight with the most tightly constrained
 $\pr(\kappax)$ does not induce a bias.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\includegraphics[width=\columnwidth]{figs/biasplots3.eps}
+\caption{}
+\label{fig:no-median-tricks}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 The method we have outlined can also be used to estimate the external shear
 along a line of sight. Shear is an observable that can be extracted from
