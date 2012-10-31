@@ -596,7 +596,6 @@ from the mass enclosed within $r_{200}$, which we denote as $M_{200}$. We find o
 \be
 c_{200} = 4.67 (M_{200}/10^{14} h^{-1} \Msun)^{-0.11}.
 \ee
-\todo{Tom}{Add sentence about scatter!}
 
 $\rho_0$ is calculated from the critical density and concentration parameter:
 \be
@@ -674,8 +673,9 @@ estimation process (which is broad, and hance close to uniform), and apply an
 additional prior on $\kappah$, given by the global underlying $\kappah$
 distribution from the simulation. In the limiting  case of very poor
 photometric data, $\pr(\kappah|\data)$ then defaults to this distribution.
-\todo{All}{Discuss this. It ties us to the simulation, but only weakly. Is the
-argument about poor data valid? Tom?}
+
+% \todo{All}{Discuss this. It ties us to the simulation, but only weakly. Is the
+% argument about poor data valid? Tom?}
 
 
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % 
@@ -722,7 +722,7 @@ parameters,  and accumulating $\kappah$ and $\kappa$ along a large number of
 such lines of
 sight to  characterize $\Pr(\kappa|\kappah)$.
 For any given line of sight we can then estimate
-$\pr(\kappah|\mathcal{D})$ as described above, and then
+$\pr(\kappah|\data)$ as described above, and then
 multiply it by $\Pr(\kappa|\kappah)$ and integrate out the intermediate
 nuisance parameter $\kappah$. 
 % We can do the marginalisation over $\kappah$
@@ -744,7 +744,7 @@ calibration sightlines from the \MS catalogs, but this time generate a mock
 stellar mass catalog for each one. We then reconstruct each lightcone in the
 same way as we would an observed field,
 estimate $\pr(\kappah|\{\Mstar,z\})$, and extract its median. Accumulating
-these samples and their corresponding true values of $kappa$, we can form the 
+these samples and their corresponding true values of $\kappa$, we can form the 
 conditional distribution $\pr(\kappa|\kappah^{\rm med})$. 
 Then, when inferring $\kappa$ from an observed photometric catalog, we would
 estimate $\pr(\kappah|\{\Mstar,z\}_{\rm obs})$ 
@@ -760,6 +760,11 @@ version of
 \eea
 Here, we have replaced $\Pr(\kappah^{\rm med}|\mathcal{D})$ with a delta
 function centred at the observed median value $\kappa_{\rm h,obs}$. 
+The procedure of reducing the full PDF for $\kappah$ to just its median is
+risky: the simulated lightcones that have median $\kappah$ values to match are
+not guaranteed to provide an accurate estimate of $\kappa$ via this PDF
+look-up. We proceed with caution, quantifying the biases and PDF widths in the
+sections below.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -884,7 +889,7 @@ We find that most of the convergence comes from halos whose
 galaxies are close to the line of sight. 
 Over half of the  convergence
 typically comes from halos within 30 arcseconds of the line of sight; by 2
-arcminutes, this fraction is XX\%. \todo{Tom}{Put a number on this.} 
+arcminutes, this fraction is \todo{XX\%}{Tom?}.
 As a function of magnitude, we find
 that $\kappah$ is dominated by objects with magnitudes between $i=18$ and
 $i=24$. Objects brighter than $i=18$ are either too rare, or too close to the
@@ -944,8 +949,9 @@ work.
 \subsection{Making Mock Observational Catalogs}
 
 While the \MS catalogs do already contain stellar masses for each galaxy, we
-find that these are not well behaved... \todo{Tom}{Explain why we re-made the
-stellar masses}. We also wanted to be able to perform the functional test of
+find that these are not well behaved at the low mass end. 
+% \todo{Tom}{Explain why we re-made the stellar masses!}. 
+We also wanted to be able to perform the functional test of
 trying to recover the convergence having assumed the correct stellar
 mass--halo mass relation. For these reasons, we assign a new stellar mass to
 each halo in the \MS catalogs, according to the stellar mass--halo mass
@@ -992,9 +998,8 @@ Green: all the objects in the field have only photometric redshifts.}
 \caption{Width of the \infered PDF $\pr(\kappah|\data)$ versus the true
 $\kappa$ along a line of sight. Blue assumes a spectroscopic redshift for
 every halo, whilst green assumes only photometric redshifts. The width of the
-\infered $\pr(\kappah|\data)$ increases with $\kappa$. 
-\todo{Tom}{Check that you mean
-$\kappah$ and not $\kappa$, and potentially change the graph!}}
+\infered $\pr(\kappah|\data)$ increases with $\kappa$.}
+%\todo{Tom}{Check that you mean $\kappah$ and not $\kappa$, and potentially change the graph!}}
 \label{fig:widthsvsH}
 \end{figure}
 
