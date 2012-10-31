@@ -36,8 +36,9 @@ from Photometric Catalog Data}
   Sherry~H.~Suyu$^{4}$,
   Zachary~Greene$^{4}$,
   Tommaso~Treu$^{4}$\thanks{\packard},
-  Christopher~D.~Fassnacht$^{5}$,}
+  Vasiliy~Belokurov$^{1}$,}
 \newauthor{%
+  Christopher~D.~Fassnacht$^{5}$,
   L\`eon~V.~E.~Koopmans$^{6}$,
   Roger~D.~Blandford$^{3}$} 
   \medskip\\
@@ -923,153 +924,262 @@ comes from reconstructing halos with magnitudes between $18<i<24$.}
 \section{Testing the Halo Model Reconstruction on Mock Galaxy Catalogs}
 \label{sec:obsMstar+z}
 
-Real attempts to reconstruct the convergence along a line of sight will not have direct access to the masses of dark matter halos, 
-and will likely not have access to a spectroscopic redshift either. Instead these properties must be inferred from astrophysical
-observables. In principle the only observables may be astrometric positions, photometric colours and possibly spectra. In this section we
-quantify the errors induced by inferring the halo mass and redshift from the observables. Much work has already focused on using
-photometric colours to infer stellar mass \citep[\eg][]{AugerEtal2009} and redshifts \citep[\eg][]{BPZ}, in line with these we shall use
-stellar mass and photometric redshifts (with appropriate errors), as the observables that must be converted into an estimate
-of $\kappax$. We will investigate two main sources of error: inferring halo mass given observed stellar mass and placing halos at the wrong redshift due to photometric redshift error.
+We now move on to consider the halo model reconstruction of line of sight mass
+distributions given noisy astronomical observables. A typical imaging survey
+can be expected to provide measurements of the positions and magnitudes of
+galaxies in a field;  spectra for some of the objects may either come from a
+synergistic survey, or from targeted follow-up. In this section we quantify
+the errors induced by inferring the halo mass and redshift from these
+observables. 
 
-We generate a stellar mass for each halo according to the stellar mass--halo mass relation of 
-\citet{BehrooziEtal2010}. From this stellar mass we simulate 
-an observed stellar mass by drawing a sample from $\pr(\log(M_{* \mathrm {obs}})|\log(M_{* \mathrm {true}}))$ which is given by a Gaussian of width $\sigma_{M_*}$ centred on $\log(M*_{\mathrm {true}})$. Where a spectroscopic redshift exists stellar masses can be estimated with typical uncertainties of 0.15 dex \citep{AugerEtal2009}, however with photometric redshifts stellar mass uncertainties are typically three times as large; we use $\sigma_{M_*}=0.15$ for halos with a spectroscopic redshift and $\sigma_{M_*}=0.45$ otherwise. For photometric redshift errors we draw a redshift from $\pr(z_{\rm true}|z_{\rm obs})$ which we take as a Gaussian of width $0.1(1+z_{\rm spec})$ centred on $z_{\rm spec}$, where $z_{\rm spec}$ is the halo's true redshift in the \MS catalogue.
+As described in \Sref{sec:model:halos}, in this work we infer halo masses
+given measurements of stellar mass. We will investigate two main sources of
+error: inferring halo mass given observed stellar mass, and placing halos at
+the wrong redshift due to photometric redshift error. Much work has already
+focused on using photometric colours to infer stellar mass
+\citep[\eg][]{AugerEtal2009} and redshifts \citep[\eg][]{BPZ}: we will
+estimate the likely uncertainties on stellar mass and redshift based on this
+work.  
+
+\subsection{Making Mock Observational Catalogs}
+
+While the \MS catalogs do already contain stellar masses for each galaxy, we
+find that these are not well behaved... \todo{Tom}{Explain why we re-made the
+stellar masses}. We also wanted to be able to perform the functional test of
+trying to recover the convergence having assumed the correct stellar
+mass--halo mass relation. For these reasons, we assign a new stellar mass to
+each halo in the \MS catalogs, according to the stellar mass--halo mass
+relation of  \citet{BehrooziEtal2010}. From this true  stellar mass we
+simulate an observed stellar mass by drawing a sample from 
+$\pr(\log{M^{*}_{\rm obs}}|\log{M^{*}_{\rm true}})$ which we take to be a
+Gaussian of width $\sigma_{M_*}$ centred on $\log(M*_{\mathrm {true}})$. Where
+a spectroscopic redshift exists stellar masses can be estimated with typical
+uncertainties of 0.15 dex \citep{AugerEtal2009}; however with photometric
+redshifts stellar mass uncertainties are typically three times as large. We
+use $\sigma_{M_*}=0.15$ for halos with a spectroscopic redshift and
+$\sigma_{M_*}=0.45$ otherwise. For photometric redshift errors we draw a
+redshift from $\pr(z_{\rm true}|z_{\rm obs})$ which we take to be a Gaussian
+of width $0.1(1+z_{\rm spec})$ centred on $z_{\rm spec}$, where $z_{\rm spec}$
+is the halo's true redshift in the \MS catalogue.
+
+
+\subsection{Reconstructing $\kappa$ given a spectroscopic redshift for every object}
 
 Given an uncertain stellar mass and redshift it is possible to infer a
 halo mass using the stellar mass--halo mass relation of
 \citet{BehrooziEtal2010}. This \proceedure requires an inversion of the
 relation given in \citet{BehrooziEtal2010} and correctly inverting the
 relation's uncertainties requires care: the \proceedure we use to do this
-is given in Appendix \ref{appendix:MSMH}. By drawing sample halo masses
+is given in \Aref{appendix:MSMH}. By drawing sample halo masses
 and redshifts, we can infer a sample $\kappah$ using the \proceedure of
-Section \ref{sec:model}; repeatedly drawing samples allows us to
-estimate P$(\kappah)$ for each reconstructed line of sight.
-
-\subsection{Reconstructing $\kappa$ given a spectroscopic redshift for every object}
+\Sref{sec:model}; repeatedly drawing samples allows us to
+estimate $\pr(\kappah|\data)$ for each reconstructed line of sight. We then
+transform this into our target PDF $\pr(\kappa|\data)$.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/Width.eps}
-\caption[magcut]{The widths of the \infered P$(\kappah|\mathcal{D})$ for $10^5$ lines of sight given different amounts of data. Blue assumes a spectroscopic redshift for every halo with $i<26$, purple assumes a spectroscopic redshift for every halo with $i<23$ and every within 1 arcminute and $i<24$, cyan assumes a spectroscopic redshift for every halo with $i<22$ and green assumes that no objects in the field have a spectroscopic redshift}
+\caption{The widths of the \infered PDFs $\pr(\kappah|\data)$ for
+$10^5$ lines of sight, given different quality of data. Blue:
+spectroscopic redshift for every halo with $i<26$; Purple: 
+spectroscopic redshift for every halo with $i<23$, and every halo with $i<24$
+within 1 arcminute; Cyan: spectroscopic redshift for every halo with $i<22$; 
+Green: all the objects in the field have only photometric redshifts.}
 \label{fig:reconwidths}
 \end{figure}
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/Widthvshilberrt.eps}
-\caption[magcut]{Width of the \infered P$(\kappah|\mathcal{D})$ verses
-the true $\kappa$ along a line of sight. Blue assumes a spectroscopic
-redshift for every halo, whilst green assumes no spectroscopic
-redshifts. The width of the \infered P$(\kappah)$ increases with $\kappa$. If correctly reconstructed, the lowest density lines of sight can provide the most precise measurement of the time delay distance.}
+\caption{Width of the \infered PDF $\pr(\kappah|\data)$ versus the true
+$\kappa$ along a line of sight. Blue assumes a spectroscopic redshift for
+every halo, whilst green assumes only photometric redshifts. The width of the
+\infered $\pr(\kappah|\data)$ increases with $\kappa$. 
+\todo{Tom}{Check that you mean
+$\kappah$ and not $\kappa$, and potentially change the graph!}}
 \label{fig:widthsvsH}
 \end{figure}
 
-The best possible reconstruction of $\kappah$ corresponds to having a sepctroscopic redshift for every single object in our field. Observationally such a reconstruction would be prohibitively expensive in terms of telescope time, but we investigate this scenario as an ideal case. Reconstructing the lines of sight with perfect knowledge of the redshift but an uncertain stellar mass, we find that the width of $\Pr\left(\sumkappah \right)$ grows with the expectation value of $\sumkappah$; this is not surprising since the low $\sumkappah$ lines of sight are relatively empty and so there are few opportunities for uncertainties in the halo masses to propogate into $\sumkappah$ uncertainties. After applying the void correction the median reconstruction width is 0.0123; with 22 percent of lines of sight having a reconstruction width less than 0.01. 
+The best possible reconstructions of $\kappa$ will come from having a
+spectroscopic redshift for every single object in each field
+(\Fref{fig:reconwidths}).  In terms of telescope time, such a reconstruction
+would be prohibitively expensive, but we investigate this scenario as an ideal
+case. Reconstructing the lines of sight with perfect knowledge of the redshift
+but an uncertain stellar mass, we find that the width of $\pr(\kappa|\data)$
+grows with the expectation value of $\kappa$ (\Fref{fig:widthsvsH}). The low
+$\kappa$ lines of sight are relatively empty, and so there are few
+opportunities for uncertainties in the halo masses to \propogate into $\kappa$
+uncertainties. The median reconstruction width in this idealised situations is
+0.0123; some 22\% of lines of sight would have a reconstruction width less
+than 0.01. 
+
+% PJM: Note that I removed talk of void correction here - surely we should be
+% just applying the method we describe and inferring $\kappa$?
+
 
 \subsection{Reconstructing $\kappa$ from photometry alone}
 
-Inferring the stellar mass of a galaxy from its magnitude and colours requires an estimate of how far away the galaxy is; without a spectroscopic redshift the the \infered stellar mass is less precise. However, obtaining photometry has much lower observational cost; over the next few years several large area photometric surveys will reach 24th magnitude \citep{EUCLID,LSST}, these will provide sufficient data to reconstruct lines of sight {\it without} additional observations. In principle the photometric redshift is correlated with the \infered stellar mass, however we do not model this effect since the convergence from the outskirts of an individual halo is only weakly dependant on redshift at fixed mass: the redshift error is small effect on the recovered $\pr(\kappa)$ when compared to the effect of uncertain stellar masses.  With only photometric redshifts the uncertainty on $\sum\kapparec^{\rm halos}$ is much larger than the spectrocopic case and this propogates into a broader $\pr(\kappa)$, although the photometric reconstruction still typically produces a 1.4 fold improvement compared to the precision of the global P($\kappa$).
+Inferring the stellar mass of a galaxy from its magnitude and colours requires
+an estimate of how far away the galaxy is; without a spectroscopic redshift
+the \infered stellar mass is less precise. However, obtaining photometry has
+much lower observational cost; over the next few years several large area
+photometric surveys will reach 24th magnitude \citep{Euclid,LSST}, these will
+provide sufficient data to reconstruct lines of sight {\it without} additional
+observations. In principle the photometric redshift is correlated with the
+\infered stellar mass, however we do not model this effect since the
+convergence from the outskirts of an individual halo is only weakly \dependant
+on redshift at fixed mass: the redshift error has only a small effect on the
+inferred $\pr(\kappa|\data)$ when compared to the effect of uncertain stellar
+masses.  With only photometric redshifts the uncertainty on
+$\kappah$ is much larger than in the spectrocopic case and this
+\propogates into a broader $\pr(\kappa|\data)$, although the photometric
+reconstruction still typically produces a 40\% improvement compared to the
+precision of the global $\pr(\kappa)$ (\Fref{fig:widthsvsH}).
+
 
 \subsection{Reconstructing $\kappa$ with partial spectroscopic coverage}
 
-Whilst a fully photometric reconstruction provides useful constraints on $\pr(\kappa)$, targeted spectroscopy can provide addtional constraints upon the masses and redshifts of halos whose $\kappah$ contribution have the largest absolute uncertainty. Obtaining spectra of bright ($i<22$) objects is relatively fast with 8-m class telescopes; we find that if spectroscopic redhsifts were known for all $i<22$ galaxies in our field the reconstruction improves slightly upon the purely photometric reconstruction, although the improvement depends strongly upon the nature of the particular line of sight. Obtaining spectra for fainter objects would be considerably more expensive, but if spectroscopic redshifts could be obtained for all $i<23$ galaxies and all $i<24$ galaxies within 1 arcminute of the line of sight the $\pr(\kappa)$ would be almost as good as having complete spectroscopic coverage. High $\kappa$ lines of sight benefit the most from additional spectral coverage, since these LoS have the most uncertain $\kappah$. Consistent with our previous findings the lowest $\kappa$ lines of sight have the most constrained $\kappa$ PDFs.
+While a fully photometric reconstruction provides useful constraints on
+$\pr(\kappa|\data)$, targeted spectroscopy can provide addtional constraints
+on the masses and redshifts of halos whose $\kappah$ contribution have the
+largest absolute uncertainty. Obtaining spectra of bright ($i<22$) objects is
+relatively fast with large telescopes: however, we find that if spectroscopic
+redhsifts were known for all $i<22$ galaxies in our field the reconstruction
+improves slightly upon the purely photometric reconstruction, although the
+improvement can depend strongly on the details of the particular line of
+sight. Obtaining spectra for fainter objects would be correspondingly more
+expensive, but if spectroscopic redshifts could be obtained for all $i<23$
+galaxies and all $i<24$ galaxies within 1 arcminute of the line of sight, the
+$\pr(\kappa|\data)$ would be almost as good as having complete spectroscopic
+coverage (\Fref{fig:reconwidths}). High $\kappa$ lines of sight benefit the
+most from additional spectral coverage, since these LoS have the most
+uncertain $\kappah$. Consistent with our previous findings the lowest $\kappa$
+lines of sight have the most constrained $\kappa$ PDFs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\section{Testing for Systematic errors}
-\label{sec:biases}
+\section{Systematic Errors due to Sample Selection}
+\label{sec:bias}
+
 \begin{figure*}
 \includegraphics[width=\textwidth]{figs/biasplots.eps}
-\caption[magcut]{Estimating $\kappa-\kappa_{\rm true}$ from subsets of
+\caption{Estimating $\kappa-\kappa_{\rm true}$ from subsets of
 lenses. By subtracting the true (ray-traced) convergence from the
 infered P($\kappa$) for each line of sight we are left with a PDF that
 should be estimating zero, these can be multiplied together for multiple
 lines of sight to test for a possible bias. These plots show the
-expectation value of $\prod_{i=1}^N \pr_i(\kappa-\kappa_{\rm true})$ -
-deviations from zero can be seen as a bias. The solid, dashed and dotted
-lines are for combining 20, 5 and 2 lenses respectively. Green lines are
-from multiplying P($\kappa$) \infered from photometry alone, whilst red
-lines are from multiplying P($\kappa$) \infered from photometry and a
+expectation value of $\prod_{i=1}^N \pr_i(\kappa-\kappa_{\rm true})$ --
+deviations from zero constitute biases. The solid, dashed and dotted
+lines correspond to combinations of 
+20, 5 and 2 sightlines respectively. Green lines show the results
+from multiplying $\pr(\kappa|\data)$ \infered from photometry alone, whilst red
+lines are from multiplying $\pr(\kappa)$ \infered from photometry and a
 spectroscopic redshift for all halos with $i<23$ and all halos within 1
-arcminute and $i<24$. The left most plot shows randomly selected lines
+arcminute and $i<24$. The leftmost plot shows randomly selected lines
 of sight. The central plot shows sight lines randomly selected from the
-third of lines whose P($\kappa$) is most tightly constrained. The right
+33\% of lines whose P($\kappa$) is most tightly constrained. The right
 hand plot shows only lines of sight with external shear of 0.03 or
 greater.}
 \label{fig:biasplots}
 \end{figure*}
 
-Whilst it is good to reconstruct $\kappa$ precisely it is vital that
-$\kappa$ is reconstructed accurately. A precise, inaccurate $\kappa$
-estimator is worse than useless for cosmology. We test the accuracy of
-our reconstructed $\pr(\kappa)$ in the following way: for each line of
-sight we shift the reconstructed $\pr(\kappa)$ by the line of sight's
-raytraced $\kappa$ to give $\pr(\kappa-\kapparay)$. Since the
-$\pr(\kappa-\kapparay)$ for each line of sight is an \independant estimator of zero, the PDFs can be combined according to
-
+While it is good to reconstruct $\kappa$ precisely, it is more important that
+$\kappa$ is reconstructed accurately. 
+% A precise, inaccurate $\kappa$ estimator
+% is worse than useless for cosmology. 
+% PJM: steady on.
+We test the accuracy of our reconstructed $\pr(\kappa|\data)$ in the following
+way: for each line of sight we shift the reconstructed $\pr(\kappa|\data)$ by
+the line of sight's true value of $\kappa$ to give
+$\pr(\kappa-\kappatrue|\data)$. Since the $\pr(\kappa-\kappatrue|\data)$ for
+each line of sight is then an \independant estimator of zero, the PDFs can be
+combined according to
 \be
 \label{eq:bias}
-\mathcal{P}_N=\prod_{i=1}^N \pr_i(\kappa-\kappa_{\rm true})
+\mathcal{P}_N = \prod_{i=1}^N \pr_i(\kappa-\kappa_{\rm true})
 \ee
+In this section, we quantify the bias as the size of the deviation in the
+expectation value of $\mathcal{P}_N$ from zero. If the bias of $\mathcal{P}_N$
+is smaller than the half-width of $\mathcal{P}_N$, our $\kappa$ estimators can
+be considered accurate. 
+The point at which the modulus of the bias and the width of $\mathcal{P}_N$
+are approximately equal gives an estimate of the number of objects which can
+be combined before the measurement is limited by systematic error.
 
-We quantify the bias as the size of the deviation in the expectation value of $\mathcal{P}$ from zero. If the bias of $\mathcal{P}_N$ is typically smaller than the half-width of $\mathcal{P}_N$ our $\kappa$ estimators can be considered accurate. The number of useful time delay lines of sight can be approximated as the point at which the modulus of the bias and width of $\mathcal{P}_N$ are the same size.
 
-%\todo{tom}{do}
-%\subsection{Using the wrong M$_{\rm halo}$-M$_{*}$ relation}
-\subsection{Selection bias from a subset of lines of sight?}
+The source of systematic error that we investigate  is that of sample
+selection: we define three different selections of lines of sight, and compute
+the bias present in each one in turn, as a function of data quality. The
+results described below are illustrated in \Fref{fig:biasplots}.
 
-First we test for systematic errors in the reconstruction of a randomly
-selected subset of samples. With the purely photometric reconstruction
-there is a small bias towards underestimating $\kappa$,  combining 6
-lenses the half-width and bias of $\mathcal{P}_{6}$ both equal 0.007.
-With targeted spectroscopic follow up this improves slightly, for the
-combination of 8 lenses the half-width and expectation value 
-$\mathcal{P}_{8}$ equal 0.005. Since strong lens modelling uncertainties
-are typically at the 3\% level, several hundred lenses are needed to
-reach this level of precision, but at that point a 0.005 bias in
-$\kappa$ estimation would become the limiting factor on time-delay
-cosmography.
+
+\subsubsection{Selecting random lines of sight}
+\label{sec:bias:random}
+
+We first consider a purley random selection of lines of sight. With the purely
+photometric reconstruction, there is a small bias towards underestimating
+$\kappa$: combining 6 targets the half-width and bias of $\mathcal{P}_{6}$
+both equal 0.007. With targeted spectroscopic follow up this improves
+slightly, for the combination of 8 sightlines the half-width and expectation
+value  $\mathcal{P}_{8}$ equal 0.005.  If these lines of sight hosted time
+delay lenses, the latter number would correspond to a systematic error of
+0.5\% in time delay distance. Since strong lens modelling uncertainties are
+typically at the 3-4\% level, a sample of 8 lenses would still be limited by
+modelling uncertainty. However, a sample containing 100 or more lenses or more
+would be limited by the external convergence reconstruction instead.
 
 
 \subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
-\label{sec:tightPDF}
+\label{sec:bias:tightPDF}
 
-Since lens monitoring campaigns are expensive, it is likely that only a
-subset of lenses will be observed. By pre-selecting the lenses with the
-most well constrained $\pr(\kappax)$, the cosmological value per lens
-can be increased, however this has the potential to induce a bias. It is
-probable that only photometry will be available at the time of lens
-selection (although spectroscopic follow-up might be conducted at a
-later date). We mimik such a selection by drawing lines of sight only
-from those in the lowest third of $\sigma_{\kappa}$ given a photomtric
-reconstruction of their fields. We find that selecting the most tightly
-constrained lines of sight {\it decreases} the bias - our reconstruction
-is most succesful for the lowest $\kappa$ lines of sight. With
-photometry alone the bias is at the 0.0028 level. With a targeted
-spectroscopic follow-up of the selected lines of sight there is
-negligible improvement, since the best constrained lines of sight are
-the most empty, but it is the high-$\kappa$ lines of sight that benefit
-the most from spectroscopy. Photometry of the field is sufficient to
-adequately select the best lines of sight for cosmology - and doing so
-greatly increases both the precision and accuracy of the cosmological
-constraints per lens.
+Since follow-up campaigns (such as high resolution imaging, or time
+variability monitoring) are expensive, it is likely that only a subset of
+detected objects will be observed further. By pre-selecting objects that have 
+the most well constrained convergence, the cosmological value per lens can be
+increased. However, this selection has the potential to induce a bias. It is
+probable that only photometry will be available at the time of sub-sample
+selection (although spectroscopic follow-up might be conducted at a later
+date). We mimic such a selection by drawing lines of sight only from those in
+the lowest third of $\sigma_{\kappa}$, given a purely photometric
+reconstruction of their fields. 
+
+We find that selecting the most tightly constrained lines of sight {\it
+decreases} the bias -- our reconstruction is most \succesful for the lowest
+$\kappa$ lines of sight. With photometry alone, the bias in this sample is
+0.0028. With targeted spectroscopic follow-up of the selected lines of sight
+there is negligible improvement, since the best constrained lines of sight are
+the most empty, and it is the high-$\kappa$ lines of sight that benefit the
+most from spectroscopy. Photometry of the field is sufficient to adequately
+select the best lines of sight for cosmology -- and doing so greatly increases
+both the precision and accuracy of the cosmological constraints per system.
+
 
 \subsubsection{Selecting only high shear lines of sight}
+\label{sec:bias:tightPDF}
 
-\todo{phil}{Write up why lenses are likely to be gamma biased}
+Time delay lenses are often selected for follow-up based on their images'
+brightness (to make monitoring observations less expensive), their images'
+separation (to decrease the covariance between the ground-based image
+lightcurves), or the fact that they are quadruply-imaging rather than
+doubly-imaging, since this yields 3 time delays instead of 1, and a higher
+magnification, more informative Einstein Ring system. All three of these
+properties favour lenses with high convergence and shear along their lines of
+sight. Focusing on the quad selection, we might expect many of these systems
+to have significant external shear (since the cross-section for 4 image
+production is so sensitive to ellipticity in the lens mass distribution (or
+equivalently, external shear due to the lens' environment). 
 
-\notes{The uncertainties from modeling a strong lens system depends on
-the comfiguration of the source images. With only two point images ofthe
-source the lens slope and mass are degenerate; the mass-slope
-degeneracy\citep[need citation][Saha?]{mass-slope degeneracy}. Where
-lensed arcs or four point images are present the mass-slope degeneracy
-can be broken and cosmology can be extracted, \citep{Suyu2012a}. The
-detectability of arcs depend on the source, but the presence of four
-images (so called quads) depend on the shear of the lens model - a high
-shear is needed to produce a quad. The shear is almost certainly
-dominated by the lens model itself, but it is possible that quads are
-biased towards high external shear.} 
-
-By selecting only lines of sight with an external shear of $\gamma>0.03$ we can test the effect of shear selection. We find that in all cases $\kappa$ is underestimated at the $\sim$0.01 level. Part of this effect is mitigated if only the lines of sight with both $\gamma>0.03$ and sharp $\pr(\kappax)$ are used but biases at the $\sim$0.005 level remain. Since our model does not include shear constraints it is not surprising that selecting based on shear can induce a bias. A more sophisticated model that includes the shear recovered from the lens modelling may not be susceptable to this bias. The toy model of this section ($\gamma>0.03$) is likely to be a much stronger selection than reality, but it is worth noting that the reconstruction \proceedure will be biased if lens selection functions are extreme and unaccounted.
+By selecting only lines of sight with an external shear of $\gamma>0.03$ we
+can test the impact of shear selection. We find that in this sample, $\kappa$
+is systematically underestimated at the $\sim$0.01 level. Part of this effect
+is mitigated if only the lines of sight with both $\gamma>0.03$ and sharp
+$\pr(\kappax)$ are used but biases at the $\sim$0.005 level remain. Since our
+model does not include shear constraints it is not surprising that selecting
+based on shear can induce a bias. A more sophisticated model that includes the
+shear recovered from the lens modelling may be less susceptable to this bias.
+The toy model of this section ($\gamma>0.03$) is likely to be a much stronger
+selection than reality, but it is worth noting that the reconstruction
+\proceedure will be biased if lens selection functions are extreme and
+unaccounted for.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1085,74 +1195,69 @@ of sight can improve the constraints on the external convergence along
 that line of sight. The total convergence along a line of sight is
 strongly correlated with the reconstructed $\kappah$. However since our
 model ignores voids and assumes all halos follow a spherical
-truncated-NFW profile our model does not include all of the relevant
-physics, hence the width of our resulting $\pr(\kappax)$ is still
+truncated-NFW profile our halo model does not include all of the relevant
+physics; hence, the width of our resulting $\pr(\kappa|\data)$ is still
 typically $\sim$0.01 for any given lightcone, even with a perfect
 knowledge of every halo's virial mass and redshift. To make further
 progress a more advanced treatment of both voids and halos will be
 necessary. Interestingly, we have found that the most empty lines of
-sight can be reconstructed with the most precision. $\kappax$ for empty
-lines of sight have little contributions from halos and a large
+sight can be reconstructed with the most precision. $\kappa$ estimates
+for empty
+lines of sight receive few contributions from halos, and a large
 contribution from voids; since they have the tightest PDFs after the
 reconstruction it seems that our model's biggest uncertainties are
 driven by naively reconstructing halos rather than neglecting voids.
 With a photometric reconstruction of the field there is a significant
-broadening but the resulting precision is still typically 1.5 times
-greater than using the global $\kappa$ distribution. 
+broadening, but the resulting precision is still typically 50\% 
+higher than using the global $\kappa$ distribution. 
 
-Since the uncertainty on $\pr(\kappa|\mathcal{D})$ is $\sim$0.01 even
-with perfect knowledge of halo mass and redshift it seems that voids
+Since the uncertainty on $\pr(\kappa|\data)$ is $\sim$0.01 even
+with perfect knowledge of halo mass and redshift, it seems that voids
 (plus deviations from sphericity and dark matter clumping within the
 main halo) dominate the total $\kappa$ uncertainty even with very
 uncertain stellar masses. Inferring halo ellipticity and dark matter
 clumping will likely always remain a difficulty for line of sight
-reconstruction; but as Figure \ref{fig:magcut} shows observing deeper
+reconstruction; but as \Fref{fig:magcut} shows, observing deeper
 than 24th magnitude does not signifcantly help the reconstruction.
 Because our reconstruction is mostly limited by the model, spectroscopic
 coverage can only provide a modest improvement to the reconstruction and
 at significant observational cost.
 
-For a small fraction of lines of sight, $\pr(\kappax)$ remains very
+For a small fraction of lines of sight, $\pr(\kappa|\data)$ remains very
 broad even after applying our reconstruction; these lines of sight are
 typically the most overdense lines of sight in the universe. For
-time-delay cosmography the most observationally expensive task is the
-lightcurve monitoring, whilst making photometric observations of a
-4$\times$4 arcminute patch of sky survey down to 24th magnitude is a
+time-delay cosmography the most observationally expensive tasks are the
+lightcurve monitoring and high resolution follow-up imaging and spectroscopy,
+while making photometric observations of a
+4$\times$4 arcminute patch of sky survey down to 24th magnitude is
 relatively cheap. We have shown that with a single epoch observation of
-the region around a strong lens it is possible to infer $\pr(\kappax)$.
-If a line of sight has a broad $\pr(\kappax)$ it can be rejected {\it
-before} the investment of longterm lightcurve monitoring. We find that
+the region around a strong lens it is possible to infer $\pr(\kappa|\data)$.
+If a line of sight has a broad $\pr(\kappa|\data)$ it can be rejected {\it
+before} the investment of follow-up. We find that
 selecting only the lines of sight with the most tightly constrained
-$\pr(\kappax)$ does not induce a bias.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{figure}
-\includegraphics[width=\columnwidth]{figs/biasplots3.eps}
-\caption{}
-\label{fig:no-median-tricks}
-\end{figure}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+$\pr(\kappa)$ does not induce a bias in $\kappa$, and hence distance.
 
 The method we have outlined can also be used to estimate the external shear
 along a line of sight. Shear is an observable that can be extracted from
 strong lens modelling, however there is a degeneracy between internal and
-external shear. Progress has been made in disentangelling external and
-internal shear \citep[\eg][]{xxx} but there are still significant
-uncertainties: \citet{WongEtal2011} attempted to match the shear from strong
-lens models with a reconstruction of the local lens group environment, but
-found a tension between the strong lens model and the reconstruction of the
-environment. Since \citet{WongEtal2011} only reconstructed the local lens
-group, rather than the full line of sight contribution, it is unclear whether
-the external shear from lens models can be reconciled with a line of sight
-reconstruction. {\it If} external shear can be measured, it provides an
-additional constraint on which of the Millenium Simulation lines of sight are
-similar to the reconstructed line of sight. \citet{SuyuEtal2012} found that
-for RXJ1131 combining shear constriants with galaxy number count overdensity,
-gave a significantly different $\pr(\kappax|\gamma,N_{45})$ copmpared to the
-PDF from number count overdensity alone, $\pr(\kappax|N_{45})$. Whilst not included
-in this paper, we found that given perfect knowledge of the halo mass and redshift
-the raytraced external shear $\gamma$ and the reconstructed external shear $\gamma_{\mathrm{h}}$ 
-are similar, with 68 percent of lines obeying
+external shear. When the Einstein Ring data are very good it is possible to
+disentangle external and internal shear \citep[\eg][]{xxx}, but there are
+still significant uncertainties: \citet{WongEtal2011} attempted to match the
+shear from strong lens models with a reconstruction of the local lens group
+environment, but found a tension between the strong lens model and the
+reconstruction of the environment. Since \citet{WongEtal2011} only
+reconstructed the local lens group, rather than the full line of sight
+contribution, it is unclear whether the external shear from lens models can be
+reconciled with a line of sight reconstruction. {\it If} external shear can be
+measured, it provides an additional constraint on which of the \MS lines of
+sight are similar to the reconstructed line of sight. \citet{SuyuEtal2012}
+found that for RXJ1131 combining shear constriants with galaxy number count
+overdensity, gave a significantly different $\pr(\kappa|\gamma,N_{45})$
+compared to the PDF from number count overdensity alone,
+$\pr(\kappax|N_{45})$. While not included in this paper, we found that given
+perfect knowledge of the halo mass and redshift the raytraced external shear
+$\gamma$ and the reconstructed external shear $\gamma_{\mathrm{h}}$  are
+similar, with 68 percent of lines obeying
 \be
 \label{eq:shearineq}
 |{\boldmath{\gamma}-\boldmath{\gamma_{\mathrm{h}}}}| < \mathrm{0.025}
@@ -1161,12 +1266,54 @@ Future work should investigate whether $\gamma_{\mathrm{h}}$ can be used
 to improve the accuracy and precision of $\kappa$ estimation, given a
 reconstruction of the line of sight. 
 
-This work has used the \MS as a calibration guide. If the real universe
-is not like  the \MS the the calibration will be incorrect - repeating
-the study with a different simulation would quantify the sensitivity of
-our results to the simulation used. Similarly the use of a different
-semi-analytic model to paint galaxies onto halos could provide a useful
-check, to ensure against potential systematic errors.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}
+\includegraphics[width=\columnwidth]{figs/biasplots3.eps}
+\caption{}
+\label{fig:no-median-tricks}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+The reduction of $\pr(\kappah|\data)$ to just its median value, before using
+it to look up the appropriate $\pr(\kappa)$ from the simulated sightline
+ensemble, is reminiscent of the procedure followed by \citet{SuyuEtal2010},
+and Greene et al (in prep.) The reconstruction method can be seen as the
+limiting case of the weightings explored by Greene et al: rather than using
+weighted number counts in an aperture, we treat each galaxy individually, and
+predict  $\kappa_{\rm h,obs}^{\rm med}$ for use in their place. One
+significant disadvantage of these types of method is that they impose a
+bottleneck in the flow of information. Once you have compressed to one number,
+it is difficult to incorporate more information later; you have to recompute
+all the calibrations. Using the full PDF for $\kappah$ is the more correct
+thing to do: at present, however, it suffers from significant bias in the
+photometric data case. \Fref{fig:no-median-tricks} shows how $\kappa$ is
+overestimated, as a result of the high scatter in halo mass for objects with 
+high stellar mass. Future work should increasing the precision of the halo
+mass estimates. 
+
+More generally, the \MS as a calibration tool. If the real Universe is not
+like the \MS, then the calibration will be incorrect; repeating the study using
+a different simulation to make the test catalogs would allow us to quantify
+the sensitivity of our results to the simulation used. Similarly the use of a
+different semi-analytic model to paint galaxies onto halos, and an alternative
+stellar mass--halo mass relation would both enable similar exploration of
+these systematic errors.
+
+More generally, the method presented here is tied to the simulations at
+several points: in particular, the prior PDF for $\kappah$, and the
+conditional distribution $\pr(\kappa|\kappah)$ used to convert halo model
+convergence to total convergence. The former tie could potentially be avoided
+if the halo mass estimation gave rise to a reasonable $\pr(\kappah|\data)$ on
+its own. Possibilities for improving the precision of the halo mass estimation
+include incorporating a group and cluster finder, and then inferring halo mass
+from optical richness \citep[\eg][]{MaxBCG} in tandem with BCG stellar mass,
+and using additional galaxy scaling relations to make use of the luminosity
+and size information present. The latter tie is more difficult, since breaking
+it means modelling the unseen mass structures and voids from first principles.
+In the wide field survey era, will it be possible to infer hierarchically the
+parameters of a flexible model for these things from the data itself? Weak
+lensing shears will be available over the whole Euclid and LSST survey areas:
+constraining halo models using this information is an interesting possibility.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1175,56 +1322,59 @@ check, to ensure against potential systematic errors.
 \label{sec:conclude}
 
 In this work we have investigated a simple halo model prescription for
-reconstructing all the mass along a line of sight to an intermediate
-redshift source. We have used the ray-traced lensing convergence along
-lines of sight through the Millenium Simulation to test this approach,
-and to calibrate estimates of the total convergence along a line of
-sight to an observed distant galaxy made by summing the convergences due
-to each object in a photometric catalogue. Having found that the
-reconstruction process is effective given perfect knowledge of halo mass
-and redshift, we investigated the effects of reasonable uncertainties in
-the stellar mass and redshift of each halo, and propogated these
-uncertainties into a $\pr\left(\sumkappah\right)$ for each line of
-sight. We draw the following conclusions:
+reconstructing all the mass along a line of sight to an intermediate redshift
+source. We have used the ray-traced lensing convergence along lines of sight
+through the Millenium Simulation to test this approach, and to calibrate
+estimates of the total convergence made by summing the convergences due to
+each object in a photometric catalogue. Having found that the reconstruction
+process is effective given perfect knowledge of halo mass and redshift, we
+investigated the effects of reasonable uncertainties in the stellar mass and
+redshift of each halo, and propagated these uncertainties into a
+$\pr(\kappa|\data)$ for each line of sight. We also defined three different
+possible line of sight selections, and investigated the bias induced by these
+selections. We draw the following conclusions:
 
 \begin{itemize} 
 
-\item Our model uses a truncated spherical NFW profile for each dark
+\item Our halo model uses a truncated spherical NFW profile for each dark
 matter halo and neglects voids, but despite the model's simplicity the
-reconstructed $\kappah$ is a good tracer of $\kappa$.  We found that
-with perfect knowledge of the halo mass and redshift (from the Millenium
-Simulation catalogs), for a typical line of sight the reconstruction
-gives an unbiased estimate of $\pr(\kappa)$ that is a factor of 2 less
-broad than the global $\pr(\kappa)$.
+reconstructed $\kappah$ is a good, if biased, tracer of $\kappa$.  We found
+that with perfect knowledge of the halo mass and redshift (from the Millennium
+Simulation catalogs), for a typical line of sight the reconstruction gives an
+unbiased estimate of $\kappa$ that is a factor of 2 more precise than the
+global $\pr(\kappa)$.
+
+\item With uncertain halo masses and redshifts, we find that
+$\pr(\kappah|\data)$ is still a useful indicator for inferring
+$\pr(\kappa|\data)$ from the ensemble of simulated lines of sight, but the
+resulting PDFs tend to be much broader than for perfect halo mass and redshift
+reconstructions. The long tails of the $\kappah$ distribution can be
+suppressed by focusing on the median value as an indicator for $\kappa$
+instead.
 
 \item  For the most overdense lines of sight, the reconstruction produces a
 very broad PDF, but since the reconstruction can be performed before follow-up
 time is invested it will be possible to discard the most uncertain lines of
 sight and optimize the use of follow-up time. Photometric data is sufficient 
-to select the best lines of sight for follow-up.
+to select the best lines of sight for follow-up. Spectroscopic coverage helps
+to tighten  $\pr(\kappa|\data)$ for high $\kappa$ lines of sight, but is of
+limited use for  low $\kappa$ lines of sight.
 
-\item With uncertain halo masses and redshifts, we find that
-$\pr(\kappah)$ is still a useful indicator for generating an estimate
-of $\pr(\kappa)$ from the ensemble of simulated lines of sight, but the resulting
-PDFs tend to be much broader than for perfect
-halo mass and redshift reconstructions. Spectroscopic coverage helps to tighten 
-$\pr(\kappa)$ for high $\kappa$ lines of sight, but is of limited use for 
-low $\kappa$ lines of sight.
+\item It is very rare for halos further than 2 arcminutes from the line of
+sight to make a significant contribution to $\pr(\kappa|\data)$. We also found
+that including halos whose host galaxy is less luminous than $i=24$ does not
+significantly improve our reconstruction precision. A photometric survey to
+this depth of a 4$\times$4 arcminute patch around the lens would approach the
+limiting uncertainties of our simple reconstruction recipe, and yield a 
+$\pr(\kappa|\data)$ that has, on average, a width of 0.016. This is 1.5 times
+less broad than the global $\pr(\kappa)$.
 
-\item It is very rare for halos further than 2 arcminutes to make a
-significant contribution to $\kappa$. We also found that including halos
-whose host galaxy is less luminous than $i=24$ does not significantly improve
-our reconstruction \proceedure. A photometric survey to this depth of a
-4$\times$4 arcminute patch around the lens would approach the limiting
-uncertainties of our simple reconstruction recipe, and yield a 
-$\pr(\kappa)$ that has, on average, a width of 0.016 --
-1.5 times less broad than the global $\pr(\kappa)$.
-
-\item We find that the lines of sight with the sharpest $\pr(\kappa)$ are
-typically under-dense. With a photometric reconstruction of all lens fields,
-and following up only the lenses with the sharpest $\pr(\kappa)$,
-the width of the dominant statistical uncertainty in time-delay cosmography
-can be halved, without inducing biases at the one percent level.
+\item We find that the lines of sight with the sharpest inferred
+$\pr(\kappa|\data)$ are typically under-dense. With a photometric
+reconstruction of all lens fields, and following up only the lenses with the
+most precise $\kappa$ estimates, the width of the dominant statistical
+uncertainty in time-delay cosmography can be halved, without inducing biases
+at the one percent level.
 
 \end{itemize}
 
@@ -1243,7 +1393,7 @@ source of error.
 
 \section*{Acknowledgments}
  
-We thank Vasily Belokurov, Risa Wechsler and Peter Behroozi 
+We thank Risa Wechsler and Peter Behroozi 
 for useful discussions and suggestions.
 \input{acknowledgments.tex}
 
