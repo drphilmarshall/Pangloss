@@ -8,7 +8,7 @@
 %% letterpaper
 %% a4paper
 
-% \voffset=-0.8in
+\voffset=-0.6in
 
 % Packages:
 \input psfig.sty
@@ -223,14 +223,16 @@ predictions, but were unable to distinguish between the environment
 modelling and the strong lens modelling as the cause of these
 discrepancies.
 %
-\citet{KarpenkaEtal2012} used a halo model to predict the magnification due to
+\citet{KarpenkaEtal2012} used a halo model to predict deterministically 
+the magnification due to
 galaxies along the line of sight to type Ia supernovae, and inferred the
-parameters of the scaling relations between light and mass in these galaxies
+parameters of scaling relations between light and mass in these galaxies
 from hundreds of supernova lightcone simultaneously. Following
 \citet{JonssonEtal2010}, they subtract off the mean convergence to ensure that
 the universal mass budget is balanced, and compare models where the halos are
 all have either truncated singular isothermal profiles, or 
-NFW profiles. Both groups detect lensing effects in the supernova data.
+NFW profiles. Both groups were able to 
+detect lensing effects in the supernova data this way.
 
 These observational investigations have provided some very useful
 insight into the problem of convergence estimation.  Coming from a more
@@ -1136,20 +1138,21 @@ results described below are illustrated in \Fref{fig:biasplots}.
 \subsubsection{Selecting random lines of sight}
 \label{sec:bias:random}
 
-We first consider a purley random selection of lines of sight. With the purely
+We first consider a purely random selection of lines of sight. With the purely
 photometric reconstruction, there is a small bias towards underestimating
 $\kappa$: combining 6 targets the half-width and bias of $\mathcal{P}_{6}$
 both equal 0.007. With targeted spectroscopic follow up this improves
 slightly, for the combination of 8 sightlines the half-width and expectation
 value  $\mathcal{P}_{8}$ equal 0.005.  If these lines of sight hosted time
 delay lenses, the latter number would correspond to a systematic error of
-0.5\% in time delay distance. Since strong lens modelling uncertainties are
-typically at the 3-4\% level, a sample of 8 lenses would still be limited by
-modelling uncertainty. However, a sample containing 100 or more lenses or more
-would be limited by the external convergence reconstruction instead.
+0.5\% in time delay distance. Since the statistical distance uncertainties due
+to lens modelling and time delay estimation are likely to be at the 3-4\%
+level \citep{SuyuEtal2010},  only a sample containing 50 or more lenses would
+be limited by the residual bias  following external convergence
+reconstruction.
 
 
-\subsubsection{Selecting only the lines of sight with tight $\pr(\kappax)$}
+\subsubsection{Selecting only the lines of sight with tight $\pr(\kappa|\data)$}
 \label{sec:bias:tightPDF}
 
 Since follow-up campaigns (such as high resolution imaging, or time
@@ -1172,6 +1175,9 @@ the most empty, and it is the high-$\kappa$ lines of sight that benefit the
 most from spectroscopy. Photometry of the field is sufficient to adequately
 select the best lines of sight for cosmology -- and doing so greatly increases
 both the precision and accuracy of the cosmological constraints per system.
+In the context of time delay distance accuracy given in the previous section,
+the sample size would have to be 160 or so before this residual systematic
+error was equal to the statistical uncertainty.
 
 
 \subsubsection{Selecting only high shear lines of sight}
@@ -1191,16 +1197,18 @@ equivalently, external shear due to the lens' environment).
 
 By selecting only lines of sight with an external shear of $\gamma>0.03$ we
 can test the impact of shear selection. We find that in this sample, $\kappa$
-is systematically underestimated at the $\sim$0.01 level. Part of this effect
-is mitigated if only the lines of sight with both $\gamma>0.03$ and sharp
-$\pr(\kappax)$ are used but biases at the $\sim$0.005 level remain. Since our
-model does not include shear constraints it is not surprising that selecting
-based on shear can induce a bias. A more sophisticated model that includes the
-shear recovered from the lens modelling may be less susceptable to this bias.
-The toy model of this section ($\gamma>0.03$) is likely to be a much stronger
-selection than reality, but it is worth noting that the reconstruction
-\proceedure will be biased if lens selection functions are extreme and
-unaccounted for.
+is systematically underestimated at the $\sim$0.01 level (corresponding to a
+1\% systematic error in distance, significant in a sample of 12 lenses). 
+Part of this effect is mitigated if only
+the lines of sight with both $\gamma>0.03$ and sharp $\pr(\kappa|\data)$ are
+used, but biases at the $\sim$0.005 level remain. Since our model does not
+include shear constraints it is not surprising that selecting based on shear
+can induce a bias. A more sophisticated model that includes the shear
+recovered from the lens modelling may be less susceptible to this bias. The
+cartoon selection model used here ($\gamma>0.03$) is likely to be a much
+stronger selection than reality, but nevertheless it is worth noting that the
+reconstruction \proceedure will be biased if lens selection functions are
+extreme and unaccounted for.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1211,28 +1219,32 @@ unaccounted for.
 \section{Discussion}
 \label{sec:discuss}
 
-We have shown that reconstructing the matter due to halos along any line
-of sight can improve the constraints on the external convergence along
-that line of sight. The total convergence along a line of sight is
-strongly correlated with the reconstructed $\kappah$. However since our
-model ignores voids and assumes all halos follow a spherical
-truncated-NFW profile our halo model does not include all of the relevant
-physics; hence, the width of our resulting $\pr(\kappa|\data)$ is still
-typically $\sim$0.01 for any given lightcone, even with a perfect
-knowledge of every halo's virial mass and redshift. To make further
-progress a more advanced treatment of both voids and halos will be
-necessary. \citet{KarpenkaEtal2012} find that their supernova data prefer, in
-the context of their simple halo model, a truncated isothermal profile for the
-galaxy mass distributions. Weak galaxy-galaxy and cluster-galaxy 
-lensing studies
-\citep[\eg][]{GavazziEtal2006,JohnsonEtal2007} also suggest an approximately
-isothermal profile for the mass-shear correlation function; however, at large
-radii these profiles are dominated by the effects of neighbouring halos, which
-should be taken into account by our model. Further iterations on the analysis
-presented here should include the stellar mass distributions that cause the
-isothermal density profiles in the centres of galaxies, although we do not
-expect this to have a big impact on the model. Likewise,  halo
-ellipticity may have some small effect on the predicted convergence. 
+We have shown that reconstructing the matter due to halos along any line of
+sight can improve the constraints on the external convergence along that line
+of sight, with, depending on sample selection,  the width of
+$\pr(\kappa|\data)$ being up to a factor of two smaller than the global
+$\pr(\kappa)$, and  we have quantified the residual bias in the $\kappa$
+estimates under our calibration assumptions. We now revisit these assumptions.
+
+The total convergence along a line of sight is strongly correlated with the
+reconstructed $\kappah$. However, since our model ignores voids and assumes
+all halos follow a spherical truncated-NFW profile our halo model does not
+include all of the relevant physics; hence, the width of our resulting
+$\pr(\kappa|\data)$ is still typically $\sim$0.01 for any given lightcone,
+even with a perfect knowledge of every halo's virial mass and redshift. To
+make further progress a more advanced treatment of both voids and halos will
+be necessary. \citet{KarpenkaEtal2012} find that their supernova data prefer,
+in the context of their simple halo model, a truncated isothermal profile for
+the galaxy mass distributions. Weak galaxy-galaxy and cluster-galaxy  lensing
+studies \citep[\eg][]{GavazziEtal2006,JohnstonEtal2007} also suggest an
+approximately isothermal profile for the mass-shear correlation function;
+however, at large radii these profiles are dominated by the effects of
+neighbouring halos, which should be taken into account by our model. Further
+iterations on the analysis presented here should include the stellar mass
+distributions that cause the isothermal density profiles in the centres of
+galaxies, although we do not expect this to have a big impact on the model.
+Likewise,  halo ellipticity may have some small effect on the predicted
+convergence. 
 
 Filaments and voids are more difficult to model, but simple forms could in
 principle be derived from the structures found in the simulations, and
@@ -1331,33 +1343,38 @@ all the calibrations. Using the full PDF for $\kappah$ is the more correct
 thing to do: at present, however, it suffers from significant bias in the
 photometric data case. \Fref{fig:no-median-tricks} shows how $\kappa$ is
 overestimated, as a result of the high scatter in halo mass for objects with 
-high stellar mass. Future work should increasing the precision of the halo
+high stellar mass. As already noted, 
+future work should increasing the precision of the halo
 mass estimates. 
 
-More generally, the \MS as a calibration tool. If the real Universe is not
-like the \MS, then the calibration will be incorrect; repeating the study using
+In this work, we have used 
+the \MS as a calibration tool. If the real Universe is not
+like the \MS, then this calibration will be incorrect. Repeating this 
+study using
 a different simulation to make the test catalogs would allow us to quantify
 the sensitivity of our results to the simulation used. Similarly the use of a
 different semi-analytic model to paint galaxies onto halos, and an alternative
 stellar mass--halo mass relation would both enable similar exploration of
 these systematic errors.
 
-More generally, the method presented here is tied to the simulations at
-several points: in particular, the prior PDF for $\kappah$, and the
-conditional distribution $\pr(\kappa|\kappah)$ used to convert halo model
-convergence to total convergence. The former tie could potentially be avoided
-if the halo mass estimation gave rise to a reasonable $\pr(\kappah|\data)$ on
-its own. Possibilities for improving the precision of the halo mass estimation
-are discussed above. The latter tie is more difficult, since breaking it means
+In particular, the method presented here is tied to the simulations at two
+points: the prior PDF for $\kappah$, and the conditional distribution
+$\pr(\kappa|\kappah)$ used to convert halo model convergence to total
+convergence. The first tie could potentially be avoided if the halo mass
+estimation gave rise to a reasonable $\pr(\kappah|\data)$ on its own.
+Possibilities for improving the precision of the halo mass estimation are
+discussed above. The second tie is more difficult, since breaking it means
 modelling the unseen mass structures and voids from first principles. It
 should be possible to infer hierarchically  the parameters of a flexible model
 for these things from the data itself, as demonstrated by
-\citet{KarpenkaEtal2012} -- how much this dilutes the cosmographic precision
-is to be investigated.  Including more information in this analysis is key:
-weak lensing shears will be available over the whole Euclid and LSST survey
-areas: fitting these with the halo models described here in order to constrain
-the hyper-parameters of the model is an interesting
-possibility.
+\citet{KarpenkaEtal2012} (albeit under the assumption of scatter-free scaling
+relations) -- how this affects the cosmographic precision is to be
+investigated.  In any case, 
+including more information in this analysis will be important.
+When working with wide field imaging surveys,  weak lensing shears will be
+available around every line of sight:  fitting these with the halo models
+described here in order to constrain the hyper-parameters of the model is an
+interesting possibility.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1394,19 +1411,6 @@ reconstructions. The long tails of the $\kappah$ distribution can be
 suppressed by focusing on the median value as an indicator for $\kappa$
 instead.
 
-\item  For the most overdense lines of sight, the reconstruction produces a
-very broad PDF; conversely, we find that the lines of sight with the sharpest
-inferred $\pr(\kappa|\data)$ are typically under-dense. Since the
-reconstructions described here can be performed before follow-up time is
-invested, it will be possible to  select targets by the precision of their
-$\kappa$ estimates. This procedure results in a sample with low bias as well
-as high precision.
-
-\item Photometric data is sufficient  to select the best lines of sight for
-follow-up. Spectroscopic coverage helps to tighten  $\pr(\kappa|\data)$ for
-high $\kappa$ lines of sight, but is of limited use for  low $\kappa$ lines of
-sight.
-
 \item It is very rare for halos further than 2 arcminutes from the line of
 sight to make a significant contribution to $\pr(\kappa|\data)$. Including
 halos whose host galaxy is less luminous than $i=24$ does not significantly
@@ -1416,20 +1420,56 @@ uncertainties of our simple reconstruction recipe, and yield a
 $\pr(\kappa|\data)$ that has, on average, a width of 0.016. This is 1.5 times
 less broad than the global $\pr(\kappa)$.
 
-\item With only a photometric reconstruction of all time delay lens fields,
-and following up only the systems with the most precise $\kappa$ estimates,
-the width of the dominant statistical uncertainty in time-delay cosmography
-can be halved, without inducing biases at the one percent level.
+\item  For the most overdense lines of sight, the reconstruction produces a
+very broad PDF; conversely, we find that the lines of sight with the sharpest
+inferred $\pr(\kappa|\data)$ are typically under-dense. Since the
+reconstructions described here can be performed before follow-up time is
+invested, it will be possible to  select targets by the precision of their
+$\kappa$ estimates. 
+
+\item Photometric data is sufficient  to select the best lines of sight for
+follow-up. Spectroscopic coverage helps to tighten  $\pr(\kappa|\data)$ for
+high $\kappa$ lines of sight, but is of limited use for  low $\kappa$ lines of
+sight.
+
+\item Selecting the highest precision 33\% of the reconstructed lines of sight
+results in a sample with low bias, 0.3\% in terms of the time delay distance,
+and a statistical uncertainty due to line of sight mass structure that is half
+that of the parent sample. The residual systematic error would be equal to the
+overall statistical uncertainty in a sample of around 160 lenses.
+
+\item Conversely, selecting lines of sight with high shear ($|\gamma| >
+0.03$ (as might be done inadvertently by focusing on four-image or wide
+separation lenses) results in a sample with bias of 1\% in time delay
+distance. Such a systematic error would become significant in a sample of 12
+lenses.
+
+% \item With only a photometric reconstruction of all time delay lens fields,
+% and following up only the systems with the most precise $\kappa$ estimates,
+% the width of the dominant statistical uncertainty in time-delay cosmography
+% can be halved, without inducing biases at the one percent level.
 
 \end{itemize}
 
-External convergence is not the only uncertainty in time delay cosmology, but
-for systems like B1608$+$656 it is the dominant one. For most lines of sight
-it is likely that lens modelling induces uncertainties at the $\sim$3 percent
-level, which far exceeds the typical $\kappa$ uncertainties after applying our
-reconstruction \proceedure. By using our method to reconstruct lines of sight
-and select which lense are followed-up, the uncertainties due to line of sight
-convergence will become a sub-dominant  source of error.
+% PJM: Im not sure this is the right note to end on. 
+
+% External convergence is not the only uncertainty in time delay cosmology, but
+% for systems like B1608$+$656 it is the dominant one. For most lines of sight
+% lens modelling induces uncertainties at the $\sim$3 percent
+% level, which far exceeds the typical $\kappa$ uncertainties after applying our
+% reconstruction \proceedure. By using reconstruction methods such as that
+% explored here to select the most appropriate 
+% lenses for follow-up, the uncertainties due to line of sight
+% convergence will become a sub-dominant source of error.
+
+While we have tested our reconstruction method against realistic simulations
+of line of sight mass distributions in the Universe, our method is also 
+calibrated to these simulations. Testing this assumption in the short term,
+and replacing it with an empirical calibration (or hierarchical inference) in
+the longer term, are worthy goals for future work. The halo model framework is
+flexible enough to enable many such improvements, including, quite naturally,
+the incorporation of more information from observations. 
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%  ACKNOWLEDGMENTS

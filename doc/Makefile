@@ -7,6 +7,7 @@ clean:
 # ----------------------------------------------------------------------------
 
 paper: paper-lcr.pdf
+a4: paper-lcr-a4.pdf
 
 # paper-lcr.pdf: paper-lcr.tex macros.tex
 # 	pdflatex paper-lcr.tex
@@ -29,6 +30,9 @@ paper-lcr.dvi: paper-lcr.tex macros.tex
 paper-lcr.pdf: paper-lcr.dvi
 # 	\dvipdf -sPAPERSIZE=a4 paper-lcr.dvi
 	\dvipdf -sPAPERSIZE=letter paper-lcr.dvi
+
+paper-lcr-a4.pdf: paper-lcr.dvi
+	\dvipdf -sPAPERSIZE=a4 paper-lcr.dvi paper-lcr-a4.pdf
 
 # paper-lcr.ps: paper-lcr.dvi
 # # 	\dvips -t a4 -o paper-lcr.ps paper-lcr.dvi
