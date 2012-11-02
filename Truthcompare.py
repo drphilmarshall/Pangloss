@@ -332,6 +332,36 @@ def MScompare(argv):
 
    #------------------------------------------------------------------
    #radius plot
+   plotr=False
+   if plotr:
+   #set plotting sizes
+      figprops = dict(figsize=(8.0, 5.0), dpi=128)          # Figure properties
+      fig = plt.figure(**figprops)
+      
+   # Need small space between subplots to avoid deletion due to overlap...
+      adjustprops = dict(\
+         left=0.1,\
+            bottom=0.12,\
+            right=0.9,\
+            top=0.95,\
+            wspace=0.2,\
+            hspace=0.9)
+      fig.subplots_adjust(**adjustprops)
+      
+      fig_width_pt = 246./10  # Get this from LaTeX using \showthe\columnwidth
+      inches_per_pt = (1.0/72.27 )/5              # Convert pt to inch
+      golden_mean = ((5**0.5)-1.0)/2.0         # Aesthetic ratio
+      fig_size=[280, 1*golden_mean]
+      params = {'backend': 'ps',
+                'axes.labelsize': 16,
+                'text.fontsize': 12,
+                'legend.fontsize': 12,
+                'xtick.labelsize': 12,
+                'ytick.labelsize': 12,
+                'text.usetex': True,
+                'figure.figsize': fig_size}
+      plt.rcParams.update(params)
+
    if investigateR:
       plt.plot(Rcuts,kappa_16_R,c='k', ls = 'dashed',label="16th percentile")
       plt.plot(Rcuts,kappa_50_R,c='k',label="Median")
@@ -339,7 +369,7 @@ def MScompare(argv):
       #plt.plot(Rcuts,kappa_dif_mean_R,c='k', ls = '-.',label="Mean")                             
       plt.axhline(y=0,xmin=0,xmax=1,ls="dotted",c='k')
       plt.xlabel("Radius out to which halos are reconstructed")
-      plt.ylabel("$\kappa_{\mathrm{reconstruction}} - \kappa_{\mathrm{raytrace}}$",size='x-large')
+      plt.ylabel("$\kappa - \kappa_{\mathrm{h}}$",size='x-large')
       plt.legend(loc=4,title ="%i LoS"%Ncones)
       plt.savefig("radius_scatter.png")
       plt.savefig("doc/radius_scatter.eps")
