@@ -909,21 +909,22 @@ cuts to our catalogue, we can investigate the amount of scatter caused by
 unobserved halos. 
 
 \Fref{fig:where} shows the cumulative contribution to $\kappah$ as a function
-of projected distance from the line of sight, magnitude and redshift.
-We find that most of the convergence comes from halos whose
-galaxies are close to the line of sight. 
-Over half of the  convergence
-typically comes from halos within 30 arcseconds of the line of sight; by 2
-arcminutes, this fraction is 85\%. The contribution from halos beyond 2 arcminutes is relatively constant with a contribution of 0.008$\pm$0.003. We find that ignoring halos beyond 2 arcminutes has no effect on the precision of the reconstruction; this is shown in Figure \ref{fig:radcut}.
-As a function of magnitude, we find
-that $\kappah$ is dominated by objects with magnitudes between $i=18$ and
-$i=24$. Objects brighter than $i=18$ are either too rare, or too close to the
-observer, to make a significant contribution to the convergence. Objects
-fainter than $i=24$ are too small to be important, unless they are extremely
-close to the line of sight, but we find that including halos fainter than
-$i=24$ does not improve the reconstruction.  \Fref{fig:magcut} shows the
-scatter on $\kappah-\kappa$ (where $\kappah$ is shifted so that its mean is
-zero) as a function of reconstruction magnitude limit. 
+of projected distance from the line of sight, magnitude and redshift. We find
+that most of the convergence comes from halos whose galaxies are close to the
+line of sight.  Over half of the  convergence typically comes from halos
+within 30 arcseconds of the line of sight; by 2 arcminutes, this fraction is
+85\%. The contribution from halos beyond 2 arcminutes is relatively constant
+at a contribution of 0.008$\pm$0.003. We find that ignoring halos beyond 2
+arcminutes has no effect on the precision of the reconstruction; this is shown
+in \Fref{fig:radcut}. As a function of magnitude, we find that $\kappah$
+is dominated by objects with magnitudes between $i=18$ and $i=24$. Objects
+brighter than $i=18$ are either too rare, or too close to the observer, to
+make a significant contribution to the convergence. Objects fainter than
+$i=24$ are too small to be important, unless they are extremely close to the
+line of sight, but we find that including halos fainter than $i=24$ does not
+improve the reconstruction.  \Fref{fig:magcut} shows the scatter on
+$\kappah-\kappa$ (where $\kappah$ is shifted so that its mean is zero) as a
+function of reconstruction magnitude limit. 
 
 % Since these objects
 % must be extremely close to the line of sight to make a non-zero $\kappah$
@@ -945,7 +946,7 @@ $\kappa$ as a function of the limiting radius of the halo
 reconstruction. $\kappah$ has been shifted such that
 $\left\langle\kappah\right\rangle=0$. The majority of the constraining power
 comes from reconstructing halos with magnitudes between $18<i<24$.}
-\label{fig:magcut}
+\label{fig:radcut}
 \end{figure}
 
 \begin{figure}
@@ -1101,11 +1102,12 @@ lines of sight have the most constrained $\kappa$ PDFs.
 
 \begin{figure*}
 \includegraphics[width=\textwidth]{figs/biasplots.eps}
-\caption{Estimating $\kappa-\kappa_{\rm true}$ from subsets of
+\caption{Convergence accuracy from combining subsets of
 lenses. By subtracting the true (ray-traced) convergence from the
-infered P($\kappa$) for each line of sight we are left with a PDF that
-should be estimating zero, these can be multiplied together for multiple
-lines of sight to test for a possible bias. These plots show the
+\infered $\pr(\kappa)$ for each line of sight we are left with a PDF that
+should be estimating zero; these can be multiplied together for multiple
+lines of sight to emulate a joint likelihood analysis, and 
+test for possible bias in it. These plots show the
 expectation value of $\prod_{i=1}^N \pr_i(\kappa-\kappa_{\rm true})$ --
 deviations from zero constitute biases. The solid, dashed and dotted
 lines correspond to combinations of 
@@ -1269,6 +1271,8 @@ groups and clusters they occupy: to make this work, one could incorporate  a
 group and cluster finder, and then infer halo mass from optical richness
 \citep[\eg][]{MaxBCG} in tandem with BCG stellar mass.
 
+
+
 Interestingly, we have found that it is the most empty lines of sight that 
 can be reconstructed with the highest precision. $\kappa$ estimates for empty
 lines of sight receive few contributions from halos, and a large contribution
@@ -1337,7 +1341,15 @@ reconstruction of the line of sight.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/biasplots3.eps}
-\caption{}
+\caption{Convergence estimation accuracy using the full  $\pr(\kappa|\kappah)$
+distribution, rather than its median.  As in \Fref{fig:biasplots}, solid,
+dashed and dotted lines show combinations of 20, 5 and 2 lines of sight
+respectively, while green lines show the inferences 
+from photometry alone, red lines from photometry and targeted spectroscopy 
+(assuming a spectroscopic redshift for all
+halos with $i<23$ and all halos within 1 arcminute and $i<24$), and blue lines
+from the unrealistic assumption of a spectroscopic redshift for all galaxies
+in the field. }
 \label{fig:no-median-tricks}
 \end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1356,7 +1368,7 @@ all the calibrations. Using the full PDF for $\kappah$ is the more correct
 thing to do: at present, however, it suffers from significant bias in the
 photometric data case. \Fref{fig:no-median-tricks} shows how $\kappa$ is
 overestimated, as a result of the high scatter in halo mass for objects with 
-high stellar mass. As already noted, 
+high stellar mass. As has already been noted, 
 future work should increasing the precision of the halo
 mass estimates. 
 
