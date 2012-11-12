@@ -131,28 +131,18 @@ having a significant effect on the inferred lensing cross-section
 time delay lens cosmography the so-called ``external convergence''
 $\kappa$ due to mass structures along the (unusually over-dense) line
 of sight to the quadruply-imaged radio source B1608$+$656 was the
-dominant source of uncertainty in their 6\% measurement of Hubble's
-constant. The problem is that one simply doesn't know how magnified and
-distorted the source has been, because the unlensed source is
-unobservable. The external shear can potentially be recovered in the
+dominant source of uncertainty in their 5\% measurement of the time delay distance. The external shear can potentially be recovered in the
 mass-modelling of the lens, but the convergence is undetectable from the
 image positions, shapes and relative fluxes; this is the famous {\emph{ 
 mass sheet-degeneracy}} \citep[see e.g.][for details]{FalcoEtal1985}.
 
-How can we correct for this perturbative lensing and make accurate
-measurements through the Universe? When inferring global quantities
+When inferring global quantities
 (such as the cosmological parameters), combining the results from a
 large number of independent objects will tend to reduce the uncertainty
-due to external convergence, as the ensemble-averaged magnification
-approaches zero for an unbiased sample \citep[\eg][]{Holz+Linder2005}.
-If the sample is biased, however, some residual systematic error will
-remain even as the statistical uncertainty decreases. Lensing bias will
-be present (to varying degrees) in any sample {\it selected} by
-brightness (which includes magnification), or any other quantity that
-depends on $\kappa$. This bias may be introduced either at the object
+due to external convergence \citep[\eg][]{Holz+Linder2005}, unless the lines of sight are not representative of the global population. If the line of sight selection function is not correctly modelled some residual systematic error will
+remain even as the statistical uncertainty decreases. A selection function may be introduced either at the object
 detection stage, or later on when making decisions about which objects
-to study further.  Moreover, we expect these biases to be strongest in
-the strong lens systems, where magnification is highest. Large samples
+to study further. Large samples
 of lenses are expected to be discovered in the next decade in
 ground-based optical imaging surveys \citep{Oguri+Marshall2010}: both
 the detectability of these lenses,  and the selection of sub-samples of
@@ -164,18 +154,9 @@ large sample of objects, and averaging over the resulting convergence
 distribution. The weak lensing effect can be detected observationally 
 by measuring the
 small distortions it induces on the images of many background galaxies
-in the field \citep[see e.g.][for a review]{Schneider2006}. In a 30''
-radius aperture around the strong lens Q0957$+$561,
-\citet{NakajimaEtal2009} used deep HST imaging to measure a weak lensing
-convergence of $0.17\pm0.06$, which was used in the time delay distance
-measurement of \citep{FadelyEtal2009}. While this system has an
-unusually high external convergence due to its location on the edge of a
-cluster of galaxies, the precision with which the convergence at the
-lens position can be estimated is indicative of what can be achieved
-with high quality weak lensing shear data. We note that this uncertainty
-is not dependent on the value of the convergence, but instead depends
-primarily on the number density of weakly lensed, measurable galaxies
-available. 
+in the field \citep[see e.g.][for a review]{Schneider2006}. 
+\citet{NakajimaEtal2009} used deep HST imaging to infer $\kappax=0.17\pm0.06$ from weak lensing measurements; this measurement was used in the time delay distance
+measurement of \citet{FadelyEtal2009}. A precise weak lensing estimate of $\kappax$ can only be made if the number density of of weakly lensed, measurable galaxies is high.
 
 In order to make more precise estimates of the convergence at a given
 sky position, we need more information.   There have been some attempts
@@ -193,13 +174,11 @@ these structures suggested the importance of assigning mass to both
 galaxy and group halos, and to allowing for significant uncertainty in
 the centroids of group halos. 
 
-The probability density function (PDF) for the external convergence
-given our available data $\data$, $\Pr(\xkappa|\data)$,  is the  key
-quantity we seek, since by marginalising over this distribution we can
-correctly propagate the uncertainties due to line-of-sight perturbations
-(as \citeauthor{FadelyEtal2009} did).  
-%
-\citet{GunnarssonEtal2006} investigated a related PDF,  for the
+In order to propogate the effect of line-of-sight perturbations into 
+uncertainties on time-delay distances we require the probability density function (PDF) for the external convergence
+given our available data $\data$, $\Pr(\xkappa|\data)$
+% PHIL's REVIEWS OF THE LITRATURE
+\comments{\citet{GunnarssonEtal2006} investigated a related PDF,  for the
 magnification, using a galaxy halo model. Applying empirical galaxy
 scaling relations both to simulate mock catalogs and then to reconstruct
 the line of sight mass distribution. While they did not explore highly
@@ -234,10 +213,28 @@ the universal mass budget is balanced, and compare models where the halos are
 all have either truncated singular isothermal profiles, or 
 NFW profiles. Both groups were able to 
 detect lensing effects in the supernova data this way.
+}
+% TOM's DISTILLING OF SAID REVIEWS.
+Previous investigation of line-of-sight perturbations have focused on 
+magnification and shear.\citet{GunnarssonEtal2006} used a galaxy halo model combined with simple scaling relations to reconstruct
+the line of sight mass distribution and found that the dispersion in
+apparent source brightness due to lensing magnification could be reduced
+by a factor of two. Conversely \citet{KarpenkaEtal2012} used the brightness dispersion in type Ia supernovae to infer the parameters of both their galaxy halo model and mass-to-light scaling relation. Both \citeauthor{KarpenkaEtal2012} and \citet{JonssonEtal2010} were able to 
+detect lensing effects in the supernova data this way.
+%
+\citet{WongEtal2011} estimated the PDF for the external shear,
+$\Pr(\gammax|\data)$ from their survey data,
+\citep{WilliamsEtal2006;MomchevaEtal2006} of galaxies close to the line
+of sight. Comparing the predicted shear
+distributions with the external shear demanded by the strong lens model 
+they found significant
+discrepancies, but were unable to distinguish between the environment
+modelling and the strong lens modelling as the cause of these
+discrepancies. \citeauthor{WongEtal2011} also found that both line of
+sight structures and the group of galaxies in each lens plane contribute
+significant proportions of the shear. 
 
-These observational investigations have provided some very useful
-insight into the problem of convergence estimation.  Coming from a more
-theoretical direction, large numerical simulations have been used to
+Large numerical simulations have been used to
 predict, from first principles, the distribution of likely external
 shears and convergences along various lines of sight, including those
 containing strong lens systems.  \citet{Holder+Schechter2003} and
@@ -249,17 +246,7 @@ predicted $\kappa$ at every position in a simulated sky.
 \citet{HilbertEtal2009} found that \MS lines of sight with strong lenses
 were not biased towards high $\kappa$, although selection functions for
 discovering or using particular samples of strong lenses were not taken
-into account. Addressing the possibility of using weak lensing shear to
-reconstruct the magnification~$\mu$ that affects cosmography with
-standard candles (and standard sirens), \citet{HilbertEtal2011} used the
-\MS ray-tracing results to explore optimal mapping techniques and
-quantify their performance. They found that deep weak lensing shear
-surveys (with background galaxy number densities of 100 arcmin$^{-2}$)
-would enable $\Pr(\mu|\data)$ to be estimated such that the distance
-uncertainty per object would be reduced by  20\% on average, and by 40\%
-in regions of low convergence, leading to the suggestion that weak
-lensing maps be used to identify the (low convergence)  lines of sight
-that give higher precision distance estimates.
+into account.
 
 The \MS results have been used to analyse real observations as well. 
 \citet{SuyuEtal2010} selected \MS lines of sight by their apparent
@@ -268,24 +255,23 @@ to match the observed overdensity towards the time delay lens
 B1608$+$656 \citep{FassnachtEtal2011}.  The resulting distribution of
 $\kappa$ values from the ray-tracing was taken to be an estimate of 
 $\Pr(\kappa)$, which was then marginalised over when inferring the time
-delay distance in this system. 
+delay distance in this system. A similar proceedure was used in \citet{SuyuEtal2012b}.
 % B1608$+$656 is indeed a high $\kappa$
 % line of sight, but it does not reside in a massive cluster environment.
-In a companion paper to this one, Greene et al (submitted) investigate
+In a companion paper to this one, Greene et al. (submitted) investigate
 improvements to this method by weighting the galaxy counts by galaxy
 mass, and perpendicular distance to the line of sight, again using the
 \MS mock catalogs and their associated $\kappa$ values to construct
-$\Pr(\kappa|\data)$.
+$\Pr(\kappa|\data)$. For the most overdense lines of sight the
+Green et al. results  show a $\sim$20\% improvement over
+number counts alone, but little improvement for less dense lines.
+
 
 In this paper, we combine the halo model reconstruction approach of
 \citeauthor{GunnarssonEtal2006}, \citeauthor{JonssonEtal2010}, 
 \citeauthor{WongEtal2011} and others, with the
-idea of calibrating to simulations from \citeauthor{SuyuEtal2010}, in
-order to put the halo model for  estimating the weak lensing convergence
-due to mass along the line of sight to a distant source into a sound
-framework for evaluating this important source of systematic
-uncertainty, as we look forward to ever increasing sample sizes and
-statistical precision. Taking the $\kappa$ values from
+idea of calibrating to simulations from \citeauthor{SuyuEtal2010}.
+Taking the $\kappa$ values from
 \citeauthor{HilbertEtal2009}'s ray-tracing calculations as the ``truth''
 that we have to recover, we use the \MS mock galaxy catalogs first to
 {\it calibrate} the reconstruction, and account for unseen mass and
