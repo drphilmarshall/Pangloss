@@ -74,7 +74,7 @@ characterise this uncertainty by marginalising over a probability density
 function for $\kappa$: here, we investigate the use of a simple halo model to
 estimate $\pr(\kappa|\data)$ given noisy estimates of the photometric redshift
 and stellar mass of galaxies observed in optical imaging surveys of the field
-in question. We use mock catalogs from the Millennium Simulation, and compare
+in question. We use mock catalogues from the Millennium Simulation, and compare
 our reconstructed $\pr(\kappa|\data)$ to ray-traced $\kappa$ truth values: 
 taking into account realistic uncertainties on redshift and stellar masses, we
 typically find that the reconstruction yields an improvement in precision of
@@ -98,7 +98,7 @@ to be made.
   gravitational lensing   --
   methods: statistical    --
   galaxies: halos         --
-  gaaxies: mass function  --
+  galaxies: mass function  --
   cosmology: observations
 \end{keywords}
 
@@ -183,15 +183,15 @@ these structures suggested the importance of assigning mass to both
 galaxy and group halos, and to allowing for significant uncertainty in
 the centroids of group halos. 
 
-In order to propogate the effect of line-of-sight perturbations into 
+In order to propagate the effect of line-of-sight perturbations into 
 uncertainties on time-delay distances we require the probability density function (PDF) for the external convergence
 given our available data $\data$, $\Pr(\xkappa|\data)$
 % PHIL's REVIEWS OF THE LITRATURE
 \comments{\citet{GunnarssonEtal2006} investigated a related PDF,  for the
 magnification, using a galaxy halo model. Applying empirical galaxy
-scaling relations both to simulate mock catalogs and then to reconstruct
+scaling relations both to simulate mock catalogues and then to reconstruct
 the line of sight mass distribution. While they did not explore highly
-overdense lines of sight, or the impact of groups and clusters, they
+over-dense lines of sight, or the impact of groups and clusters, they
 found that under their simplifying assumptions, the dispersion in
 apparent source brightness due to lensing magnification could be reduced
 by a factor of two.
@@ -250,7 +250,7 @@ containing strong lens systems.  \citet{Holder+Schechter2003} and
 \citet{DalalEtal2005} carried out ray-tracing calculations in N-body
 simulations to estimate the distribution of external shear values. 
 \citet{HilbertEtal2009} performed similar ray-tracing experiments
-through the Millenium Simulation \citep{SpringelEtal2005}, generating a
+through the Millennium Simulation \citep{SpringelEtal2005}, generating a
 predicted $\kappa$ at every position in a simulated sky.
 \citet{HilbertEtal2009} found that \MS lines of sight with strong lenses
 were not biased towards high $\kappa$, although selection functions for
@@ -259,19 +259,19 @@ into account.
 
 The \MS results have been used to analyse real observations as well. 
 \citet{SuyuEtal2010} selected \MS lines of sight by their apparent
-galaxy overdensity, in a 45 arcsec radius aperture down to $i < 24.5$,
-to match the observed overdensity towards the time delay lens
+galaxy over-density, in a 45 arcsec radius aperture down to $i < 24.5$,
+to match the observed over-density towards the time delay lens
 B1608$+$656 \citep{FassnachtEtal2011}.  The resulting distribution of
 $\kappa$ values from the ray-tracing was taken to be an estimate of 
 $\Pr(\kappa)$, which was then marginalised over when inferring the time
-delay distance in this system. A similar proceedure was used in \citet{SuyuEtal2012b}.
+delay distance in this system. A similar procedure was used in \citet{SuyuEtal2012b}.
 % B1608$+$656 is indeed a high $\kappa$
 % line of sight, but it does not reside in a massive cluster environment.
 In a companion paper to this one, Greene et al. (submitted) investigate
 improvements to this method by weighting the galaxy counts by galaxy
 mass, and perpendicular distance to the line of sight, again using the
-\MS mock catalogs and their associated $\kappa$ values to construct
-$\Pr(\kappa|\data)$. For the most overdense lines of sight the
+\MS mock catalogues and their associated $\kappa$ values to construct
+$\Pr(\kappa|\data)$. For the most over-dense lines of sight the
 Green et al. results  show a $\sim$20\% improvement over
 number counts alone, but little improvement for less dense lines.
 
@@ -282,7 +282,7 @@ In this paper, we combine the halo model reconstruction approach of
 idea of calibrating to simulations from \citeauthor{SuyuEtal2010}.
 Taking the $\kappa$ values from
 \citeauthor{HilbertEtal2009}'s ray-tracing calculations as the ``truth''
-that we have to recover, we use the \MS mock galaxy catalogs first to
+that we have to recover, we use the \MS mock galaxy catalogues first to
 {\it calibrate} the reconstruction, and account for unseen mass and
 voids, and then to {\it test} the accuracy of the line of sight mass
 reconstruction under this assumption. Probabilistically assigning mass
@@ -296,7 +296,7 @@ In doing so, we aim to answer the following questions:
 \begin{itemize}
 
 \item Faint galaxies, filaments and dark structures will not appear in
-any photometric object catalog, but they will contribute convergence at
+any photometric object catalogue, but they will contribute convergence at
 some level. How much of the total convergence comes from visible
 galaxies, and how much effect do dark structures and voids have? 
 
@@ -305,7 +305,7 @@ reconstruction? What scatter and residual bias are induced by the
 reconstruction process, and how might these be reduced in the future? 
 
 \item We have some choices to make when planning follow-up observations
-of interesting sightlines. How should we select objects to achieve the
+of interesting sight-lines. How should we select objects to achieve the
 highest accuracy convergence reconstruction? Can such a selection be
 made robustly, using the reconstruction results?
 
@@ -313,8 +313,8 @@ made robustly, using the reconstruction results?
 
 
 This paper is organized as follows. We review the relevant gravitational
-lensing theory in~\Sref{sec:theory}, and the Millenium Simulation
-ray-traced convergences and mock catalogs in \Sref{sec:MS}, before
+lensing theory in~\Sref{sec:theory}, and the Millennium Simulation
+ray-traced convergences and mock catalogues in \Sref{sec:MS}, before
 introducing our simple reconstruction  model in \Sref{sec:model}. We
 then test this model in two phases: first, in \Sref{sec:knownMh+z}, with
 known redshift and halo mass for every galaxy in a lens field, in order
@@ -1324,10 +1324,13 @@ a different simulation to make the test catalogs would allow us to quantify
 the sensitivity of our results to the simulation used. Similarly the use of a
 different semi-analytic model to paint galaxies onto halos, and an alternative
 stellar mass--halo mass relation would both enable similar exploration of
-these systematic errors. It is possible that baryonic physics may alter
+these systematic errors. \citet{SuyuEtal2010} used the relative over-density to mitigate this
+effect, but it does not totally remove the dependence on simulation.
+It is also possible that baryonic physics may alter   
 the radial profile of dark matter halos, even on large scales. \citet{Semboloni+2012}
 found that baryonic physics had a 30-40\% impact on three-point shear statistics, it is
-unclear how baryons affect one-point convergence statistics.
+unclear how baryons affect one-point convergence statistics compared to the pure dark matter
+simulations used in this work.
 
 
 In particular, the method presented here is tied to the simulations at two
@@ -1389,28 +1392,29 @@ uncertainties of our simple reconstruction recipe, and yield a
 $\pr(\kappa|\data)$ that has, on average, a width of 0.016. This is 1.5 times
 less broad than the global $\pr(\kappa)$.
 
-\item  For the most overdense lines of sight, the reconstruction produces a
-very broad PDF; conversely, we find that the lines of sight with the sharpest
+\item  For the most over-dense lines of sight, the reconstruction produces a
+broad PDF; conversely, we find that the lines of sight with the sharpest
 inferred $\pr(\kappa|\data)$ are typically under-dense. Since the
 reconstructions described here can be performed before follow-up time is
-invested, it will be possible to  select targets by the precision of their
-$\kappa$ estimates. 
+invested, it will be possible to select targets by the precision of their
+$\kappa$ estimates. This will be useful
+in an era when there are more known lenses than can be followed-up.
 
 \item Photometric data is sufficient  to select the best lines of sight for
 follow-up. Spectroscopic coverage helps to tighten  $\pr(\kappa|\data)$ for
-high $\kappa$ lines of sight, but is of limited use for low $\kappa$ lines of
+high $\kappa$ lines of sight, but is of less use for low $\kappa$ lines of
 sight.
 
 \item Selecting from the highest precision 33\% of the reconstructed lines of sight
-results in a sample with low bias, 0.2\% in terms of the time delay distance,
+results in a sample with low bias, 0.1\% in terms of the time delay distance,
 and a statistical uncertainty due to line of sight mass structure that is half
 that of the parent sample. Neglecting other sources of error, the residual systematic error would be equal to the
-overall statistical uncertainty in a sample of around 30 lenses.
+overall statistical uncertainty in a sample of around 200 lenses.
 
 \item Conversely, selecting lines of sight with high shear ($|\gamma| >
 0.03$ (as might be done inadvertently by focusing on four-image or wide
-separation lenses) results in a sample with bias of 1\% in time delay
-distance. Such a systematic error would become significant in a sample of $\sim$8 lenses. 
+separation lenses) results in a sample with bias of 0.3\% in time delay
+distance. Such a systematic error would become significant in a sample of $\sim$30 lenses. 
 
 % \item With only a photometric reconstruction of all time delay lens fields,
 % and following up only the systems with the most precise $\kappa$ estimates,
