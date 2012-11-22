@@ -67,30 +67,25 @@ from Photometric Catalogue Data}
 High precision cosmological distance measurements towards individual objects
 such as time delay gravitational lenses or type Ia supernovae are affected by
 weak lensing perturbations by galaxies and groups along the line of sight.
-Such massive structures contribute an ``external convergence'' $\kappax$ that
-in time delay gravitational lenses can dominate the uncertainty in the inferred distances.  We
-characterise this uncertainty by marginalising over a probability density
-function for $\kappax$: here, we investigate the use of a simple halo model to
-estimate $\pr(\kappax)$ given noisy estimates of the photometric redshift
-and stellar mass of galaxies observed in optical imaging surveys of the field
-in question. We use mock catalogues from the Millennium Simulation, and compare
+In time delay gravitational lenses,
+``external convergence,'' $\kappax$, can dominate the uncertainty in the inferred distances.
+In this paper we attempt to reconstruct $\kappax$,
+due to line of sight structure using a simple halo model.
+ We use mock catalogues from the Millennium Simulation, and compare
 our reconstructed $\pr(\kappax|\data)$ to ray-traced $\kappax$ truth values: 
 taking into account realistic uncertainties on redshift and stellar masses, we
 typically find that the reconstruction yields a factor of 2 improvement in precision of
-over the global $\pr(\kappax)$. For any given line of sight the
-convergence estimate can be made before the investment of expensive follow-up
-observations. We find that the lowest $\kappax$ lines of sight have the best constrained 
+over the global $\pr(\kappax)$. We find that the lowest $\kappax$ lines of sight have the best constrained 
 $\pr(\kappax)$ after applying our reconstruction. We find that selecting systems by the precision with which
 $\kappax$ can be estimated leads to a sample of unbiased
-time delay distance estimates with 1\% uncertainties due to external convergence effects.
+time delay distance estimates each with 1\% uncertainties due to external convergence effects.
 Photometric data alone is sufficient to pre-select the best lenses and can be done
 before investment in lightcurve monitoring. Preferentially selecting lines of
 sight with high external shear (as might happen in an assembled sample of
 quadruply-imaged time delay lenses) produces time-delay distance estimates with
-typical uncertainties of 1.8\% and biases of 0.8\%. We suggest areas for the improvement of this general
-analysis framework that should allow yet more accurate cosmological inferences
-to be made.
-
+typical external convergence uncertainties of 1.8\% but with systematic errors of 0.8\%.
+We suggest areas for the improvement of this general analysis framework that
+should allow yet more accurate cosmological inferences to be made.
 \end{abstract}
 
 % Full list of options at http://www.journals.uchicago.edu/ApJ/instruct.key.html
@@ -193,7 +188,7 @@ to match the observed over-density towards the time delay lens
 B1608$+$656 \citep{FassnachtEtal2011}.  The resulting distribution of
 $\kappax$ values from the ray-tracing was taken to be an estimate of 
 $\Pr(\kappax)$, which was then marginalised over when inferring the time
-delay distance in this system. A similar procedure was used in \citet{SuyuetAl2012b}.
+delay distance in this system. A similar procedure was used in \citet{SuyuEtal2012}.
 In a companion paper to this one, Greene et al. (submitted) investigate
 improvements to this method by weighting the galaxy counts by galaxy
 mass, and perpendicular distance to the line of sight, again using the
@@ -400,7 +395,7 @@ surface mass density, $\kappa(\bmath{\theta})$, by
 \ee
 }
 
-\new{
+
 In strong lens systems where the source is time variable, the images do not 
 vary simultaneously; the optical path length for each image is different due
 to relativistic and geometric effects. The difference in optical path length
@@ -410,7 +405,7 @@ along the line of sight has no observable effect except to rescale the time-dela
 As such, it is necessary to include $\kappax$ in the lens modelling, if
 cosmological parameters are to be estimated accurately and precisely from
 observed time delays \citep{SuyuEtal2010}. 
-}
+
 
 If there is external convergence present that is not included in the
 lens modelling, then the time delay distance -- inferred assuming $\kappax
@@ -429,7 +424,7 @@ Mass distributions that are
 physically associated with the lens galaxy will affect the stellar dynamics of
 the lens galaxy, so that dynamical observations can break the internal
 mass-sheet degeneracy by providing an additional estimate of the lens galaxy's
-mass \citep[e.g.,][]{Koopmans2004;SuyuEtal2010}. In this work our aim is to quantify the
+mass \citep[e.g.,][]{Koopmans2004,SuyuEtal2010}. In this work our aim is to quantify the
 lensing effect of massive objects, regardless of their position along the line
 of sight.
 
@@ -531,7 +526,7 @@ the data.
 Transforming an observed photometric galaxy catalogue into a 
 catalogue of halo masses, positions, and redshifts, will enable us to
 attempt a reconstruction of the convergence induced by every halo near a
-line of sight. \new{We also need to account for the convergence due to dark structures and
+line of sight. {We also need to account for the convergence due to dark structures and
 the divergence due to voids; we do not model voids or dark structures, but their
 effects are included statistically by calibration the the convergence in halos,
 $\kappah$, against the ray-traced convergence, $\kappax$, for \MS lines of sight.}
@@ -751,11 +746,11 @@ gives a PDF for $\kappax$ centred at the correct place, by construction.
 
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/cornerplot.eps}
-\caption[Biased?]{The joint distribution of 
-$\kappah$ and $\kappax$, from 100,000 reconstructed lines of
-sight. $\kappah$ traces $\kappax$, but with a positive offset which arises from
-$\kappah$ not accounting for any voids, dark structures or smooth mass
-component. At fixed $\kappah$ the scatter in $\kappax$ grows with $\kappah$.}
+\caption[Biased?]{The conditional distribution of 
+$\kappax$ given $\kappah$, from $10^5$ reconstructed lines of
+sight. $\kappah$ was generated from perfect knowledge of halo mass and redshift. Solid (dashed) lines show the 68\% (95\%) confidence interval $\kappah$ traces $\kappax$, but with a positive offset which arises from
+$\kappah$ not accounting for any voids or dark structures.
+ At fixed $\kappah$ the scatter in $\kappax$ grows rapidly with $\kappah$.}
 \label{fig:jointkh-k}
 \end{figure}
 
@@ -771,11 +766,11 @@ from $10^{5}$ ray-traced lines of
 sight. The black curve shows a histogram of 
 sample reconstructed 
 $\kappax$ values, each one drawn from an inferred PDF 
-$P(\kappax|\{\Mhalo,z\}$)
-in one of $10^{5}$ reconstructed lines of sight. 
+$P(\kappax|\kappah)$ in one of $10^{5}$ reconstructed lines of sight. 
 The reconstructions were performed given
 perfect knowledge of halo mass and redshift -- in this case
-the reconstruction recovers the correct convergence.}
+the reconstruction recovers the correct convergence. The reconstruction assumes
+perfect knowledge of the halo mass and redshift.}
 \label{fig:globaldist}
 \end{figure}
 
@@ -924,9 +919,9 @@ transform this into our target PDF $\pr(\kappax|\data)$.
 \includegraphics[width=\columnwidth]{figs/Width.eps}
 \caption{The widths of the \infered PDFs $\pr(\kappah|\data)$ for
 $10^5$ lines of sight, given different quality of data. Blue:
-spectroscopic redshift for every halo with $i<26$; Purple: 
+spectroscopic redshift for every halo with $i<26$; Red: 
 spectroscopic redshift for every halo with $i<23$, and every halo with $i<24$
-within 1 arcminute; Cyan: spectroscopic redshift for every halo with $i<22$; 
+within 1 arcminute;
 Green: all the objects in the field have only photometric redshifts.}
 \label{fig:reconwidths}
 \end{figure}
@@ -934,8 +929,8 @@ Green: all the objects in the field have only photometric redshifts.}
 \begin{figure}
 \includegraphics[width=\columnwidth]{figs/Widthvshilberrt.eps}
 \caption{Width of the \infered PDF $\pr(\kappax|\data)$ versus the true
-$\kappax$ along a line of sight. Blue assumes a spectroscopic redshift for
-every halo, whilst green assumes only photometric redshifts. The width of the
+$\kappax$ along a line of sight. Green assumes only photometric redshifts
+whilst red assumes a campaign of targetted spectroscopy. The width of the
 \infered $\pr(\kappah|\data)$ increases with $\kappax$.}
 
 \label{fig:widthsvsH}
@@ -1021,8 +1016,8 @@ lines are from multiplying $\pr(\kappax)$ \infered from photometry and a
 spectroscopic redshift for all halos with $i<23$ and all halos within 1
 arcminute and $i<24$. The leftmost plot shows randomly selected lines
 of sight. The central plot shows sight lines randomly selected from the
-33\% of lines whose P($\kappax$) is most tightly constrained. The right
-hand plot shows only lines of sight with external shear of 0.03 or
+33\% of lines whose P($\kappax$) is most tightly constrained by our model. The right
+hand plot shows only lines of sight with external shear of 0.05 or
 greater.}
 \label{fig:biasplots}
 \end{figure*}
