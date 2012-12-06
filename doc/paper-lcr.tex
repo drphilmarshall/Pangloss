@@ -33,7 +33,7 @@ from Photometric Catalogue Data}
   Matthew~W.~Auger$^{1}$,
   Stefan~Hilbert$^{3}$,
 \newauthor{%
-  Sherry~H.~Suyu$^{4}$,
+  Sherry~H.~Suyu$^{3,4}$,
   Zachary~Greene$^{4}$,
   Tommaso~Treu$^{4}$\thanks{\packard},
   Christopher~D.~Fassnacht$^{5}$,}
@@ -76,18 +76,19 @@ model.
 We use mock catalogues from the Millennium Simulation, and calibrate and 
 compare our reconstructed $\pr(\kappax|\data)$ to ray-traced $\kappax$ truth
 values:  taking into account realistic uncertainties on redshift and stellar
-masses, \phil{we find that the reconstruction provides an improvement in
-precision of 50\% over the global $\pr(\kappax)$.} 
+masses, \tom{we find that the reconstruction of $\kappax$ provides an improvement in
+precision of $\sim$50\% over previously published schemes.} 
 %
 We find that the lowest $\kappax$ lines of sight have the best constrained 
-$\pr(\kappax)$. We find that selecting the third of the systems with the
+$\pr(\kappax)$. In anticipation of future samples with thousands of lenses,
+we find that selecting the third of the systems with the
 highest precision $\kappax$ estimates gives a  sub-sample of unbiased time
 delay distance measurements \phil{with (on average) just} 1\% uncertainty due
 to line of sight external convergence effects. Photometric data alone is
 sufficient to pre-select the best-constrained lines of sight, and can be done
 before investment in lightcurve monitoring. 
 %
-\phil{Conversely, we show that somehow preferentially selecting lines of sight
+\phil{Conversely, we show that somehow selecting lines of sight
 with high external shear could, with the reconstruction model presented here,
 induce biases of up to 1\% in time delay distance.}  We suggest areas for the
 improvement of this general analysis framework (including more sophisticated
@@ -497,7 +498,7 @@ cr}$ for that plane's redshift:
 \kappax(\bmath{\theta}) = \sum_i \frac{\Sigma_i(\bmath{\theta})}
                                      {\Sigma_{\rm cr}(z_i,\zs)}.
 \ee
-\citet{HilbertEtal2009} found this approximation was found to be accurate to a few percent or better
+\citet{HilbertEtal2009} found that this approximation is accurate to a few percent or better
 in $\kappax$, even on 30 arcsecond scales.
 
 To define a test line of sight, we draw a random sky position from
@@ -540,7 +541,7 @@ galaxy in the field of the lens, down to some magnitude limit. Since we cannot
 observe the surface mass density of each halo directly, we need some way of
 estimating the mass of each halo in the catalogue, so that we can compute its
 contribution to the total $\kappax$ along the line of sight \citep[as in
-\eg][]{GunnarssonEtal2006,WongEtal2011,KarpenkaEtal2012}.  This mass
+\eg][]{GunnarssonEtal2006,KarpenkaEtal2012}.  This mass
 assignment recipe will be uncertain, and also incomplete, but it can be
 calibrated with cosmological simulations, which represent a significant
 additional source of information to what is present in the data.
@@ -607,12 +608,14 @@ the virial radius, but our results are robust for any choice of $r_t>2
 Many studies have shown that galaxies have total mass density profiles that
 are approximately isothermal in their inner regions
 \citep[\eg][]{AugerEtal2010} due to the more concentrated stellar mass
-component; however, at radii of tens of kpc (tens of arcsec), we expect the
-halo density profile to be dark matter dominated, and fall off faster than
-$r^{-2}$. This has been confirmed by galaxy-galaxy weak lensing measurements 
+component.
+This has been confirmed by galaxy-galaxy weak lensing measurements 
 \citep[\eg][]{Mandelbaum,Leauthaud}. We note that the two halo term that
 dominates the galaxy-galaxy lensing signal at large radii is explicitly taken
 into account in our model, where every galaxy is assigned a dark matter halo.
+At large radii an NFW-like profile is probably appropriate, but may not be
+correct when a halo is very close to the line of sight.
+
 
 Each halo in our catalogue contributes to
 the line of sight convergence by
@@ -682,7 +685,7 @@ substructures contribute additional convergence, while voids contribute a
 divergence; these structures must be included to produce an unbiased estimate
 of $\kappax$. In particular, neglecting voids would lead to a heavily biased
 estimate of $\kappax$, since the halo model's $\kappah$ can only be positive.
-In principle the absence of galaxies implies something about the presence a
+In principle the absence of galaxies implies something about the presence of a
 void, but we do not currently attempt to use this information. In general, it
 is difficult to account for the unseen mass, since we do not have a good model
 for its density structure.
@@ -758,7 +761,7 @@ this? Surely one should weight by the value of the Gaussian function implied
 by that ``$\pm 0.003$''?}
 
 This procedure of reducing the full PDF for $\kappah$ to its median increases
-the importance of the realism of the simulation: the simulation needs to be a
+the importance of the realism of the simulation: the simulation needs to be as
 similar as possible to the real universe or there is a possibility of
 systematic errors. Conversely, making use of all the information
 in the photometric catalogue yields $\kappax$ estimates of increased
@@ -785,7 +788,7 @@ Neto et al concentration--mass relation.
 \Fref{fig:jointkh-k} shows the conditional distribution of $\kappax$ given 
 $\kappah$, derived from $10^5$ randomly selected \MS lines of sight
 and assuming noise-free halo masses and redshifts. 
-\phil{(In this case, $\pr(\kappah|\data)$ is almost delta function since the only uncertainty is halo
+\phil{(In this case, $\pr(\kappah|\data)$ is almost a delta function since the only uncertainty is halo
 concentration, which has minimal effect on $\pr(\kappah|\data)$.  
 )}.
 % In this case, the PDF : we can read
@@ -939,7 +942,7 @@ comes from reconstructing halos with magnitudes between $18<i<24$.}
 \section{Testing the Halo Model Reconstruction on Mock Galaxy Catalogues}
 \label{sec:obsMstar+z}
 
-We now move on to consider the halo model reconstruction of line of sight mass
+We now move on to consider the halo model reconstruction of line-of-sight mass
 distributions given noisy astronomical observables. A typical imaging survey
 can be expected to provide measurements of the positions and magnitudes of
 galaxies in a field;  spectra for some of the objects may either come from a
@@ -1001,7 +1004,7 @@ relation given in \citet{BehrooziEtal2010} and correctly inverting the
 relation's uncertainties requires care: the \proceedure we use to do this
 is given in \Aref{appendix:MSMH}. By drawing sample halo masses
 and redshifts, we can infer a sample $\kappah$ using the \proceedure of
-\Sref{sec:model}; repeatedly drawing samples allows us to
+\Sref{sec:model}. Repeatedly drawing samples allows us to
 estimate $\pr(\kappah|\data)$ for each reconstructed line of sight. We then
 transform this into our target PDF $\pr(\kappax|\data)$ as described above.
 
@@ -1171,7 +1174,7 @@ significantly less than 0.01. \tom{External convergence is not the only source
 of uncertainty in measuring time-delay distance. Since the statistical
 distance uncertainties due to lens modelling and time delay estimation are
 likely to be at the 3-4\% level \citep{SuyuEtal2010}, convolving
-$\mathcal{P}_N$ with a Gaussian of width $0.03/\sqrt{N}$ is a reasonable
+$\mathcal{P}_N$ with a Gaussian of width $0.04/\sqrt{N}$ is a reasonable
 approximation for the likely final uncertainty on time-delay distance.}
 
 
@@ -1267,33 +1270,30 @@ extreme selection  of $\gammax>0.05$, and find that in this sample, $\kappax$
 would be systematically underestimated at the $\sim$0.008 level (corresponding
 to a 0.8\% systematic error in distance).}  In the absence of other sources of
 uncertainty, this systematic error would be significant in a sample of just 5
-lenses;  approximating strong-lens modelling uncertainties as an unbiased
-Gaussian with width 4\% on time-delay distance a 0.8\% bias would be
-significant for $\sim$20 lenses. \flag{We said 3\% earlier! Can you check for
-consistency please? And we only need to explain the Gaussian convolution
-once.} This systematic error is mitigated if only the lines of sight with both
+lenses; when including other time-delay distance uncertainties a 0.8\% bias would be
+significant for $\sim$20 lenses. This systematic error is mitigated if only the lines of sight with both
 $\gammax>0.05$ and well constrained $\pr(\kappax|\data)$ are used, but in this
 case a bias at the $\sim$0.005 level remains. 
 
-While $\gammax>0.05$) is likely to be a much stronger selection than would
-occur in reality, it is  nevertheless worth noting from this example  that the
+While $\gammax>0.05$ is likely to be a much stronger selection than would
+occur in reality, it is  nevertheless worth noting from this example that the
 reconstruction \proceedure \phil{can be biased if lens selection functions are
 extreme and unaccounted for.} Since our model does not include shear
 constraints it is not surprising that a selection function based on shear can
 induce a bias. A more sophisticated model that includes the shear recovered
-from the lens modelling may be less susceptible to this bias.
+from the lens modelling might be less susceptible to this bias.
 
 The halo model can also be used to estimate the external shear along a line of
 sight: shear is an observable that can be extracted from strong lens
 modelling. However, there is a degeneracy between internal and external shear.
 When the Einstein Ring imaging data are very good it is possible to
 disentangle external and internal shear \citep[\eg][]{SuyuEtal2010}, but there
-are still significant uncertainties: \citet{WongEtal2011} attempted to match
+are still significant uncertainties. \citet{WongEtal2011} attempted to match
 the shear from strong lens models with a reconstruction of the local lens
 group environment, but found a tension between the strong lens model and the
 reconstruction of the environment. Given the \citet{WongEtal2011} results, it
 is unclear whether the external shear from lens models can be reconciled with
-a line of sight reconstruction. Alternatively, it may be possible  to infer
+a line-of-sight reconstruction. Alternatively, it may be possible  to infer
 external shear using weak lensing information from near the line of sight.  If
 the true external shear can be measured, it provides an additional constraint
 on which of the \MS lines of sight are similar to the reconstructed line of
@@ -1363,7 +1363,7 @@ and included in the halo model in some way.  Most importantly for the highest
 $\kappax$ lines of sight will be a better group and cluster model:
 \citet{MomchevaEtal2006} and  \citet{WongEtal2011} recommend using models
 where dark mass is assigned to both galaxy-scale halos and halos for the
-groups and clusters they occupy: to make this work, one could incorporate a
+groups and clusters they occupy. To make this work, one could incorporate a
 group and cluster finder, and then infer halo mass from optical richness
 \citep[\eg][]{MaxBCG} in tandem with BCG stellar mass. \tom{Meanwhile,
 improving the modelling of voids could be done using suggestions by
@@ -1435,11 +1435,14 @@ real universe, rather than a particular simulation.}
 The reduction of $\pr(\kappah|\data)$ to just its median value, before using
 it to look up the appropriate $\pr(\kappax)$ from the simulated sightline
 ensemble, is reminiscent of the procedure followed by \citet{SuyuEtal2010},
-and Greene et al (submitted). The reconstruction method presented here  can be
+and Greene et al (submitted). The reconstruction method presented here can be
 seen as the limiting case of the weightings explored by Greene et al: rather
 than using weighted number counts in an aperture, we treat each galaxy
 individually, and predict $\kappa_{\rm h,obs}^{\rm med}$ for use in their
-place. \flag{How much more precise are we than Greene et al?}
+place. Given photometry alone, our reconstruction represents a $\sim$50\% improvement of
+the precision compared the number counts used in \citet{SuyuEtal2010}. Greene et al.
+made important progress for the most over-dense lines of sight; our
+reconstructions are $\sim$30\% more precise than those of Greene et al.
 
 
 % \comments{ One
