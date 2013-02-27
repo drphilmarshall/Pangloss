@@ -1,0 +1,91 @@
+Author's reply to Reviewer's Comments:
+
+Dear Reviewer,
+
+Thankyou for taking the time to review our paper, below are our replies (and a
+summary of the actions taken) to each of your points. To aid you in finding
+the changes, all of them are shown in bold face in the new manuscript. 
+
+
+1. The paper does not describe the resolution of the convergence maps
+from the simulation.  The only number quoted is 30 arcseconds, which
+(hopefully!) is not the resolution of the maps.  For example, the
+convergence power spectrum peaks on arcminute scales, even neglecting
+baryonic effects which only increase small-scale power. Therefore a 30
+arcsecond resolution would be woefully inadequate for the purposes of
+this study.  The authors should describe their simulations in more
+detail, and discuss what fraction of the convergence power is
+unresolved by their simulations.
+
+# We have updated section 3.1 to state the resolution of our simulations,
+and explain why it should be sufficient for our purposes.
+
+
+2. My main concern about this work is that the halo occupation
+distribution is assumed to be known.  As mentioned in the final
+paragraph of the paper, this is a severe limitation which makes it
+difficult to assess the validity of the claimed results. In reality,
+uncertainties in the HOD will lead to uncertainties in the
+reconstruction, and the authors should provide some estimate of these
+errors.  For example, the authors could provide an example in which
+the "wrong" HOD is assumed, and then compute the resulting errors in
+the convergence reconstruction.  One easy example of this could be to
+use the stellar masses from the Millennium catalog, which were
+discarded in favor of the model of Behroozi et al.  
+
+# We agree that this is an important systematic. We have implemented the
+suggested test. Swapping Behroozi stellar masses for the Millenium catalogue's
+stellar masses, is an extreme change (the catalogue's stellar masses are
+unreasonable) but it results in offsets of ~0.015 in kappa for
+individual lines of sight. For the ensemble, there is no change in the mean
+reconstructed kappa. We have added a discussion of this in section 8.
+
+
+3. The halo model used in this paper in not described adequately.  For
+example, the paper notes that the SHAM model of Behroozi et al. was
+adopted for this work, but the paper is overly vague in describing the
+implementation.  For example, there is no discussion of how satellites
+are treated.  In the absence of any spatial information, a random
+galaxy has a significant probability to be either a central galaxy in
+a low mass halo, or a satellite in an even lower-mass subhalo inside a
+much larger halo.  Is local spatial information ignored in assigning
+probabilities for galaxies to be central or satellite?  If so, the
+reconstruction will clearly be suboptimal.  For satellites, how are
+the subhalo properties assigned?  Their masses and sizes depend on
+their location within the host halo.  What properties are assigned to
+the host halos of satellites?  Is it assumed that the host halos
+(e.g. clusters or groups) have properties determined from their own
+central galaxies (e.g. BCGs)?  This may be overly optimistic, as
+significant spatial offsets are frequently found between BCG location
+and cluster center.  The SHAM model used here must be described in
+greater detail.
+
+
+# We have clarified the details of our halo model in Section 6.1 (new text is shown in bold font). As we now explain, we do not discriminate between satellites and centrals at all.  As you say, this will be sub-optimal, and is one of the areas we are looking to improve upon in further work. However, we do find that it is rare for satellites to contribute a large amount to the total convergence of a line of sight, and have quantified this in the text. Hence, we do not expect this to be a very large source of uncertainty, compared to the choice of M*-Mhalo relation,  and the calibration simulation.
+
+
+#We neglected to mention the offsets between halo centre and BCG. We have now
+mentioned this but it is unlikely to be significant: most of the impact factors
+are much greater than typical spatial offsets.
+
+
+Finally, I have a very minor comment.  In equation (6), it appears
+that the mean density of the universe is not subtracted when
+estimating kappa_h.  I did not understand why not.
+
+# kappa_h is used as a tracer of kappa_ext, and the integral in equation (7)
+converts kappa_h into kappa_ext. Subtracting the mean density of the universe
+decreases all values of kappa_h by something akin to the projected mean
+density of the universe devided by an effective critical density. Because
+subtracting the mean density is a simple transformation in kappa_h the
+resulting kappa_ext values do not change (as long as one remembers to
+treat the calibration sightlines in the same way as the 'real' sightline). 
+
+
+#Additionally, we have swapped green for black in figures 8 and 9, to make them
+clearer in black and white.
+
+
+We are grateful for the improvements that your comments have made to the paper.
+Regards,
+Tom Collett (et al.)
