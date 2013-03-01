@@ -1159,6 +1159,7 @@ sight have the most constrained $\kappax$ PDFs.
 \section{Systematic Errors due to Sample Selection}
 \label{sec:biases}
 
+
 \begin{figure*}
 \includegraphics[width=\textwidth]{figs/biasplots.eps}
 \caption{Accuracy in $\kappax$ from combining samples of lenses.  These plots
@@ -1339,6 +1340,38 @@ Future work should investigate whether $\gamma_{\mathrm{h}}$ can be used
 to improve the accuracy and precision of $\kappax$ estimation, given a
 reconstruction of the line of sight. 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Systematic Errors due to using an incorrect Stellar Mass--Halo Mass Relation}
+\label{sec:biases}
+
+\begin{figure*}
+\includegraphics[width=\textwidth]{figs/SHAMbias.eps}
+\caption{Systematic bias in $\kappax$ due to reconstructing lines of sight with the wrong stellar mass--halo mass relation. The real stellar masses were created using the relation of \citet{MosterEtal2010}, but the reconstruction and calibration assumes the relation of \citet{BehrooziEtal2010}.  These plots
+show the expectation value of $\prod_{i=1}^N \pr_i(\kappax-\kappaxtrue|\data)$ --
+deviations from zero represent biases. The solid, dashed and dotted lines
+correspond to combinations of  20, 5 and 2 sightlines respectively. Black
+lines show the results \infered from photometry alone, whilst red lines show
+the results  from the same targeted spectroscopy campaign described in 
+\Sref{sec:obsMstar+z:targetedspec}. The three panels correspond to samples of
+sightlines selected in different ways. Left: randomly selected lines of
+sight.  Centre: sightlines randomly selected from the 33\% of lines whose
+P($\kappax$) is most tightly constrained by our model.  Right: lines of sight
+with external shear of 0.05 or greater.}
+\label{fig:SHAMbias}
+\end{figure*}
+
+\new{
+Throughout this work we have assumed that the universe's halos are populated with galaxies whose stellar masses are determined purely by the \citet{BehrooziEtal2010} Stellar Mass--Halo Mass relation. The real universe is unlikely to follow this relation perfectly; the result is that an ensemble of real lines of sight will differ from the ensemble of calibration lines of sight, potentially introducing a systematic error to the reconstructed convergence.
+
+We test the potential size of this systematic error by using the \citet{BehrooziEtal2010} relation to generate the stellar masses of our calibration lines of sight, but the Stellar Mass--Halo Mass relation of \citet{MosterEtal2010} for the 'real' lines of sight that are reconstructed. 
+
+For halos masses of $\sim 10^{12} \Msun$ both stellar mass--halo mass relations estimate a stellar mass of $\sim 10^{10.5} \Msun$, but for halos more massive that this the stellar masses generated from the Moster relation are systematically higher than those generated from the Behroozi relation. At halo masses of $\sim 10^{14} \Msun$ the best fit stellar masses differ by $\sim 0.25$ dex. 
+
+Applying our Behroozi--based reconstruction to lines of sight with Moster stellar masses results in systematically overestimating $\kappax$. In \Fref{fig:SHAMbias} we show the resulting bias on the inferred $\kappax$ after combining several lines of sight. With a purely photometric reconstruction there is a typical systematic bias of $\sim 0.025$ on the reconstructed convergence, although it can be shrunk to $\sim 0.01$ if only the low $\kappax$ lines of sight are used, however for the high shear lines of sight the bias is $\sim 0.04$. It is not suprising that the low $\kappax$ lines of sight are least affected by changes in the stellar mass--halo mass relation. Low $\kappax$ lines of sight are relatively empty hence their $\kappah$ values are small and do not change significantly with stellar mass--halo mass relation. The high shear lines of sight have significantly overestimated $\kappax$ since they tend to lie close to massive halos. This is the regime where the Moster and Behroozi relations are most different.
+
+Despite the systematic errors the photometric reconstruction is still sufficient to choose the best lines of sight for spectroscopic follow-up. With targetted spectroscopy the systematic error decreases to $\sim 0.014$ for the ensemble, $\sim 0.005$ for the low kappa sample and $\sim 0.018$ for the high shear sample. 
+}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %\section{Improving precision by including additional information}
