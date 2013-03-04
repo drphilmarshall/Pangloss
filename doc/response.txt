@@ -35,7 +35,7 @@ discarded in favor of the model of Behroozi et al.
 
 # We agree that this is an important systematic, but we have not implemented the
 suggested test. Swapping Behroozi stellar masses for the Millenium catalogue's
-stellar masses is too a extreme a change to be realistic - one wants to test the effect of using a wrong HOD, where both models within the observational limits, in light of this we have applied to the Moster et al. (????) stell mass-halo mass relation, to generate 'true' stellar masses and reconstructed these using the Behroozi relation. The results of this investigation have been included in a new section 8.
+stellar masses is too extreme a change to be realistic - one wants to test the effect of using a wrong HOD, but where both models are within the observational limits, in light of this we have applied the Moster et al. (2010) stellar mass-halo mass relation, to generate 'true' stellar masses and reconstructed these using the Behroozi relation. The results of this investigation have been included in a new section 8.
 
 
 3. The halo model used in this paper in not described adequately.  For
