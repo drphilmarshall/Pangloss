@@ -1344,7 +1344,8 @@ reconstruction of the line of sight.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Systematic Errors due to using an incorrect Stellar Mass--Halo Mass Relation}
+\section{Systematic Errors due to Assuming an Incorrect 
+Stellar Mass--Halo Mass Relation}
 \label{sec:SHAMfail}
 
 \begin{figure*}
@@ -1364,18 +1365,63 @@ with external shear of 0.05 or greater.}
 \end{figure*}
 
 \new{
-Throughout this work we have assumed that the universe's halos are populated with galaxies whose stellar masses are determined purely by the \citet{BehrooziEtal2010} Stellar Mass--Halo Mass relation. The real universe is unlikely to follow this relation perfectly; the result is that an ensemble of real lines of sight will differ from the ensemble of calibration lines of sight, potentially introducing a systematic error to the reconstructed convergence.
 
-It is hard to test the size of this sytematic error, since we do not know how much the real universe differs from the chosen Stellar Mass--Halo Mass relation. As wider and deeper surveys are conducted more data will become available with which to construct the Stellar Mass--Halo Mass relation; this should drive the infered Stellar Mass--Halo Mass relation closer to the truth. We are only interested in testing the effect of changing the Stellar Mass--Halo Mass relation in a way that is consistant with observational constraints; improving the observational contraints on the Stellar Mass--Halo Mass relation will decrease the the size of the systematic error on reconstructed $\kappax$ induced by assuming a specfic Stellar Mass--Halo Mass relation.
+Throughout this work we have assumed that the universe's halos are populated
+with galaxies whose stellar masses are determined purely by the
+\citet{BehrooziEtal2010} Stellar Mass--Halo Mass relation, which we then use
+in our reconstruction. In practice, the true Stellar Mass--Halo Mass relation
+may well be different to the one we assume in our inference, and if it is, 
+a systematic error could be incurred. It is hard to test the size of this sytematic error, since we do not know how much the real universe differs from the chosen Stellar Mass--Halo Mass relation. As wider and deeper surveys are conducted more data will become available with which to construct the Stellar Mass--Halo Mass relation; this should drive the infered Stellar Mass--Halo Mass relation closer to the truth. We are only interested in testing the effect of changing the Stellar Mass--Halo Mass relation in a way that is consistant with observational constraints; improving the observational contraints on the Stellar Mass--Halo Mass relation will decrease the the potential size of the systematic error on reconstructed $\kappax$ induced by assuming a specfic Stellar Mass--Halo Mass relation.
 
-To estimate the potential size of this systematic error we use the Behroozi relation to generate the stellar masses of our calibration lines of sight, but the stellar mass--halo mass relation of Moster for the ``real'' lines of sight that are reconstructed. For halos masses of $\sim 10^{12} \Msun$ both stellar mass--halo mass relations estimate a stellar mass of $\sim 10^{10.5} \Msun$, but for halos more massive that this the stellar masses generated from the Moster relation are systematically higher than those generated from the Behroozi relation. At halo masses of $\sim 10^{14} \Msun$ the best fit stellar masses differ by $\sim 0.25$ dex. 
+To estimate the potential size of this systematic error, we repeat the
+analysis of the previous section, still using the  the
+\citet{BehrooziEtal2010} relation to generate the stellar masses of our
+calibration lines of sight and hence carry out the inference, but now using
+simulated catalog datasets that were generated from the stellar mass--halo
+mass relation of \citet{MosterEtal2010}. 
 
-Applying our Behroozi--based reconstruction to lines of sight with Moster stellar masses results in systematically overestimating $\kappax$. In \Fref{fig:SHAMbias} we show the resulting bias on the inferred $\kappax$ after combining several lines of sight. With a purely photometric reconstruction there is a typical systematic bias of $\sim 0.025$ on the reconstructed convergence, although it can be shrunk to $\sim 0.01$ if only the low $\kappax$ lines of sight are used, however for the high shear lines of sight the bias is $\sim 0.04$. It is not suprising that the low $\kappax$ lines of sight are least affected by changes in the stellar mass--halo mass relation. Low $\kappax$ lines of sight are relatively empty hence their $\kappah$ values are small and do not change significantly with stellar mass--halo mass relation. The high shear lines of sight have significantly overestimated $\kappax$ since they tend to lie close to massive halos. This is the regime where the Moster and Behroozi relations are most different. Interestingly overestimating the $\kappah$ values of high shear lines of sight pushes them into the region where the $\kappah$ to $\kappax$ calibration is least certain; this has significantly decreased the precision of the reconstructed $\kappax$. 
+This relation provides a comparable fit to the stellar mass function to the
+Behroozi et al relation, so represents a plausible alternative to our assumed
+form. For halo masses of $\sim 10^{12} \Msun$, both stellar mass--halo mass
+relations predict a stellar mass of $\sim 10^{10.5} \Msun$, but for halos more
+massive than this the stellar masses generated from the Moster relation are
+systematically higher than those generated from the Behroozi relation. At halo
+masses of $\sim 10^{14} \Msun$ the predicted stellar masses differ by some 
+$0.25$ dex. 
 
-Despite the systematic errors the photometric reconstruction is still sufficient to choose the best lines of sight for spectroscopic follow-up. With targetted spectroscopy the systematic error decreases to $\sim 0.014$ for the ensemble, $\sim 0.005$ for the low kappa sample and $\sim 0.018$ for the high shear sample. This result provides further motivation for prioritizing the lenses that reside on the underdense lines of sight.
+Applying our Behroozi--based reconstruction to lines of sight with Moster
+stellar masses results in systematic overestimates of $\kappax$. In
+\Fref{fig:SHAMbias} we show this bias emerging after combining several lines
+of sight. With a purely photometric reconstruction there is a typical
+systematic bias of $\sim 0.025$ on the reconstructed convergence. This can be
+shrunk to $\sim 0.01$ if only the low $\kappax$ lines of sight are used;
+however for the high shear lines of sight the bias is $\sim 0.04$. It is not
+too suprising that the low $\kappax$ lines of sight are least affected by
+changes in the stellar mass--halo mass relation. Low $\kappax$ lines of sight
+are relatively empty, their $\kappah$ values are small, and they do not depend
+as strongly on the stellar mass--halo mass relation. In contrast, the high
+shear lines of sight have significantly overestimated $\kappax$ values, since
+they tend to lie close to massive halos -- the regime where the Moster
+and Behroozi relations are most different. Interestingly, overestimating the
+$\kappah$ values of high shear lines of sight pushes them into the region
+where the $\kappah$ to $\kappax$ calibration is least certain; this 
+significantly decreases the precision of the reconstructed $\kappax$. 
 
-The systematic errors reported herein may be overly pessimistic; the bias is due to differences in the stellar masses predicted for high mass halos. If observations can discriminate between the high mass end of the Behroozi and Moster relations then the systematic error on the reconstruction will decrease.
-}
+Despite these systematic errors, we find that the photometric reconstruction
+is still sufficient to choose the best lines of sight for spectroscopic
+follow-up. With targeted spectroscopy the systematic error decreases to $\sim
+0.014$ for the ensemble, $\sim 0.005$ for the low kappa sample and $\sim
+0.018$ for the high shear sample. These results provides further motivation for
+prioritizing the lenses that reside on the underdense lines of sight.
+
+The systematic errors reported here are perhaps overly pessimistic, because
+the bias is due to differences in the stellar masses predicted for high mass
+halos. If new observations can discriminate between the high mass end of the
+\citet{BehrooziEtal2010} and \citet{MosterEtal2010} relations, then the
+systematic error on the reconstruction will decrease. Similarly, incorporating
+additional information about the high mass group and cluster-scale halo
+systems, such as their richness or other occupation statistics, would help
+mitigate the stellar to halo mass conversion error. }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Improving precision by including additional information}
