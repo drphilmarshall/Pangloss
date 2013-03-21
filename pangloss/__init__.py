@@ -3,6 +3,7 @@ from kappamap import *
 from grid import *
 from config import *
 from distances import *
+from miscellaneous import *
 
 from LensingProfiles import *
 import Relations as Rel
