@@ -6,14 +6,14 @@ Pangloss is a code for reconstructing all the mass within a light cone through t
 
 This README is aimed at the collaboration of people invetsigating this idea. If you are interested, but not one of these people, you should contact tcollett@ast.cam.ac.uk & dr.phil.marshall@gmail.com and read the wiki to find out more about our plans. We are keen to hear from other researchers in the field who would like to coordinate with us. 
 
-License:
---------
+License
+-------
 
 Pangloss is distributed under the Gnu Public License (GPL), a copy of which is delivered with this code. Copyright Tom Collett & Phil Marshall.
 
 
-Installing:
------------
+Installation
+------------
 
 Add the following lines (or similar) to your .login file:
 
