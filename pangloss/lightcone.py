@@ -1,5 +1,7 @@
 # ===========================================================================
 
+import pangloss
+
 #import pylab
 #import matplotlib.pyplot as plt
 #from mpl_toolkits.axes_grid1 import ImageGrid
@@ -10,9 +12,6 @@ import LensingProfiles as LP
 import LensingFunc as LF
 import numpy.random as rnd
 import pylab as plt
-
-arcmin2rad = (1.0/60.0)*numpy.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
 
 # ============================================================================
  
@@ -27,15 +26,15 @@ class Lightcone(object):
         self.rmax = radius
         self.xc = [position[0],position[1]]
 
-        dx = self.rmax*arcmin2rad
+        dx = self.rmax*pangloss.arcmin2rad
         self.galaxies = self.catalog.where((self.catalog['pos_0[rad]'] > (self.xc[0]-dx)) & \
                                            (self.catalog['pos_0[rad]'] < (self.xc[0]+dx)) & \
                                            (self.catalog['pos_1[rad]'] > (self.xc[1]-dx)) & \
                                            (self.catalog['pos_1[rad]'] < (self.xc[1]+dx))   )
 
  
-        x = (self.galaxies['pos_0[rad]'] - self.xc[0])*rad2arcmin
-        y = (self.galaxies['pos_1[rad]'] - self.xc[1])*rad2arcmin
+        x = (self.galaxies['pos_0[rad]'] - self.xc[0])*pangloss.rad2arcmin
+        y = (self.galaxies['pos_1[rad]'] - self.xc[1])*pangloss.rad2arcmin
         r = numpy.sqrt(x*x + y*y)
         phi=numpy.arctan(y/x)
         self.galaxies.add_column('x',x)
@@ -47,7 +46,6 @@ class Lightcone(object):
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
         self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
 
-
         #log the mass:
         self.galaxies.add_column('Mh',numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']))
         self.galaxies.add_column('Mh_obs',self.galaxies.Mh*1)
@@ -55,6 +53,9 @@ class Lightcone(object):
 
         self.galaxies.add_column('z_obs',self.galaxies.z_spec)
         self.galaxies.add_column('spec_flag',False)
+        
+        if len(self.galaxies) == 0: 
+            print "Lightcone: WARNING: no galaxies here!"
 
         del self.catalog
         del catalog
@@ -154,7 +155,7 @@ class Lightcone(object):
         self.try_column('rho_crit',Grid.rho_crit[p])
         self.try_column('sigma_crit',Grid.sigma_crit[p])
         self.try_column('beta',Grid.beta[p])
-        rphys=self.galaxies.r*arcmin2rad*self.galaxies.Da_p
+        rphys=self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
         self.try_column('rphys',rphys)
 
 # ----------------------------------------------------------------------------
