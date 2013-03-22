@@ -8,6 +8,7 @@
 *.pdf
 *.pickle
 *.fits
+doc/wiki
 doc/litter
 attic
 calib/Millennium
