@@ -3,7 +3,7 @@
 
 import pangloss
 
-import getopt,cPickle
+import sys,getopt,cPickle
 
 # ======================================================================
 
@@ -13,7 +13,7 @@ def Calibrate(argv):
         Calibrate.py
 
     PURPOSE
-        Transform the results of the lightcone reconstruction process, 
+        Transform the results of the lightcone reconstruction process,
         Pr(kappah|D), into our target PDF, Pr(kappa|D).
 
     COMMENTS
@@ -50,7 +50,7 @@ def Calibrate(argv):
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
       Please cite: Collett et al 2013, arxiv/###
 
     HISTORY
@@ -67,20 +67,20 @@ def Calibrate(argv):
        return
 
     for o,a in opts:
-       if o in ("-h", "--help"):
-          print Calibrate.__doc__
-          return
-       else:
-          assert False, "unhandled option"
+        if o in ("-h", "--help"):
+            print Calibrate.__doc__
+            return
+        else:
+            assert False, "unhandled option"
 
     # Check for setup file in array args:
     if len(args) == 1:
-       configfile = args[0]
-         print pangloss.doubledashedline
-         print "Pangloss Calibrate: Calibrating lightcones according to instructions in",configfile
+        configfile = args[0]
+        print pangloss.doubledashedline
+        print "Pangloss Calibrate: Calibrating lightcones according to instructions in",configfile
     else:
-       print Calibrate.__doc__
-       return
+        print Calibrate.__doc__
+        return
 
     # --------------------------------------------------------------------
 

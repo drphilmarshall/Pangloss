@@ -3,7 +3,7 @@
 
 import pangloss
 
-import sys,glob,getopt,cPickle,atpy,numpy
+import sys,glob,getopt,atpy,numpy
 
 # ======================================================================
 
@@ -35,7 +35,6 @@ def Drill(argv):
     OUTPUTS
         stdout        Useful information
         pickle(s)     Lightcone catalog(s)
-
 
     EXAMPLE
 
@@ -83,25 +82,25 @@ def Drill(argv):
     # --------------------------------------------------------------------
     # Read in configuration, and extract the ones we need:
 
-    config = pangloss.Configuration(configfile)
+    experiment = pangloss.Configuration(configfile)
 
-    Rc = config.parameters['LightconeRadius'] # in arcmin
-    Nc = config.parameters['NCalibrationLightcones']
+    Rc = experiment.parameters['LightconeRadius'] # in arcmin
+    Nc = experiment.parameters['NCalibrationLightcones']
     
-    calcats = config.parameters['CalibrationCatalogs']
+    calcats = experiment.parameters['CalibrationCatalogs']
     Ncalcats = len(calcats)
-    kappamaps = config.parameters['CalibrationKappamaps']
+    kappamaps = experiment.parameters['CalibrationKappamaps']
     # There should only be one calibration folder!
-    CALIB_DIR = config.parameters['CalibrationFolder'][0]
+    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
 
     # There should only be one observed catalog!
-    obscat = config.parameters['ObservedCatalog'][0]
+    obscat = experiment.parameters['ObservedCatalog'][0]
     # Note nRA - -RA(rad) and Dec is also in rad...
-    x0 = config.parameters['nRA']
-    y0 = config.parameters['Dec']
+    x0 = experiment.parameters['nRA']
+    y0 = experiment.parameters['Dec']
     # Write the observed lightcone to the same directory 
-    # as the parent catalog:
-    obspickle = obscat.split('.')[0]+"_lightcone.pickle"
+    # as its parent catalog:
+    obspickle = experiment.getLightconePickleName('real')
 
     # --------------------------------------------------------------------
     # First, make any calibration lightcones required:
@@ -136,8 +135,7 @@ def Drill(argv):
                 if k % 200 == 0 and k !=0:
                     print ("Drill: ...currently on cone %i of %i..." % (k,Ncones))
 
-                xc = [x[k],y[k]]
-                lc = pangloss.Lightcone(table,xc,Rc)
+                lc = pangloss.Lightcone(table,'simulated',[x[k],y[k]],Rc)
 
                 lc.kappa_hilbert = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
@@ -145,9 +143,8 @@ def Drill(argv):
                 #   lc.gamma1_hilbert = MSgamma1.at(x[k],y[k],coordinate_system='physical')
                 #   lc.gamma2_hilbert = MSgamma2.at(x[k],y[k],coordinate_system='physical')
 
-                CONE=open("%s/lightcone%i.pickle"%(CALIB_DIR,count),"wb")
-                cPickle.dump(lc,CONE,protocol=2)
-                CONE.close()
+                calpickle = experiment.getLightconePickleName('simulated',pointing=count)
+                pangloss.writePickle(lc,calpickle)
 
                 count += 1
             print "Drill: ...done."
@@ -166,11 +163,10 @@ def Drill(argv):
         table = atpy.Table(obscat, type='ascii')
 
         xc = [x0,y0]
-        lc = pangloss.Lightcone(table,xc,Rc)
+        lc = pangloss.Lightcone(table,'real',xc,Rc)
         
-        CONE=open(obspickle,"wb")
-        cPickle.dump(lc,CONE,protocol=2)
-        CONE.close()
+        obspickle = experiment.getLightconePickleName('real')
+        pangloss.writePickle(lc,obspickle)
 
         print "Drill: Observed lightcone pickled to "+obspickle
 
@@ -183,7 +179,6 @@ def Drill(argv):
 # Draw calibration sightlines at random:
 
 def sample_sky(table,Rc,Nc,method='random'):
-    # BUG: lightcones should be circular!
     xmax = table['pos_0[rad]'].max()
     xmin = table['pos_0[rad]'].min()
     ymax = table['pos_1[rad]'].max()

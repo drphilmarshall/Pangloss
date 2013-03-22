@@ -61,7 +61,7 @@ class Configuration(object):
             found = glob.glob(paths)
             if len(found) > 0: paths = found
             # Make sure all paths are lists, for consistency:
-            if len(paths[0]) == 1: paths = [paths] 
+            if len(paths[0]) == 1: paths = [paths]
             # Replace parameters:
             self.parameters[key] = paths
 
@@ -83,6 +83,26 @@ class Configuration(object):
             fail = os.system('mkdir -p '+folder[0])
 
         return
+
+    # ------------------------------------------------------------------
+    # Figure out pickle names:
+
+    def getLightconePickleName(self,flavor,pointing=None):
+
+        if flavor == 'real':
+            # In this case, need the name of the obscat:
+            x = self.parameters['ObservedCatalog'][0]
+            return x.split('.')[0]+"_lightcone.pickle"
+
+        elif flavor == 'simulated':
+            # In this case, need the CALIB_DIR and pointing number:
+            assert pointing != None
+            CALIB_DIR = self.parameters['CalibrationFolder'][0]
+            x = "%s/pointing_%i" % (CALIB_DIR,pointing)
+            return x+"_lightcone.pickle"
+
+        return
+
 
 # ======================================================================
 

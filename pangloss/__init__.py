@@ -3,6 +3,8 @@ from kappamap import *
 from grid import *
 from config import *
 from distances import *
+from io import *
+from pdf import *
 from miscellaneous import *
 
 from LensingProfiles import *

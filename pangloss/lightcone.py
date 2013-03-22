@@ -14,11 +14,21 @@ import numpy.random as rnd
 import pylab as plt
 
 # ============================================================================
- 
+
 class Lightcone(object):
-    def __init__(self,catalog,position,radius,magnitudecut=99,band="r"):
-        self.name = 'Lightcone through the observed Universe'
+    """
+    TEST DOCSTRING
+    """
+
+    def __init__(self,catalog,flavor,position,radius,magnitudecut=99,band="r"):
+        
+        self.name = 'Lightcone through the Universe'
+        self.flavor = flavor   # 'real' or 'simulated'
         self.catalog = catalog
+        
+        # Simulated lightcones have "true" (ray-traced) convergence:
+        self.kappa_hilbert = None # until set!
+        
         self.xmax = self.catalog['pos_0[rad]'].max()
         self.xmin = self.catalog['pos_0[rad]'].min()
         self.ymax = self.catalog['pos_1[rad]'].max()
@@ -124,7 +134,7 @@ class Lightcone(object):
 # (Previous functions are single use/lightcone)
 # ----------------------------------------------------------------------------
 
-    def mimik_photoz_error(self,sigma=0.1):
+    def mimic_photoz_error(self,sigma=0.1):
         print "Make me vary for each galaxy"
         #this code is not written well at the moment.
 
@@ -175,6 +185,7 @@ class Lightcone(object):
             self.galaxies.add_column('Ms_obs',Ms)
         except ValueError:
             self.galaxies.Ms_obs=Ms
+            
 # ----------------------------------------------------------------------------
 
     def drawMHalo(self,modelT):
@@ -183,6 +194,7 @@ class Lightcone(object):
         R = rnd.random(len(Mslist))
         Mhlist=modelT.eval(numpy.array([Mslist,R,redshiftList]).T)
         self.galaxies.Mh_obs=Mhlist
+
 # ----------------------------------------------------------------------------
 
     def drawConcentrations(self,errors=False):
