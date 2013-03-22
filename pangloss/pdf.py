@@ -9,6 +9,8 @@ class PDF(object):
     TEST DOCSTRING
     """
 
+# ----------------------------------------------------------------------------
+
     def __init__(self,parameters):
         
         self.name = 'Probability Density Function'

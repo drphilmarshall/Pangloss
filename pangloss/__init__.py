@@ -5,6 +5,7 @@ from config import *
 from distances import *
 from io import *
 from pdf import *
+from shmr import *
 from miscellaneous import *
 
 from LensingProfiles import *

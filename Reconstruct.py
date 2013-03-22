@@ -109,6 +109,13 @@ def Reconstruct(argv):
     # --------------------------------------------------------------------
     # Load in stellar mass to halo relation:
     
+    if SHMrelation == 'Behroozi':
+        # Make the Behroozi pickle if it doesn't exist?
+        # ...
+        shmr = pangloss.readPickle(CALIB_DIR+'behroozi.pickle')
+    else:
+        shmr = pangloss.SHMR(SHMrelation)
+    
     # --------------------------------------------------------------------
     # Make redshift grid:
     
@@ -137,8 +144,8 @@ def Reconstruct(argv):
 #         for j in range(Ns):
 #             lc.mimic_photoz_error(sigma=0.1)
 #             lc.snap_to_grid(grid)
-#             lc.drawMStar(behI)
-#             lc.drawMHalo(behT)
+#             lc.drawMStars(behI)
+#             lc.drawMHalos(behT)
 #             lc.drawConcentrations(errors=True)
 #             lc.Make_kappas(truncationscale=10)
 #             lc.Scale_kappas()

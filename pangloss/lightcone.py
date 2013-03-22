@@ -20,6 +20,8 @@ class Lightcone(object):
     TEST DOCSTRING
     """
 
+# ----------------------------------------------------------------------------
+
     def __init__(self,catalog,flavor,position,radius,magnitudecut=99,band="r"):
         
         self.name = 'Lightcone through the Universe'
@@ -169,10 +171,12 @@ class Lightcone(object):
         self.try_column('rphys',rphys)
 
 # ----------------------------------------------------------------------------
+#  One line description here!
 
-    def drawMStar(self,model):
+    def drawMStars(self,model):
         Mhlist=self.galaxies.Mh
         redshiftList=self.galaxies.z_obs
+        # REPLACE WITH SHMR.drawMstars([Mhlist,redshiftList])...
         Ms = model.eval(numpy.array([Mhlist,redshiftList]).T)
 
         #Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
@@ -187,8 +191,9 @@ class Lightcone(object):
             self.galaxies.Ms_obs=Ms
             
 # ----------------------------------------------------------------------------
+#  One line description here!
 
-    def drawMHalo(self,modelT):
+    def drawMHalos(self,modelT):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
         R = rnd.random(len(Mslist))
