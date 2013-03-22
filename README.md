@@ -1,5 +1,4 @@
-Pangloss
---------
+# Pangloss
 
 Pangloss is a code for reconstructing all the mass within a light cone
 through the Universe.  Understanding complex mass distributions like
@@ -19,7 +18,7 @@ Collett, tcollett@ast.cam.ac.uk). We are keen to hear from other
 researchers in the field who would like to coordinate and/or collaborate
 with us!
 
-License
+## License
 -------
 
 Pangloss is distributed under the Gnu Public License (GPL) v2, a copy of
@@ -29,14 +28,13 @@ information (so that everyone else can too).
 
 When reporting on your use of Pangloss, we ask that you:
 * Cite the following paper:
-Collett et al. (2013), MNRAS, XXX, XXX. [astro-ph/XXXX.XXX](http://arxiv.org/abs/XXXX.XXX)
-"Reconstructing the lensing mass in the universe from photometric catalogue data."
+*Collett et al. (2013), MNRAS, XXX, XXX* (available from (http://arxiv.org/abs/XXXX.XXX))
+_"Reconstructing the lensing mass in the universe from photometric catalogue data."_
 * Include the following acknowledgment:
-_This work made use of the Pangloss code, written by Tom Collett and
-Phil Marshall, which is freely available at 
-https://github.com/drphilmarshall/Pangloss."
+_"This work made use of the Pangloss code, written by Tom Collett and
+Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
 
-Installation
+## Installation
 ------------
 
 After cloning or forking the repository, 
@@ -55,7 +53,7 @@ installed as well:
 
 Most (if not all) are available via pip and/or homebrew.
 
-Example use
+## Example use
 -----------
 
 Right now, there are three main scripts that carry out Pangloss's
