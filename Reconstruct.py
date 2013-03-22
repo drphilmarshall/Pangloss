@@ -38,12 +38,11 @@ def Reconstruct(argv):
         stdout        Useful information
         samples       Catalog(s) of samples from Pr(kappah|D)
 
-
     EXAMPLE
-
         Reconstruct.py example.config
 
     BUGS
+        - Code is incomplete.
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -168,7 +167,7 @@ def Reconstruct(argv):
 
 # ======================================================================
 
-if __name__ == '__main__':
-  Reconstruct(sys.argv[1:])
+if __name__ == '__main__': 
+    Reconstruct(sys.argv[1:])
 
 # ======================================================================
