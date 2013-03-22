@@ -45,8 +45,8 @@ Then "import pangloss" from python should just work, and the command
 line scripts should too. However, you will need to have the following packages
 installed as well:
 
-    atpy,asciitable,pyfits
-    numpy,scipy,getopt,matplotlib
+    import atpy,asciitable,pyfits
+    import numpy,scipy,getopt,matplotlib
 
 Most (if not all) are available via pip and/or homebrew.
 
