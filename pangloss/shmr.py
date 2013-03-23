@@ -15,8 +15,12 @@ class SHMR(object):
         
         self.name = self.__str__()
         self.method = method
-        self.nMs,self.nMh,self.nz = 
+        self.nMh,self.nMs,self.nz = 501,251,10
         
+        # Define the grid over which we'll work
+        self.Mh_axis = numpy.linspace(10.,20.,self.nMh)
+        self.Ms_axis = numpy.linspace(8.,13.,self.nMs)
+        self.zed_axis,self.dz  = numpy.linspace(-0.2,1.6,self.nz,retstep=True)
         
         
         
@@ -29,52 +33,52 @@ class SHMR(object):
         return 'Stellar Mass to Halo Mass relation'
 
 # ----------------------------------------------------------------------------
-def Mstar_to_M200(M_Star,redshift,relationship='Behroozi'):
+    def Mstar_to_M200(self,M_Star,redshift):
     #Takes an array of stellar mass and an array of redshifts and gives the best fit halo mass of {behroozi}.
-    M_Star=10**(M_Star)
-    if relationship == 'Behroozi':
+        M_Star=10**(M_Star)
+        if self.method == 'Behroozi':
        #Following Behroozi et al. 2010.
-       M_200=numpy.zeros(len(M_Star))
+            M_200=numpy.zeros(len(M_Star))
        #parameters:
-       for i in range(len(M_Star)):
-          z=redshift[i]
-          if z<0.9:
-             Mstar00 = 10.72
-             Mstar0a = 0.55
-             Mstar0aa=0.0
-             M_10 = 12.35
-             M_1a = 0.28
-             beta0 = 0.44
-             betaa = 0.18
-             delta0 = 0.57
-             deltaa = 0.17
-             gamma0 = 1.56
-             gammaa = 2.51
-          else:
-             Mstar00 = 11.09
-             Mstar0a = 0.56
-             Mstar0aa= 6.99
-             M_10 = 12.27
-             M_1a = -0.84
-             beta0 = 0.65
-             betaa = 0.31
-             delta0 = 0.56
-             deltaa = -0.12
-             gamma0 = 1.12
-             gammaa = -0.53
+        for i in range(len(M_Star)):
+            z=redshift[i]
+            if z<0.9:
+                Mstar00 = 10.72
+                Mstar0a = 0.55
+                Mstar0aa=0.0
+                M_10 = 12.35
+                M_1a = 0.28
+                beta0 = 0.44
+                betaa = 0.18
+                delta0 = 0.57
+                deltaa = 0.17
+                gamma0 = 1.56
+                gammaa = 2.51
+            else:
+                Mstar00 = 11.09
+                Mstar0a = 0.56
+                Mstar0aa= 6.99
+                M_10 = 12.27
+                M_1a = -0.84
+                beta0 = 0.65
+                betaa = 0.31
+                delta0 = 0.56
+                deltaa = -0.12
+                gamma0 = 1.12
+                gammaa = -0.53
  
        #scaled parameters:
-          a=1./(1.+z)
-          M_1=10**(M_10+M_1a*(a-1))
-          beta=beta0+betaa*(a-1)
-          Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
-          delta=delta0+deltaa*(a-1)
-          gamma=gamma0+gammaa*(a-1)
+            a=1./(1.+z)
+            M_1=10**(M_10+M_1a*(a-1))
+            beta=beta0+betaa*(a-1)
+            Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
+            delta=delta0+deltaa*(a-1)
+            gamma=gamma0+gammaa*(a-1)
  
        #reltationship ****NO SCATTER****
  
-          M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
-       return M_200 
+            M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
+        return M_200 
 
 # ----------------------------------------------------------------------------
 
@@ -89,61 +93,41 @@ def Mstar_to_M200(M_Star,redshift,relationship='Behroozi'):
 # ----------------------------------------------------------------------------
 
     def makeCDFs(self):
-        # Make model and model2 and name them informatively:
-        self.CDF = numpy.zeros(self.nMs,self.nMh,self.nz)
-        return
+        # make the models of the SHMR.
+        
+        #create the empty models that we will populate:
+        S2H_grid = numpy.empty((Ms.size,Mh.size,zeds.size))
+        H2S_grid = numpy.empty((Mh.size,zeds.size))
+        
+        
+        #1) invert the analytic behroozi MS->Mh relation
+        Mh,Ms,zeds,dz=self.Mh_axis, self.Ms_axis, self.zed_axis,self.dz 
+        
+        for i in self.nz:
+            z=zeds[i]
+        
+            MhMean = self.Mstar_to_M200(Ms,numpy.ones(len(Ms))*z)
+            
+            #fit a spline to the inverse
+            invModel_z = interpolate.splrep(MhMean,Ms,s=0)
+        
+            # Calculate the mean M_* at fixed M_halo
+            MsMean = interpolate.splev(Mh,invModel)
+            H2S_grid[:,k]=MsMean
+        
+        
+            #Now we can make P(Ms|Mh)
+            sigma=0.15
+            norm = sigma*(2*numpy.pi)**0.5
+            pdflist = numpy.empty((Ms.size,Mh.size))
+            for i in range(Mh.size):
+                pdf = numpy.exp(-0.5*(Ms-MsMean[i])**2/sigma**2)/norm
+                pdflist[:,i] = pdf
 
-#=============================================================================
-
-if __name__ == '__main__':
-    shmr = SHMR('Behroozi')
-    print shmr
-
-#=============================================================================
-# PofMgivenMcommaz.py:
-# 
-# import numpy,cPickle
-# from scipy import interpolate,optimize
-# import ndinterp
-# import pylab as plt
-# 
-# 
-
-# 
-# # Data from lightcones
-# inhalomass,inhaloZ = numpy.load('MassRedshift.cat')
-# #inhaloZ[inhaloZ<0]=0
-# # Define the grid over which we'll work
-# Mh = numpy.linspace(10.,20.,1001)
-# Ms = numpy.linspace(8.,13.,501)
-# zeds,dz  = numpy.linspace(-0.2,1.6,10,retstep=True)
-# dz/=2.
-# print dz
-# 
-# model = numpy.empty((Ms.size,Mh.size,zeds.size))
-# model2 = numpy.empty((Mh.size,zeds.size))
-# 
-# 
-# for k in range(len(zeds)): 
-#     z=zeds[k]
-# # Behroozi confusingly gives M_halo(M_*) but scatter for M_*(M_halo)
-#     MhMean = Mstar_to_M200(Ms,numpy.ones(len(Ms))*z)
-# 
-# # Invert the relationship for a reasonable scatter
-#     invModel = interpolate.splrep(MhMean,Ms,s=0)
-# 
-# # Calculate the mean M_* at fixed M_halo
-#     MsMean = interpolate.splev(Mh,invModel)
-#     model2[:,k]=MsMean
-# 
-# # Evaluate the distribution on the grid determined by Mh,Ms
-#     sigma=0.15
-#     norm = sigma*(2*numpy.pi)**0.5
-#     pdf = numpy.empty((Ms.size,Mh.size))
-#     for i in range(Mh.size):
-#         pdf[:,i] = numpy.exp(-0.5*(Ms-MsMean[i])**2/sigma**2)/norm
-# 
-#     
+            #now we can convert this into a joint distribution, P(Ms,Mh) by deviding by the halo
+            #massfunction at this redshift (Bayes...) 
+            
+            #Infer halo mass function from Millenium Mh,z catalogue ###
 # # Deal with the halo mass function; here we fit a powerlaw
 #     #bin by redshift:
 #     Mhalos=inhalomass[inhaloZ<z+0.1]
@@ -169,6 +153,25 @@ if __name__ == '__main__':
 #     coeff,ier = optimize.leastsq(getPL,[14.56,-1.])
 #     HMF1 = 10**(coeff[0]+Mh*coeff[1])   # This is the powerlaw fit
 #     ""
+
+            #I suggest we just give people the co-efficients for each of the redshift bins. 
+            #saves a lot of time and data carriage
+            
+            
+            
+            
+            
+        
+        #this will make the zero-scatter halo to stellar mass relation.
+        # but first we have to do some more stuff...
+        axes2 = {}
+        axes2[0] = interpolate.splrep(Mh,numpy.arange(Mh.size),k=1)
+        axes2[1] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
+        H2S_model = ndinterp.ndInterp(axes2,H2S_grid)
+
+
+     
+
 # 
 # # Perform P(M*|Mh)*P(Mh)
 #     pdf *= HMF1
@@ -203,10 +206,40 @@ if __name__ == '__main__':
 # model = ndinterp.ndInterp(axes,model)
 # 
 # 
-# axes2 = {}
-# axes2[0] = interpolate.splrep(Mh,numpy.arange(Mh.size),k=1)
-# axes2[1] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-# model2 = ndinterp.ndInterp(axes2,model2)
+
+        
+        
+        self.CDF = numpy.zeros(self.nMs,self.nMh,self.nz)
+        return
+
+#=============================================================================
+
+if __name__ == '__main__':
+    shmr = SHMR('Behroozi')
+    print shmr
+
+#=============================================================================
+# PofMgivenMcommaz.py:
+# 
+# import numpy,cPickle
+# from scipy import interpolate,optimize
+# import ndinterp
+# import pylab as plt
+# 
+# 
+
+# 
+# # Data from lightcones
+# inhalomass,inhaloZ = numpy.load('MassRedshift.cat')
+# #inhaloZ[inhaloZ<0]=0
+# # Define the grid over which we'll work
+# Mh = numpy.linspace(10.,20.,501)
+# Ms = numpy.linspace(8.,13.,251)
+# zeds,dz  = numpy.linspace(-0.2,1.6,10,retstep=True)
+# dz/=2.
+# print dz
+# 
+
 # 
 # 
 # MODI=open("/data/tcollett/Pangloss/inverse.behroozi","wb")
