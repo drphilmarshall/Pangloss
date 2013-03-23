@@ -11,11 +11,15 @@ class SHMR(object):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,method='Behroozi'):
+    def __init__(self,method='Behroozi',directory):
         
         self.name = self.__str__()
         self.method = method
         self.nMs,self.nMh,self.nz = 
+        
+        
+        
+        
         
         return None
 
@@ -23,6 +27,54 @@ class SHMR(object):
 
     def __str__(self):
         return 'Stellar Mass to Halo Mass relation'
+
+# ----------------------------------------------------------------------------
+def Mstar_to_M200(M_Star,redshift,relationship='Behroozi'):
+    #Takes an array of stellar mass and an array of redshifts and gives the best fit halo mass of {behroozi}.
+    M_Star=10**(M_Star)
+    if relationship == 'Behroozi':
+       #Following Behroozi et al. 2010.
+       M_200=numpy.zeros(len(M_Star))
+       #parameters:
+       for i in range(len(M_Star)):
+          z=redshift[i]
+          if z<0.9:
+             Mstar00 = 10.72
+             Mstar0a = 0.55
+             Mstar0aa=0.0
+             M_10 = 12.35
+             M_1a = 0.28
+             beta0 = 0.44
+             betaa = 0.18
+             delta0 = 0.57
+             deltaa = 0.17
+             gamma0 = 1.56
+             gammaa = 2.51
+          else:
+             Mstar00 = 11.09
+             Mstar0a = 0.56
+             Mstar0aa= 6.99
+             M_10 = 12.27
+             M_1a = -0.84
+             beta0 = 0.65
+             betaa = 0.31
+             delta0 = 0.56
+             deltaa = -0.12
+             gamma0 = 1.12
+             gammaa = -0.53
+ 
+       #scaled parameters:
+          a=1./(1.+z)
+          M_1=10**(M_10+M_1a*(a-1))
+          beta=beta0+betaa*(a-1)
+          Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
+          delta=delta0+deltaa*(a-1)
+          gamma=gamma0+gammaa*(a-1)
+ 
+       #reltationship ****NO SCATTER****
+ 
+          M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
+       return M_200 
 
 # ----------------------------------------------------------------------------
 
@@ -56,52 +108,7 @@ if __name__ == '__main__':
 # import pylab as plt
 # 
 # 
-# def Mstar_to_M200(M_Star,redshift,Behroozi=True):
-#     M_Star=10**(M_Star)
-#     if Behroozi==True:
-#       #Following Behroozi et al. 2010.
-#       M_200=numpy.zeros(len(M_Star))
-#       #parameters:
-#       for i in range(len(M_Star)):
-#          z=redshift[i]
-#          if z<0.9:
-#             Mstar00 = 10.72
-#             Mstar0a = 0.55
-#             Mstar0aa=0.0
-#             M_10 = 12.35
-#             M_1a = 0.28
-#             beta0 = 0.44
-#             betaa = 0.18
-#             delta0 = 0.57
-#             deltaa = 0.17
-#             gamma0 = 1.56
-#             gammaa = 2.51
-#          else:
-#             Mstar00 = 11.09
-#             Mstar0a = 0.56
-#             Mstar0aa= 6.99
-#             M_10 = 12.27
-#             M_1a = -0.84
-#             beta0 = 0.65
-#             betaa = 0.31
-#             delta0 = 0.56
-#             deltaa = -0.12
-#             gamma0 = 1.12
-#             gammaa = -0.53
-# 
-#       #scaled parameters:
-#          a=1./(1.+z)
-#          M_1=10**(M_10+M_1a*(a-1))
-#          beta=beta0+betaa*(a-1)
-#          Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
-#          delta=delta0+deltaa*(a-1)
-#          gamma=gamma0+gammaa*(a-1)
-# 
-#       #reltationship ****NO SCATTER****
-# 
-#          M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
-#       return M_200 
-# 
+
 # 
 # # Data from lightcones
 # inhalomass,inhaloZ = numpy.load('MassRedshift.cat')
