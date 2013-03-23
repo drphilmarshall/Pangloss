@@ -101,26 +101,22 @@ def Reconstruct(argv):
     
     # SHM relation parameters:
     SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
-    try:
-        shmr=pangloss.readPickle('###')#What is the location that we're storing this in?
-        
-    except Error: #Not sure what error this needs to be yet. 
-        print "RECONSTUCT.py: generating the stellar mass to halo mass grid. This may take a moment"
-        shmr=pangloss.SHMR(method=SHMrelation)
-        pangloss.writePickle(shmr,'###')
+    SHMfile = CALIB_DIR+SHMrelation+'.pickle'
     
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     
     # --------------------------------------------------------------------
     # Load in stellar mass to halo relation:
-    
-    if SHMrelation == 'Behroozi':
-        # Make the Behroozi pickle if it doesn't exist?
-        # ...
-        shmr = pangloss.readPickle(CALIB_DIR+'behroozi.pickle')
-    else:
-        shmr = pangloss.SHMR(SHMrelation)
+
+    try:
+        shmr = pangloss.readPickle(SHMfile)
+    except FileError: # Not sure what error this needs to be yet...
+        print "Reconstruct.py: generating the stellar mass to halo mass grid."
+        print "Reconstruct.py: this may take a moment..."
+        shmr = pangloss.SHMR(method=SHMrelation)
+        # Write this out now, for later:
+        pangloss.writePickle(shmr,SHMfile)
     
     # --------------------------------------------------------------------
     # Make redshift grid:
@@ -148,10 +144,11 @@ def Reconstruct(argv):
         lc.load_grid(grid)
 
 #         for j in range(Ns):
-#             lc.mimic_photoz_error(sigma=0.1)
+#             lc.mimic_photoz_error(sigma=zperr)
 #             lc.snap_to_grid(grid)
-#             lc.drawMStars(behI)
-#             lc.drawMHalos(behT)
+#             if lc.flavor == 'simulated': lc.drawMStars(shmr)
+#             ls.mimic_Mstar_error(sigma=Mserr)
+#             lc.drawMHalos(shmr)
 #             lc.drawConcentrations(errors=True)
 #             lc.Make_kappas(truncationscale=10)
 #             lc.Scale_kappas()

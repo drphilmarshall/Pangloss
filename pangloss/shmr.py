@@ -33,13 +33,15 @@ class SHMR(object):
 
 # ----------------------------------------------------------------------------
 
-    def drawMstar(self,Mh,z):
+    def drawMstars(self,Mh,z):
         self.S2H_model
         return Mstar
 
 # ----------------------------------------------------------------------------
 
-    def drawMhalo(self,Ms,z,X=None):
+    def drawMhalos(self,Ms,z,X=None):
+        assert Ms.shape == z.shape
+        if X != None: assert X.shape == Ms.shape
         self.H2S_model
         return Mhalo
 
@@ -109,7 +111,8 @@ class SHMR(object):
             #this will save a lot of time and data carriage
             
             # Perform P(M*|Mh)*P(Mh)
-            pdf *= HMF1
+            pdf *= self.HMF('Millennium')
+            
             
             # # Calculate the CDF for P(Mh|M*)
             pdf /= pdf.sum()
