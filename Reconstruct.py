@@ -101,6 +101,13 @@ def Reconstruct(argv):
     
     # SHM relation parameters:
     SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
+    try:
+        shmr=pangloss.readPickle('###')#What is the location that we're storing this in?
+        
+    except Error: #Not sure what error this needs to be yet. 
+        print "RECONSTUCT.py: generating the stellar mass to halo mass grid. This may take a moment"
+        shmr=pangloss.SHMR(method=SHMrelation)
+        pangloss.writePickle(shmr,'###')
     
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
