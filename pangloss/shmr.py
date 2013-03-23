@@ -8,18 +8,64 @@ import ndinterp
 
 class SHMR(object):
     """
-    TEST DOCSTRING
+    NAME
+        SHMR
+
+    PURPOSE
+        The stellar mass - halo mass relation. Both Pr(M*|Mh,z) and 
+        Pr(Mh|M*,z) are characterised by this class, enabling samples to
+        be drawn from them.
+
+    COMMENTS
+        According to some authors (eg Behroozi et al) the SHMR is quite
+        complicated, varying in form with mass and redshift. In cases
+        like this, we store the cumulative distributions interpolated
+        onto grids. To transform between the two conditional PDFs, we
+        will need Pr(Mh), the halo mass function (HMF). This is
+        estimated empirically from a halo catalog, which must be
+        supplied.
+
+    INITIALISATION
+        method        Whose relation to use. Default = 'Behroozi'
+
+    METHODS
+
+        drawMstars(self,Mh,z): generate samples from Pr(M*|Mh,z)
+
+        drawMhalos(self,Ms,z,X=None): generate samples from Pr(Mh|M*,z)
+
+        makeHaloMassFunction(self,catalog): needs Mh catalog from sim
+
+        getHaloMassFunction(self,z,HMFcatalog='Millennium'): ??
+            catalog? HMFcatalog?
+
+        getPL(self,p,getM=False): return power-law fit to the HMF
+
+        makeCDFs(self): are these actually CDFs?
+
+        Mstar_to_M200(self,M_Star,redshift):
+
+    BUGS
+        - Code uses case-sensitive variables in places, and is untested.
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-23  Collett & Marshall (Cambridge)
     """
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,method='Behroozi',directory):
+    def __init__(self,method='Behroozi'):
         
         self.name = self.__str__()
         self.method = method
-        self.nMh,self.nMs,self.nz = 501,251,10
         
-        # Define the grid over which we'll work
+        # Define the numerical grids on which we'll work:
+        self.nMh,self.nMs,self.nz = 501,251,10
         self.Mh_axis = numpy.linspace(10.,20.,self.nMh)
         self.Ms_axis = numpy.linspace(8.,13.,self.nMs)
         self.zed_axis,self.dz  = numpy.linspace(-0.2,1.6,self.nz,retstep=True)
@@ -32,47 +78,57 @@ class SHMR(object):
         return 'Stellar Mass to Halo Mass relation'
 
 # ----------------------------------------------------------------------------
+# Return samples from Pr(M*|Mh,z):
 
     def drawMstars(self,Mh,z):
         MstarBest=self.S2H_model.eval([Mh,z]).T)
-        Mstar=MstarBest+numpy.random.randn(Mh.size)*0.15#intrinsic Mstar scatter of the behroozi relation.
+        Mstar=MstarBest+numpy.random.randn(Mh.size)*0.15 
+        # 0.15 is the intrinsic Mstar scatter of the Behroozi relation...
         return Mstar
 
 # ----------------------------------------------------------------------------
+# Return samples from Pr(Mh|M*,z):
 
     def drawMhalos(self,Ms,z,X=None):
         assert Ms.shape == z.shape
         if X != None: assert X.shape == Ms.shape
         else: X=numpy.random.random(Ms.size)
         return self.H2S_model.eval(numpy.array([Ms,R,z]).T)
-
       
 # ----------------------------------------------------------------------------
+# Infer halo mass function from Millenium Mh,z catalogue. We use a power-law 
+# approximation for this.
 
-    def makeHaloMassFunction(self,catalog)
-        #Infer halo mass function from Millenium Mh,z catalogue ; we use a power-law for this.
-        zeds,dz  = numpy.linspace(0,1.6,10,retstep=True)#coarse redshift bin. these thingschage slowly.
-        self.HMF={}
+    def makeHaloMassFunction(self,catalog):
+
+        zeds,dz = numpy.linspace(0,1.6,10,retstep=True) # coarse redshift bin. these thingschage slowly.
+        self.HMF = {}
         self.HMFzkeys,self.HMFdz=zeds+dz,dz
         
-        infer_from_data=True:
+        infer_from_data = True:
         if infer_from_data:
-            #load in the catalog's list of halo masses and redshift. Note this is not included with the 
-            #gitrelease of pangloss, but it's pretty easy to get hold of. (e.g. ask tcollett@ast.cam.ac.uk!)
+            # Load in the catalog's list of halo masses and redshift. Note
+            # this is not included with the git release of pangloss, but
+            # it's pretty easy to get hold of. (e.g. ask
+            # tcollett@ast.cam.ac.uk!)
+            # BUG: this is not acceptable for a code release.
             inhalomass,inhaloZ = numpy.load('/data/tcollett/Pangloss/MS/HaloMassRedshift.catalog')
             inhaloZ[inhaloZ<0]=0
 
-            for Z in zeds:
-                z=Z+dz/2.
+            for zed in zeds:
+                z=zed+dz/2.
                 mask=(inhaloZ>z-dz/2. & inhaloz<z+dz/2.)
+                
+                # Empirical HMF, from a histogram of the catalog:
                 Masses=Mhalos[mask]          
                 Massbins=numpy.linspace(10,20,101)  
                 hist,bins=numpy.histogram(Mhalos,Massbins)
                 MOD = interpolate.splrep(Massbins[:-1],hist,s=0,k=1)
-                HMF = interpolate.splev(Mh,MOD)     # This is an emperical HMF
+                HMF = interpolate.splev(Mh,MOD)
+
                 TCM = Mh[HMF.argmax()+1:]
                 TCHM = HMF[HMF.argmax()+1:]
-                #fit a powerlaw to the HMF
+                # Fit a powerlaw to the HMF:
                 PLcoeff,ier = optimize.leastsq(getPL,[14.56,-1.,TCM,TCHM])                
                 self.HMF[z]=PLcoeff
                 
@@ -93,6 +149,7 @@ class SHMR(object):
 #                if z> and z<:self.HMF[z]=
                 
         return
+        
 # ----------------------------------------------------------------------------
 
     def getPL(self,p,getM=False):
@@ -102,106 +159,112 @@ class SHMR(object):
         if getM:
             return N
         return (N-TCHM)/TCHM**0.5
-        
-     HMF1 = 10**(coeff[0]+Mh*coeff[1])   # This is the powerlaw fit
+ 
+# This line appears outside any def.        
+#      HMF1 = 10**(coeff[0]+Mh*coeff[1])   # This is the powerlaw fit
         
 
 # ----------------------------------------------------------------------------
+# What does this return? An array? A value?
 
     def getHaloMassFunction(self,z,HMFcatalog='Millennium')
+
+        # If HMF doesn't already exist, make it:
         try: self.HMF[HMFcatalog]
-        except NameError: #is it this error?
+        except NameError: # Is it this error?
             self.makeHaloMassFunction(HMFcatalog)
-            
+        
         for key in self.HMFzkeys:
-            if key<z+self.HMFdz/2. and key>z-self.HMFdz/2.:zkey=key
+            if key<z+self.HMFdz/2.0 and key>z-self.HMFdz/2.0:zkey=key
             
         return  10**(self.HMF[zkey][0]+self.Mh_axis*self.HMF[zkey][1])      
     
 # ----------------------------------------------------------------------------
+# Make the gridded "models" (CDFs) of the SHMR.
+# BUG: are these actually CDFs? Need to use accurate variable names and
+# comment accurately...
 
     def makeCDFs(self):
-        # make the models of the SHMR.
         
-        #create the empty models that we will populate:
+        # Create the empty grids that we will populate:
         S2H_grid = numpy.empty((Ms.size,Mh.size,zeds.size))
         H2S_grid = numpy.empty((Mh.size,zeds.size))
         
-        
-        #1) invert the analytic behroozi MS->Mh relation
-        Mh,Ms,zeds,dz=self.Mh_axis, self.Ms_axis, self.zed_axis,self.dz 
+        # Invert the analytic behroozi M*->Mh relation:
+        Mh,Ms,zeds,dz = self.Mh_axis,self.Ms_axis,self.zed_axis,self.dz 
         
         for i in self.nz:
             z=zeds[i]
         
             MhMean = self.Mstar_to_M200(Ms,numpy.ones(len(Ms))*z)
             
-            #fit a spline to the inverse
+            # Fit a spline to the inverse
             invModel_z = interpolate.splrep(MhMean,Ms,s=0)
         
             # Calculate the mean M_* at fixed M_halo
             MsMean = interpolate.splev(Mh,invModel)
             H2S_grid[:,k]=MsMean
         
-        
-            #Now we can make P(Ms|Mh)
+            # Now we can make Pr(M*|Mh):
             sigma=0.15
             norm = sigma*(2*numpy.pi)**0.5
             pdflist = numpy.empty((Ms.size,Mh.size))
-            for i in range(Mh.size):
-                pdf = numpy.exp(-0.5*(Ms-MsMean[i])**2/sigma**2)/norm
-                pdflist[:,i] = pdf
+            for j in range(Mh.size):
+                pdf = numpy.exp(-0.5*(Ms-MsMean[j])**2/sigma**2)/norm
+                pdflist[:,j] = pdf
 
-            #now we can convert this into a joint distribution, P(Ms,Mh) by multiplying by the halo
-            #massfunction at this redshift (Bayes...) 
-            # Perform P(M*|Mh)*P(Mh)
+            # Now we can convert this into a joint distribution, 
+            # Pr(M*,Mh) by multiplying by the halo mass function at this
+            # redshift: Pr(Mh|M*) ~ P(M*|Mh)*P(Mh)
             pdf *= self.HMF(z,HMFcatalog='Millennium')
             
-            
-            # # Calculate the CDF for P(Mh|M*)
+            # Calculate the CDF for P(Mh|M*) so we can sample it:
             pdf /= pdf.sum()
             cdf = numpy.cumsum(pdf,1).astype(numpy.float32)
             cdf = (cdf.T-cdf[:,0]).T
             cdf = (cdf.T/cdf[:,-1]).T
 
             CDF = numpy.empty((cdf.shape[0],Mh.size))
+            # BUG: do not use case-sensitive variables!
             X = numpy.linspace(0.,1.,Mh.size)
-            for i in range(Ms.size):
-            # Some hacks for numerical stability...
-                tmp = numpy.round(cdf[i]*1e5).astype(numpy.int64)/1e5
+            for j in range(Ms.size):
+            # Take care of numerical stability...
+                tmp = numpy.round(cdf[j]*1e5).astype(numpy.int64)/1e5
                 lo = tmp[tmp==0].size-1
                 hi = tmp[tmp<1].size+1
             # Re-evaulate the CDF on a regular grid
             mod = interpolate.splrep(cdf[i][lo:hi],Mh[lo:hi],s=0,k=1)
             q = interpolate.splev(X,mod)
             CDF[i] = interpolate.splev(X,mod)
-            S2H_grid[:,:,k]=CDF
+            S2H_grid[:,:,k] = CDF # Should this k actually by i?
             
         # Form Mh(M*,X)
         axes = {}
         axes[0] = interpolate.splrep(Ms,numpy.arange(Ms.size),k=1)
         axes[1] = interpolate.splrep(X,numpy.arange(X.size),k=1)
         axes[2] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-
         self.S2H_model = ndinterp.ndInterp(axes,S2H_grid)
             
-        
-        #Make the zero-scatter halo to stellar mass relation.
-        # but first we have to do some more stuff...
+        # Make the zero-scatter halo to stellar mass relation.
         axes2 = {}
         axes2[0] = interpolate.splrep(Mh,numpy.arange(Mh.size),k=1)
         axes2[1] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
         self.H2S_model = ndinterp.ndInterp(axes2,H2S_grid)        
         
         return
-# ----------------------------------------------------------------------------
-    def Mstar_to_M200(self,M_Star,redshift):
-    #Takes an array of stellar mass and an array of redshifts and gives the best fit halo mass of {behroozi}.
+        
+# ----------------------------------------------------------------------
+# Takes an array of stellar mass and an array of redshifts, and returns 
+# the best fit halo mass of {behroozi}.
+
+   def Mstar_to_M200(self,M_Star,redshift):
+
         M_Star=10**(M_Star)
         if self.method == 'Behroozi':
-       #Following Behroozi et al. 2010.
+        # Following Behroozi et al. 2010.
             M_200=numpy.zeros(len(M_Star))
-       #parameters:
+        
+        # Parameters:
         for i in range(len(M_Star)):
             z=redshift[i]
             if z<0.9:

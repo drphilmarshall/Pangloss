@@ -13,16 +13,70 @@ import LensingFunc as LF
 import numpy.random as rnd
 import pylab as plt
 
-# ============================================================================
+# ======================================================================
 
 class Lightcone(object):
     """
-    TEST DOCSTRING
+    NAME
+        Lightcone
+
+    PURPOSE
+        Define a conical region of space containing many galaxies, and 
+        enable mass to be assigned to those galaxies and consequent 
+        useful quantities to be calculated.
+
+    COMMENTS
+        The masses of galaxies in a lightcone are always uncertain. 
+        Methods are provided to characterise this uncertainty by drawing
+        sample masses for each galaxy, from various specified relations.
+
+    INITIALISATION
+        catalog       Filename of the parent galaxy catalog
+        flavor        Is the catalog 'real' or 'simulated'?
+        position      The sky position (J2000 deg) of the cone centre
+        radius        The radius of the lightcone field of view (arcmin)
+        maglimit      The depth of the galaxy selection (magnitudes)
+        band          The band in which the selection is made
+    
+    METHODS
+        N_radius_cat(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
+        
+        N_radius(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
+        
+        define_system(self,zl,zs,cosmo=[0.25,0.75,0.73]):
+        
+        load_grid(self, Grid):
+        
+        mimic_photoz_error(self,sigma=0.1):
+        
+        try_column(self,string,values):
+        
+        snap_to_grid(self, Grid):
+        
+        drawMStars(self,model): Needs updating to take SHMR object
+        
+        drawMHalos(self,modelT):
+        
+        drawConcentrations(self,errors=False):
+        
+        Make_kappas(self,errors=False,truncationscale=5,profile="BMO1"):
+        
+        Scale_kappas(self):
+
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-23  Collett & Marshall (Cambridge)
     """
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,catalog,flavor,position,radius,magnitudecut=99,band="r"):
+    def __init__(self,catalog,flavor,position,radius,maglimit=99,band="r"):
         
         self.name = 'Lightcone through the Universe'
         self.flavor = flavor   # 'real' or 'simulated'
@@ -81,7 +135,7 @@ class Lightcone(object):
             col = "mag_F814W"
         else:
             col = "mag_%s" % band
-        self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < magnitudecut)
+        self.galaxies=self.galaxies.where(self.galaxies["%s"%col] < maglimit)
         """
         return None
 

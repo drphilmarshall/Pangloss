@@ -5,12 +5,13 @@
 #   Fetch.csh
 #
 # PURPOSE:
-#   Download all the calibration data you need to run the Pangloss example.
+#   Download all the calibration data you need to run the Pangloss 
+#   example.
 #
 # COMMENTS:
 #
 # USAGE:
-#       Fetch.csh
+#   Fetch.csh
 #
 # INPUTS:
 #
@@ -80,7 +81,7 @@ if ($help) then
   goto FINISH
 endif
 
-set HERE = `echo $cwd`
+set BACK = `echo $cwd`
 
 set website = "http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib"
 
@@ -94,7 +95,7 @@ set website = "http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib"
 
 set targets = (\
 Millennium/kappa_example.fits \
-Millennium/catalogue_example.txt \
+Millennium/catalog_example.txt \
 SHMR/H2S.behroozi \
 SHMR/S2H.behroozi \
 SHMR/H2S.moster )
@@ -117,7 +118,7 @@ foreach file ( $targets )
     -e robots=off \
     >& $logfile
   
-  chdir $HERE
+  chdir $BACK
   echo "${0:t}: log stored in $dir/$logfile"
           
   echo "${0:t}: result:"

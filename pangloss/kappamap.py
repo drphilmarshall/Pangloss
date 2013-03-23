@@ -25,6 +25,54 @@ vb = False
 # Read in, write out, look up convergence kappa in map from Stefan Hilbert.
 
 class Kappamap:
+    """
+    NAME
+        Kappamap
+
+    PURPOSE
+        Read in, store, transform and interrogate a convergence map.
+
+    COMMENTS
+        A "physical" coordinate system is used, where x = -RA (rad) 
+        and y = Dec (rad). This is the system favoured by Hilbert et al.
+
+    INITIALISATION
+        kappafile      Name of file containing a convergence map
+        FITS           Data file format (def=True)
+            
+    METHODS
+        read_in_fits_data(self):
+
+        read_in_binary_data(self): to cope with hilbert's homegrown format
+
+        setwcs(self): simulated maps often don't have WCS
+
+        get_fits_wcs(self,hdr):
+
+        write_out_to_fits(self):
+
+        at(self,x,y,coordinate_system='physical'): return pixel values
+
+        image2physical(self,i,j): coord transformation, returns x,y
+
+        physical2image(self,x,y): coord transformation, returns i,j
+
+        image2world(self,i,j): coord transformation, returns a,d
+
+        world2image(self,a,d): coord transformation, returns a,d
+
+        lookup(self,i,j): return pixel values given image coords
+
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-23  Marshall & Collett (Oxford)
+    """
 
    def __init__(self,kappafile,FITS=True,vb=False):
 
