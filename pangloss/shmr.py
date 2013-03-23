@@ -34,7 +34,8 @@ class SHMR(object):
 # ----------------------------------------------------------------------------
 
     def drawMstars(self,Mh,z):
-        self.S2H_model
+        MstarBest=self.S2H_model.eval([Mh,z]).T)
+        Mstar=MstarBest+numpy.random.randn(Mh.size)*0.15#intrinsic Mstar scatter of the behroozi relation.
         return Mstar
 
 # ----------------------------------------------------------------------------
@@ -42,9 +43,10 @@ class SHMR(object):
     def drawMhalos(self,Ms,z,X=None):
         assert Ms.shape == z.shape
         if X != None: assert X.shape == Ms.shape
-        self.H2S_model
-        return Mhalo
-        
+        else: X=numpy.random.random(Ms.size)
+        return self.H2S_model.eval(numpy.array([Ms,R,z]).T)
+
+      
 # ----------------------------------------------------------------------------
 
     def makeHaloMassFunction(self,catalog)
@@ -152,8 +154,6 @@ class SHMR(object):
 
             #now we can convert this into a joint distribution, P(Ms,Mh) by multiplying by the halo
             #massfunction at this redshift (Bayes...) 
-            
-        
             # Perform P(M*|Mh)*P(Mh)
             pdf *= self.HMF(z,HMFcatalog='Millennium')
             
@@ -269,12 +269,7 @@ if __name__ == '__main__':
 # cPickle.dump(model,MODB,2)
 # 
 # 
-# def drawMHalo(model,Mslist,redshiftList):
-#    R = numpy.random.random(Mslist.size)
-#    return model.eval(numpy.array([Mslist,R,redshiftList]).T)
-# 
-# def drawMStar(model,Mhlist,redshiftList):
-#    return model.eval(numpy.array([Mhlist,redshiftList]).T)
+
 # 
 # 
 # # Tom gave lots of data!!
