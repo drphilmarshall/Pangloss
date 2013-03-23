@@ -1,3 +1,6 @@
+
+import pangloss
+
 import numpy
 import distances
 from scipy import interpolate,optimize
@@ -6,38 +9,42 @@ import cPickle
 import Relations as Rel
 #import pylab as plt
 
-arcmin2rad = (1.0/60.0)*numpy.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-
 vb = False
 
 # ============================================================================
-# Attempt at good Object Orientation. Made code slower :-(.   
-class Lens_Plane():
-    def __init__(self, z,zl,zs,Da_l,Da_s,Da_ls):
-        if z==0: z+=1e-99
-        D=distances.Distance()
-        self.name = "A sheet at redshift %.3f"%z
-        self.z=z
-        self.Da_p=D.Da(0,z)
-        self.rho_crit=D.rho_crit_univ(z)
-        self.Da_l,self.Da_s,self.Da_ls=Da_l,Da_s,Da_ls
-        self.Da_ps = D.Da(z,zs)
-        self.Da_pl = D.Da(z,zl)
-        self.sigma_crit=(1.663*10**18)*(self.Da_s/(self.Da_p*self.Da_ps))
-        if self.z>zl: #1 is lens, 2 is perturber
-            D1s = self.Da_ls
-            D2  = self.Da_p
-        else: #1 is perturber, 2 is lens
-            D1s = self.Da_ps
-            D2  = self.Da_l
-        D12= self.Da_pl
-        self.beta=(D12*self.Da_s)/(D2*D1s)
-
+# # Attempt at good Object Orientation. Made code slower :-(.   
+# class Lens_Plane():
+#     def __init__(self, z,zl,zs,Da_l,Da_s,Da_ls):
+#         if z==0: z+=1e-99
+#         D=distances.Distance()
+#         self.name = "A sheet at redshift %.3f"%z
+#         self.z=z
+#         self.Da_p=D.Da(0,z)
+#         self.rho_crit=D.rho_crit_univ(z)
+#         self.Da_l,self.Da_s,self.Da_ls=Da_l,Da_s,Da_ls
+#         self.Da_ps = D.Da(z,zs)
+#         self.Da_pl = D.Da(z,zl)
+#         self.sigma_crit=(1.663*10**18)*(self.Da_s/(self.Da_p*self.Da_ps))
+#         if self.z>zl: #1 is lens, 2 is perturber
+#             D1s = self.Da_ls
+#             D2  = self.Da_p
+#         else: #1 is perturber, 2 is lens
+#             D1s = self.Da_ps
+#             D2  = self.Da_l
+#         D12= self.Da_pl
+#         self.beta=(D12*self.Da_s)/(D2*D1s)
+# 
 # ============================================================================
+
 class Grid():
+    """
+    TEST DOCSTRING
+    """
+
+# ----------------------------------------------------------------------------
+
     def __init__(self,zl,zs,nplanes=100,cosmo=[0.25,0.75,0.73]): 
-        if zl > zs: zl,zs=zs,zl
+        assert zs > zl
         D=distances.Distance()
         self.name = '1D Redshift grid of lens planes, each containing precalculated quantities '
         self.zmax=zs*1.0
@@ -84,7 +91,7 @@ class Grid():
             self.beta[i]=(D12*self.Da_s)/(D2*D1s)
 
     def snap(self,z):
-        snapped_p=numpy.digitize(z,self.redshifts-(self.dz)/2)-1
+        snapped_p=numpy.digitize(z,self.redshifts-(self.dz)/2.0)-1
         snapped_p[snapped_p<0]=0 #catalogue has some blue shifted objects!
         snapped_z=self.redshifts[snapped_p]
         return snapped_z,snapped_p

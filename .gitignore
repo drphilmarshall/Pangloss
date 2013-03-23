@@ -6,4 +6,9 @@
 *.blg
 *.dvi
 *.pdf
+*.pickle
+*.fits
 doc/litter
+attic
+calib/Millennium
+calib/SHMR
