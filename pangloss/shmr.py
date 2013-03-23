@@ -1,6 +1,8 @@
 # ===========================================================================
 
 import numpy
+from scipy import interpolate,optimize
+import ndinterp
 
 # ============================================================================
 
@@ -22,9 +24,6 @@ class SHMR(object):
         self.Ms_axis = numpy.linspace(8.,13.,self.nMs)
         self.zed_axis,self.dz  = numpy.linspace(-0.2,1.6,self.nz,retstep=True)
         
-        
-        
-        
         return None
 
 # ----------------------------------------------------------------------------
@@ -33,61 +32,15 @@ class SHMR(object):
         return 'Stellar Mass to Halo Mass relation'
 
 # ----------------------------------------------------------------------------
-    def Mstar_to_M200(self,M_Star,redshift):
-    #Takes an array of stellar mass and an array of redshifts and gives the best fit halo mass of {behroozi}.
-        M_Star=10**(M_Star)
-        if self.method == 'Behroozi':
-       #Following Behroozi et al. 2010.
-            M_200=numpy.zeros(len(M_Star))
-       #parameters:
-        for i in range(len(M_Star)):
-            z=redshift[i]
-            if z<0.9:
-                Mstar00 = 10.72
-                Mstar0a = 0.55
-                Mstar0aa=0.0
-                M_10 = 12.35
-                M_1a = 0.28
-                beta0 = 0.44
-                betaa = 0.18
-                delta0 = 0.57
-                deltaa = 0.17
-                gamma0 = 1.56
-                gammaa = 2.51
-            else:
-                Mstar00 = 11.09
-                Mstar0a = 0.56
-                Mstar0aa= 6.99
-                M_10 = 12.27
-                M_1a = -0.84
-                beta0 = 0.65
-                betaa = 0.31
-                delta0 = 0.56
-                deltaa = -0.12
-                gamma0 = 1.12
-                gammaa = -0.53
- 
-       #scaled parameters:
-            a=1./(1.+z)
-            M_1=10**(M_10+M_1a*(a-1))
-            beta=beta0+betaa*(a-1)
-            Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
-            delta=delta0+deltaa*(a-1)
-            gamma=gamma0+gammaa*(a-1)
- 
-       #reltationship ****NO SCATTER****
- 
-            M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
-        return M_200 
 
-# ----------------------------------------------------------------------------
-
-    def drawMstar(self):
+    def drawMstar(self,Mh,z):
+        self.S2H_model
         return Mstar
 
 # ----------------------------------------------------------------------------
 
-    def drawMhalo(self):
+    def drawMhalo(self,Ms,z,X=None):
+        self.H2S_model
         return Mhalo
 
 # ----------------------------------------------------------------------------
@@ -139,8 +92,6 @@ class SHMR(object):
 #     hist,bins=numpy.histogram(Mhalos,Massbins)
 #     MOD = interpolate.splrep(Massbins[:-1],hist,s=0,k=1)
 #     HMF = interpolate.splev(Mh,MOD)     # This is an emperical HMF
-#     #plt.plot(Mh,HMF)
-#     #plt.show()
 # 
 #     TCM = Mh[HMF.argmax()+1:]
 #     TCHM = HMF[HMF.argmax()+1:]
@@ -155,62 +106,94 @@ class SHMR(object):
 #     ""
 
             #I suggest we just give people the co-efficients for each of the redshift bins. 
-            #saves a lot of time and data carriage
+            #this will save a lot of time and data carriage
             
+            # Perform P(M*|Mh)*P(Mh)
+            pdf *= HMF1
             
+            # # Calculate the CDF for P(Mh|M*)
+            pdf /= pdf.sum()
+            cdf = numpy.cumsum(pdf,1).astype(numpy.float32)
+            cdf = (cdf.T-cdf[:,0]).T
+            cdf = (cdf.T/cdf[:,-1]).T
+
+            CDF = numpy.empty((cdf.shape[0],Mh.size))
+            X = numpy.linspace(0.,1.,Mh.size)
+            for i in range(Ms.size):
+            # Some hacks for numerical stability...
+                tmp = numpy.round(cdf[i]*1e5).astype(numpy.int64)/1e5
+                lo = tmp[tmp==0].size-1
+                hi = tmp[tmp<1].size+1
+            # Re-evaulate the CDF on a regular grid
+            mod = interpolate.splrep(cdf[i][lo:hi],Mh[lo:hi],s=0,k=1)
+            q = interpolate.splev(X,mod)
+            CDF[i] = interpolate.splev(X,mod)
+            S2H_grid[:,:,k]=CDF
             
-            
+        # Form Mh(M*,X)
+        axes = {}
+        axes[0] = interpolate.splrep(Ms,numpy.arange(Ms.size),k=1)
+        axes[1] = interpolate.splrep(X,numpy.arange(X.size),k=1)
+        axes[2] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
+
+        self.S2H_model = ndinterp.ndInterp(axes,S2H_grid)
             
         
-        #this will make the zero-scatter halo to stellar mass relation.
+        #Make the zero-scatter halo to stellar mass relation.
         # but first we have to do some more stuff...
         axes2 = {}
         axes2[0] = interpolate.splrep(Mh,numpy.arange(Mh.size),k=1)
         axes2[1] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-        H2S_model = ndinterp.ndInterp(axes2,H2S_grid)
-
-
-     
-
-# 
-# # Perform P(M*|Mh)*P(Mh)
-#     pdf *= HMF1
-# 
-# # Calculate the CDF for P(Mh|M*)
-#     pdf /= pdf.sum()
-#     cdf = numpy.cumsum(pdf,1).astype(numpy.float32)
-#     cdf = (cdf.T-cdf[:,0]).T
-#     cdf = (cdf.T/cdf[:,-1]).T
-# 
-#     CDF = numpy.empty((cdf.shape[0],Mh.size))
-#     X = numpy.linspace(0.,1.,Mh.size)
-#     for i in range(Ms.size):
-#     # Some hacks for numerical stability...
-#         tmp = numpy.round(cdf[i]*1e5).astype(numpy.int64)/1e5
-#         lo = tmp[tmp==0].size-1
-#         hi = tmp[tmp<1].size+1
-#     # Re-evaulate the CDF on a regular grid X
-#         mod = interpolate.splrep(cdf[i][lo:hi],Mh[lo:hi],s=0,k=1)
-#         q = interpolate.splev(X,mod)
-#         CDF[i] = interpolate.splev(X,mod)
-#     model[:,:,k]=CDF
-# 
-# 
-# 
-# # Form Mh(M*,X)
-# axes = {}
-# axes[0] = interpolate.splrep(Ms,numpy.arange(Ms.size),k=1)
-# axes[1] = interpolate.splrep(X,numpy.arange(X.size),k=1)
-# axes[2] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-# 
-# model = ndinterp.ndInterp(axes,model)
-# 
-# 
-
+        self.H2S_model = ndinterp.ndInterp(axes2,H2S_grid)        
         
-        
-        self.CDF = numpy.zeros(self.nMs,self.nMh,self.nz)
         return
+# ----------------------------------------------------------------------------
+    def Mstar_to_M200(self,M_Star,redshift):
+    #Takes an array of stellar mass and an array of redshifts and gives the best fit halo mass of {behroozi}.
+        M_Star=10**(M_Star)
+        if self.method == 'Behroozi':
+       #Following Behroozi et al. 2010.
+            M_200=numpy.zeros(len(M_Star))
+       #parameters:
+        for i in range(len(M_Star)):
+            z=redshift[i]
+            if z<0.9:
+                Mstar00 = 10.72
+                Mstar0a = 0.55
+                Mstar0aa=0.0
+                M_10 = 12.35
+                M_1a = 0.28
+                beta0 = 0.44
+                betaa = 0.18
+                delta0 = 0.57
+                deltaa = 0.17
+                gamma0 = 1.56
+                gammaa = 2.51
+            else:
+                Mstar00 = 11.09
+                Mstar0a = 0.56
+                Mstar0aa= 6.99
+                M_10 = 12.27
+                M_1a = -0.84
+                beta0 = 0.65
+                betaa = 0.31
+                delta0 = 0.56
+                deltaa = -0.12
+                gamma0 = 1.12
+                gammaa = -0.53
+ 
+       #scaled parameters:
+            a=1./(1.+z)
+            M_1=10**(M_10+M_1a*(a-1))
+            beta=beta0+betaa*(a-1)
+            Mstar0=10**(Mstar00+Mstar0a*(a-1)+Mstar0aa*(a-0.5)**2)
+            delta=delta0+deltaa*(a-1)
+            gamma=gamma0+gammaa*(a-1)
+ 
+       #reltationship ****NO SCATTER****
+ 
+            M_200[i] =(numpy.log10(M_1)+beta*numpy.log10(M_Star[i]/Mstar0)+((M_Star[i]/Mstar0)**delta)/(1.+(M_Star[i]/Mstar0)**-gamma)-0.5)
+        return M_200 
 
 #=============================================================================
 
@@ -222,8 +205,7 @@ if __name__ == '__main__':
 # PofMgivenMcommaz.py:
 # 
 # import numpy,cPickle
-# from scipy import interpolate,optimize
-# import ndinterp
+
 # import pylab as plt
 # 
 # 
