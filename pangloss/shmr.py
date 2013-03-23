@@ -44,7 +44,78 @@ class SHMR(object):
         if X != None: assert X.shape == Ms.shape
         self.H2S_model
         return Mhalo
+        
+# ----------------------------------------------------------------------------
 
+    def makeHaloMassFunction(self,catalog)
+        #Infer halo mass function from Millenium Mh,z catalogue ; we use a power-law for this.
+        zeds,dz  = numpy.linspace(0,1.6,10,retstep=True)#coarse redshift bin. these thingschage slowly.
+        self.HMF={}
+        self.HMFzkeys,self.HMFdz=zeds+dz,dz
+        
+        infer_from_data=True:
+        if infer_from_data:
+            #load in the catalog's list of halo masses and redshift. Note this is not included with the 
+            #gitrelease of pangloss, but it's pretty easy to get hold of. (e.g. ask tcollett@ast.cam.ac.uk!)
+            inhalomass,inhaloZ = numpy.load('/data/tcollett/Pangloss/MS/HaloMassRedshift.catalog')
+            inhaloZ[inhaloZ<0]=0
+
+            for Z in zeds:
+                z=Z+dz/2.
+                mask=(inhaloZ>z-dz/2. & inhaloz<z+dz/2.)
+                Masses=Mhalos[mask]          
+                Massbins=numpy.linspace(10,20,101)  
+                hist,bins=numpy.histogram(Mhalos,Massbins)
+                MOD = interpolate.splrep(Massbins[:-1],hist,s=0,k=1)
+                HMF = interpolate.splev(Mh,MOD)     # This is an emperical HMF
+                TCM = Mh[HMF.argmax()+1:]
+                TCHM = HMF[HMF.argmax()+1:]
+                #fit a powerlaw to the HMF
+                PLcoeff,ier = optimize.leastsq(getPL,[14.56,-1.,TCM,TCHM])                
+                self.HMF[z]=PLcoeff
+                
+        # We've already fit a powerlaw to millenium: it's parameters as a function of z are 
+        # included here.  
+#        elif catalog='Millennium': pass
+#            for Z in zeds:
+#                z=Z+dz/2.
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+#                if z> and z<:self.HMF[z]=
+                
+        return
+# ----------------------------------------------------------------------------
+
+    def getPL(self,p,getM=False):
+        N = 10**(p[0]+TCM*p[1])
+        TCM=p[2]
+        TCHM=p[3]        
+        if getM:
+            return N
+        return (N-TCHM)/TCHM**0.5
+        
+     HMF1 = 10**(coeff[0]+Mh*coeff[1])   # This is the powerlaw fit
+        
+
+# ----------------------------------------------------------------------------
+
+    def getHaloMassFunction(self,z,HMFcatalog='Millennium')
+        try: self.HMF[HMFcatalog]
+        except NameError: #is it this error?
+            self.makeHaloMassFunction(HMFcatalog)
+            
+        for key in self.HMFzkeys:
+            if key<z+self.HMFdz/2. and key>z-self.HMFdz/2.:zkey=key
+            
+        return  10**(self.HMF[zkey][0]+self.Mh_axis*self.HMF[zkey][1])      
+    
 # ----------------------------------------------------------------------------
 
     def makeCDFs(self):
@@ -79,39 +150,12 @@ class SHMR(object):
                 pdf = numpy.exp(-0.5*(Ms-MsMean[i])**2/sigma**2)/norm
                 pdflist[:,i] = pdf
 
-            #now we can convert this into a joint distribution, P(Ms,Mh) by deviding by the halo
+            #now we can convert this into a joint distribution, P(Ms,Mh) by multiplying by the halo
             #massfunction at this redshift (Bayes...) 
             
-            #Infer halo mass function from Millenium Mh,z catalogue ###
-# # Deal with the halo mass function; here we fit a powerlaw
-#     #bin by redshift:
-#     Mhalos=inhalomass[inhaloZ<z+0.1]
-#     Z=inhaloZ[inhaloZ<(z+dz)]
-#     #This is all the halos in the relevant redshift bin:
-#     Mhalos=Mhalos[Z>(z-dz)]
-# 
-#     Massbins=numpy.linspace(10,20,101)
-#     hist,bins=numpy.histogram(Mhalos,Massbins)
-#     MOD = interpolate.splrep(Massbins[:-1],hist,s=0,k=1)
-#     HMF = interpolate.splev(Mh,MOD)     # This is an emperical HMF
-# 
-#     TCM = Mh[HMF.argmax()+1:]
-#     TCHM = HMF[HMF.argmax()+1:]
-#     ""
-#     def getPL(p,getM=False):
-#         N = 10**(p[0]+TCM*p[1])
-#         if getM:
-#             return N
-#         return (N-TCHM)/TCHM**0.5
-#     coeff,ier = optimize.leastsq(getPL,[14.56,-1.])
-#     HMF1 = 10**(coeff[0]+Mh*coeff[1])   # This is the powerlaw fit
-#     ""
-
-            #I suggest we just give people the co-efficients for each of the redshift bins. 
-            #this will save a lot of time and data carriage
-            
+        
             # Perform P(M*|Mh)*P(Mh)
-            pdf *= self.HMF('Millennium')
+            pdf *= self.HMF(z,HMFcatalog='Millennium')
             
             
             # # Calculate the CDF for P(Mh|M*)
@@ -215,15 +259,7 @@ if __name__ == '__main__':
 
 # 
 # # Data from lightcones
-# inhalomass,inhaloZ = numpy.load('MassRedshift.cat')
-# #inhaloZ[inhaloZ<0]=0
-# # Define the grid over which we'll work
-# Mh = numpy.linspace(10.,20.,501)
-# Ms = numpy.linspace(8.,13.,251)
-# zeds,dz  = numpy.linspace(-0.2,1.6,10,retstep=True)
-# dz/=2.
-# print dz
-# 
+
 
 # 
 # 
