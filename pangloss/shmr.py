@@ -81,15 +81,15 @@ class SHMR(object):
                 self.TCM = self.Mh_axis[HMF.argmax()+1:]
                 self.TCHM = HMF[HMF.argmax()+1:]
 
-                for i in range(len(self.TCM)):
-                    print z,self.TCM[i], self.TCHM[i]
-                exit()
 
                 #fit a powerlaw to the HMF
                 PLcoeff,ier = optimize.leastsq(self.getPL,[14.56,-1.])
                 print z, PLcoeff
+                                #bug here...
+
+                exit() 
+
                 self.HMF[i]=PLcoeff
-                #bug here...
         # We've already fit a powerlaw to millenium: it's parameters as a function of z are 
         # included here.  
 #        elif catalog='Millennium':
