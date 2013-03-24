@@ -85,8 +85,8 @@ class SHMR(object):
     def drawMstars(self,Mh,z):
 
         assert len(Mh)==len(z)
-        MstarBest=self.S2H_model.eval(([Mh,z]).T)
-        Mstar=MstarBest+numpy.random.randn(Mh.size)*0.15
+        MstarBest=self.H2S_model.eval(numpy.array([Mh,z]).T)
+        Mstar=MstarBest+numpy.random.randn(len(Mh))*0.15
         # 0.15 is the intrinsic Mstar scatter of the Behroozi relation...
         return Mstar
 
@@ -97,7 +97,7 @@ class SHMR(object):
         assert len(Ms) == len(z)
         if X != None: assert len(X) == len(Ms)
         else: X=numpy.random.random(Ms.size)
-        return self.H2S_model.eval(numpy.array([Ms,R,z]).T)
+        return self.S2H_model.eval(numpy.array([Ms,R,z]).T)
       
 # ----------------------------------------------------------------------------
 # Infer halo mass function from Millenium Mh,z catalogue. We use a power-law 
@@ -107,6 +107,7 @@ class SHMR(object):
         #Infer halo mass function from Millenium Mh,z catalogue ; we use a power-law for this.
         zeds,dz  = numpy.linspace(0,1.8,10,retstep=True)#coarse redshift bin. these things change slowly.
         self.HMF={}
+        self.HMF["catalog"]=catalog
         self.HMFzkeys,self.HMFdz=zeds-dz,dz
         
         infer_from_data=True
@@ -130,14 +131,13 @@ class SHMR(object):
                        #This is an emperical HMF
                 self.TCM = self.Mh_axis[HMF.argmax()+1:]
                 self.TCHM = HMF[HMF.argmax()+1:]
+                
 
-
+                self.TCM=self.TCM[self.TCHM>0]
+                self.TCHM=self.TCHM[self.TCHM>0]
+                 
                 #fit a powerlaw to the HMF
                 PLcoeff,ier = optimize.leastsq(self.getPL,[14.56,-1.])
-                print z, PLcoeff
-                                #bug here...
-
-                exit() 
 
                 self.HMF[i]=PLcoeff
                
@@ -162,19 +162,20 @@ class SHMR(object):
 # ----------------------------------------------------------------------------
 
     def getPL(self,p,getM=False):
-        N = 10**(p[0]+self.TCM*p[1])    
-        if getM:
-            return N
-        return (N-self.TCHM)/self.TCHM**0.5
+        N = 10**(p[0]+self.TCM*p[1]) 
+        return (N-self.TCHM)/(self.TCHM**0.5)
 
  
 
     def getHaloMassFunction(self,z,HMFcatalog='Millennium'):
+        self.HMFcatalog=HMFcatalog
         # If HMF doesn't already exist, make it:
-        try: self.HMF[HMFcatalog]
+        try: self.HMF["catalog"]
         except AttributeError:
             self.makeHaloMassFunction(HMFcatalog)
-            
+        if self.HMF["catalog"]!=HMFcatalog:self.makeHaloMassFunction(HMFcatalog)
+
+
         for i in range(len(self.HMFzkeys)):
             key=self.HMFzkeys[i]
             if key<=z+self.HMFdz/2. and key>=z-self.HMFdz/2.:
@@ -219,12 +220,13 @@ class SHMR(object):
             # Now we can convert this into a joint distribution, 
             # Pr(M*,Mh) by multiplying by the halo mass function at this
             # redshift: Pr(Mh|M*) ~ P(M*|Mh)*P(Mh)
-            pdf *= self.getHaloMassFunction(z,HMFcatalog='Millennium')
+
+            pdflist *= self.getHaloMassFunction(z,HMFcatalog='Millennium')
 
 
             # Calculate the CDF for P(Mh|M*) so we can sample it:
-            pdf /= pdf.sum()
-            cdf = numpy.cumsum(pdf,1).astype(numpy.float32)
+            pdflist /= pdflist.sum()
+            cdf = numpy.cumsum(pdflist,1).astype(numpy.float32)
             cdf = (cdf.T-cdf[:,0]).T
             cdf = (cdf.T/cdf[:,-1]).T
 
@@ -315,7 +317,10 @@ if __name__ == '__main__':
     shmr = SHMR('Behroozi',HMFdata='/data/tcollett/Pangloss/HaloMassRedshift.catalog')
     shmr.makeCDFs()
 
-    print shmr.drawMstars([12],[0.1])
+    li=numpy.empty(1000)
+    for i in range(len(li)):
+        li[i]=shmr.drawMstars([12],[0.1])
+
 
 #=============================================================================
 # PofMgivenMcommaz.py:
