@@ -100,3 +100,5 @@ You should then be able to execute the following example analysis:
     Drill.py example.config
     Reconstruct.py example.config
     Calibrate.py example.config
+
+For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
