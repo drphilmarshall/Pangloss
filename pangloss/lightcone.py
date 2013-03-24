@@ -7,11 +7,10 @@ import pangloss
 #from mpl_toolkits.axes_grid1 import ImageGrid
 import cPickle
 import numpy
-import Relations as Rel
-import LensingProfiles as LP
-import LensingFunc as LF
-import numpy.random as rnd
-import pylab as plt
+# import Relations as Rel
+# import LensingProfiles as LP
+# import LensingFunc as LF
+# import pylab as plt
 
 # ======================================================================
 
@@ -199,7 +198,7 @@ class Lightcone(object):
         z_obs=self.galaxies.z_spec*1.0
         for i in range(len(z_obs)):
             z=z_obs[i]
-            if flag[i]==True: z=rnd.normal(z,e*(1+z))
+            if flag[i]==True: z=numpy.random.normal(z,e*(1+z))
             z_obs[i]=z
         self.galaxies.z_obs=z_obs
 
@@ -236,8 +235,8 @@ class Lightcone(object):
         #Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
 
         #now add uncertainties:
-        Ms[self.galaxies.spec_flag==False]+=rnd.randn(Ms[self.galaxies.spec_flag==False].size)*0.45
-        Ms[self.galaxies.spec_flag==True]+=rnd.randn(Ms[self.galaxies.spec_flag==True].size)*0.15
+        Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*0.45
+        Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*0.15
 
         try:
             self.galaxies.add_column('Ms_obs',Ms)
@@ -250,7 +249,7 @@ class Lightcone(object):
     def drawMHalos(self,modelT):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
-        R = rnd.random(len(Mslist))
+        R = numpy.random.random(len(Mslist))
         Mhlist=modelT.eval(numpy.array([Mslist,R,redshiftList]).T)
         self.galaxies.Mh_obs=Mhlist
 
@@ -260,7 +259,7 @@ class Lightcone(object):
         M200=10**self.galaxies.Mh_obs        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
         self.try_column("r200",r200)
-        c200 = Rel.MCrelation(M200,scatter=errors)
+        c200 = pangloss.MCrelation(M200,scatter=errors)
         self.try_column("c200",c200)
         r_s = r200/c200        
         self.try_column('rs',r_s)
@@ -275,18 +274,18 @@ class Lightcone(object):
         r200=self.galaxies.r200
         x=self.galaxies.X
         r_s=self.galaxies.rs
-        rho_s = LP.delta_c(c200)*self.galaxies.rho_crit
+        rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
         kappa_s = rho_s * r_s /self.galaxies.sigma_crit
         r_trunc=truncationscale*r200
         xtrunc=r_trunc/r_s
         kappaHalo=kappa_s*1.0
         gammaHalo=kappa_s*1.0
         if profile=="BMO1":
-            F=LP.BMO1Ffunc(x,xtrunc)
-            G=LP.BMO1Gfunc(x,xtrunc)
+            F=pangloss.BMO1Ffunc(x,xtrunc)
+            G=pangloss.BMO1Gfunc(x,xtrunc)
         if profile=="BMO2":
-            F=LP.BMO2Ffunc(x,xtrunc)
-            G=LP.BMO2Gfunc(x,xtrunc)
+            F=pangloss.BMO2Ffunc(x,xtrunc)
+            G=pangloss.BMO2Gfunc(x,xtrunc)
         kappaHalo*=F
         gammaHalo*=(G-F)
 

@@ -1,23 +1,56 @@
 import numpy
 #from numpy import exp,pi
 #from scipy.special import gamma
-import numpy.random as rnd
 #import copy
 #import matplotlib,pylab as plt
 #from scipy import interpolate
 
-#--------------------------------------------------------------
+#=========================================================================
+
+"""
+    NAME
+        scalingrelations
+
+    PURPOSE
+        Scaling relations between various galaxy properties.
+
+    COMMENTS
+            
+    FUNCTIONS
+        General:
+            logerr(l,m,s):
+        Concentration-mass:
+            MCrelation(M200,scatter=False,h=0.75):
+        M*-Mh relation:
+            binMS(cat=None):
+            Mstar_to_M200(M_Star,redshift,Behroozi=True):
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-25  Collett & Marshall (Oxford)
+"""
+
+#=========================================================================
+# Lognormal random deviate:
+
 def logerr(l,m,s):
-      c=10**rnd.normal(m,s)
+      c=10**numpy.random.normal(m,s)
       return c
 
 #--------------------------------------------------------------
+# Concentration - halo mass:
+
 def MCrelation(M200,scatter=False,h=0.75):
 
       if scatter==True:
             M200/=h
-            r1=rnd.normal(0,0.015,len(M200))
-            r2=rnd.normal(0,0.005,len(M200))
+            r1=numpy.random.normal(0,0.015,len(M200))
+            r2=numpy.random.normal(0,0.005,len(M200))
             logc_maccio=1.020+r1-(0.109+r2)*(numpy.log10(M200)-12)
       else:
            logc_maccio=1.020-(0.109)*(numpy.log10(M200)-12)
@@ -32,7 +65,7 @@ def MCrelation(M200,scatter=False,h=0.75):
 #        c_200=4.67*(M200/(10**14))**-0.11
 #        logc_200=numpy.log10(c_200)
 #        lM200 = numpy.log10(M200)
-#        c_new = c_200*10**(rnd.normal(1,0.2,len(M200)))/10**(1+(0.2**2)/2)
+#        c_new = c_200*10**(numpy.random.normal(1,0.2,len(M200)))/10**(1+(0.2**2)/2)
 #        #print numpy.max(c_new),numpy.min(c_new)
 # 
 #        return c_new
@@ -41,85 +74,85 @@ def MCrelation(M200,scatter=False,h=0.75):
 #        for i in range(len(M200)):    #best fit scatter parameters of neto et al (double log normal)
 #          if lM200[i]<11.875:
 #             f=0.205 
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.683,0.147) * (lM200[i]/11.875)**-0.11
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.920,0.106) * (lM200[i]/11.875)**-0.11
 #          if lM200[i]<12.125:
 #             f=0.205
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.683,0.147)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.920,0.106)
 #          elif lM200[i]<12.375:
 #             f=0.171
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.658,0.150)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.903,0.108)
 #          elif lM200[i]<12.625:
 #             f=0.199
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.646,0.139)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.881,0.099)        
 #          elif lM200[i]<12.875:
 #             f=0.229
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.605,0.158)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.838,0.101)          
 #          elif lM200[i]<13.125:
 #             f=0.263
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.603,0.136)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.810,0.100)          
 #          elif lM200[i]<13.375:
 #             f=0.253
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.586,0.140)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.793,0.099)         
 #          elif lM200[i]<13.625:
 #             f=0.275
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.566,0.142)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.763,0.095)            
 #          elif lM200[i]<13.875:
 #             f=0.318
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.543,0.140)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.744,0.094)
 #          elif lM200[i]<14.125:
 #             f=0.361
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.531,0.131)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.716,0.088)            
 #          elif lM200[i]<14.375:
 #             f=0.383
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.510,0.121)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.689,0.095)       
 #          elif lM200[i]<14.625:
 #             f=0.370
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.490,0.133)
 #             else:
 #                c_200[i]= logerr(logc_200[i],0.670,0.094)           
 #          elif lM200[i]<14.875:
 #             f=0.484
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.519,0.121)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.635,0.091)    
 #          elif lM200[i]<15.125:
 #             f=0.578
-#             if rnd.rand()<f:
+#             if numpy.random.rand()<f:
 #                c_200[i]=logerr(logc_200[i],0.493,0.094)
 #             else:
 #                c_200[i]=logerr(logc_200[i],0.661,0.061)
@@ -170,7 +203,9 @@ def binMS(cat=None):
       return None
 
 #--------------------------------------------------------------
+
 def Mstar_to_M200(M_Star,redshift,Behroozi=True):
+
    if Behroozi==True:
       #Following Behroozi et al. 2010.
       M_200=numpy.zeros(len(M_Star))
@@ -202,7 +237,6 @@ def Mstar_to_M200(M_Star,redshift,Behroozi=True):
             gamma0 = 1.12
             gammaa = -0.53
 
-
       #scaled parameters:
          a=1./(1.+z)
          M_1=10**(M_10+M_1a*(a-1))
@@ -217,3 +251,5 @@ def Mstar_to_M200(M_Star,redshift,Behroozi=True):
 
 
       return M_200 
+
+#=========================================================================

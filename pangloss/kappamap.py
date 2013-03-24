@@ -1,11 +1,3 @@
-'''
-This file is part of the Pangloss project.
-Copyright 2012 Tom Collett (IoA) and Phil Marshall (Oxford).
-
-to-do
------
-- check that kappa map is being read in the right way around...
-'''
 
 import numpy, os, string
 import struct, pyfits
@@ -21,8 +13,6 @@ rad2deg = 1.0/deg2rad
 vb = False
 
 # ============================================================================
-    
-# Read in, write out, look up convergence kappa in map from Stefan Hilbert.
 
 class Kappamap:
     """
@@ -51,8 +41,6 @@ class Kappamap:
 
         write_out_to_fits(self):
 
-        at(self,x,y,coordinate_system='physical'): return pixel values
-
         image2physical(self,i,j): coord transformation, returns x,y
 
         physical2image(self,x,y): coord transformation, returns i,j
@@ -60,6 +48,8 @@ class Kappamap:
         image2world(self,i,j): coord transformation, returns a,d
 
         world2image(self,a,d): coord transformation, returns a,d
+
+        at(self,x,y,coordinate_system='physical'): return pixel values
 
         lookup(self,i,j): return pixel values given image coords
 
@@ -74,7 +64,7 @@ class Kappamap:
       2013-03-23  Marshall & Collett (Oxford)
     """
 
-   def __init__(self,kappafile,FITS=True,vb=False):
+   def __init__(self,kappafile,FITS=True):
 
       self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.6'
       self.input = kappafile
@@ -83,7 +73,7 @@ class Kappamap:
       
       if FITS:
          # Read in FITS image, extract wcs:
-         if vb: print "Reading in map from file "+kappafile
+         print "Reading in map from file "+kappafile
          self.read_in_fits_data()
        
       else:
@@ -95,7 +85,7 @@ class Kappamap:
          self.setwcs()
 
          # Read in binary data, to self.values:
-         if vb: print "Reading in map from file "+kappafile
+         print "Reading in map from file "+kappafile
          self.read_in_binary_data()
 
          # If it doesn't already exist, output the map to FITS file:
@@ -103,9 +93,9 @@ class Kappamap:
          # self.output = string.join(pieces[0:len(pieces)-1],'.')+'.fits'
          self.output = self.input+'.fits'
          if os.path.exists(self.output): 
-           if vb: print "FITS version already exists: ",self.output
+           print "FITS version already exists: ",self.output
          else:  
-           if vb: print "Writing map to "+self.output
+           print "Writing map to "+self.output
            self.write_out_to_fits()
          # This should probably not be in __init__ but hopefully it only gets run once.  
       
@@ -207,32 +197,28 @@ class Kappamap:
 
    def at(self,x,y,coordinate_system='physical'):
 
-      if vb: 
-         print " "
-         print "Looking up kappa value at position",x,",",y," in the "+coordinate_system+" coordinate system"
+      print " "
+      print "Looking up kappa value at position",x,",",y," in the "+coordinate_system+" coordinate system"
       
       # Get pixel indices of desired point, 
       # and also work out other positions for completeness, if verbose:
       if coordinate_system == 'physical':
          i,j = self.physical2image(x,y)
-         if vb: print "  - image coordinates:",i,j
+         print "  - image coordinates:",i,j
       elif coordinate_system == 'image':
          i = x
          j = y
-         if vb: 
-            x,y = self.image2physical(i,j)
-            print "  - physical coordinates:",x,y,"(radians)"
+         x,y = self.image2physical(i,j)
+         print "  - physical coordinates:",x,y,"(radians)"
          
-      if vb:   
-         a,d = self.image2world(i,j)
-         print "  - approximate world coordinates:",a,d,"(degrees)"
-         print "  - ds9 image coordinates:",i+1,j+1
+      a,d = self.image2world(i,j)
+      print "  - approximate world coordinates:",a,d,"(degrees)"
+      print "  - ds9 image coordinates:",i+1,j+1
          
       # Now look up correct value, doing some bilinear interpolation:
       
       kappa = self.lookup(i,j)
-      if vb: 
-         print "  Value of kappa = ",kappa
+      print "  Value of kappa = ",kappa
       
       return kappa
          
