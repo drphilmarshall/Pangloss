@@ -1,5 +1,7 @@
 # ===========================================================================
 
+import pangloss
+
 import numpy
 from scipy import interpolate,optimize
 import ndinterp
@@ -59,7 +61,7 @@ class SHMR(object):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,method='Behroozi',HMFdata=None):
+    def __init__(self,method='Behroozi'):
         
         self.name = self.__str__()
         self.method = method
@@ -70,8 +72,6 @@ class SHMR(object):
         self.Ms_axis = numpy.linspace(8.,13.,self.nMs)
         self.zed_axis,self.dz  = numpy.linspace(0.,1.6,self.nz,retstep=True)
         
-        self.HMFdata=HMFdata
-
         return None
 
 # ----------------------------------------------------------------------------
@@ -104,19 +104,25 @@ class SHMR(object):
 # approximation for this.
 
     def makeHaloMassFunction(self,catalog):
+
+        assert catalog != None
+
         #Infer halo mass function from Millenium Mh,z catalogue ; we use a power-law for this.
         zeds,dz  = numpy.linspace(0,1.8,10,retstep=True)#coarse redshift bin. these things change slowly.
-        self.HMF={}
-        self.HMF["catalog"]=catalog
-        self.HMFzkeys,self.HMFdz=zeds-dz,dz
+        self.HMF = {}
+        self.HMF['catalog'] = catalog
+        self.HMFzkeys,self.HMFdz = zeds-dz,dz
         
         infer_from_data=True
-        if infer_from_data and self.HMFdata!=None:
+        if infer_from_data:
             # Load in the catalog's list of halo masses and redshift.
-            import cPickle
-            F=open(self.HMFdata,'rb')
-            inhalomass,inhaloZ=cPickle.load(F)
-            F.close()
+            
+            # import cPickle
+            # F=open(self.HMFdata,'rb')
+            # inhalomass,inhaloZ = cPickle.load(F)
+            # F.close()
+            
+            inhalomass,inhaloZ = pangloss.readPickle(catalog)
             inhaloZ[inhaloZ<0]=0
 
             for i in range(len(zeds)):
@@ -128,18 +134,16 @@ class SHMR(object):
                 hist,bins=numpy.histogram(Mhalos,Massbins)
                 MOD = interpolate.splrep(Massbins[:-1],hist,s=0,k=1)
                 HMF = interpolate.splev(self.Mh_axis,MOD)
-                       #This is an emperical HMF
                 self.TCM = self.Mh_axis[HMF.argmax()+1:]
                 self.TCHM = HMF[HMF.argmax()+1:]
                 
-
                 self.TCM=self.TCM[self.TCHM>0]
                 self.TCHM=self.TCHM[self.TCHM>0]
                  
-                #fit a powerlaw to the HMF
+                # Fit a powerlaw to the HMF
                 PLcoeff,ier = optimize.leastsq(self.getPL,[14.56,-1.])
 
-                self.HMF[i]=PLcoeff
+                self.HMF[i] = PLcoeff
                
         # We've already fit a powerlaw to millenium: it's parameters as a function of z are 
         # included here.  
@@ -165,17 +169,20 @@ class SHMR(object):
         N = 10**(p[0]+self.TCM*p[1]) 
         return (N-self.TCHM)/(self.TCHM**0.5)
 
- 
+# ----------------------------------------------------------------------------
 
-    def getHaloMassFunction(self,z,HMFcatalog='Millennium'):
-        self.HMFcatalog=HMFcatalog
+    def getHaloMassFunction(self,z,HMFcatalog=None):
+
         # If HMF doesn't already exist, make it:
-        try: self.HMF["catalog"]
+        try: self.HMF['catalog']
         except AttributeError:
             self.makeHaloMassFunction(HMFcatalog)
-        if self.HMF["catalog"]!=HMFcatalog:self.makeHaloMassFunction(HMFcatalog)
+        
+        # If HMF does already exist, overwrite it if required
+        if HMFcatalog != None and HMFcatalog != self.HMF['catalog']:
+            self.makeHaloMassFunction(HMFcatalog)
 
-
+        # Now that we have an HMF, look up some values:
         for i in range(len(self.HMFzkeys)):
             key=self.HMFzkeys[i]
             if key<=z+self.HMFdz/2. and key>=z-self.HMFdz/2.:
@@ -221,8 +228,7 @@ class SHMR(object):
             # Pr(M*,Mh) by multiplying by the halo mass function at this
             # redshift: Pr(Mh|M*) ~ P(M*|Mh)*P(Mh)
 
-            pdflist *= self.getHaloMassFunction(z,HMFcatalog='Millennium')
-
+            pdflist *= self.getHaloMassFunction(z)
 
             # Calculate the CDF for P(Mh|M*) so we can sample it:
             pdflist /= pdflist.sum()

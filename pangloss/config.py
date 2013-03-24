@@ -77,14 +77,14 @@ class Configuration(object):
                 self.parameters[key] = float(self.parameters[key])
             except ValueError:
                 pass
-        intkeys = ['NCalibrationLightcones']
+        intkeys = ['NCalibrationLightcones','NRealisations']
         for key in intkeys:
             self.parameters[key] = int(self.parameters[key])
 
         # Now sort out filenames etc:
 
         pathkeys = ['CalibrationCatalogs', 'CalibrationKappamaps',
-                                'ObservedCatalog', 'CalibrationFolder']
+                    'ObservedCatalog', 'CalibrationFolder', 'HMFfile']
         for key in pathkeys:
             paths = self.parameters[key]
             # Expand environment variables (eg $PANGLOSS_DIR)

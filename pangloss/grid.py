@@ -6,8 +6,8 @@ import distances
 from scipy import interpolate,optimize
 import cPickle
 
-import Relations as Rel
-#import pylab as plt
+# import Relations as Rel
+# import pylab as plt
 
 vb = False
 
@@ -127,15 +127,20 @@ class Grid():
 
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
+
     nplanes=100
     g=Grid(0.6,1.4,nplanes=nplanes)
-    TEST=open("/data/tcollett/Pangloss/grid%i.grid"%nplanes,"wb")
-    cPickle.dump(g,TEST,2)
-#TEST.close()
+    testfile = "/data/tcollett/Pangloss/grid%i.grid"%nplanes
+    pangloss.writePickle(g,testfile)
+
 
 """
-FILE=open("test.pkl","r")
-k=cPickle.load(FILE)
+
+# FILE=open("test.pkl","r")
+# k=cPickle.load(FILE)
+
+k = pangloss.readPickle(testfile)
+
 print k.plane[3].beta
 nn=1000
 reg=numpy.zeros(nn)

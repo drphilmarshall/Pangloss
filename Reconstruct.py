@@ -76,7 +76,7 @@ def Reconstruct(argv):
         print pangloss.hello
         print pangloss.doubledashedline
         print "Reconstruct: assigning halo mass to various lightcones"
-        print "Reconstruct: Taking instructions from",configfile
+        print "Reconstruct: taking instructions from",configfile
     else:
         print Reconstruct.__doc__
         return
@@ -97,26 +97,38 @@ def Reconstruct(argv):
     obspickle = experiment.getLightconePickleName('real')
     
     # Ray tracing:
-    rtscheme = experiment.parameters['RayTracingScheme']
+    RTscheme = experiment.parameters['RayTracingScheme']
     
     # SHM relation parameters:
     SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
-    SHMfile = CALIB_DIR+SHMrelation+'.pickle'
+    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+    SHMfile = CALIB_DIR+'/'+SHMrelation+'.pickle'
+    
+    # Halo mass function data:
+    HMFfile = experiment.parameters['HMFfile'][0]
+    
+    # Photo-zs:
+    zperr = experiment.parameters['PhotozError']
+    
+    # Stellar mass observations:
+    Mserr = experiment.parameters['MstarError']
     
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     
     # --------------------------------------------------------------------
-    # Load in stellar mass to halo relation:
-
+    # Load in stellar mass to halo relation, or make a new one:
+    
     try:
         shmr = pangloss.readPickle(SHMfile)
-    except FileError: # Not sure what error this needs to be yet...
-        print "Reconstruct.py: generating the stellar mass to halo mass grid."
-        print "Reconstruct.py: this may take a moment..."
-        shmr = pangloss.SHMR(method=SHMrelation,HMFdata=CALIB_DIR+"/SHMR/HaloMassRedshift.catalog")
-        # Write this out now, for later:
+    except IOError:
+        print "Reconstruct: generating the stellar mass to halo mass grid."
+        print "Reconstruct: this may take a moment..."
+        shmr = pangloss.SHMR(method=SHMrelation)
+        shmr.makeHaloMassFunction(HMFfile)
+        shmr.makeCDFs()
         pangloss.writePickle(shmr,SHMfile)
+        print "Reconstruct: SHMR saved to "+SHMfile
     
     # --------------------------------------------------------------------
     # Make redshift grid:
@@ -129,41 +141,58 @@ def Reconstruct(argv):
     calcones = []
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
-
     obscone = pangloss.readPickle(obspickle)
+    
+    allcones = calcones+[obscone]
+    allconefiles = calpickles+[obspickle]
 
     # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
 
-    for lc in calcones+[obscone]:
+    for i in range(len(allcones)):
+
+        lc = allcones[i]
+        print "Reconstruct: drawing %i samples from Pr(kappah|D)" % (Ns)
+        print "Reconstruct: given data in "+allconefiles[i]
 
         p = pangloss.PDF('kappa_halo')
-        # Add gamma1, gamma2
+        # coming soon: gamma1, gamma2...
  
-        lc.define_system(zd,zs)
-        lc.load_grid(grid)
+        lc.defineSystem(zd,zs)
+        lc.loadGrid(grid)
 
-#         for j in range(Ns):
-#             lc.mimic_photoz_error(sigma=zperr)
-#             lc.snap_to_grid(grid)
-#             if lc.flavor == 'simulated': lc.drawMStars(shmr)
-#             ls.mimic_Mstar_error(sigma=Mserr)
-#             lc.drawMHalos(shmr)
-#             lc.drawConcentrations(errors=True)
-#             lc.Make_kappas(truncationscale=10)
-#             lc.Scale_kappas()
-#             kappa_halo[j]=lc.kappa_add_total
-#             gamma1_halo[j]=lc.gamma1_add_total
-#             gamma2_halo[j]=lc.gamma2_add_total
-# 
-#         # Take Hilbert ray-traced kappa as "truth":
-#         p.truth[0] = lc.kappa_hilbert
-#         
-# 
-#         results = kappa_Hilbert,gamma1_Hilbert,gamma2_Hilbert,kappa_halo,gamma1_halo,gamma2_halo
-#         #,kappa_T,gamma1_T,gamma2_T
-# 
-#         return results
+        # Draw Ns sample realisations of this lightcone, and hence
+        # accumulate samples from Pr(kappah|D):
+        for j in range(Ns):
+            lc.mimicPhotozError(sigma=zperr)
+            lc.snapToGrid(grid)
+            
+            # Simulated lightcones need Mstars drawing from their Mhalos
+            if lc.flavor == 'simulated': lc.drawMstars(shmr)
+            ls.mimicMstarError(sigma=Mserr)
+
+            lc.drawMhalos(shmr)
+            lc.drawConcentrations(errors=True)
+
+            lc.makeKappas(truncationscale=10)
+            lc.combineKappas()
+            
+            if RTscheme == 'sum':
+                p.append(lc.kappa_add_total)
+            elif RTscheme == 'keeton':
+                p.append(lc.kappa_keeton)
+            else:
+                raise "Unknown ray-tracing scheme: "+RTscheme
+            # also lc.gamma1_add_total, lc.gamma2_add_total
+
+        # Take Hilbert ray-traced kappa as "truth":
+        p.truth[0] = lc.kappa_hilbert
+        
+        # Pickle this lightcone's PDF:
+        x = allconefiles[i]
+        pfile = x.split('.')[0]+"_PofKappah.pickle"
+        pangloss.writePickle(p,pfile)
+        print "Reconstruct: Pr(kappah|D) saved to "+pfile
 
     # --------------------------------------------------------------------
 
