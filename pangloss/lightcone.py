@@ -38,29 +38,29 @@ class Lightcone(object):
         band          The band in which the selection is made
     
     METHODS
-        N_radius_cat(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
+        galaxiesWithin(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
         
-        N_radius(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
+        numberWithin(self,radius,cut=[18.5,24.5],band="F814W",radius_unit="arcsec"):
         
         define_system(self,zl,zs,cosmo=[0.25,0.75,0.73]):
         
-        load_grid(self, Grid):
+        loadGrid(self, Grid):
         
-        mimic_photoz_error(self,sigma=0.1):
+        mimicPhotozError(self,sigma=0.1):
         
-        try_column(self,string,values):
+        tryColumn(self,string,values):
         
-        snap_to_grid(self, Grid):
+        snapToGrid(self, Grid):
         
-        drawMStars(self,model): Needs updating to take SHMR object
+        drawMstars(self,model): Needs updating to take SHMR object
         
-        drawMHalos(self,modelT):
+        drawMhalos(self,modelT):
         
         drawConcentrations(self,errors=False):
         
-        Make_kappas(self,errors=False,truncationscale=5,profile="BMO1"):
+        makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
         
-        Scale_kappas(self):
+        combineKappas(self):
 
     BUGS
 
@@ -144,16 +144,19 @@ class Lightcone(object):
         return 'Lightcone of radius %.2f arcmin, centred on (%.3f,%.3f) rad' % (self.rmax,self.xc[0],self.xc[1])
 
 # ----------------------------------------------------------------------------
+# Tell me the number of galaxies within a certain radius, that pass a 
+# certain magnitude cut.
 
-   #Tell me the number of galaxies within a certain radius, that pass a certain magnitude cut.
-    def N_radius_cat(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
+    def galaxiesWithin(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
+
         if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W"
         else:
             col = "mag_%s" % band
-        if radius < 10: print "Warning: Default units for N_radius are arcsec!"
+        if radius < 10: 
+            print "Warning: Default units for radius are arcsec!"
         if radius_unit == "arcsec":
             radius = radius/60.
         if col != "warning":
@@ -165,20 +168,21 @@ class Lightcone(object):
                                           (self.galaxies["%s"%col] < cut[1])& \
                                           (self.galaxies["%s"%col] > cut[0]))
 
-    def N_radius(self,radius,cut=[18.5,24.5],band="F814W", radius_unit="arcsec"):
-        Ntable=self.N_radius_cat(radius,cut,band, radius_unit)
+    def numberWithin(self,radius,cut=[18.5,24.5],band="F814W",units="arcsec"):
+        Ntable = self.galaxiesWithin(radius,cut,band,units)
         return len(Ntable.r)
 
 # ----------------------------------------------------------------------------
 
-    def define_system(self,zl,zs,cosmo=[0.25,0.75,0.73]):
+    def defineSystem(self,zl,zs,cosmo=[0.25,0.75,0.73]):
         self.zl=zl
         self.zs=zs
         self.cosmo=cosmo
         self.galaxies=self.galaxies.where(self.galaxies.z_spec<zs)
 
 # ----------------------------------------------------------------------------
-    def load_grid(self, Grid):
+
+    def loadGrid(self, Grid):
         if numpy.abs(self.zl-Grid.zltrue)>0.05: print "Grid zl != lens zl" 
         if numpy.abs(self.zs-Grid.zs)    >0.05: print "Grid zs != lens zs" 
         self.redshifts,self.dz=Grid.redshifts,Grid.dz
@@ -189,7 +193,7 @@ class Lightcone(object):
 # (Previous functions are single use/lightcone)
 # ----------------------------------------------------------------------------
 
-    def mimic_photoz_error(self,sigma=0.1):
+    def mimicPhotozError(self,sigma=0.1):
         print "Make me vary for each galaxy"
         #this code is not written well at the moment.
 
@@ -205,7 +209,7 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
     # shortcut function for adding columns that might already exist
-    def try_column(self,string,values):
+    def tryColumn(self,string,values):
         try:
             self.galaxies.add_column('%s'%string,values)
         except ValueError:
@@ -213,28 +217,28 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def snap_to_grid(self, Grid):
+    def snapToGrid(self, Grid):
         z=self.galaxies.z_obs
         sz,p=Grid.snap(z)
-        self.try_column('Da_p',Grid.Da_p[p])
-        self.try_column('rho_crit',Grid.rho_crit[p])
-        self.try_column('sigma_crit',Grid.sigma_crit[p])
-        self.try_column('beta',Grid.beta[p])
+        self.tryColumn('Da_p',Grid.Da_p[p])
+        self.tryColumn('rho_crit',Grid.rho_crit[p])
+        self.tryColumn('sigma_crit',Grid.sigma_crit[p])
+        self.tryColumn('beta',Grid.beta[p])
         rphys=self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
-        self.try_column('rphys',rphys)
+        self.tryColumn('rphys',rphys)
 
 # ----------------------------------------------------------------------------
 #  One line description here!
 
-    def drawMStars(self,model):
+    def drawMstars(self,model):
         Mhlist=self.galaxies.Mh
         redshiftList=self.galaxies.z_obs
         # REPLACE WITH SHMR.drawMstars([Mhlist,redshiftList])...
         Ms = model.eval(numpy.array([Mhlist,redshiftList]).T)
 
-        #Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
+        # Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
 
-        #now add uncertainties:
+        # Now add noise:
         Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*0.45
         Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*0.15
 
@@ -246,7 +250,7 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 #  One line description here!
 
-    def drawMHalos(self,modelT):
+    def drawMhalos(self,modelT):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
         R = numpy.random.random(len(Mslist))
@@ -258,17 +262,17 @@ class Lightcone(object):
     def drawConcentrations(self,errors=False):
         M200=10**self.galaxies.Mh_obs        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
-        self.try_column("r200",r200)
+        self.tryColumn("r200",r200)
         c200 = pangloss.MCrelation(M200,scatter=errors)
-        self.try_column("c200",c200)
+        self.tryColumn("c200",c200)
         r_s = r200/c200        
-        self.try_column('rs',r_s)
+        self.tryColumn('rs',r_s)
         x=self.galaxies.rphys/r_s
-        self.try_column('X',x)
+        self.tryColumn('X',x)
 
 # ----------------------------------------------------------------------------
 
-    def Make_kappas(self,errors=False,truncationscale=5,profile="BMO1"):
+    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
         #M200=10**self.galaxies.Mh_obs     
         c200=self.galaxies.c200
         r200=self.galaxies.r200
@@ -296,13 +300,15 @@ class Lightcone(object):
         gamma1 = gamma*numpy.cos(2*phi)
         gamma2 = gamma*numpy.sin(2*phi)
 
-        self.try_column('kappa',kappa)
-        self.try_column('gamma',gamma)
-        self.try_column('gamma1',-gamma1)
-        self.try_column('gamma2',-gamma2)
+        self.tryColumn('kappa',kappa)
+        self.tryColumn('gamma',gamma)
+        self.tryColumn('gamma1',-gamma1)
+        self.tryColumn('gamma2',-gamma2)
+        
 # ----------------------------------------------------------------------------
 
-    def Scale_kappas(self):
+    def combineKappas(self):
+    
         B=self.galaxies.beta
         K=self.galaxies.kappa
         G=self.galaxies.gamma
@@ -318,17 +324,17 @@ class Lightcone(object):
         gamma1_tom = (1.-B) * G1
         gamma2_tom = (1.-B) * G2
 
-        self.try_column('kappa_keeton',kappa_keeton)
-        self.try_column('gamma1_keeton',gamma1_keeton)
-        self.try_column('gamma2_keeton',gamma2_keeton)
+        self.tryColumn('kappa_keeton',kappa_keeton)
+        self.tryColumn('gamma1_keeton',gamma1_keeton)
+        self.tryColumn('gamma2_keeton',gamma2_keeton)
 
-        self.try_column('kappa_tom',kappa_tom)
-        self.try_column('gamma1_tom',gamma1_tom)
-        self.try_column('gamma2_tom',gamma2_tom)
+        self.tryColumn('kappa_tom',kappa_tom)
+        self.tryColumn('gamma1_tom',gamma1_tom)
+        self.tryColumn('gamma2_tom',gamma2_tom)
 
-        self.try_column('kappa_add',K)
-        self.try_column('gamma1_add',G1)
-        self.try_column('gamma2_add',G2)
+        self.tryColumn('kappa_add',K)
+        self.tryColumn('gamma1_add',G1)
+        self.tryColumn('gamma2_add',G2)
 
 
         self.kappa_add_total=numpy.sum(self.galaxies.kappa_add)
