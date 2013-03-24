@@ -114,7 +114,7 @@ def Reconstruct(argv):
     except FileError: # Not sure what error this needs to be yet...
         print "Reconstruct.py: generating the stellar mass to halo mass grid."
         print "Reconstruct.py: this may take a moment..."
-        shmr = pangloss.SHMR(method=SHMrelation)
+        shmr = pangloss.SHMR(method=SHMrelation,HMFdata=CALIB_DIR+"/SHMR/HaloMassRedshift.catalog")
         # Write this out now, for later:
         pangloss.writePickle(shmr,SHMfile)
     
