@@ -79,10 +79,18 @@ we're working towards relaxing this.
 They all take, as their sole input, the same configuration file, an
 [example of which is given here](https://github.com/drphilmarshall/Pangloss/blob/master/pangloss/example_catalog.txt).
 
-We include the means to obtain the halo catalog for a 
-1x1 square degree patch of Millennium Simulation sky, and its
+In the calib directory we include the means to obtain the halo catalog 
+for a 1x1 square degree patch of Millennium Simulation sky, and its
 associated ray traced convergence map, for making the calibration
-lightcones, and a small mock observed galaxy catalog for testing.
+lightcones. A small mock observed galaxy catalog is included in the
+example directory, for testing.
+
+To get the test data, please do the following:
+
+    cd calib
+    Fetch.csh
+
+The Fetch script uses wget. 
 
 Additional galaxy catalogs and ray-traced convergence maps from the
 Millenium Simulation are available from Stefan Hilbert on request.

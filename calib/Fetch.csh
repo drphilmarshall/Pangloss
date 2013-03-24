@@ -21,12 +21,13 @@
 #   -x --clobber                      Overwrite data already owned.
 #
 # OUTPUTS:
-#   Millennium/Kappa_8_1_1.fits       Ray-traced convergence map
-#   Millennium/Catalogue_8_1_1.txt    Catalog of galaxy and halo properties
+#   Millennium/kappa_example.fits     Ray-traced convergence map
+#   Millennium/catalog_example.txt    Catalog of galaxy and halo properties
 #
-#   SHMR/H2S.behroozi                 Stellar/halo mass relation look-up tables
-#   SHMR/S2H.behroozi
-#   SHMR/H2S.moster
+#   SHMR/HaloMassRedshift.catalog     Halo mass,z catalog to allow
+#                                      empirical halo mass function to 
+#                                      be constructed. This is needed by
+#                                      the M*-Mh relation code.
 #
 # DEPENDENCIES:
 #
@@ -88,7 +89,7 @@ set website = "http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib"
   echo "${0:t}: Downloading data files from Tom's website:"
   echo "${0:t}:   $website"
   echo "${0:t}: into current working directory:"
-  echo "${0:t}:   $HERE"
+  echo "${0:t}:   $BACK"
   if ($klobber) echo "${0:t}: Clobbering contents of existing directories!"
 
 #-----------------------------------------------------------------------
