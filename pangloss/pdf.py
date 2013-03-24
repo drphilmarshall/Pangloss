@@ -6,7 +6,32 @@ import numpy
 
 class PDF(object):
     """
-    TEST DOCSTRING
+    NAME
+        PDF
+
+    PURPOSE
+        Define a probability distribution for some named parameters, and
+        store samples drawn from it.
+
+    COMMENTS
+        The function itself is defined elsewhere - this class is just a 
+        data structure.
+
+    INITIALISATION
+        parameters     List of parameter names 
+        
+    METHODS
+        append(self,sample): add a sample (or numpy array of samples) to the ensemble
+    
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-21  Marshall & Collett (Oxford)
     """
 
 # ----------------------------------------------------------------------------

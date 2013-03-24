@@ -38,7 +38,33 @@ vb = False
 
 class Grid():
     """
-    TEST DOCSTRING
+    NAME
+        Grid
+
+    PURPOSE
+        Define a discrete redshift grid, and enable objects to be 
+        snapped on to it.
+
+    COMMENTS
+
+    INITIALISATION
+        zl            Strong lens redshift (needed for critical densities etc)
+        zs            Source plane redshift
+        nplanes       Number of redshift planes in grid (def=100)   
+        cosmo         Cosmological parameters (def: [Om,Ol,h]=[0.25,0.75,0.73] 
+
+    METHODS
+        snap(self,z): Return redshift of nearest plane to z
+    
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-23  Collett & Marshall (Cambridge)
     """
 
 # ----------------------------------------------------------------------------

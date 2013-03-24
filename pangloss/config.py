@@ -5,6 +5,38 @@ import os, glob
 # ======================================================================
 
 class Configuration(object):
+    """
+    NAME
+        Configuration
+
+    PURPOSE
+        Structure of metadata supplied by the Pangloss user to define 
+        the experiment they want to do.
+
+    COMMENTS
+
+    INITIALISATION
+        configfile    Plain text file containing desired values of pars
+    
+    METHODS
+        read(self): from configfile, get par names and values
+        
+        convert(self): strings to numbers, and expand paths
+        
+        prepare(self): set up workspace
+        
+        getLightconePickleName(self,flavor,pointing=None): 
+
+    BUGS
+
+    AUTHORS
+      This file is part of the Pangloss project, distributed under the
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      Please cite: Collett et al 2013, arxiv/###
+
+    HISTORY
+      2013-03-23  Collett & Marshall (Cambridge)
+    """
 
     def __init__(self,configfile):
         self.file = configfile
