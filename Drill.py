@@ -133,7 +133,7 @@ def Drill(argv):
             print "Drill: Pickling lightcones from this patch of sky..."
             for k in range(Ncones):
                 if k % 200 == 0 and k !=0:
-                    print ("Drill: ...currently on cone %i of %i..." % (k,Ncones))
+                    print ("Drill: ...on cone %i out of %i..." % (k,Ncones))
 
                 lc = pangloss.Lightcone(table,'simulated',[x[k],y[k]],Rc)
 
