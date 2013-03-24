@@ -91,7 +91,12 @@ To get the test data, please do the following:
     Fetch.csh
 
 The Fetch script uses wget. 
-
 Additional galaxy catalogs and ray-traced convergence maps from the
 Millenium Simulation are available from Stefan Hilbert on request.
 
+You should then be able to execute the following example analysis:
+
+    cd example
+    Drill.py example.config
+    Reconstruct.py example.config
+    Calibrate.py example.config
