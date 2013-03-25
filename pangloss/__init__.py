@@ -10,6 +10,9 @@ from io import *
 from lensing import *
 from scalingrelations import *
 
+# Matt Auger's classes.
 from distances import *
+from ndinterp import *
+
 
 from miscellaneous import *
