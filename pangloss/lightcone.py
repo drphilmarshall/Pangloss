@@ -237,7 +237,7 @@ class Lightcone(object):
         self.tryColumn('mock_true_Mstar',Ms)
    
     def mimicMstarError(self,sigmaP,sigmaS):
-        MS=self.galaxies.mock_true_Mstar
+        Ms=self.galaxies.mock_true_Mstar
 
         # Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
 
