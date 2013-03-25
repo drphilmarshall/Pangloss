@@ -3,7 +3,7 @@
 
 import pangloss
 
-import sys,getopt,cPickle
+import sys,getopt,cPickle,numpy
 
 # ======================================================================
 
@@ -157,9 +157,11 @@ def Reconstruct(argv):
 
         p = pangloss.PDF('kappa_halo')
         # coming soon: gamma1, gamma2...
- 
+
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
+
+        
 
         # Draw Ns sample realisations of this lightcone, and hence
         # accumulate samples from Pr(kappah|D):
@@ -190,9 +192,15 @@ def Reconstruct(argv):
         
         # Pickle this lightcone's PDF:
         x = allconefiles[i]
-        pfile = x.split('.')[0]+"_PofKappah.pickle"
+        pfile = x.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
         pangloss.writePickle(p,pfile)
         print "Reconstruct: Pr(kappah|D) saved to "+pfile
+        
+
+        #to save loading in time for Calibrate.py we compute the median of kappah and save it in a seperate file, with kappaHilbert
+        if lc.flavor=="simulated":
+            pfile2 = x.split('.')[0].split("_lightcone")[0]+"_KappaHilbert_Kappah_median.pickle"
+            pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
 
     # --------------------------------------------------------------------
 

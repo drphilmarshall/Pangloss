@@ -3,11 +3,11 @@
 
 import pangloss
 
-import sys,getopt,cPickle
+import sys,getopt,cPickle,numpy
 
 # ======================================================================
 
-def Calibrate(argv):
+def Calibrate(argv,Mode=3):
     """
     NAME
         Calibrate.py
@@ -83,8 +83,70 @@ def Calibrate(argv):
         return
 
     # --------------------------------------------------------------------
+    # Read in configuration, and extract the ones we need:
+
+    experiment = pangloss.Configuration(configfile)
+
+    Nc = experiment.parameters['NCalibrationLightcones']
+
+    comparator=experiment.parameters['Comparator']
+    comparatorType=experiment.parameters['ComparatorType']
 
     # --------------------------------------------------------------------
+    #Mode1 : generate a jointdistribution from the calibration dataset:
+    if Mode==1 or Mode==3:
+    #First find the calibration pdfs for kappa_h
+        calpickles = []
+        for i in range(Nc):
+            calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+
+        calresultpickles=[]
+        if comparator=="kappa_h" and comparatorType=="median":
+            for i in range(Nc):
+                x = calpickles[i]
+                pfile2 = x.split('.')[0].split("_lightcone")[0]+"_KappaHilbert_Kappah_median.pickle"
+                calresultpickles.append(pfile2)
+
+        elif comparator=="kappa_h" and comparatorType!="median": 
+            for i in range(Nc):
+                x = calpickles[i]
+                pfile = x.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
+
+                calresultpickles.append(pfile)
+        else:
+            print "I don't know that comparator. If you want to use a comparator other than kappa_h, you'll need to code it up (this should be easy but you can ask tcollett@ast.cam.uk for help). Exiting"
+            exit()
+
+
+
+    #caluclate comparators:
+        comparatorlist=numpy.empty(Nc)
+        hilbertkappa=numpy.empty(Nc)
+        for i in range(Nc):
+            C=calresultpickles[i]
+            pdf=pangloss.readPickle(C)
+            if comparator=="kappa_h":
+                if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
+                    comparatorlist[i]=numpy.median(pdf[1])
+                    hilbertkappa[i]=pdf[0]
+                elif comparatorType=="mean":
+                    hilbertkappa[i]=pdf.truth[0]
+                    comparatorlist[i]=numpy.mean(pdf.samples)
+                else: 
+                    print "I don't know that comparator type. exiting"
+                    exit()
+
+        print hilbertkappa,comparatorlist
+    # --------------------------------------------------------------------
+    
+    #Mode2 : calibrate a real line of sight using the joint-distribution
+    if Mode==2 or Mode==3:
+        obscone = pangloss.readPickle(obspickle)
+
+
+
+
+
 
     return
 
