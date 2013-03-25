@@ -192,7 +192,7 @@ def Drill(argv):
 
         lc.drawMstars(shmr)
 
-        lc.galaxies.keep_columns(['Mstar','x','y','r','phi','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','spec_flag'])
+        lc.galaxies.keep_columns(['Mstar','z_spec','x','y','r','phi','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','spec_flag'])
 
         obspickle = experiment.getLightconePickleName('real')
         pangloss.writePickle(lc,obspickle)
