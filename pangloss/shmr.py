@@ -4,7 +4,6 @@ import pangloss
 
 import numpy
 from scipy import interpolate,optimize
-import ndinterp
 
 # ============================================================================
 
@@ -254,13 +253,13 @@ class SHMR(object):
         axes[0] = interpolate.splrep(Ms,numpy.arange(Ms.size),k=1)
         axes[1] = interpolate.splrep(X,numpy.arange(X.size),k=1)
         axes[2] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-        self.S2H_model = ndinterp.ndInterp(axes,S2H_grid)
+        self.S2H_model = pangloss.ndInterp(axes,S2H_grid)
             
         # Make the zero-scatter halo to stellar mass relation.
         axes2 = {}
         axes2[0] = interpolate.splrep(Mh,numpy.arange(Mh.size),k=1)
         axes2[1] = interpolate.splrep(zeds,numpy.arange(zeds.size),k=1)
-        self.H2S_model = ndinterp.ndInterp(axes2,H2S_grid)        
+        self.H2S_model = pangloss.ndInterp(axes2,H2S_grid)        
         
         return
         

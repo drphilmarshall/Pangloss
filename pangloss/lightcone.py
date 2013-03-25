@@ -194,7 +194,6 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
     def mimicPhotozError(self,sigma=0.1):
-        print "Make me vary for each galaxy"
         #this code is not written well at the moment.
 
         e=sigma
@@ -234,14 +233,11 @@ class Lightcone(object):
         Mhlist=self.galaxies.Mh
         redshiftList=self.galaxies.z_obs
         Ms=model.drawMstars(Mhlist,redshiftList)
-        self.tryColumn('mock_true_Mstar',Ms)
+        self.tryColumn('Mstar',Ms)
    
     def mimicMstarError(self,sigmaP,sigmaS):
-        Ms=self.galaxies.mock_true_Mstar
+        Ms=self.galaxies.Mstar
 
-        # Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
-
-        # Now add noise:
         Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*sigmaP
         Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*sigmaS
         try:
@@ -256,7 +252,7 @@ class Lightcone(object):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
         Mhlist=model.drawMhalos(Mslist,redshiftList)
-        self.galaxies.Mh_obs=Mhlist
+        self.tryColumn("Mh_obs",Mhlist)
 
 # ----------------------------------------------------------------------------
 
