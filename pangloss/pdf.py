@@ -56,9 +56,8 @@ class PDF(object):
 # Add one sample to the ensemble:
 
     def append(self,sample):
-    
         assert len(sample) == self.Ndim
-        assert sample.shape == (self.Ndim,)
+        assert len(sample) == (self.Ndim)
         self.samples = numpy.append(self.samples,[sample],axis=0)
     
         return 

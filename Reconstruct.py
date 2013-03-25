@@ -178,9 +178,9 @@ def Reconstruct(argv):
             lc.combineKappas()
             
             if RTscheme == 'sum':
-                p.append(lc.kappa_add_total)
+                p.append([lc.kappa_add_total])
             elif RTscheme == 'keeton':
-                p.append(lc.kappa_keeton)
+                p.append([lc.kappa_keeton])
             else:
                 raise "Unknown ray-tracing scheme: "+RTscheme
             # also lc.gamma1_add_total, lc.gamma2_add_total
