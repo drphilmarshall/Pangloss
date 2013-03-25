@@ -111,8 +111,8 @@ def Reconstruct(argv):
     zperr = experiment.parameters['PhotozError']
     
     # Stellar mass observations:
-    Mserr = experiment.parameters['MstarError']
-    Mserr = experiment.parameters['MstarError']
+    MserrP = experiment.parameters['PhotometricMstarError']
+    MserrS = experiment.parameters['SpectroscopicMstarError']
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     

@@ -234,18 +234,16 @@ class Lightcone(object):
         Mhlist=self.galaxies.Mh
         redshiftList=self.galaxies.z_obs
         Ms=model.drawMstars(Mhlist,redshiftList)
-
-
-    def mimicMstarError(self,model):
-        Mhlist=self.galaxies.Mh
-        redshiftList=self.galaxies.z_obs
+        self.tryColumn('mock_true_Mstar',Ms)
+   
+    def mimicMstarError(self,sigmaP,sigmaS):
+        MS=self.galaxies.mock_true_Mstar
 
         # Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
 
         # Now add noise:
-        Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*0.45
-        Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*0.15
-
+        Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*sigmaP
+        Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*sigmaS
         try:
             self.galaxies.add_column('Ms_obs',Ms)
         except ValueError:
