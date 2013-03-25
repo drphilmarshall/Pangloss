@@ -83,7 +83,6 @@ class SHMR(object):
 # Return samples from Pr(M*|Mh,z):
 
     def drawMstars(self,Mh,z):
-
         assert len(Mh)==len(z)
         MstarBest=self.H2S_model.eval(numpy.array([Mh,z]).T)
         Mstar=MstarBest+numpy.random.randn(len(Mh))*0.15

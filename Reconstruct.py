@@ -112,7 +112,7 @@ def Reconstruct(argv):
     
     # Stellar mass observations:
     Mserr = experiment.parameters['MstarError']
-    
+    Mserr = experiment.parameters['MstarError']
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     
@@ -169,7 +169,7 @@ def Reconstruct(argv):
             
             # Simulated lightcones need Mstars drawing from their Mhalos
             if lc.flavor == 'simulated': lc.drawMstars(shmr)
-            ls.mimicMstarError(sigma=Mserr)
+            lc.mimicMstarError(sigmaP=MserrP,sigmaS=MserrS)
 
             lc.drawMhalos(shmr)
             lc.drawConcentrations(errors=True)

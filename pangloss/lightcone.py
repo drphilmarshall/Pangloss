@@ -233,8 +233,12 @@ class Lightcone(object):
     def drawMstars(self,model):
         Mhlist=self.galaxies.Mh
         redshiftList=self.galaxies.z_obs
-        # REPLACE WITH SHMR.drawMstars([Mhlist,redshiftList])...
-        Ms = model.eval(numpy.array([Mhlist,redshiftList]).T)
+        Ms=model.drawMstars(Mhlist,redshiftList)
+
+
+    def mimicMstarError(self,model):
+        Mhlist=self.galaxies.Mh
+        redshiftList=self.galaxies.z_obs
 
         # Ms = numpy.log10(self.galaxies['M_Stellar[M_sol/h]'])
 
@@ -250,10 +254,11 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 #  One line description here!
 
-    def drawMhalos(self,modelT):
+    def drawMhalos(self,model):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
-        R = numpy.random.random(len(Mslist))
+        model.drawMhalos(Mslist,redshiftList)
+
         Mhlist=modelT.eval(numpy.array([Mslist,R,redshiftList]).T)
         self.galaxies.Mh_obs=Mhlist
 
