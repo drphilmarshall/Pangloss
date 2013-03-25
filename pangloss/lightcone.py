@@ -255,9 +255,7 @@ class Lightcone(object):
     def drawMhalos(self,model):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
-        model.drawMhalos(Mslist,redshiftList)
-
-        Mhlist=modelT.eval(numpy.array([Mslist,R,redshiftList]).T)
+        Mhlist=model.drawMhalos(Mslist,redshiftList)
         self.galaxies.Mh_obs=Mhlist
 
 # ----------------------------------------------------------------------------

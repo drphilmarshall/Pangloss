@@ -96,7 +96,7 @@ class SHMR(object):
         assert len(Ms) == len(z)
         if X != None: assert len(X) == len(Ms)
         else: X=numpy.random.random(Ms.size)
-        return self.S2H_model.eval(numpy.array([Ms,R,z]).T)
+        return self.S2H_model.eval(numpy.array([Ms,X,z]).T)
       
 # ----------------------------------------------------------------------------
 # Infer halo mass function from Millenium Mh,z catalogue. We use a power-law 
