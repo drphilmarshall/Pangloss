@@ -106,23 +106,39 @@ foreach file ( $targets )
   mkdir -p $dir
   chdir $dir
 
-  if ($klobber) \rm -rf $file
+  if ($klobber) then
 
-  set now = `date '+%Y%m%d-%H%M%S'`
-  set logfile = ".wget.$file:t.$now.log"
+    \rm -rf $file:t
+    set done = 0
+
+  else if (-e $file:t) then
   
-  set url = "$website/$file"
+    echo "${0:t}: $file exists, skipping..."
+    set done = 0
+    
+  else
   
-  wget "$url" \
-    -O $file:t \
-    -e robots=off \
-    >& $logfile
-  
+    set now = `date '+%Y%m%d-%H%M%S'`
+    set logfile = ".wget.$file:t.$now.log"
+
+    set url = "$website/$file"
+
+    wget "$url" \
+      -O $file:t \
+      -e robots=off \
+      >& $logfile
+      
+    set done = 1
+
+  endif
+    
   chdir $BACK
-  echo "${0:t}: log stored in $dir/$logfile"
-          
-  echo "${0:t}: result:"
-  du -sh $file
+  
+  if ($done) then
+    echo "${0:t}: log stored in $dir/$logfile"
+    echo "${0:t}: result:"
+    du -sh $file
+  endif
 
 end
 
