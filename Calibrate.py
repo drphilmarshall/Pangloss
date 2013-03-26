@@ -82,7 +82,10 @@ def Calibrate(argv):
     if len(args) == 1:
         configfile = args[0]
         print pangloss.doubledashedline
-        print "Pangloss Calibrate: Calibrating lightcones according to instructions in",configfile
+        print pangloss.hello
+        print pangloss.doubledashedline
+        print "Calibrate: transforming Pr(kappah|D) to Pr(kappa|D)"
+        print "Calibrate: taking instructions from",configfile
     else:
         print Calibrate.__doc__
         return
@@ -98,6 +101,12 @@ def Calibrate(argv):
     comparatorType=experiment.parameters['ComparatorType']
     comparatorWidth=experiment.parameters['ComparatorWidth']
 
+    # Figure out which mode is required:
+    ModeName = experiment.parameters['CalibrateMode']
+    if ModeName=='Joint': Mode = 1
+    if ModeName=='Slice': Mode = 2
+    if ModeName=='JointAndSlice': Mode = 3
+
     CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
     jointdistfile= CALIB_DIR+'/Calibrationguide/'+comparator+comparatorType+'.pickle'
     
@@ -106,9 +115,12 @@ def Calibrate(argv):
     resultfile=RES_DIR+'/'+EXP_NAME+'_PofKappaExt.pickle'
     print resultfile
     # --------------------------------------------------------------------
-    #Mode1 : generate a jointdistribution from the calibration dataset:
+    # Mode 1: generate a joint distribution, eg Pr(kappah,kappa)
+    # from the calibration dataset:
+    
     if Mode==1 or Mode==3:
-    #First find the calibration pdfs for kappa_h
+    
+        #First find the calibration pdfs for kappa_h:
         calpickles = []
         for i in range(Nc):
             calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
@@ -127,7 +139,10 @@ def Calibrate(argv):
 
                 calresultpickles.append(pfile)
         else:
-            print "I don't know that comparator. If you want to use a comparator other than kappa_h, you'll need to code it up (this should be easy but you can ask tcollett@ast.cam.uk for help). Exiting"
+            print "Calibrate: Unrecognised comparator "+Comparator
+            print "Calibrate: If you want to use a comparator other than kappa_h, "
+            print "Calibrate: you'll need to code it up!"
+            print "Calibrate: (This should be easy, but you can ask tcollett@ast.cam.uk for help)."
             exit()
 
 
@@ -140,7 +155,7 @@ def Calibrate(argv):
             if comparator=="kappa_h":
                 if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
                     callist[i,0]=pdf[0]
-                    callist[i,1]=numpy.median(pdf[1])
+                    callist[i,1]=pdf[1]
                 elif comparatorType=="mean":
                     callist[i,0]=pdf.truth[0]
                     callist[i,1]=numpy.mean(pdf.samples)
@@ -151,8 +166,9 @@ def Calibrate(argv):
         pangloss.writePickle(callist,jointdistfile)
 
     # --------------------------------------------------------------------
-    
-    #Mode2 : calibrate a real line of sight using the joint-distribution
+    # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
+    # joint distribution Pr(kappa,<kappah>|D)
+
     if Mode==2 or Mode==3:
         callibguide=pangloss.readPickle(jointdistfile)
 
@@ -204,6 +220,8 @@ def Calibrate(argv):
         print "And then do whatever you wanted this for! Goodluck, TEC & PJM"
         
         
+    
+        obscone = pangloss.readPickle(obspickle)
 
     return
 

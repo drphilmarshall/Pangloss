@@ -161,8 +161,6 @@ def Reconstruct(argv):
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
 
-        
-
         # Draw Ns sample realisations of this lightcone, and hence
         # accumulate samples from Pr(kappah|D):
         for j in range(Ns):
@@ -196,11 +194,13 @@ def Reconstruct(argv):
         pangloss.writePickle(p,pfile)
         print "Reconstruct: Pr(kappah|D) saved to "+pfile
         
-
-        #to save loading in time for Calibrate.py we compute the median of kappah and save it in a seperate file, with kappaHilbert
+        # To save loading in time in Calibrate.py we compute the median
+        # of kappah and save it in a separate file, with kappaHilbert
         if lc.flavor=="simulated":
             pfile2 = x.split('.')[0].split("_lightcone")[0]+"_KappaHilbert_Kappah_median.pickle"
             pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
+            # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
+            # BUG: and named appropriately?
 
     # --------------------------------------------------------------------
 
