@@ -161,6 +161,8 @@ def Reconstruct(argv):
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
 
+        lc.configureForSurvey(experiment)
+
         # Draw Ns sample realisations of this lightcone, and hence
         # accumulate samples from Pr(kappah|D):
         for j in range(Ns):

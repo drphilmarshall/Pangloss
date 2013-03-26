@@ -189,6 +189,20 @@ class Lightcone(object):
         self.redshifts,self.dz=Grid.redshifts,Grid.dz
         self.Da_l,self.Da_s,self.Da_ls=Grid.Da_l,Grid.Da_s,Grid.Da_ls
 
+
+# ----------------------------------------------------------------------------
+
+    def configureForSurvey(self, experiment):
+        
+
+
+
+
+
+# ----------------------------------------------------------------------------
+
+
+
 # ----------------------------------------------------------------------------
 # Following functions are designed to be run multiple times
 # (Previous functions are single use/lightcone)
