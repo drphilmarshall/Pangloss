@@ -102,18 +102,15 @@ def Drill(argv):
     # as its parent catalog:
     obspickle = experiment.getLightconePickleName('real')
 
-    # SHM relation parameters:
-    SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
-    SHMfile = CALIB_DIR+'/'+SHMrelation+'.pickle'
-    
-    # Halo mass function data:
-    HMFfile = experiment.parameters['HMFfile'][0]
+
+    makeNewCalCones=experiment.parameters['MakeNewCalibrations']
+
     
     # --------------------------------------------------------------------
     # First, make any calibration lightcones required:
 
-    if (Nc > 0 and Ncalcats > 0):
-
+    if (Nc > 0 and Ncalcats > 0 and makeNewCalCones!='False'):
+      if makeNewCalCones!= 'false':
         print pangloss.dashedline
         print ("Drill: Making %i calibration lightcones in %i sky patches:" % (Nc,Ncalcats))
 

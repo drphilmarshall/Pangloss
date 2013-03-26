@@ -70,7 +70,7 @@ class PDF(object):
                 return self.samples[:,i]
 
 # ----------------------------------------------------------------------------
-# accesscommands
+# plotting commands
     def plot(self,key1,key2=None,weightkey="weight",bins=None,title=None):
         import pylab as plt
         assert key1 in self.parameters, "not a valid key. Keys are %s"%self.parstring
@@ -82,7 +82,7 @@ class PDF(object):
         
         reformatnames={}
         reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
-        reformatnames["kappa_h"]="$\kappa_{\mathrm{halos}}$"
+        reformatnames["kappa_h_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
         key1name=key1[:]
         if key1name in reformatnames.keys():
             key1name = reformatnames[key1name]
@@ -115,16 +115,20 @@ class PDF(object):
             plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 
-            plt.show(block=True)
-
-            return None
-
-
 
         if key2 != None:
+            assert weightkey==None, "I don't know about weighted 2D plots yet."
+            print "pdf:plotting a 2D scatter plot ..."
             #make a 2d scatterplot (upgrade to a cornerplot in future!)
-            pass
+            plt.figure()
+            plt.scatter(self.call(key1),self.call(key2),\
+                            c='k',s=1,edgecolors=None)
+            plt.xlabel(key1name)
+            plt.ylabel(key2name)
+            if title != None: plt.title(title)
 
+        plt.show(block=True)
+        return None
 
 #=============================================================================
 

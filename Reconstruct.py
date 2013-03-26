@@ -96,6 +96,8 @@ def Reconstruct(argv):
     
     obspickle = experiment.getLightconePickleName('real')
     
+    EXP_NAME=experiment.parameters['ExperimentName']
+
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
     
@@ -116,6 +118,9 @@ def Reconstruct(argv):
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     
+    # Reconstruct calibration lines of sight?
+    DoCal = experiment.parameters['ReconstructCalibrations']
+
     # --------------------------------------------------------------------
     # Load in stellar mass to halo relation, or make a new one:
     
@@ -142,6 +147,10 @@ def Reconstruct(argv):
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
     obscone = pangloss.readPickle(obspickle)
+
+    if DoCal=="False": #must be string type
+        calcones=[]
+        calpickles=[]
 
     allcones = calcones+[obscone]
     allconefiles = calpickles+[obspickle]
@@ -187,24 +196,22 @@ def Reconstruct(argv):
                 raise "Unknown ray-tracing scheme: "+RTscheme
             # also lc.gamma1_add_total, lc.gamma2_add_total
 
-        if lc.flavor=="real":print numpy.ravel(p.samples)
-
         # Take Hilbert ray-traced kappa as "truth":
         p.truth[0] = lc.kappa_hilbert
         
         # Pickle this lightcone's PDF:
         x = allconefiles[i]
-        pfile = x.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
+        pfile = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_PofKappah.pickle"
         pangloss.writePickle(p,pfile)
         print "Reconstruct: Pr(kappah|D) saved to "+pfile
         
         # To save loading in time in Calibrate.py we compute the median
         # of kappah and save it in a separate file, with kappaHilbert
         if lc.flavor=="simulated":
-            pfile2 = x.split('.')[0].split("_lightcone")[0]+"_KappaHilbert_Kappah_median.pickle"
+            pfile2 = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
             pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
             # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
-            # BUG: and named appropriately?
+            # BUG: and named appropriately? No, this is just a pair of values
 
     # --------------------------------------------------------------------
 
