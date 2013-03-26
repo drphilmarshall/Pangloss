@@ -207,28 +207,47 @@ class Lightcone(object):
         # would need a mimik spectroscopic incompletness function)
 
         band=experiment.parameters['LightconeDepthBand']
+        if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
+            col = "mag_SDSS_%s" % band
+        elif band == "F814" or band == "F814W" or band == "814" or band == 814:
+            col = "mag_F814W" #note that this isn't included atm
+        else:
+            col = "mag_%s" % band
+        # -------------------------------------------------
 
         #exclude galaxies not observed by photometry:
-        self.tryColumn('photo_flag',0)
-        self.tryColumn('mag_flag',0)
-        self.tryColumn('rad_flag',0)
+        self.tryColumn('photo_flag',False)
+        self.tryColumn('identifier',range(len(self.galaxies.x)))
 
-        for i in range(len(PR)):
-            R=PR[i]
+        if PR!=['']:
+          for i in range(len(PR)):
+            R=PR[i]*60 #positions are stored in arcseconds
             D=PD[i]
-            print R,D
-        exit()
+           
+            goodset=set(self.galaxies.where((self.galaxies.r < R) & \
+               (self.galaxies["%s"%col] < D)).identifier)
 
+            self.galaxies.photo_flag[numpy.array(\
+               [_ in goodset for _ in self.galaxies.identifier])]=True
+        
+        self.galaxies=self.galaxies.where(self.galaxies.photo_flag==True)
+
+        # ------------------------------------------------- 
+  
         #change spectrscopicflag of any galaxy that should have spectroscopy:
         self.tryColumn('spec_flag',False)
 
+        if SR!=['']:
+          for i in range(len(SR)):
+            R=SR[i]*60 #positions are stored in arcseconds
+            D=SD[i]
+            goodset=set(self.galaxies.where((self.galaxies.r < R) & \
+               (self.galaxies["%s"%col] < D)).identifier)
 
+            self.galaxies.spec_flag[numpy.array(\
+               [_ in goodset for _ in self.galaxies.identifier])]=True
 
-
-
-# ----------------------------------------------------------------------------
-
-
+        return
 
 # ----------------------------------------------------------------------------
 # Following functions are designed to be run multiple times
