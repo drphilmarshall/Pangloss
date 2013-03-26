@@ -69,6 +69,61 @@ class PDF(object):
             if key == self.parameters[i]:
                 return self.samples[:,i]
 
+# ----------------------------------------------------------------------------
+# accesscommands
+    def plot(self,key1,key2=None,weightkey="weight",bins=None,title=None):
+        import pylab as plt
+        assert key1 in self.parameters, "not a valid key. Keys are %s"%self.parstring
+        if key2!=None:assert key2 in self.parameters, "not a valid key. Keys are %s"%self.parstring
+
+        if key2=="weight": 
+            print "This code automatically uses the weights to form a histogram, you can state this explicitly using weightkey=weight if you have several weight columns"
+            key2==None
+        
+        reformatnames={}
+        reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
+        reformatnames["kappa_h"]="$\kappa_{\mathrm{halos}}$"
+        key1name=key1[:]
+        if key1name in reformatnames.keys():
+            key1name = reformatnames[key1name]
+
+        if key2 != None:
+            key2name=key2[:]
+            if key2name in reformatnames.keys():
+                key2name = reformatnames[key2name]
+
+        if key2 == None:
+            par1=self.call(key1)
+            #make a histogram
+            
+            #check to see if samples are weighted:
+            print "pdf: looking for a weight key"
+            if weightkey!=None and weightkey in self.parameters: 
+                weights=self.call(weightkey)
+                print "pdf: plotting weighted histogram..."
+            else: 
+                weights= numpy.ones(len(par1))*1.0
+                print "pdf: plotting unweighted histogram..."
+            weights/=numpy.sum(weights)
+            
+            if bins==None:
+                bins=numpy.linspace(par1.min(),par1.max(),len(par1)*0.05)
+        
+            plt.figure()
+            plt.hist(par1,weights=weights,bins=bins)
+            plt.xlabel(key1name)
+            plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
+            if title != None: plt.title(title)
+
+            plt.show(block=True)
+
+            return None
+
+
+
+        if key2 != None:
+            #make a 2d scatterplot (upgrade to a cornerplot in future!)
+            pass
 
 
 #=============================================================================

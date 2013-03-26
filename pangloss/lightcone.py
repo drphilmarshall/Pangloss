@@ -106,6 +106,7 @@ class Lightcone(object):
         self.galaxies.add_column('r',r)
         self.galaxies.add_column('phi',phi)
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
+
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
@@ -205,6 +206,7 @@ class Lightcone(object):
         assert len(SR)==len(SD)
 
         band = experiment.parameters['LightconeDepthBand']
+
         if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
@@ -318,6 +320,7 @@ class Lightcone(object):
         self.writeColumn('Mstar',Mstar)
         return
            
+
 # ----------------------------------------------------------------------------
 # Given an Mstar and z, what could the parameter Mh be?
 
@@ -351,7 +354,6 @@ class Lightcone(object):
         r200 = self.galaxies.r200
         x = self.galaxies.X
         r_s = self.galaxies.rs
-        
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
         kappa_s = rho_s * r_s /self.galaxies.sigma_crit
         
@@ -536,6 +538,8 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
     def plot(self,output=None):
+
+       plt.clf()
 
        # Panel 1: Galaxy positions:
        ax1 = plt.subplot(3,3,(1,4), aspect ='equal')

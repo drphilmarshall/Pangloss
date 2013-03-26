@@ -142,7 +142,7 @@ def Reconstruct(argv):
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
     obscone = pangloss.readPickle(obspickle)
-    
+
     allcones = calcones+[obscone]
     allconefiles = calpickles+[obspickle]
 
@@ -173,7 +173,7 @@ def Reconstruct(argv):
         # accumulate samples from Pr(kappah|D):
         for j in range(Ns):
 
-            if j % 50 == 0 and j !=0:
+            if j % 20 == 0 and j !=0:
                 print ("Reconstruct: ...on sample %i out of %i..." % (j,Ns))
 
             # Draw z from z_obs:

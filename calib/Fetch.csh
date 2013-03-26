@@ -97,18 +97,7 @@ set website = "http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib"
 set targets = (\
     Millennium/kappa_example.fits \
     Millennium/catalog_example.txt \
-    SHMR/HaloMassRedshiftCatalog.pickle \
-    ../example/example0_catalog.txt\
-    ../example/example1_catalog.txt\
-    ../example/example2_catalog.txt\
-    ../example/example3_catalog.txt\
-    ../example/example4_catalog.txt\
-    ../example/example5_catalog.txt\
-    ../example/example6_catalog.txt\
-    ../example/example7_catalog.txt\
-    ../example/example8_catalog.txt\
-    ../example/example9_catalog.txt\
-    )
+    SHMR/HaloMassRedshiftCatalog.pickle )
 
 foreach file ( $targets )
 

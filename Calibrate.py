@@ -153,15 +153,15 @@ def Calibrate(argv):
             pdf = pangloss.readPickle(C)
  
             if comparator=="kappa_h":
+
                 if comparatorType=="median": 
                     # Recall that we created a special file for this 
                     # choice of comparator and comparator type, in 
                     # Reconstruct. You could also use the 
                     # comparatortype=="mean" code, swapping mean for median.
-                    callist[i,0] = pdf[0]
-                    callist[i,1] = pdf[1]
-                    # BUG: this code seems unfinished!
-                    
+                    callist[i,0]=pdf[0]
+                    callist[i,1]=pdf[1][0]
+                
                 elif comparatorType=="mean":
                     callist[i,0] = pdf.truth[0]
                     callist[i,1] = numpy.mean(pdf.samples)
@@ -174,14 +174,18 @@ def Calibrate(argv):
                     exit()
 
         pangloss.writePickle(callist,jointdistfile)
+        
+        #store jointdist as a pangloss pdf:
+        #jd=pangloss.pdf()
+
 
     # --------------------------------------------------------------------
     # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
     # joint distribution Pr(kappa,<kappah>|D)
 
     if Mode==2 or Mode==3:
-        callibguide=pangloss.readPickle(jointdistfile)
 
+        callibguide = pangloss.readPickle(jointdistfile)
 
         obspickle = experiment.getLightconePickleName('real')
         pfile = obspickle.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
@@ -197,6 +201,7 @@ def Calibrate(argv):
                 exit()
 
         pdf=pangloss.PDF(["kappa_ext","weight"])
+
         
         dif=(callibguide[:,1]-RealComparator)
         weights=numpy.exp(-(dif**2)/(2*(comparatorWidth)**2))
@@ -228,20 +233,27 @@ def Calibrate(argv):
         print "   kappa_weights = pdf.call(\"weight\")"
         print
         print pangloss.doubledashedline
-
+        
     return
 
 # ======================================================================
 
 if __name__ == '__main__':
     Calibrate(sys.argv[1:])    
-    test=False
-    if test:
-        import pangloss
-        pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
-        kappa_samples=pdf.call("kappa_ext")
-        kappa_weights=pdf.call("weight")
-        print kappa_samples,kappa_weights
-        print numpy.sum(kappa_weights)
 
+#     test=True
+#     if test:
+#         import pangloss
+#         pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
+#         kappa_samples=pdf.call("kappa_ext")
+#         kappa_weights=pdf.call("weight")
+# 
+# 
+#         plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight")
+# 
+#         plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation")
+# 
+#         #print kappa_samples,kappa_weights
+#         #print numpy.sum(kappa_weights)
+        
 # ======================================================================
