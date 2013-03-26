@@ -122,7 +122,8 @@ class Lightcone(object):
             self.galaxies.add_column('Mh_obs',numpy.log10(self.galaxies.Mhalo_obs))
             self.galaxies.add_column('Mh',self.galaxies.Mh_obs*1.0)
             # Stellar masses will be added by drawMstars
-        
+            # Halo masses will be replaced by drawMhalos
+
         elif self.flavor == 'real':
             # Mstar is already given as log M...
             self.galaxies.add_column('Mstar',self.galaxies.Mstar_obs*1.0)
@@ -179,7 +180,7 @@ class Lightcone(object):
         self.zl = zl
         self.zs = zs
         self.cosmo = cosmo
-        self.galaxies = self.galaxies.where(self.galaxies.z_obs<zs)
+        self.galaxies = self.galaxies.where(self.galaxies.z_obs<zs+0.2)
         return
 
 # ----------------------------------------------------------------------------
@@ -265,7 +266,7 @@ class Lightcone(object):
             self.galaxies["%s"%string]=values
 
 # ----------------------------------------------------------------------------
-
+ 
     def mimicPhotozError(self,sigma=0.1):
 
         # Start with the original, constant z_obs in the catalog:
