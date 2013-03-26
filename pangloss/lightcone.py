@@ -2,15 +2,9 @@
 
 import pangloss
 
-#import pylab
-#import matplotlib.pyplot as plt
-#from mpl_toolkits.axes_grid1 import ImageGrid
 import cPickle
 import numpy
-# import Relations as Rel
-# import LensingProfiles as LP
-# import LensingFunc as LF
-# import pylab as plt
+import pylab as plt
 
 # ======================================================================
 
@@ -84,44 +78,58 @@ class Lightcone(object):
         # Simulated lightcones have "true" (ray-traced) convergence:
         self.kappa_hilbert = None # until set!
         
-        self.xmax = self.catalog['pos_0[rad]'].max()
-        self.xmin = self.catalog['pos_0[rad]'].min()
-        self.ymax = self.catalog['pos_1[rad]'].max()
-        self.ymin = self.catalog['pos_1[rad]'].min() 
+        # Catalog limits:
+        self.xmax = self.catalog['nRA'].max()
+        self.xmin = self.catalog['nRA'].min()
+        self.ymax = self.catalog['Dec'].max()
+        self.ymin = self.catalog['Dec'].min() 
+
+        # Cut out a square cone:
         self.rmax = radius
         self.xc = [position[0],position[1]]
 
         dx = self.rmax*pangloss.arcmin2rad
-        self.galaxies = self.catalog.where((self.catalog['pos_0[rad]'] > (self.xc[0]-dx)) & \
-                                           (self.catalog['pos_0[rad]'] < (self.xc[0]+dx)) & \
-                                           (self.catalog['pos_1[rad]'] > (self.xc[1]-dx)) & \
-                                           (self.catalog['pos_1[rad]'] < (self.xc[1]+dx))   )
+        self.galaxies = self.catalog.where((self.catalog.nRA > (self.xc[0]-dx)) & \
+                                           (self.catalog.nRA < (self.xc[0]+dx)) & \
+                                           (self.catalog.Dec > (self.xc[1]-dx)) & \
+                                           (self.catalog.Dec < (self.xc[1]+dx))   )
 
- 
-        x = (self.galaxies['pos_0[rad]'] - self.xc[0])*pangloss.rad2arcmin
-        y = (self.galaxies['pos_1[rad]'] - self.xc[1])*pangloss.rad2arcmin
+        # Trim it to a circle:
+        x = (self.galaxies.nRA - self.xc[0])*pangloss.rad2arcmin
+        y = (self.galaxies.Dec - self.xc[1])*pangloss.rad2arcmin
         r = numpy.sqrt(x*x + y*y)
         phi=numpy.arctan(y/x)
         self.galaxies.add_column('x',x)
         self.galaxies.add_column('y',y)
         self.galaxies.add_column('r',r)
         self.galaxies.add_column('phi',phi)
-
-
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
         self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
 
-        #log the mass:
-        self.galaxies.add_column('Mh',numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']))
-        self.galaxies.add_column('Mh_obs',self.galaxies.Mh*1)
-        #self.galaxies.add_column('Ms',numpy.log10(self.galaxies['M_Stellar[M_sol/h]']))
+        if self.flavor == 'simulated':
+            # Take the log of the halo mass:
+            self.galaxies.add_column('Mh',numpy.log10(self.galaxies.Mhalo))
+            self.galaxies.add_column('Mh_obs',self.galaxies.Mh*1)
+            #self.galaxies.add_column('Ms',numpy.log10(self.galaxies['M_Stellar[M_sol/h]']))
 
-        self.galaxies.add_column('z_obs',self.galaxies.z_spec)
-        self.galaxies.add_column('spec_flag',False)
+            # Copy the z_spec array and pretend it is "observed":
+            self.galaxies.add_column('z_obs',self.galaxies.z_spec)
+            self.galaxies.add_column('spec_flag',False)
+            # This is needed to make the simulated catalog look like
+            # an observed catalog, which should have an observed 
+            # redshift in it.
         
+        # We'll need a copy of the z_obs array, for when we add noise:
+        self.galaxies.add_column('z_obs_original',self.galaxies.z_obs)    
+        
+        # Spectroscopic redshift flag may not exist:
+        if 'spec_flag' not in self.galaxies.columns:
+            self.galaxies.add_column('spec_flag',False)
+   
         if len(self.galaxies) == 0: 
             print "Lightcone: WARNING: no galaxies here!"
 
+        # Save memory! 
         del self.catalog
         del catalog
         
@@ -178,7 +186,7 @@ class Lightcone(object):
         self.zl=zl
         self.zs=zs
         self.cosmo=cosmo
-        self.galaxies=self.galaxies.where(self.galaxies.z_spec<zs)
+        self.galaxies=self.galaxies.where(self.galaxies.z_obs<zs)
 
 # ----------------------------------------------------------------------------
 
@@ -189,25 +197,35 @@ class Lightcone(object):
         self.Da_l,self.Da_s,self.Da_ls=Grid.Da_l,Grid.Da_s,Grid.Da_ls
 
 # ----------------------------------------------------------------------------
-# Following functions are designed to be run multiple times
-# (Previous functions are single use/lightcone)
+# The following methods are designed to be run multiple times
+# (previous ones are single use per lightcone)
 # ----------------------------------------------------------------------------
 
     def mimicPhotozError(self,sigma=0.1):
-        #this code is not written well at the moment.
 
-        e=sigma
-        flag=self.galaxies.spec_flag==False ## Will give true for objects that have no spectrum
-        z_obs=self.galaxies.z_spec*1.0
-        for i in range(len(z_obs)):
-            z=z_obs[i]
-            if flag[i]==True: z=numpy.random.normal(z,e*(1+z))
-            z_obs[i]=z
-        self.galaxies.z_obs=z_obs
+        # Start with the original z in the catalog:
+        z = self.galaxies.z_obs_original
+        
+        # RMS error on this z is either sigma or 0.0:
+        e = ( self.galaxies.spec_flag == False )*sigma
+        
+        # Add Gaussian noise to get this realisation's z:
+        z_obs = z + e*(1+z)*numpy.random.randn(len(z))
+        
+#         for i in range(len(z_obs)):
+#             z = self.galaxies.z_obs[i]
+#             if flag[i]==True: z = numpy.random.normal(z,e*(1+z))
+#             z_obs[i]=z
+
+        # Over-write the z_obs array:
+        self.galaxies.z_obs = z_obs
+        
+        return
 
 # ----------------------------------------------------------------------------
+# Add galaxy property column that might already exist in the table:
+# BUG: this should be called 'addColumn'!
 
-    # shortcut function for adding columns that might already exist
     def tryColumn(self,string,values):
         try:
             self.galaxies.add_column('%s'%string,values)
@@ -217,42 +235,42 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
     def snapToGrid(self, Grid):
-        z=self.galaxies.z_obs
-        sz,p=Grid.snap(z)
+        z = self.galaxies.z_obs
+        sz,p = Grid.snap(z)
         self.tryColumn('Da_p',Grid.Da_p[p])
         self.tryColumn('rho_crit',Grid.rho_crit[p])
         self.tryColumn('sigma_crit',Grid.sigma_crit[p])
         self.tryColumn('beta',Grid.beta[p])
-        rphys=self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
+        rphys = self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
         self.tryColumn('rphys',rphys)
 
 # ----------------------------------------------------------------------------
-#  One line description here!
 
     def drawMstars(self,model):
-        Mhlist=self.galaxies.Mh
-        redshiftList=self.galaxies.z_obs
-        Ms=model.drawMstars(Mhlist,redshiftList)
+        Mhlist = self.galaxies.Mh
+        redshiftList = self.galaxies.z_obs
+        Ms = model.drawMstars(Mhlist,redshiftList)
         self.tryColumn('Mstar',Ms)
    
     def mimicMstarError(self,sigmaP,sigmaS):
         Ms=self.galaxies.Mstar
 
-        Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*sigmaP
-        Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*sigmaS
+        Ms[self.galaxies.spec_flag==False] += numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*sigmaP
+        Ms[self.galaxies.spec_flag==True] += numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*sigmaS
         try:
             self.galaxies.add_column('Ms_obs',Ms)
         except ValueError:
             self.galaxies.Ms_obs=Ms
             
 # ----------------------------------------------------------------------------
-#  One line description here!
 
     def drawMhalos(self,model):
         Mslist=self.galaxies.Ms_obs
         redshiftList=self.galaxies.z_obs
         Mhlist=model.drawMhalos(Mslist,redshiftList)
         self.tryColumn("Mh_obs",Mhlist)
+        # BUG: this should not be called "obs"
+        return
 
 # ----------------------------------------------------------------------------
 
@@ -345,5 +363,140 @@ class Lightcone(object):
         self.gamma2_add_total=numpy.sum(self.galaxies.gamma2_add)
         self.gamma2_keeton_total=numpy.sum(self.galaxies.gamma2_keeton)
         self.gamma2_tom_total=numpy.sum(self.galaxies.gamma2_tom)
+
+# ----------------------------------------------------------------------------
+# Plotting
+# ----------------------------------------------------------------------------
+
+    def plotFieldOfView(self,quantity,AX):
+       
+       slicehalfwidth = self.rmax / 6.0
+       
+       if quantity == 'mass':
+           self.tryColumn('rtrunc_arcmin',(self.galaxies.r200/ self.galaxies.Da_p) * pangloss.rad2arcmin)
+           self.tryColumn('rscale_arcmin',(self.galaxies.rs/ self.galaxies.Da_p) * pangloss.rad2arcmin)
+           for i in range(len(self.galaxies.x)):
+               trunc = plt.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rtrunc_arcmin[i],fill=True,fc="b",alpha=0.05)
+               AX.add_patch(trunc)
+           for i in range(len(self.galaxies.x)):
+               core = plt.Circle([self.galaxies.x[i], self.galaxies.y[i]],radius=self.galaxies.rscale_arcmin[i],fill=True,fc="r",alpha=0.5)
+               AX.add_patch(core)
+           plt.title('Halo Mass')
+
+       elif quantity == 'kappa':
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o', s=(self.galaxies.kappa)*30000)    
+           plt.title('Convergence')
+       
+       elif quantity == 'stellarmass':
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o', s=(numpy.log(self.galaxies.Mstar)/2),edgecolor = 'none' )     
+           plt.title('Stellar Mass')
+       
+       elif quantity == 'light':
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o', s=(2**(25-self.galaxies.mag)),edgecolor = 'none' )     
+           plt.title('Galaxy Light')
+
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+           
+       # Lightcone boundary and centroid:
+       circ = plt.Circle(self.xc,radius=self.rmax,fill=False,linestyle='dotted')
+       AX.add_patch(circ)
+       AX.plot([self.xc[0]],[self.xc[1]], c='k', marker='+',markersize=20,markeredgewidth=1)
+       axlimits = [self.xc[0]-self.rmax-0.1,self.xc[0]+self.rmax+0.1,self.xc[1]-self.rmax-0.1,self.xc[1]+self.rmax+0.1]
+       AX.axis(axlimits)
+
+       # Show slice:
+       plt.axvline(x=slicehalfwidth, ymin=axlimits[2], ymax=axlimits[3],color='black', ls='dotted')
+       plt.axvline(x=-slicehalfwidth, ymin=axlimits[2], ymax=axlimits[3],color='black', ls='dotted')
+       
+       # Labels:
+       plt.xlabel('x / arcmin')
+       # plt.ylabel('y / arcmin')
+       
+       return
+
+# ----------------------------------------------------------------------------
+
+    def plotLineOfSight(self,quantity,AX):
+       
+       # Only plot a subset of points, in a slice down the middle of 
+       # the light cone:
+       subset = numpy.abs(self.galaxies.x)<0.3
+ 
+       # Point positions:
+       z = self.galaxies.z_obs[subset]
+       y = self.galaxies.y[subset]
+       
+       # Plot the points:
+       if quantity == 'mass':
+           size = (10.0**(self.galaxies.Mh_obs[subset]-11.0))
+           plt.scatter(z, y, c='k', marker='o', s=size, edgecolor='none' )
+           plt.title('Line-of-sight Halo Mass')
+      
+       elif quantity == 'kappa':
+           size = ((self.galaxies.kappa[subset])*30000.0)
+           plt.scatter(z, y, c='r', marker='o', s=size, edgecolor='k' )
+           plt.title('Line-of-sight Convergence')
+  
+       elif quantity == 'stellarmass':
+           size = ((numpy.log(self.galaxies.Mstar[subset]))/2.0)
+           plt.scatter(z, y, c='y', marker='o', s=size, edgecolor='none' )
+           plt.title('Line-of-sight Stellar Mass')
+
+       elif quantity == 'light':
+           size = (2**(25-(self.galaxies.mag[subset])))     
+           plt.scatter(z, y, c='y', marker='o', s=size, edgecolor='none' )
+           plt.title('Line-of-sight Galaxy Light')
+
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+
+       # Axis limits:
+       zmax = max(self.galaxies.z_obs.max(),self.zs)
+       AX.axis([0,zmax+0.1,-self.rmax-0.1,self.rmax+0.1])
+
+       # Labels:
+       plt.xlabel('redshift z')
+       plt.ylabel('y / arcmin')
+      
+       # Add lines marking source and lens plane, and optical axis:
+       plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
+       plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
+       plt.axhline(y=0.0, xmin=0.0, xmax=zmax, color='black', ls='dashed')
+
+       return
+
+# ----------------------------------------------------------------------------
+
+    def plot(self,output=None):
+
+       # Panel 1: Galaxy positions:
+       ax1 = plt.subplot(3,3,(1,4), aspect ='equal')
+       # plt.subplot(3,3,(1,4), aspect ='equal')
+       self.plotFieldOfView('light',ax1)
+       
+       # Panel 2: Halo mass distributions:
+       ax2 = plt.subplot(3,3,(2,5), aspect ='equal')
+       # plt.subplot(3,3,(2,5),aspect='equal')
+       self.plotFieldOfView('mass',ax2)
+
+       # Panel 3: Kappa contributions:
+       ax3 = plt.subplot(3,3,(3,6), aspect ='equal')
+       # plt.subplot(3,3,(3,6), aspect ='equal')
+       self.plotFieldOfView('kappa',ax3)
+       
+       # Lower panel: View along redshift axis
+       ax4 = plt.subplot(3,3,(7,9))
+       # plt.subplot(3,3,(7,9))
+       self.plotLineOfSight('kappa',ax4)
+       
+       if output != None:
+           pangloss.rm(output)
+           plt.savefig(output,dpi=300)
+       
+       return None
+       
+# ----------------------------------------------------------------------------
+    
 
 #=============================================================================

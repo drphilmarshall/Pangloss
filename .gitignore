@@ -7,6 +7,7 @@
 *.pdf
 *.pickle
 *.fits
+*.png
 doc/wiki
 doc/litter
 attic
