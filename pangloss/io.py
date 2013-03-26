@@ -1,6 +1,8 @@
 # ===========================================================================
 
-import cPickle
+import pangloss
+
+import os,cPickle,atpy
 
 # ======================================================================
 
@@ -15,8 +17,14 @@ import cPickle
             
     FUNCTIONS
         writePickle(contents,filename):
-        readPickle(filename): returns contents of pickle 
+        
+        readPickle(filename): returns contents of pickle
+        
+        readCatalog(filename,config): returns table, given column names
+                                      in configuration config
     
+        rm(filename): silent file removal
+        
     BUGS
 
     AUTHORS
@@ -42,4 +50,39 @@ def readPickle(filename):
     F.close()
     return contents
 
+# ----------------------------------------------------------------------------
+
+def readCatalog(filename,config):
+
+    table = atpy.Table(filename, type='ascii')
+
+    try: table.rename_column(config.parameters['nRAName'],'nRA')
+    except: pass
+    try: table.rename_column(config.parameters['DecName'],'Dec')
+    except: pass
+
+    try: table.rename_column(config.parameters['MhaloName'],'Mhalo')
+    except: pass
+    try: table.rename_column(config.parameters['RedshiftName'],'z_spec')
+    except: pass
+
+    try: table.rename_column(config.parameters['MstarName'],'Mstar')
+    except: pass
+    try: table.rename_column(config.parameters['ObsRedshiftName'],'z_obs')
+    except: pass
+    try: table.rename_column(config.parameters['MagName'],'mag')
+    except: pass
+   
+    return table
+
+# ----------------------------------------------------------------------------
+# Remove file, if it exists, stay quiet otherwise:
+
+def rm(filename):
+    try:
+        os.remove(filename)
+    except OSError:
+        pass
+    return
+    
 # ======================================================================
