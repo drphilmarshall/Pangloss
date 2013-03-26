@@ -26,8 +26,8 @@ which is delivered with this code. This basically means you can do
 anything you like with it, as long as you keep propagating the license
 information.
 
-When reporting on your use of Pangloss, we ask that you include:
-* A citation to: **Collett et al. (2013), MNRAS, XXX, XXX, arxiv/XXXX.XXX**
+However, when reporting on your use of Pangloss, we do ask that you include:
+* A citation to: **Collett et al. (2013), MNRAS accepted, arxiv/XXXX.XXX**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and
 Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
