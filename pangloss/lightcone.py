@@ -109,12 +109,13 @@ class Lightcone(object):
 
 
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
-        self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
+        try: 
+            self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
+        except AttributeError: pass
 
         #log the mass:
-        self.galaxies.add_column('Mh',numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']))
-        self.galaxies.add_column('Mh_obs',self.galaxies.Mh*1)
-        #self.galaxies.add_column('Ms',numpy.log10(self.galaxies['M_Stellar[M_sol/h]']))
+        try: self.galaxies.add_column('Mh',numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']))
+        except ValueError: pass
 
         self.galaxies.add_column('z_obs',self.galaxies.z_spec)
         self.galaxies.add_column('spec_flag',False)
