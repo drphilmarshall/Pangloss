@@ -209,20 +209,18 @@ class Lightcone(object):
         band=experiment.parameters['LightconeDepthBand']
 
         #exclude galaxies not observed by photometry:
-        lc.galaxies.tryColumn('photo_flag',0)
-        lc.galaxies.tryColumn('mag_flag',0)
-        lc.galaxies.tryColumn('rad_flag',0)
+        self.tryColumn('photo_flag',0)
+        self.tryColumn('mag_flag',0)
+        self.tryColumn('rad_flag',0)
 
-        for R,D in PR,PD:
+        for i in range(len(PR)):
+            R=PR[i]
+            D=PD[i]
             print R,D
-        
         exit()
 
-        #lc.galaxies.photo_flag=lc.galaxies.where
-
-
         #change spectrscopicflag of any galaxy that should have spectroscopy:
-        lc.galaxies.tryColumn('spec_flag',False)
+        self.tryColumn('spec_flag',False)
 
 
 

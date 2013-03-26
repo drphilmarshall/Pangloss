@@ -102,6 +102,15 @@ class Configuration(object):
         assert len(self.parameters['CalibrationCatalogs']) == \
                len(self.parameters['CalibrationKappamaps'])
 
+
+        surveycoveragekeys=['PhotometricRadius','PhotometricDepth','SpectroscopicDepth','SpectroscopicRadius']
+        for key in surveycoveragekeys:
+            self.parameters[key]=self.parameters[key]\
+                .split('[')[1].split(']')[0].strip().split(',')
+            if self.parameters[key]!=['']:
+                for i in range(len(self.parameters[key])):
+                    self.parameters[key][i]=float(self.parameters[key][i])
+            
         return
 
     # ------------------------------------------------------------------
