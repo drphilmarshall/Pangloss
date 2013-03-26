@@ -61,17 +61,22 @@ def readCatalog(filename,config):
     try: table.rename_column(config.parameters['DecName'],'Dec')
     except: pass
 
-    try: table.rename_column(config.parameters['MhaloName'],'Mhalo')
+    # Calibration catalogs:
+    try: table.rename_column(config.parameters['CalibMhaloName'],'Mhalo_obs')
     except: pass
-    try: table.rename_column(config.parameters['RedshiftName'],'z_spec')
+    try: table.rename_column(config.parameters['CalibRedshiftName'],'z_obs')
     except: pass
 
-    try: table.rename_column(config.parameters['MstarName'],'Mstar')
+    # Observed catalog:
+    try: table.rename_column(config.parameters['ObsMstarName'],'Mstar_obs')
     except: pass
     try: table.rename_column(config.parameters['ObsRedshiftName'],'z_obs')
     except: pass
-    try: table.rename_column(config.parameters['MagName'],'mag')
-    except: pass
+    try: 
+        mag = table[config.parameters['MagName']]
+        table.add_column('mag',mag)
+    except: 
+        raise "Error in io.readCatalog: no mag column called "+config.parameters['MagName']
    
     return table
 

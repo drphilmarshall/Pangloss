@@ -44,6 +44,7 @@ class PDF(object):
         self.Ndim = len(parameters)
         self.samples = numpy.empty((0,self.Ndim))
         self.truth = numpy.empty(self.Ndim)
+        self.parstring=", ".join(self.parameters)
         
         return None
 
@@ -57,10 +58,18 @@ class PDF(object):
 
     def append(self,sample):
         assert len(sample) == self.Ndim
-        assert len(sample) == (self.Ndim)
         self.samples = numpy.append(self.samples,[sample],axis=0)
-    
         return 
+
+# ----------------------------------------------------------------------------
+# accesscommands
+    def call(self,key):
+        assert key in self.parameters, "not a valid key. Keys are %s"%self.parstring
+        for i in range(len(self.parameters)):
+            if key == self.parameters[i]:
+                return self.samples[:,i]
+
+
 
 #=============================================================================
 

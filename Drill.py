@@ -173,38 +173,8 @@ def Drill(argv):
         table = pangloss.readCatalog(obscat,experiment)
         
         xc = [x0,y0]
-        lc = pangloss.Lightcone(table,flavor,xc,Rc)
-        
-        print "Drill: Pruning observed catalog to only include realistic data ..."
-
-        #SHM relation parameters:
-        SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
-        CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
-        SHMfile = CALIB_DIR+'/'+SHMrelation+'.pickle'
-        try:
-            shmr = pangloss.readPickle(SHMfile)
-        except IOError:
-            print "Drill: generating the stellar mass to halo mass grid."
-            print "Drill: this may take a moment..."
-            shmr = pangloss.SHMR(method=SHMrelation)
-            shmr.makeHaloMassFunction(HMFfile)
-            shmr.makeCDFs()
-            pangloss.writePickle(shmr,SHMfile)
-            print "Drill: SHMR saved to "+SHMfile
-
-        zd = experiment.parameters['StrongLensRedshift']
-        zs = experiment.parameters['SourceRedshift']
-
-        grid = pangloss.Grid(zd,zs,nplanes=100)
-        lc.defineSystem(zd,zs)
-        lc.loadGrid(grid)
-        lc.snapToGrid(grid)
-
-        # Mstars are already in the observed catalog!
-        # lc.drawMstars(shmr)
-
-        lc.galaxies.keep_columns(['Mstar','z_obs','z_obs_original','spec_flag','x','y','r','phi','mag','spec_flag'])
-
+        lc = pangloss.Lightcone(table,'real',xc,Rc)
+  
         obspickle = experiment.getLightconePickleName('real')
         pangloss.writePickle(lc,obspickle)
 
@@ -214,8 +184,6 @@ def Drill(argv):
 
     print pangloss.doubledashedline
     return
-
-
 
 # ======================================================================
 # Draw calibration sightlines at random:
