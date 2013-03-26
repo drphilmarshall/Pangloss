@@ -193,8 +193,21 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
     def configureForSurvey(self, experiment):
+        PR=experiment.parameters['PhotometricRadius']
+        PD=experiment.parameters['PhotometricDepth']
+        SR=experiment.parameters['SpectroscopicRadius']
+        SD=experiment.parameters['SpectroscopicDepth']
         
+        #SC=experiment.parameters['SpectroscopicCompleteness']
+        #(this isn't currently included in the analysis. 
+        # would need a mimik spectroscopic incompletness function)
 
+        #exclude galaxies not observed by photometry:
+
+
+
+        #change spectrscopicflag of any galaxy that should have spectroscopy:
+        
 
 
 
