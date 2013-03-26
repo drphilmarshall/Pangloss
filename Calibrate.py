@@ -7,7 +7,7 @@ import sys,getopt,cPickle,numpy
 
 # ======================================================================
 
-def Calibrate(argv,Mode=3):
+def Calibrate(argv):
     """
     NAME
         Calibrate.py
@@ -29,13 +29,16 @@ def Calibrate(argv,Mode=3):
            into a single number (currently the median). This is then used
            to take a slice from Pr(kappa,kappah|C) to make Pr(kappa|D,C).
 
-        Both 1 and 2 can be carried out in series if desired.
+        Both 1 and 2 can be carried out in series if desired (Mode=3).
 
     FLAGS
         -h            Print this message [0]
 
     INPUTS
         configfile    Plain text file containing Pangloss configuration
+
+    OPTIONAL INPUTS
+        --mode        Operating mode 1,2 or 3. See COMMENTS above.
 
     OUTPUTS
         stdout        Useful information
@@ -58,18 +61,20 @@ def Calibrate(argv,Mode=3):
     """
 
     # --------------------------------------------------------------------
-
     try:
-       opts, args = getopt.getopt(argv,"h",["help"])
+       opts, args = getopt.getopt(argv,"hm:",["help","mode"])
     except getopt.GetoptError, err:
        print str(err) # will print something like "option -a not recognized"
        print Calibrate.__doc__  # will print the big comment above.
        return
-
+    Mode=3
     for o,a in opts:
         if o in ("-h", "--help"):
             print Calibrate.__doc__
             return
+        elif o in ("-m", "--mode"):
+            Mode = int(a)
+            assert Mode < 4 and Mode >0, "unhandled Mode"
         else:
             assert False, "unhandled option"
 
@@ -91,7 +96,15 @@ def Calibrate(argv,Mode=3):
 
     comparator=experiment.parameters['Comparator']
     comparatorType=experiment.parameters['ComparatorType']
+    comparatorWidth=experiment.parameters['ComparatorWidth']
 
+    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+    jointdistfile= CALIB_DIR+'/Calibrationguide/'+comparator+comparatorType+'.pickle'
+    
+    RES_DIR= experiment.parameters['ResultFolder'][0]
+    EXP_NAME=experiment.parameters['ExperimentName']
+    resultfile=RES_DIR+'/'+EXP_NAME+'_PofKappaExt.pickle'
+    print resultfile
     # --------------------------------------------------------------------
     #Mode1 : generate a jointdistribution from the calibration dataset:
     if Mode==1 or Mode==3:
@@ -120,132 +133,91 @@ def Calibrate(argv,Mode=3):
 
 
     #caluclate comparators:
-        comparatorlist=numpy.empty(Nc)
-        hilbertkappa=numpy.empty(Nc)
+        callist=numpy.empty((Nc,2))
         for i in range(Nc):
             C=calresultpickles[i]
             pdf=pangloss.readPickle(C)
             if comparator=="kappa_h":
                 if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
-                    comparatorlist[i]=numpy.median(pdf[1])
-                    hilbertkappa[i]=pdf[0]
+                    callist[i,0]=pdf[0]
+                    callist[i,1]=numpy.median(pdf[1])
                 elif comparatorType=="mean":
-                    hilbertkappa[i]=pdf.truth[0]
-                    comparatorlist[i]=numpy.mean(pdf.samples)
+                    callist[i,0]=pdf.truth[0]
+                    callist[i,1]=numpy.mean(pdf.samples)
                 else: 
-                    print "I don't know that comparator type. exiting"
+                    print "I don't know that comparatorType. exiting"
                     exit()
 
-        print hilbertkappa,comparatorlist
+        pangloss.writePickle(callist,jointdistfile)
+
     # --------------------------------------------------------------------
     
     #Mode2 : calibrate a real line of sight using the joint-distribution
     if Mode==2 or Mode==3:
-        obscone = pangloss.readPickle(obspickle)
+        callibguide=pangloss.readPickle(jointdistfile)
 
 
+        obspickle = experiment.getLightconePickleName('real')
+        pfile = obspickle.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
+
+        pdf=pangloss.readPickle(pfile)
+        if comparator=="kappa_h":
+            if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
+                RealComparator=numpy.median(pdf.samples)
+            elif comparatorType=="mean":
+                RealComparator=numpy.mean(pdf.samples)
+            else: 
+                print "I don't know that comparatorType. exiting"
+                exit()
+
+        pdf=pangloss.PDF(["kappa_ext","weight"])
+        
+        dif=(callibguide[:,1]-RealComparator)
+        weights=numpy.exp(-(dif**2)/(2*(comparatorWidth)**2))
+        weights/=numpy.sum(weights)
+        samples=callibguide[:,0]
+        samplesandweights=callibguide.copy()
+        samplesandweights[:,1]=weights
+
+        pdf.samples=(samplesandweights)
 
 
+        average = numpy.average(samples, weights=weights)
+        variance = numpy.dot(weights, (samples-average)**2)/weights.sum()
+        average,std=average, variance**.5
 
+        
+        pangloss.writePickle(pdf,resultfile)
+        print "Calibrate: Your lightcone has been calibrated."
+        print "The reconstruction suggests a kappa_ext of",\
+            "%.3f +\- %.3f for this lightcone"%(average,std)
+        print "Calibrate: a pdf of kappa_ext has been output to:"
+        print resultfile
+        print "in the form of sample kappa_ext values and weights." 
+        print "To read and process this file, try:"
+        print
+        print "import pangloss"
+        print "pdf=pangloss.readPickle(\"%s\")"%resultfile
+        print "kappa_samples=pdf.call(\"kappa_ext\")"
+        print "kappa_weights=pdf.call(\"weight\")"
+        print
+        print "And then do whatever you wanted this for! Goodluck, TEC & PJM"
+        
+        
 
     return
 
 # ======================================================================
 
 if __name__ == '__main__':
-    Calibrate(sys.argv[1:])
+    Calibrate(sys.argv[1:])    
+    test=False
+    if test:
+        import pangloss
+        pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
+        kappa_samples=pdf.call("kappa_ext")
+        kappa_weights=pdf.call("weight")
+        print kappa_samples,kappa_weights
+        print numpy.sum(kappa_weights)
 
 # ======================================================================
-
-# # Old code from MakeCalibrationGuide....
-# 
-# import cPickle
-# import pylab as plt
-# import scipy.stats as stats
-# from scipy import interpolate,optimize
-# import numpy
-# import numpy.random as rnd
-# import glob
-# #------------------------------------------------------------------
-# def MakeReconstructionCalibration(CalibrationResultsDirectory,surveyname):
-#    results="%s/cone*_%s.result"%(CalibrationResultsDirectory,i,surveyname)
-#    resultlist=glob.glob(results)
-# 
-#    Zl=len(resultlist)
-#    
-#    Cal_list=numpy.empty((Zl,5))
-# 
-#    for i in range(len(resultlist)):
-#       if i % 1000==0: print "making calibration", i,"of", len(resultlist)
-#       F=open(resultlist[i],"rb")
-#       res=cPickle.load(F)
-#       F.close()
-#       
-#       kappa_Hilbert,gamma1_Hilbert,gamma2_Hilbert,kappa_halo,gamma1_halo,gamma2_halo=res
-# 
-#       mu_Hilbert=1/((1-kappa_Hilbert)**2 - gamma_Hilbert**2)
-#       mu_halo=1/((1-kappa_halo)**2 - gamma_halo**2)
-# 
-#       Cal_list[i,0]=kappa_Hilbert
-#       Cal_list[i,1]=mu_Hilbert
-#       Cal_list[i,2]=numpy.median(kappa_halo)
-#       Cal_list[i,3]=numpy.median(mu_halo)
-#       Cal_list[i,4]=1
-# 
-#    F=open("%s/%s.jointdist"%(CalibrationResultsDirectory,surveyname),'wb')
-#    cPickle.dump(Cal_list,F,2)
-#    F.close()
-#    
-# def MakeWeightCalibration(CalibrationResultsDirectory,surveyname):
-#    results="%s/cone*_%s.result"%(CalibrationResultsDirectory,i,surveyname)
-#    resultlist=glob.glob(results)
-# 
-#    Zl=len(resultlist)
-#    
-#    Cal_list=numpy.empty((Zl,5))
-# 
-#    for i in range(len(resultlist)):
-#       if i % 1000==0: print "making calibration", i,"of", len(resultlist)
-#       F=open(resultlist[i],"rb")
-#       res=cPickle.load(F)
-#       F.close()
-#       
-#    #need to work out what goes in here...
-#    """
-#       kappa_Hilbert,gamma1_Hilbert,gamma2_Hilbert,=res
-# 
-#       mu_Hilbert=1/((1-kappa_Hilbert)**2 - gamma_Hilbert**2)
-#       mu_halo=1/((1-kappa_halo)**2 - gamma_halo**2)
-# 
-#       Cal_list[i,0]=kappa_Hilbert
-#       Cal_list[i,1]=mu_Hilbert
-#       Cal_list[i,2]=numpy.median(kappa_halo)
-# 
-#    F=open("%s/%s.jointdist"%(CalibrationResultsDirectory,surveyname),'wb')
-#    cPickle.dump(Cal_list,F,2)
-#    F.close()
-#    """
-#    
-# #code to use the above joint distribution...
-# 
-# def CalibrateResult(CalibrationResultsDirectory,surveyname,Value,width=0.01,Magnification=False):
-#    F=open("%s/%s.jointdist"%(CalibrationResultsDirectory,surveyname),'rb')
-#    Klist=cPickle.load(F)
-#    F.close()
-# 
-#    if magnification==False:
-#       Klist[:,4]=numpy.exp(-((Klist[:,2]-Value)**2)/(2*(width)**2))
-#    else:
-#       Klist[:,4]=numpy.exp(-((Klist[:,3]-Value)**2)/(2*(width)**2))
-# 
-#    kappabins=numpy.linspace(-0.1,5.0,5101)
-#    Klistdig=numpy.digitize(Klist[:,1],kappabins)
-# 
-# 
-#    Result=numpy.empty((len(Klist[:,0]),3))
-#    Result[:,0]=Klist[:,0]
-#    Result[:,1]=Klist[:,1]
-#    Result[:,2]=Klist[:,4]
-#    
-#    return Result
-# 

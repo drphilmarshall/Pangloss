@@ -189,9 +189,7 @@ def Drill(argv):
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
         lc.snapToGrid(grid)
-
         lc.drawMstars(shmr)
-
         lc.galaxies.keep_columns(['Mstar','z_spec','x','y','r','phi','mag_SDSS_g','mag_SDSS_r','mag_SDSS_i','spec_flag'])
 
         obspickle = experiment.getLightconePickleName('real')

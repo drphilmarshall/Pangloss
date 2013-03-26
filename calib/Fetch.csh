@@ -97,7 +97,7 @@ set website = "http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib"
 set targets = (\
     Millennium/kappa_example.fits \
     Millennium/catalog_example.txt \
-    SHMR/HaloMassRedshift.catalog \
+    SHMR/HaloMassRedshiftCatalog.pickle \
     )
 
 foreach file ( $targets )
