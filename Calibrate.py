@@ -164,6 +164,10 @@ def Calibrate(argv):
                     exit()
 
         pangloss.writePickle(callist,jointdistfile)
+        
+        #store jointdist as a pangloss pdf:
+        #jd=pangloss.pdf()
+
 
     # --------------------------------------------------------------------
     # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
@@ -213,15 +217,16 @@ def Calibrate(argv):
         print "Calibrate: a pdf of kappa_ext has been output to:"
         print resultfile
         print "in the form of sample kappa_ext values and weights." 
-        print "To read and process this file, try:"
+        print "To read, plot and process this file, try:"
         print
         print "import pangloss"
         print "pdf=pangloss.readPickle(\"%s\")"%resultfile
         print "kappa_samples=pdf.call(\"kappa_ext\")"
         print "kappa_weights=pdf.call(\"weight\")"
+        print "pdf.plot(\"kappa_ext\",weightkey=\"weight\")"
         print
         print "And then do whatever you wanted this for! Goodluck, TEC & PJM"
-        
+        print pangloss.doubledashedline
         
     
         obscone = pangloss.readPickle(obspickle)
@@ -232,13 +237,19 @@ def Calibrate(argv):
 
 if __name__ == '__main__':
     Calibrate(sys.argv[1:])    
-    test=False
+    test=True
     if test:
         import pangloss
         pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
         kappa_samples=pdf.call("kappa_ext")
         kappa_weights=pdf.call("weight")
-        print kappa_samples,kappa_weights
-        print numpy.sum(kappa_weights)
 
+
+        plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight")
+
+        plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation")
+
+        #print kappa_samples,kappa_weights
+        #print numpy.sum(kappa_weights)
+        
 # ======================================================================
