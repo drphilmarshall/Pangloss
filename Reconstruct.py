@@ -142,7 +142,7 @@ def Reconstruct(argv):
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
     obscone = pangloss.readPickle(obspickle)
-    
+
     allcones = calcones+[obscone]
     allconefiles = calpickles+[obspickle]
 
@@ -186,6 +186,8 @@ def Reconstruct(argv):
             else:
                 raise "Unknown ray-tracing scheme: "+RTscheme
             # also lc.gamma1_add_total, lc.gamma2_add_total
+
+        if lc.flavor=="real":print numpy.ravel(p.samples)
 
         # Take Hilbert ray-traced kappa as "truth":
         p.truth[0] = lc.kappa_hilbert

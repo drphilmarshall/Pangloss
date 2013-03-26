@@ -109,6 +109,7 @@ class Lightcone(object):
 
 
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
+
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
@@ -116,6 +117,7 @@ class Lightcone(object):
         #log the mass:
         try: self.galaxies.add_column('Mh',numpy.log10(self.galaxies['M_Subhalo[M_sol/h]']))
         except ValueError: pass
+
 
         self.galaxies.add_column('z_obs',self.galaxies.z_spec)
         self.galaxies.add_column('spec_flag',False)
@@ -189,7 +191,6 @@ class Lightcone(object):
         self.redshifts,self.dz=Grid.redshifts,Grid.dz
         self.Da_l,self.Da_s,self.Da_ls=Grid.Da_l,Grid.Da_s,Grid.Da_ls
 
-
 # ----------------------------------------------------------------------------
 
     def configureForSurvey(self, experiment):
@@ -202,7 +203,7 @@ class Lightcone(object):
         assert len(SR)==len(SD)
 
         #SC=experiment.parameters['SpectroscopicCompleteness']
-        #assert len(SR) == len (Sc)
+        #assert len(SR) == len (SC)
         #(this isn't currently included in the analysis. 
         # would need a mimik spectroscopic incompletness function)
 
@@ -291,14 +292,13 @@ class Lightcone(object):
 #  One line description here!
 
     def drawMstars(self,model):
-        Mhlist=self.galaxies.Mh
+        Mhlist=self.galaxies
         redshiftList=self.galaxies.z_obs
         Ms=model.drawMstars(Mhlist,redshiftList)
         self.tryColumn('Mstar',Ms)
-   
-    def mimicMstarError(self,sigmaP,sigmaS):
-        Ms=self.galaxies.Mstar
 
+    def mimicMstarError(self,sigmaP,sigmaS):
+        Ms=self.galaxies.Mstar.copy()
         Ms[self.galaxies.spec_flag==False]+=numpy.random.randn(Ms[self.galaxies.spec_flag==False].size)*sigmaP
         Ms[self.galaxies.spec_flag==True]+=numpy.random.randn(Ms[self.galaxies.spec_flag==True].size)*sigmaS
         try:
@@ -328,10 +328,9 @@ class Lightcone(object):
         x=self.galaxies.rphys/r_s
         self.tryColumn('X',x)
 
-# ----------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
-        #M200=10**self.galaxies.Mh_obs     
         c200=self.galaxies.c200
         r200=self.galaxies.r200
         x=self.galaxies.X

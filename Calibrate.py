@@ -155,7 +155,7 @@ def Calibrate(argv):
             if comparator=="kappa_h":
                 if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
                     callist[i,0]=pdf[0]
-                    callist[i,1]=pdf[1]
+                    callist[i,1]=pdf[1][0]
                 elif comparatorType=="mean":
                     callist[i,0]=pdf.truth[0]
                     callist[i,1]=numpy.mean(pdf.samples)
@@ -186,7 +186,10 @@ def Calibrate(argv):
                 print "I don't know that comparatorType. exiting"
                 exit()
 
+        
+
         pdf=pangloss.PDF(["kappa_ext","weight"])
+
         
         dif=(callibguide[:,1]-RealComparator)
         weights=numpy.exp(-(dif**2)/(2*(comparatorWidth)**2))
