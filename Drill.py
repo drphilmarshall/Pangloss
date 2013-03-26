@@ -3,7 +3,7 @@
 
 import pangloss
 
-import sys,glob,getopt,atpy,numpy
+import sys,glob,getopt,numpy
 
 # ======================================================================
 
@@ -114,13 +114,15 @@ def Drill(argv):
         print pangloss.dashedline
         print ("Drill: Making %i calibration lightcones in %i sky patches:" % (Nc,Ncalcats))
 
+        flavor = 'simulated'
+
         count = 0
         Ncones = Nc/Ncalcats
 
         for i,catalog in enumerate(calcats):
 
             print "Drill: Reading in calibration catalog from "+catalog+"..."
-            table = atpy.Table(catalog, type='ascii')
+            table = pangloss.readCatalog(catalog,experiment)
 
             print "Drill: Sampling sky positions..."
             x,y = sample_sky(table,Rc,Ncones,method='random')
@@ -161,11 +163,12 @@ def Drill(argv):
     if (len(obscat) > 0):
 
         print pangloss.dashedline
-        print "Drill: Making observed lightcone catalog:"
+        print "Drill: Reading in observed catalog: "+obscat
 
-        print "Drill: Reading in observed catalog: "+obscat+"..."
-        table = atpy.Table(obscat, type='ascii')
+        flavor = 'real'
 
+        table = pangloss.readCatalog(obscat,experiment)
+        
         xc = [x0,y0]
         lc = pangloss.Lightcone(table,'real',xc,Rc)
   
@@ -179,16 +182,14 @@ def Drill(argv):
     print pangloss.doubledashedline
     return
 
-
-
 # ======================================================================
 # Draw calibration sightlines at random:
 
 def sample_sky(table,Rc,Nc,method='random'):
-    xmax = table['pos_0[rad]'].max()
-    xmin = table['pos_0[rad]'].min()
-    ymax = table['pos_1[rad]'].max()
-    ymin = table['pos_1[rad]'].min()
+    xmax = table['nRA'].max()
+    xmin = table['nRA'].min()
+    ymax = table['Dec'].max()
+    ymin = table['Dec'].min()
     Rcrad = Rc*pangloss.arcmin2rad
     if method == 'random':
         x = numpy.random.uniform(xmin+Rcrad,xmax-Rcrad,Nc)

@@ -26,8 +26,8 @@ which is delivered with this code. This basically means you can do
 anything you like with it, as long as you keep propagating the license
 information.
 
-When reporting on your use of Pangloss, we ask that you include:
-* A citation to: **Collett et al. (2013), MNRAS, XXX, XXX, arxiv/XXXX.XXX**
+However, when reporting on your use of Pangloss, we do ask that you include:
+* A citation to: **Collett et al. (2013), MNRAS accepted, arxiv/XXXX.XXX**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and
 Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
@@ -100,5 +100,8 @@ You should then be able to execute the following example analysis:
     Drill.py example.config
     Reconstruct.py example.config
     Calibrate.py example.config
+    
+Analysing from start to finish will take some time. Be patient! 
+(Drill ~2 mins, Reconstruct ~10 mins)
 
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)

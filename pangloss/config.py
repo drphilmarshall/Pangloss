@@ -84,8 +84,7 @@ class Configuration(object):
         # Now sort out filenames etc:
 
         pathkeys = ['CalibrationCatalogs', 'CalibrationKappamaps',
-                    'ObservedCatalog', 'CalibrationFolder', 'ResultFolder',
-                    'HMFfile']
+                    'ObservedCatalog', 'CalibrationFolder', 'HMFfile']
         for key in pathkeys:
             paths = self.parameters[key]
             # Expand environment variables (eg $PANGLOSS_DIR)
@@ -119,7 +118,7 @@ class Configuration(object):
     def prepare(self):
 
         # Make directories if necessary:
-        folderkeys = ['CalibrationFolder','ResultFolder']
+        folderkeys = ['CalibrationFolder']
         for key in folderkeys:
             folder = self.parameters[key]
             fail = os.system('mkdir -p '+folder[0])

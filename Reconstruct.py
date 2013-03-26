@@ -160,43 +160,70 @@ def Reconstruct(argv):
 
     for i in range(len(allcones)):
 
-        lc = allcones[i]
+        print pangloss.dashedline
         print "Reconstruct: drawing %i samples from Pr(kappah|D)" % (Ns)
-        print "Reconstruct: given data in "+allconefiles[i]
+        print "Reconstruct:   given data in "+allconefiles[i]
 
+        # Get lightcone, and start PDF for its kappa_halo:
+        lc = allcones[i]
         p = pangloss.PDF('kappa_halo')
         # coming soon: gamma1, gamma2...
 
+        # Redshift scaffolding:
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
 
+        # Figure out data quality etc:
         lc.configureForSurvey(experiment)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
         # Draw Ns sample realisations of this lightcone, and hence
         # accumulate samples from Pr(kappah|D):
         for j in range(Ns):
+
+            if j % 20 == 0 and j !=0:
+                print ("Reconstruct: ...on sample %i out of %i..." % (j,Ns))
+
+            # Draw z from z_obs:
             lc.mimicPhotozError(sigma=zperr)
             lc.snapToGrid(grid)
             
-            # Simulated lightcones need Mstars drawing from their Mhalos
+            # Simulated lightcones need mock observed Mstar_obs values 
+            # drawing from their Mhalos:
             if lc.flavor == 'simulated': lc.drawMstars(shmr)
+            
+            # Draw Mstar from Mstar_obs:
             lc.mimicMstarError(sigmaP=MserrP,sigmaS=MserrS)
 
+            # Draw Mhalo from Mstar, and then c from Mhalo:
             lc.drawMhalos(shmr)
             lc.drawConcentrations(errors=True)
 
+            # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=10)
+            
             lc.combineKappas()
             
             if RTscheme == 'sum':
                 p.append([lc.kappa_add_total])
+                # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
             elif RTscheme == 'keeton':
                 p.append([lc.kappa_keeton])
             else:
                 raise "Unknown ray-tracing scheme: "+RTscheme
-            # also lc.gamma1_add_total, lc.gamma2_add_total
+            
+            # Make a nice visualisation of one of the realisations, in
+            # two example cases:
+            if j ==0 and (lc.flavor == 'real' or i == 0):
+                x = allconefiles[i]
+                pngfile = x.split('.')[0]+".png"
+                lc.plot(output=pngfile)
+                print "Reconstruct: saved visualisation of lightcone in "+pngfile
+        
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-        # Take Hilbert ray-traced kappa as "truth":
+        # Take Hilbert ray-traced kappa for this lightcone as "truth":
         p.truth[0] = lc.kappa_hilbert
         
         # Pickle this lightcone's PDF:
@@ -215,6 +242,7 @@ def Reconstruct(argv):
 
     # --------------------------------------------------------------------
 
+    print pangloss.doubledashedline
     return
 
 # ======================================================================

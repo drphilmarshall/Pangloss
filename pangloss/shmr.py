@@ -84,8 +84,8 @@ class SHMR(object):
 
     def drawMstars(self,Mh,z):
         assert len(Mh)==len(z)
-        MstarBest=self.H2S_model.eval(numpy.array([Mh,z]).T)
-        Mstar=MstarBest+numpy.random.randn(len(Mh))*0.15
+        MstarBest = self.H2S_model.eval(numpy.array([Mh,z]).T)
+        Mstar = MstarBest + numpy.random.randn(len(Mh))*0.15
         # 0.15 is the intrinsic Mstar scatter of the Behroozi relation...
         return Mstar
 
@@ -95,7 +95,7 @@ class SHMR(object):
     def drawMhalos(self,Ms,z,X=None):
         assert len(Ms) == len(z)
         if X != None: assert len(X) == len(Ms)
-        else: X=numpy.random.random(Ms.size)
+        else: X = numpy.random.random(Ms.size)
         return self.S2H_model.eval(numpy.array([Ms,X,z]).T)
       
 # ----------------------------------------------------------------------------
