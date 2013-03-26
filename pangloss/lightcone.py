@@ -195,19 +195,35 @@ class Lightcone(object):
     def configureForSurvey(self, experiment):
         PR=experiment.parameters['PhotometricRadius']
         PD=experiment.parameters['PhotometricDepth']
+        assert len(PR) == len(PD)
+
         SR=experiment.parameters['SpectroscopicRadius']
         SD=experiment.parameters['SpectroscopicDepth']
-        
+        assert len(SR)==len(SD)
+
         #SC=experiment.parameters['SpectroscopicCompleteness']
+        #assert len(SR) == len (Sc)
         #(this isn't currently included in the analysis. 
         # would need a mimik spectroscopic incompletness function)
 
-        #exclude galaxies not observed by photometry:
+        band=experiment.parameters['LightconeDepthBand']
 
+        #exclude galaxies not observed by photometry:
+        lc.galaxies.tryColumn('photo_flag',0)
+        lc.galaxies.tryColumn('mag_flag',0)
+        lc.galaxies.tryColumn('rad_flag',0)
+
+        for R,D in PR,PD:
+            print R,D
+        
+        exit()
+
+        #lc.galaxies.photo_flag=lc.galaxies.where
 
 
         #change spectrscopicflag of any galaxy that should have spectroscopy:
-        
+        lc.galaxies.tryColumn('spec_flag',False)
+
 
 
 
