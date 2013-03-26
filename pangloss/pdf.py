@@ -118,7 +118,7 @@ class PDF(object):
 
         if key2 != None:
             assert weightkey==None, "I don't know about weighted 2D plots yet."
-            print "pdf:plotting a 2D scatter plot ..."
+            print "pdf: plotting a 2D scatter plot ..."
             #make a 2d scatterplot (upgrade to a cornerplot in future!)
             plt.figure()
             plt.scatter(self.call(key1),self.call(key2),\

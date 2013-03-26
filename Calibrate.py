@@ -114,9 +114,7 @@ def Calibrate(argv):
     jointdistfile= CALIB_DIR+'/Calibrationguide/'+comparator+comparatorType+'.pickle'
     jointdistasPDFfile= CALIB_DIR+'/Calibrationguide/'+comparator+'_'+comparatorType+'_asPDF.pickle'
     
-    RES_DIR= experiment.parameters['ResultFolder'][0]
-    resultfile=RES_DIR+'/'+EXP_NAME+'_PofKappaExt.pickle'
-    
+
     # Final result is PDF for kappa:
     x = experiment.parameters['ObservedCatalog'][0]
     resultfile = x.split('.')[0]+"_PofKappa.pickle"
@@ -203,9 +201,11 @@ def Calibrate(argv):
         callibguide = pangloss.readPickle(jointdistfile)
 
         obspickle = experiment.getLightconePickleName('real')
-        pfile = obspickle.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
+        pfile = obspickle.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_PofKappah.pickle"
 
         pdf=pangloss.readPickle(pfile)
+
+
         if comparator=="kappa_h":
             if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
                 RealComparator=numpy.median(pdf.samples)
