@@ -95,6 +95,8 @@ def Calibrate(argv):
 
     experiment = pangloss.Configuration(configfile)
 
+    EXP_NAME = experiment.parameters['ExperimentName']
+
     Nc = experiment.parameters['NCalibrationLightcones']
 
     comparator=experiment.parameters['Comparator'] 
@@ -107,17 +109,14 @@ def Calibrate(argv):
     if ModeName=='Slice': Mode = 2
     if ModeName=='JointAndSlice': Mode = 3
 
-
-    EXP_NAME=experiment.parameters['ExperimentName']
-
     CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
-    jointdistfile= CALIB_DIR+'/Calibrationguide/'+comparator+comparatorType+'.pickle'
-    jointdistasPDFfile= CALIB_DIR+'/Calibrationguide/'+comparator+'_'+comparatorType+'_asPDF.pickle'
+    jointdistfile= CALIB_DIR+'/'+comparator+'_'+comparatorType+'.pickle'
+    jointdistasPDFfile= CALIB_DIR+'/'+comparator+'_'+comparatorType+'_asPDF.pickle'
     
 
     # Final result is PDF for kappa:
     x = experiment.parameters['ObservedCatalog'][0]
-    resultfile = x.split('.')[0]+"_PofKappa.pickle"
+    resultfile = x.split('.')[0]+"_"+EXP_NAME+"_PofKappa.pickle"
     
     # --------------------------------------------------------------------
     # Mode 1: generate a joint distribution, eg Pr(kappah,kappa)
@@ -125,23 +124,24 @@ def Calibrate(argv):
     
     if Mode==1 or Mode==3:
     
-        #First find the calibration pdfs for kappa_h:
+        print pangloss.dashedline
+    
+        # First find the calibration pdfs for kappa_h:
         calpickles = []
         for i in range(Nc):
             calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
 
         calresultpickles=[]
-        if comparator=="kappa_h" and comparatorType=="median":
+        if comparator=="Kappah" and comparatorType=="median":
             for i in range(Nc):
                 x = calpickles[i]
-                pfile2 = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
-                calresultpickles.append(pfile2)
+                pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
+                calresultpickles.append(pfile)
 
-        elif comparator=="kappa_h" and comparatorType!="median": 
+        elif comparator=="Kappah" and comparatorType!="median": 
             for i in range(Nc):
                 x = calpickles[i]
-                pfile = x.split('.')[0].split("_lightcone")[0]+"_PofKappah.pickle"
-
+                pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_"+comparatorType+".pickle"
                 calresultpickles.append(pfile)
         else:
             print "Calibrate: Unrecognised comparator "+Comparator
@@ -150,9 +150,7 @@ def Calibrate(argv):
             print "Calibrate: (This should be easy, but you can ask tcollett@ast.cam.uk for help)."
             exit()
 
-
-
-        #caluclate comparators:
+        # Now calculate comparators:
         callist=numpy.empty((Nc,2))
         jd=pangloss.PDF(["kappa_ext",comparator+'_'+comparatorType])
 
@@ -160,7 +158,7 @@ def Calibrate(argv):
             C = calresultpickles[i]
             pdf = pangloss.readPickle(C)
  
-            if comparator=="kappa_h":
+            if comparator=="Kappah":
 
                 if comparatorType=="median": 
                     # Recall that we created a special file for this 
@@ -187,10 +185,9 @@ def Calibrate(argv):
         #store jointdist as a pangloss pdf also:
         pangloss.writePickle(jd,jointdistasPDFfile)
 
-        print "Calibration joint distribution saved in:"
-        print jointdistfile
-        print "and"
-        print jointdistasPDFfile
+        print "Calibrate: calibration joint PDF saved in:"
+        print "Calibrate:     "+jointdistfile
+        print "Calibrate: and "+jointdistasPDFfile
 
     # --------------------------------------------------------------------
     # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
@@ -198,15 +195,16 @@ def Calibrate(argv):
 
     if Mode==2 or Mode==3:
 
+        print pangloss.dashedline
+    
         callibguide = pangloss.readPickle(jointdistfile)
 
         obspickle = experiment.getLightconePickleName('real')
-        pfile = obspickle.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_PofKappah.pickle"
+        pfile = obspickle.split('.')[0].split("_lightcone")[0]+'_'+EXP_NAME+"_PofKappah.pickle"
 
         pdf=pangloss.readPickle(pfile)
 
-
-        if comparator=="kappa_h":
+        if comparator=="Kappah":
             if comparatorType=="median":# note we created a special file for this choice of comparator and comparator type. You could also use the comparatortype=="mean" code swapping mean for median.
                 RealComparator=numpy.median(pdf.samples)
             elif comparatorType=="mean":
@@ -215,7 +213,7 @@ def Calibrate(argv):
                 print "I don't know that comparatorType. exiting"
                 exit()
 
-        pdf=pangloss.PDF(["kappa_ext","weight"])
+        pdf = pangloss.PDF(["kappa_ext","weight"])
 
         
         dif=(callibguide[:,1]-RealComparator)
@@ -232,8 +230,8 @@ def Calibrate(argv):
         variance = numpy.dot(weights, (samples-average)**2)/weights.sum()
         average,std=average, variance**.5
 
-        
         pangloss.writePickle(pdf,resultfile)
+
         print "Calibrate: your lightcone has been calibrated."
         print "Calibrate: the reconstruction suggests a kappa_ext of",\
             "%.3f +\- %.3f for this lightcone"%(average,std)
@@ -246,8 +244,11 @@ def Calibrate(argv):
         print "   pdf = pangloss.readPickle(\"%s\")"%resultfile
         print "   kappa_samples = pdf.call(\"kappa_ext\")"
         print "   kappa_weights = pdf.call(\"weight\")"
-        print
-        print pangloss.doubledashedline
+
+    # --------------------------------------------------------------------
+
+    print
+    print pangloss.doubledashedline
         
     return
 
@@ -255,20 +256,21 @@ def Calibrate(argv):
 
 if __name__ == '__main__':
     Calibrate(sys.argv[1:])    
+
     test=True
     if test:
         import pangloss
-        pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
+        pdf=pangloss.readPickle("example_catalog_example_PofKappa.pickle")
         kappa_samples=pdf.call("kappa_ext")
         kappa_weights=pdf.call("weight")
 
         #plot P(kappa) before and after reconstruction
-        plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation (The prior)")
+        plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation (the prior)")
 
-        plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight (The result)")
+        plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight (the posterior)")
 
-        jointdist=pangloss.readPickle("/home/tcollett/Pangloss/calib/Calibrationguide/kappa_h_median_asPDF.pickle")
+        jointdist=pangloss.readPickle("calib/Kappah_median_asPDF.pickle")
         #read and plot a joint distribution of $kappa_x,kappa_h_median$
-        plot3=jointdist.plot("kappa_h_median","kappa_ext",weightkey=None,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n (More correlated means a better calibrator!)")
+        plot3=jointdist.plot("Kappah_median","kappa_ext",weightkey=None,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n\n (more correlated means a better calibrator!)")
        
 # ======================================================================

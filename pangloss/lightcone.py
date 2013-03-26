@@ -283,7 +283,7 @@ class Lightcone(object):
         return
 
 # ----------------------------------------------------------------------------
-# Snap the parameter z onto the grid, to speed up calculations:
+# Snap the parameters z onto the grid, to speed up calculations:
 
     def snapToGrid(self, Grid):
         z = self.galaxies.z
