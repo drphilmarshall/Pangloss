@@ -50,11 +50,15 @@ installed as well:
 
 Most (if not all) are available via pip and/or homebrew.
 
-## Bug
+## Possible Bug
 
 Unfortunantly, whilst cleaning-up our code so that it was easy to use/read, we introduced a bug in the reconstruction
-calibration lines of sight. We haven't been able to fix it yet, but will get on this as soon as possible. 
-We apologize for this. If anybody finds it please tell us!
+calibration lines of sight. We aren't 100% sure that we've fixed it yet.
+We apologize for this. 
+
+The result of the bug is that kappa_h values are orders of magnitude too low for calibration lines of sight 
+(typical total kappa_h value for a correctly processed line of sight is ~0.02)
+If anybody notices it please tell us!
 
 
 ## Example use
