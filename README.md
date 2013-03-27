@@ -52,9 +52,10 @@ Most (if not all) are available via pip and/or homebrew.
 
 ## Bug
 
-Unfortunantly, whilst cleaning-up our code so that it was easy to use/read we introduced a bug in the treatment of 
-calibration lines of sight. We haven't been able to fix it yet, but will get on this as soon as possible. Apologies
-for this
+Unfortunantly, whilst cleaning-up our code so that it was easy to use/read,we introduced a bug in the reconstruction
+calibration lines of sight. We haven't been able to fix it yet, but will get on this as soon as possible. 
+We apologize for this. If anybody finds it please tell us!
+
 
 ## Example use
 
