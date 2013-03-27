@@ -182,12 +182,17 @@ def Calibrate(argv):
 
         pangloss.writePickle(callist,jointdistfile)
         
-        #store jointdist as a pangloss pdf also:
+        # Also store the joint dist as a pangloss pdf:
         pangloss.writePickle(jd,jointdistasPDFfile)
+        
+        # Plot:
+        plotfile = jointdistasPDFfile.split('.')[0]+'.png'
+        jd.plot("Kappah_median","kappa_ext",weight=None,output=plotfile,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n\n (more correlated means a better calibrator!)")
 
         print "Calibrate: calibration joint PDF saved in:"
         print "Calibrate:     "+jointdistfile
         print "Calibrate: and "+jointdistasPDFfile
+        print "Calibrate: you can view this PDF in "+plotfile
 
     # --------------------------------------------------------------------
     # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
@@ -215,7 +220,6 @@ def Calibrate(argv):
 
         pdf = pangloss.PDF(["kappa_ext","weight"])
 
-        
         dif=(callibguide[:,1]-RealComparator)
         weights=numpy.exp(-(dif**2)/(2*(comparatorWidth)**2))
         weights/=numpy.sum(weights)
@@ -225,6 +229,8 @@ def Calibrate(argv):
 
         pdf.samples=(samplesandweights)
 
+        plotfile = resultfile.split('.')[0]+".png"
+        pdf.plot('kappa_ext',weight='weight',output=plotfile)
 
         average = numpy.average(samples, weights=weights)
         variance = numpy.dot(weights, (samples-average)**2)/weights.sum()
@@ -232,11 +238,12 @@ def Calibrate(argv):
 
         pangloss.writePickle(pdf,resultfile)
 
-        print "Calibrate: your lightcone has been calibrated."
-        print "Calibrate: the reconstruction suggests a kappa_ext of",\
-            "%.3f +\- %.3f for this lightcone"%(average,std)
-        print "Calibrate: a pdf of kappa_ext has been output to "+resultfile
+        print "Calibrate: your reconstructed lightcone has been calibrated,"
+        print "Calibrate: suggesting it has a kappa_ext of",\
+            "%.3f +\- %.3f "%(average,std)
+        print "Calibrate: the PDF for kappa_ext has been output to "+resultfile
         print "Calibrate: in the form of sample kappa_ext values, and their weights." 
+        print "Calibrate: you can view this PDF in "+plotfile
         print
         print "Calibrate: To read and process this file, try:"
         print
@@ -257,20 +264,20 @@ def Calibrate(argv):
 if __name__ == '__main__':
     Calibrate(sys.argv[1:])    
 
-    test=True
-    if test:
-        import pangloss
-        pdf=pangloss.readPickle("example_catalog_example_PofKappa.pickle")
-        kappa_samples=pdf.getParameter("kappa_ext")
-        kappa_weights=pdf.getParameter("weight")
-
-        #plot P(kappa) before and after reconstruction
-        plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation (the prior)")
-
-        plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight (the posterior)")
-
-        jointdist=pangloss.readPickle("calib/Kappah_median_asPDF.pickle")
-        #read and plot a joint distribution of $kappa_x,kappa_h_median$
-        plot3=jointdist.plot("Kappah_median","kappa_ext",weightkey=None,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n\n (more correlated means a better calibrator!)")
+#     test=True
+#     if test:
+#         import pangloss
+#         pdf=pangloss.readPickle("example_catalog_example_PofKappa.pickle")
+#         kappa_samples=pdf.getParameter("kappa_ext")
+#         kappa_weights=pdf.getParameter("weight")
+# 
+#         #plot P(kappa) before and after reconstruction
+#         plot2=pdf.plot("kappa_ext",weight=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation (the prior)")
+# 
+#         plot1=pdf.plot("kappa_ext",weight="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight (the posterior)")
+# 
+#         jointdist=pangloss.readPickle("calib/Kappah_median_asPDF.pickle")
+#         #read and plot a joint distribution of $kappa_x,kappa_h_median$
+#         plot3=jointdist.plot("Kappah_median","kappa_ext",weight=None,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n\n (more correlated means a better calibrator!)")
        
 # ======================================================================
