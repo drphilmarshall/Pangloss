@@ -344,7 +344,6 @@ class Lightcone(object):
         self.writeColumn('rs',r_s)
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
-        print x.min()
         return
 
 # ----------------------------------------------------------------------------

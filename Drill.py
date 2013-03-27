@@ -123,6 +123,15 @@ def Drill(argv):
 
             print "Drill: Reading in calibration catalog from "+catalog+"..."
             table = pangloss.readCatalog(catalog,experiment)
+            
+
+            ###
+            #dx = Rc*1.000001*pangloss.arcmin2rad
+            #subtable =table.where((table['pos_0[rad]'] > (-dx)) & \
+            #                      (table['pos_0[rad]'] < (+dx)) & \
+            #                      (table['pos_1[rad]'] > (-dx)) & \
+            #                      (table['pos_1[rad]'] < (+dx))   )
+
 
             print "Drill: Sampling sky positions..."
             x,y = sample_sky(table,Rc,Ncones,method='random')

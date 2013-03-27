@@ -121,7 +121,9 @@ class PDF(object):
             weights /= numpy.sum(weights)
             
             if bins==None:
-                bins=numpy.linspace(par1.min(),par1.max(),len(par1)*0.05)
+                nb=len(par1)*0.05
+                if nb<20: nb=20
+                bins=numpy.linspace(par1.min(),par1.max(),20)
         
             plt.figure()
             plt.hist(par1,weights=weights,bins=bins)

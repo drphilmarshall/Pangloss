@@ -224,6 +224,8 @@ def Reconstruct(argv):
         
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+
+
         # Take Hilbert ray-traced kappa for this lightcone as "truth":
         p.truth[0] = lc.kappa_hilbert
         
@@ -231,6 +233,7 @@ def Reconstruct(argv):
         x = allconefiles[i]
         pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
         pangloss.writePickle(p,pfile)
+
         print "Reconstruct: Pr(kappah|D) saved to "+pfile
         
         # To save loading in time in Calibrate.py we compute the median
@@ -243,8 +246,8 @@ def Reconstruct(argv):
             # BUG: and named appropriately? 
             # No, this is just a pair of values
 
+        #print numpy.median(p.samples)
     # --------------------------------------------------------------------
-
     print pangloss.doubledashedline
     return
 
