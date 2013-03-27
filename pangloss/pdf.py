@@ -1,5 +1,7 @@
 # ===========================================================================
 
+import pangloss
+
 import numpy
 
 # ============================================================================
@@ -62,27 +64,37 @@ class PDF(object):
         return 
 
 # ----------------------------------------------------------------------------
-# accesscommands
-    def getParameter(self,key):
-        assert key in self.parameters, "not a valid key. Keys are %s"%self.parstring
-        for i in range(len(self.parameters)):
-            if key == self.parameters[i]:
-                return self.samples[:,i]
+# Extract samples in one parameter:
+   
+    def errmsg(self):
+        return "not a valid parameter name. These are %s"%self.parstring
 
 # ----------------------------------------------------------------------------
-# plotting commands
-    def plot(self,key1,key2=None,weightkey="weight",bins=None,title=None):
-        import pylab as plt
-        assert key1 in self.parameters, "not a valid key. Keys are %s"%self.parstring
-        if key2!=None:assert key2 in self.parameters, "not a valid key. Keys are %s"%self.parstring
+# Extract samples in one parameter:
+   
+    def getParameter(self,key):
+        assert key in self.parameters, self.errmsg()
+        for i in range(len(self.parameters)):
+            if key == self.parameters[i]: return self.samples[:,i]
 
+# ----------------------------------------------------------------------------
+# Plot rough 1D histogram or 2D scatter plot:
+
+    def plot(self,key1,key2=None,weight="weight",output=None,bins=None,title=None):
+
+        import pylab as plt
+        
+        assert key1 in self.parameters, self.errmsg()
+        if key2!=None:
+            assert key2 in self.parameters, self.errmsg()
         if key2=="weight": 
             print "This code automatically uses the weights to form a histogram, you can state this explicitly using weightkey=weight if you have several weight columns"
             key2==None
         
         reformatnames={}
         reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
-        reformatnames["kappa_h_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
+        reformatnames["Kappah_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
+
         key1name=key1[:]
         if key1name in reformatnames.keys():
             key1name = reformatnames[key1name]
@@ -92,19 +104,21 @@ class PDF(object):
             if key2name in reformatnames.keys():
                 key2name = reformatnames[key2name]
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # 1D histogram:
+
         if key2 == None:
-            par1=self.getParameter(key1)
-            #make a histogram
+
+            par1 = self.getParameter(key1)
             
-            #check to see if samples are weighted:
-            print "pdf: looking for a weight key"
-            if weightkey!=None and weightkey in self.parameters: 
-                weights=self.getParameter(weightkey)
-                print "pdf: plotting weighted histogram..."
+            # Check to see if samples are weighted:
+            if weight!=None and weight in self.parameters: 
+                weights = self.getParameter(weight)
+                # print "pdf: plotting weighted histogram..."
             else: 
-                weights= numpy.ones(len(par1))*1.0
-                print "pdf: plotting unweighted histogram..."
-            weights/=numpy.sum(weights)
+                weights = numpy.ones(len(par1))*1.0
+                # print "pdf: plotting unweighted histogram..."
+            weights /= numpy.sum(weights)
             
             if bins==None:
                 bins=numpy.linspace(par1.min(),par1.max(),len(par1)*0.05)
@@ -115,19 +129,29 @@ class PDF(object):
             plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # 2D scatter plot:
 
-        if key2 != None:
-            assert weightkey==None, "I don't know about weighted 2D plots yet."
-            print "pdf: plotting a 2D scatter plot ..."
-            #make a 2d scatterplot (upgrade to a cornerplot in future!)
+        elif key2 != None:
+            
+            assert weight==None, "I don't know about weighted 2D plots yet."
+            
+            # print "pdf: plotting a 2D scatter plot ..."
+
             plt.figure()
             plt.scatter(self.getParameter(key1),self.getParameter(key2),\
-                            c='k',s=1,edgecolors=None)
+                            c='k',s=2, edgecolors=None)
             plt.xlabel(key1name)
             plt.ylabel(key2name)
             if title != None: plt.title(title)
 
-        plt.show(block=True)
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        if output == None:
+            plt.show(block=True)
+        else:
+            pangloss.rm(output)
+            plt.savefig(output,dpi=300)
+                
         return None
 
 #=============================================================================

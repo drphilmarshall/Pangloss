@@ -182,12 +182,17 @@ def Calibrate(argv):
 
         pangloss.writePickle(callist,jointdistfile)
         
-        #store jointdist as a pangloss pdf also:
+        # Also store the joint dist as a pangloss pdf:
         pangloss.writePickle(jd,jointdistasPDFfile)
+        
+        # Plot:
+        plotfile = jointdistasPDFfile.split('.')[0]+'.png'
+        jd.plot("Kappah_median","kappa_ext",weight=None,output=plotfile,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n\n (more correlated means a better calibrator!)")
 
         print "Calibrate: calibration joint PDF saved in:"
         print "Calibrate:     "+jointdistfile
         print "Calibrate: and "+jointdistasPDFfile
+        print "Calibrate: you can view this PDF in "+plotfile
 
     # --------------------------------------------------------------------
     # Mode 2: calibrate a real line of sight's Pr(kappah|D) using the
@@ -215,9 +220,7 @@ def Calibrate(argv):
 
         pdf = pangloss.PDF(["kappa_ext","weight"])
 
-        print RealComparator
-        print numpy.median(callibguide[:,1]),numpy.std(callibguide[:,1])
-        
+
         dif=(callibguide[:,1]-RealComparator)
         weights=dif*0.0
         weights[numpy.abs(dif)<comparatorWidth]=1.
@@ -228,6 +231,8 @@ def Calibrate(argv):
 
         pdf.samples=(samplesandweights)
 
+        plotfile = resultfile.split('.')[0]+".png"
+        pdf.plot('kappa_ext',weight='weight',output=plotfile)
 
         average = numpy.average(samples, weights=weights)
         variance = numpy.dot(weights, (samples-average)**2)/weights.sum()
@@ -235,11 +240,12 @@ def Calibrate(argv):
 
         pangloss.writePickle(pdf,resultfile)
 
-        print "Calibrate: your lightcone has been calibrated."
-        print "Calibrate: the reconstruction suggests a kappa_ext of",\
-            "%.3f +\- %.3f for this lightcone"%(average,std)
-        print "Calibrate: a pdf of kappa_ext has been output to "+resultfile
+        print "Calibrate: your reconstructed lightcone has been calibrated,"
+        print "Calibrate: suggesting it has a kappa_ext of",\
+            "%.3f +\- %.3f "%(average,std)
+        print "Calibrate: the PDF for kappa_ext has been output to "+resultfile
         print "Calibrate: in the form of sample kappa_ext values, and their weights." 
+        print "Calibrate: you can view this PDF in "+plotfile
         print
         print "Calibrate: To read and process this file, try:"
         print
@@ -259,6 +265,5 @@ def Calibrate(argv):
 
 if __name__ == '__main__':
     Calibrate(sys.argv[1:])    
- 
        
 # ======================================================================
