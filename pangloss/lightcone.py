@@ -61,7 +61,7 @@ class Lightcone(object):
     AUTHORS
       This file is part of the Pangloss project, distributed under the
       GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
-      Please cite: Collett et al 2013, arxiv/###
+      Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
       2013-03-23  Collett & Marshall (Cambridge)

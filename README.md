@@ -10,7 +10,7 @@ cultivating a garden of toy models and baby steps.
 
 If you are interested in the ongoing investigation of this interesting
 problem, you should:
-* Read our first paper, [_"Reconstructing the lensing mass in the universe from photometric catalogue data;"_](http://arxiv.org/abs/XXXX.XXX)
+* Read our first paper, [_"Reconstructing the lensing mass in the universe from photometric catalogue data;"_](http://arxiv.org/abs/1303.6564)
 * Browse the [wiki](https://github.com/drphilmarshall/Pangloss/wiki) 
 to see what our current plans are;
 * Fork the code and play around with it;
@@ -27,7 +27,7 @@ anything you like with it, as long as you keep propagating the license
 information.
 
 However, when reporting on your use of Pangloss, we do ask that you include:
-* A citation to: **Collett et al. (2013), MNRAS accepted, arxiv/XXXX.XXX**
+* A citation to: **Collett et al. (2013), MNRAS accepted, arxiv/1303.6564**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and
 Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
