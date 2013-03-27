@@ -107,7 +107,7 @@ Analysing from start to finish will take some time. Be patient!
 
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
 
-**Possible bug:**
+***
 
 Unfortunantly, whilst cleaning-up our code so that it was easy to use/read, we introduced a bug in the reconstruction
 calibration lines of sight. We aren't 100% sure that we've fixed it yet. We apologize for this. 
