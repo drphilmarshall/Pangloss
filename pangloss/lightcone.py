@@ -220,7 +220,6 @@ class Lightcone(object):
         
         self.writeColumn('photo_flag',False)
         self.writeColumn('identifier',range(len(self.galaxies.x)))
-
         if PR != ['']:
             for i in range(len(PR)):
                 R=PR[i]*60 # positions are stored in arcseconds
@@ -432,7 +431,11 @@ class Lightcone(object):
         self.gamma2_keeton_total=numpy.sum(self.galaxies.gamma2_keeton)
         self.gamma2_tom_total=numpy.sum(self.galaxies.gamma2_tom)
         
-        return
+        #print self.galaxies.Mh.max()
+        #print self.galaxies.kappa.max()
+        #print self.kappa_add_total
+
+        return self.kappa_add_total
 
 # ----------------------------------------------------------------------------
 # Plotting

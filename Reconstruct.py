@@ -123,9 +123,9 @@ def Reconstruct(argv):
 
     # --------------------------------------------------------------------
     # Load in stellar mass to halo relation, or make a new one:
-    
+
     try:
-        shmr = pangloss.readPickle(SHMfile)
+        shmr = pangloss.readPickle('dummy')#SHMfile)
     except IOError:
         print "Reconstruct: generating the stellar mass to halo mass grid."
         print "Reconstruct: this may take a moment..."
@@ -203,8 +203,8 @@ def Reconstruct(argv):
             # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=10)
             
-            lc.combineKappas()
-            
+            k_add=lc.combineKappas()
+
             if RTscheme == 'sum':
                 p.append([lc.kappa_add_total])
                 # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
@@ -237,6 +237,7 @@ def Reconstruct(argv):
         if lc.flavor=="simulated":
             pfile2 = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
             pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
+
             # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
             # BUG: and named appropriately? No, this is just a pair of values
 

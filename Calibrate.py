@@ -217,9 +217,12 @@ def Calibrate(argv):
 
         pdf=pangloss.PDF(["kappa_ext","weight"])
 
+        print RealComparator
+        print numpy.median(callibguide[:,1]),numpy.std(callibguide[:,1])
         
         dif=(callibguide[:,1]-RealComparator)
-        weights=numpy.exp(-(dif**2)/(2*(comparatorWidth)**2))
+        weights=dif*0.0
+        weights[numpy.abs(dif)<comparatorWidth]=1.
         weights/=numpy.sum(weights)
         samples=callibguide[:,0]
         samplesandweights=callibguide.copy()
@@ -249,16 +252,16 @@ def Calibrate(argv):
         print
         print pangloss.doubledashedline
         
-    return
+    return resultfile,jointdistasPDFfile
 
 # ======================================================================
 
 if __name__ == '__main__':
-    Calibrate(sys.argv[1:])    
+    resultfile,jointdistasPDFfile=Calibrate(sys.argv[1:])    
     test=True
     if test:
         import pangloss
-        pdf=pangloss.readPickle("/home/tcollett/Pangloss/results/Example_PofKappaExt.pickle")
+        pdf=pangloss.readPickle(resultfile)
         kappa_samples=pdf.call("kappa_ext")
         kappa_weights=pdf.call("weight")
 
@@ -267,7 +270,9 @@ if __name__ == '__main__':
 
         plot1=pdf.plot("kappa_ext",weightkey="weight",title="$\kappa_{\mathrm{ext}}$ distribution for the reconstructed line of sight (The result)")
 
-        jointdist=pangloss.readPickle("/home/tcollett/Pangloss/calib/Calibrationguide/kappa_h_median_asPDF.pickle")
+        pdf.plot("kappa_ext",key2="weight",weightkey=None,title="hope")
+
+        jointdist=pangloss.readPickle(jointdistasPDFfile)
         #read and plot a joint distribution of $kappa_x,kappa_h_median$
         plot3=jointdist.plot("kappa_h_median","kappa_ext",weightkey=None,title="The joint distribution of $\kappa_{\mathrm{ext}}$ and calibrator \n (More correlated means a better calibrator!)")
        
