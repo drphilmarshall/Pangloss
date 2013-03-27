@@ -5,6 +5,8 @@ import pangloss
 
 import sys,getopt,cPickle,numpy
 
+import scipy.stats as stats
+
 # ======================================================================
 
 def Calibrate(argv):
@@ -220,8 +222,8 @@ def Calibrate(argv):
 
         pdf = pangloss.PDF(["kappa_ext","weight"])
 
-        print RealComparator
-        print numpy.median(callibguide[:,1]),numpy.std(callibguide[:,1])
+        #print RealComparator
+        #print numpy.median(callibguide[:,1]),numpy.std(callibguide[:,1])
 
         dif=(callibguide[:,1]-RealComparator)
         weights=dif*0.0
@@ -240,11 +242,18 @@ def Calibrate(argv):
         variance = numpy.dot(weights, (samples-average)**2)/weights.sum()
         average,std=average, variance**.5
 
+        #if step function weights can calculate 68%CL easily:
+        included=samples[weights>0]
+        onesigconfidence=numpy.abs(\
+            stats.scoreatpercentile(included,84)-
+            stats.scoreatpercentile(included,16)\
+                )/2.
+            
         pangloss.writePickle(pdf,resultfile)
 
         print "Calibrate: your reconstructed lightcone has been calibrated,"
         print "Calibrate: suggesting it has a kappa_ext of",\
-            "%.3f +\- %.3f "%(average,std)
+            "%.3f +\- %.3f"%(average,onesigconfidence)
         print "Calibrate: the PDF for kappa_ext has been output to "+resultfile
         print "Calibrate: in the form of sample kappa_ext values, and their weights." 
         print "Calibrate: you can view this PDF in "+plotfile
