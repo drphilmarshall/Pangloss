@@ -283,7 +283,7 @@ class Lightcone(object):
         return
 
 # ----------------------------------------------------------------------------
-# Snap the parameter z onto the grid, to speed up calculations:
+# Snap the parameters z onto the grid, to speed up calculations:
 
     def snapToGrid(self, Grid):
         z = self.galaxies.z
@@ -344,6 +344,7 @@ class Lightcone(object):
         self.writeColumn('rs',r_s)
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
+        print x.min()
         return
 
 # ----------------------------------------------------------------------------
@@ -419,18 +420,20 @@ class Lightcone(object):
         self.writeColumn('gamma2_add',G2)
 
 
-        self.kappa_add_total=numpy.sum(self.galaxies.kappa_add)
+        self.kappa_add_total=numpy.sum(self.galaxies.kappa)
         self.kappa_keeton_total=numpy.sum(self.galaxies.kappa_keeton)
         self.kappa_tom_total=numpy.sum(self.galaxies.kappa_tom)
 
-        self.gamma1_add_total=numpy.sum(self.galaxies.gamma1_add)
+        self.gamma1_add_total=numpy.sum(self.galaxies.gamma1)
         self.gamma1_keeton_total=numpy.sum(self.galaxies.gamma1_keeton)
         self.gamma1_tom_total=numpy.sum(self.galaxies.gamma1_tom)
 
-        self.gamma2_add_total=numpy.sum(self.galaxies.gamma2_add)
+        self.gamma2_add_total=numpy.sum(self.galaxies.gamma2)
         self.gamma2_keeton_total=numpy.sum(self.galaxies.gamma2_keeton)
         self.gamma2_tom_total=numpy.sum(self.galaxies.gamma2_tom)
         
+
+        #print self.galaxies.Mstar.max()
         #print self.galaxies.Mh.max()
         #print self.galaxies.kappa.max()
         #print self.kappa_add_total
@@ -547,22 +550,18 @@ class Lightcone(object):
 
        # Panel 1: Galaxy positions:
        ax1 = plt.subplot(3,3,(1,4), aspect ='equal')
-       # plt.subplot(3,3,(1,4), aspect ='equal')
        self.plotFieldOfView('light',ax1)
        
        # Panel 2: Halo mass distributions:
        ax2 = plt.subplot(3,3,(2,5), aspect ='equal')
-       # plt.subplot(3,3,(2,5),aspect='equal')
        self.plotFieldOfView('mass',ax2)
 
        # Panel 3: Kappa contributions:
        ax3 = plt.subplot(3,3,(3,6), aspect ='equal')
-       # plt.subplot(3,3,(3,6), aspect ='equal')
        self.plotFieldOfView('kappa',ax3)
        
        # Lower panel: View along redshift axis
        ax4 = plt.subplot(3,3,(7,9))
-       # plt.subplot(3,3,(7,9))
        self.plotLineOfSight('kappa',ax4)
        
        if output != None:

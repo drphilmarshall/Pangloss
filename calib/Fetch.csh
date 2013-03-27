@@ -24,7 +24,7 @@
 #   Millennium/kappa_example.fits     Ray-traced convergence map
 #   Millennium/catalog_example.txt    Catalog of galaxy and halo properties
 #
-#   SHMR/HaloMassRedshift.catalog     Halo mass,z catalog to allow
+#   SHMR/HaloMassRedshiftCatalog.pickle    Halo mass,z catalog to allow
 #                                      empirical halo mass function to 
 #                                      be constructed. This is needed by
 #                                      the M*-Mh relation code.

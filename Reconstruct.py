@@ -86,6 +86,9 @@ def Reconstruct(argv):
     
     experiment = pangloss.Configuration(configfile)
 
+    # Get the experiment name from the configfile name instead?
+    EXP_NAME = experiment.parameters['ExperimentName']
+
     zd = experiment.parameters['StrongLensRedshift']
     zs = experiment.parameters['SourceRedshift']
 
@@ -96,8 +99,6 @@ def Reconstruct(argv):
     
     obspickle = experiment.getLightconePickleName('real')
     
-    EXP_NAME=experiment.parameters['ExperimentName']
-
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
     
@@ -228,18 +229,19 @@ def Reconstruct(argv):
         
         # Pickle this lightcone's PDF:
         x = allconefiles[i]
-        pfile = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_PofKappah.pickle"
+        pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
         pangloss.writePickle(p,pfile)
         print "Reconstruct: Pr(kappah|D) saved to "+pfile
         
         # To save loading in time in Calibrate.py we compute the median
         # of kappah and save it in a separate file, with kappaHilbert
         if lc.flavor=="simulated":
-            pfile2 = x.split('.')[0].split("_lightcone")[0]+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
+            pfile2 = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
             pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
 
             # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
-            # BUG: and named appropriately? No, this is just a pair of values
+            # BUG: and named appropriately? 
+            # No, this is just a pair of values
 
     # --------------------------------------------------------------------
 
