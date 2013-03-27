@@ -242,8 +242,8 @@ def Calibrate(argv):
         print
         print "   import pangloss"
         print "   pdf = pangloss.readPickle(\"%s\")"%resultfile
-        print "   kappa_samples = pdf.call(\"kappa_ext\")"
-        print "   kappa_weights = pdf.call(\"weight\")"
+        print "   kappa_samples = pdf.getParameter(\"kappa_ext\")"
+        print "   kappa_weights = pdf.getParameter(\"weight\")"
 
     # --------------------------------------------------------------------
 
@@ -261,8 +261,8 @@ if __name__ == '__main__':
     if test:
         import pangloss
         pdf=pangloss.readPickle("example_catalog_example_PofKappa.pickle")
-        kappa_samples=pdf.call("kappa_ext")
-        kappa_weights=pdf.call("weight")
+        kappa_samples=pdf.getParameter("kappa_ext")
+        kappa_weights=pdf.getParameter("weight")
 
         #plot P(kappa) before and after reconstruction
         plot2=pdf.plot("kappa_ext",weightkey=None,title="$\kappa_{\mathrm{ext}}$ distribution of the Millennium Simulation (the prior)")

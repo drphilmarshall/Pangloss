@@ -63,7 +63,7 @@ class PDF(object):
 
 # ----------------------------------------------------------------------------
 # accesscommands
-    def call(self,key):
+    def getParameter(self,key):
         assert key in self.parameters, "not a valid key. Keys are %s"%self.parstring
         for i in range(len(self.parameters)):
             if key == self.parameters[i]:
@@ -93,13 +93,13 @@ class PDF(object):
                 key2name = reformatnames[key2name]
 
         if key2 == None:
-            par1=self.call(key1)
+            par1=self.getParameter(key1)
             #make a histogram
             
             #check to see if samples are weighted:
             print "pdf: looking for a weight key"
             if weightkey!=None and weightkey in self.parameters: 
-                weights=self.call(weightkey)
+                weights=self.getParameter(weightkey)
                 print "pdf: plotting weighted histogram..."
             else: 
                 weights= numpy.ones(len(par1))*1.0
@@ -121,7 +121,7 @@ class PDF(object):
             print "pdf: plotting a 2D scatter plot ..."
             #make a 2d scatterplot (upgrade to a cornerplot in future!)
             plt.figure()
-            plt.scatter(self.call(key1),self.call(key2),\
+            plt.scatter(self.getParameter(key1),self.getParameter(key2),\
                             c='k',s=1,edgecolors=None)
             plt.xlabel(key1name)
             plt.ylabel(key2name)
