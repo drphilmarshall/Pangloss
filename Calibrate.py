@@ -220,6 +220,8 @@ def Calibrate(argv):
 
         pdf = pangloss.PDF(["kappa_ext","weight"])
 
+        print RealComparator
+        print numpy.median(callibguide[:,1]),numpy.std(callibguide[:,1])
 
         dif=(callibguide[:,1]-RealComparator)
         weights=dif*0.0
