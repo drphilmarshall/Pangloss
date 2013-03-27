@@ -11,11 +11,11 @@ cultivating a garden of toy models and baby steps.
 If you are interested in the ongoing investigation of this interesting
 problem, you should:
 * Read our first paper, [_"Reconstructing the lensing mass in the universe from photometric catalogue data;"_](http://arxiv.org/abs/1303.6564)
-* Browse the [wiki](https://github.com/drphilmarshall/Pangloss/wiki) 
+* [Browse the wiki](https://github.com/drphilmarshall/Pangloss/wiki) 
 to see what our current plans are;
-* Fork the code and play around with it;
+* [Fork the code](https://github.com/drphilmarshall/Pangloss) and play around with it;
 * Contact us (Phil Marshall, dr.phil.marshall@gmail.com, and Tom
-Collett, tcollett@ast.cam.ac.uk): we are keen to hear from other
+Collett, tcollett@ast.cam.ac.uk). We are keen to hear from other
 researchers in the field who would like to coordinate and/or collaborate
 with us!
 
