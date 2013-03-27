@@ -543,22 +543,18 @@ class Lightcone(object):
 
        # Panel 1: Galaxy positions:
        ax1 = plt.subplot(3,3,(1,4), aspect ='equal')
-       # plt.subplot(3,3,(1,4), aspect ='equal')
        self.plotFieldOfView('light',ax1)
        
        # Panel 2: Halo mass distributions:
        ax2 = plt.subplot(3,3,(2,5), aspect ='equal')
-       # plt.subplot(3,3,(2,5),aspect='equal')
        self.plotFieldOfView('mass',ax2)
 
        # Panel 3: Kappa contributions:
        ax3 = plt.subplot(3,3,(3,6), aspect ='equal')
-       # plt.subplot(3,3,(3,6), aspect ='equal')
        self.plotFieldOfView('kappa',ax3)
        
        # Lower panel: View along redshift axis
        ax4 = plt.subplot(3,3,(7,9))
-       # plt.subplot(3,3,(7,9))
        self.plotLineOfSight('kappa',ax4)
        
        if output != None:
