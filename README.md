@@ -1,6 +1,6 @@
 # Pangloss
 
-Pangloss is a code for reconstructing all the mass within a light cone
+Pangloss is software module for reconstructing all the mass within a light cone
 through the Universe.  Understanding complex mass distributions like
 this is important for accurate time delay lens cosmography, and also for
 accurate lens magnification estimation. It aspires to use all available
