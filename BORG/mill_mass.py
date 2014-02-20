@@ -35,18 +35,45 @@ Mstell = catalog[:,11]
 # Plot
 plt.figure(1)
 plt.subplot(111)
-plt.semilogy(z, Mhalo, 'bo', label='Halo Mass')
-#plt.semilogy(z, Mstell, 'ro', label='Stellar Mass')
+#plt.semilogy(z, Mhalo, 'bo', label='Halo Mass')
+plt.semilogy(z, Mstell, 'bo', alpha=0.5, label='Stellar Mass')
+
+nbins=10
+
+histz, edges = np.histogram(z, bins=nbins)
+
+bins = np.linspace(0,4,10)
+
+izbin = np.digitize(z,edges)
+
+minMstell, maxMstell = [], []
+for n in range(nbins):
+    ind = np.nonzero(izbin == n+1.0)
+    ind = np.array(ind)
+    
+    iMstell=[]
+    
+    for i in range(len(ind.T)):
+        iMstell.append(Mstell[i])
+    
+    maxiMstell=np.amax(iMstell)
+    maxMstell.append(maxiMstell)
+    miniMstell=np.amin(iMstell)
+    minMstell.append(miniMstell)
+
+print len(edges[0:10]), len(minMstell)
+plt.plot(edges[0:10], maxMstell, 'r-')
+plt.plot(edges[0:10], minMstell, 'r-')
 
 plt.xlabel(r'Redshift, $z$', fontsize=16)
 plt.ylabel(r'Mass $(M_{\odot}/h)$',fontsize=16)
-plt.title('Halo Mass in Millenium Simulation', fontsize=16)
+plt.title('Stellar Mass in Millenium Simulation', fontsize=16)
 
 plt.tight_layout()
 #plt.legend()
 
 savedfile = "mill_mass_z.pdf"
-#plt.savefig(savedfile,dpi=300)
+plt.savefig(savedfile,dpi=300)
 print "Plot saved as "+os.getcwd()+"/"+savedfile
 
 plt.show()
