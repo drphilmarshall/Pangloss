@@ -14,6 +14,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.special as sp
 from scipy import integrate
+from matplotlib import rc_file
+rc_file('matplotlibrc')
 
 # ===========================================================================
 # Define useful functions
@@ -31,39 +33,36 @@ z = catalog[:,5]
 Mhalo = catalog[:,9]
 Mstell = catalog[:,11]
 
-
 # Plot
 plt.figure(1)
 plt.subplot(111)
 #plt.semilogy(z, Mhalo, 'bo', label='Halo Mass')
-plt.semilogy(z, Mstell, 'bo', alpha=0.5, label='Stellar Mass')
+#plt.semilogy(z, Mstell, 'bo', alpha=0.5, label='Stellar Mass')
 
-nbins=10
 
-histz, edges = np.histogram(z, bins=nbins)
 
-bins = np.linspace(0,4,10)
+def find_index(zl,zu):
+    ind = np.transpose(np.nonzero((z >= zl)))# & (z <= zu)))
+    return ind
+        
+maxMstell, minMstell, zmid = [], [], []
 
-izbin = np.digitize(z,edges)
+for i in range(7):
+    print 'finding max and min stellar mass in range ' + str(i/2.0) + ' < z < ' + str((i+1)/2.0)
+    bini = find_index(i/2.0,(i+1.0)/2.0)
+    zmidi = 0.5*i+0.25
+    Mstelli = Mstell[bini[:,0]]
+    maxMstelli = np.amax(Mstelli)
+    minMstelli = np.amin(Mstelli)
+    maxMstell.append(maxMstelli)
+    minMstell.append(minMstelli)
+    zmid.append(zmidi)
 
-minMstell, maxMstell = [], []
-for n in range(nbins):
-    ind = np.nonzero(izbin == n+1.0)
-    ind = np.array(ind)
+plt.fill_between(zmid, maxMstell, minMstell,
+    alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
     
-    iMstell=[]
-    
-    for i in range(len(ind.T)):
-        iMstell.append(Mstell[i])
-    
-    maxiMstell=np.amax(iMstell)
-    maxMstell.append(maxiMstell)
-    miniMstell=np.amin(iMstell)
-    minMstell.append(miniMstell)
-
-print len(edges[0:10]), len(minMstell)
-plt.plot(edges[0:10], maxMstell, 'r-')
-plt.plot(edges[0:10], minMstell, 'r-')
+plt.semilogy(zmid, maxMstell, 'r-')
+plt.semilogy(zmid, minMstell, 'r-')
 
 plt.xlabel(r'Redshift, $z$', fontsize=16)
 plt.ylabel(r'Mass $(M_{\odot}/h)$',fontsize=16)
