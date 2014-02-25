@@ -1,0 +1,41 @@
+# Maximum Likelihood Method (STY); stellar mass function; ALL galaxies with [z_low,z_high)
+# Ho=70., Omega_lambda=0.7, Omega_matter=0.3
+# Muzzin, Marchesini, et al. 2013, ApJ, submitted
+# Nobjects = number of objects into the calculation of the stellar mass function
+# Mlim = adopted limit in stellar mass (95% completenetess)
+# If errors are equal to "0.", it means that the low-mass end slope has been kept fixed
+# When "-99", it means the parameters have not been considered
+# alpha = low-mass end slope of single Schechter function (or alpha1 for a double-Schechter function)
+# alpha_1sU, alpha_1sL = upper and lower 1-sigma random error on alpha
+# alpha_1sUtot, alpha_1sLtot = upper and lower 1-sigma total random error on alpha, including uncertainties from photometric redshift random errors
+# M* = log of the characteristic stellar mass [Msun]
+# M*_1sU, M*_1sL = upper and lower 1-sigma random error on M* [dex]
+# M*_1sUtot, M*_1sLtot = upper and lower 1-sigma random error on M* [dex], including uncertainties from photometric redshift random errors
+# Phi* = normalization [10^-4/Mpc^3/dex] of single Schechter function (or Phi1* for a double-Schechter function)
+# Phi*_1sU, Phi*_1sL = upper and lower 1-sigma random error on Phi*
+# Phi*_1sUtot, Phi*_1sLtot = upper and lower 1-sigma random error on Phi*, including uncertainties from photometric redshift random errors and cosmic variance
+# alpha2 = low-mass end slope of the second component of the double-Schechter function
+# alpha_2sU, alpha_2sL = upper and lower 1-sigma random error on alpha2
+# alpha_2sUtot, alpha_2sLtot = upper and lower 1-sigma total random error on alpha2, including uncertainties from photometric redshift random errors
+# Phi2* = normalization [10^-4/Mpc^3/dex] of second component of the double-Schechter function
+# Phi2*_1sU, Phi2*_1sL = upper and lower 1-sigma random error on Phi2*
+# Phi2*_1sUtot, Phi2*_1sLtot = upper and lower 1-sigma random error on Phi2*, including uncertainties from photometric redshift random errors and cosmic variance
+# [see also Table 1 in Muzzin et al. 2013]
+# For any questions, contact Danilo Marchesini (danilo.marchesini@tufts.edu) or Adam Muzzin (muzzin@strw.leidenuniv.nl)
+#
+# z_low  z_high Nobjects  Mlim	 M*     M*_1sU M*_1sL M*_1sUtot M*_1sLtot  Phi*   Phi*_1sU  Phi*_1sL  Phi*_1sUtot  Phi*_1sLtot  alpha  alpha_1sU  alpha_1sL  alpha_1sUtot  alpha_1sLtot  Phi2*   Phi2*_1sU  Phi2*_1sL  Phi2*_1sUtot  Phi2*_1sLtot  alpha2  alpha2_1sU  alpha2_1sL  alpha2_1sUtot  alpha2_1sLtot
+0.2      0.5    18546     8.37   11.22  0.03   0.03   0.03      0.03	   12.16   0.52	    0.50      1.75	   1.55	        -1.29  0.01	  0.01	     0.01	   0.01		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+0.2      0.5    18546     8.37   11.06  0.01   0.01   0.01      0.01       19.02   0.14	    0.14      2.31	   2.31	        -1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+0.2      0.5    18546     8.37   10.97  0.06   0.06   0.06      0.06       16.27   3.12	    1.39      3.88	   2.41         -0.53  0.16	  0.27	     0.16	   0.28          9.47    2.02	    3.64       2.32	     3.83	   -1.37   0.01	       0.06	   0.01		  0.06
+0.5      1.0    42019     8.92   11.00  0.02   0.01   0.02      0.01	   16.25   0.28	    0.62      1.17	   1.28   	-1.17  0.01	  0.01	     0.01	   0.01		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+0.5      1.0    42019     8.92   11.04  0.01   0.01   0.01      0.01       14.48   0.07	    0.07      1.00	   1.00       	-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+1.0      1.5    22959     9.48   10.87  0.02   0.01   0.02      0.01       13.91   0.43	    0.59      1.05	   1.23		-1.02  0.02	  0.02	     0.02	   0.02		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+1.0      1.5    22959     9.48   10.99  0.01   0.01   0.01      0.01        9.30   0.06	    0.06      0.66	   0.66       	-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+1.5      2.0     8927    10.03   10.81  0.02   0.02   0.02	0.03       10.13   0.58	    0.56      1.11	   1.02		-0.86  0.06       0.06	     0.11          0.06		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+1.5      2.0     8927    10.03   10.96 	0.01   0.01   0.03	0.01        6.33   0.06	    0.11      0.53	   0.71		-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+2.0      2.5     2236    10.54   10.81 	0.05   0.05   0.06	0.05        4.79   0.28	    0.41      0.70	   0.76		-0.55  0.16	  0.19	     0.22	   0.24		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+2.0      2.5     2236    10.54   11.00  0.02   0.02   0.02	0.02        2.94   0.07	    0.11      0.40	   0.40   	-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+2.5      3.0      814    10.76   11.03  0.10   0.09   0.12	0.11	    1.93   0.43	    0.51      0.62	   0.68		-1.01  0.37	  0.34	     0.45	   0.41		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+2.5      3.0      814    10.76   11.09  0.02   0.02   0.03	0.03        1.66   0.10	    0.10      0.34	   0.34       	-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+3.0      4.0      174    10.94   11.49  0.36   0.22   0.37	0.28	    0.09   0.09	    0.07      0.15	   0.08		-1.45  0.59	  0.54	     0.70	   0.60		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99
+3.0      4.0      174    10.94   11.40  0.06   0.06   0.08	0.08        0.13   0.02	    0.02      0.08         0.04      	-1.2   0.	  0.	     0.		   0.		 -99	 -99	    -99	       -99	     -99	   -99	   -99	       -99	   -99		  -99

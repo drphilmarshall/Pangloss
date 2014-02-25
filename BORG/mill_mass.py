@@ -42,34 +42,47 @@ plt.subplot(111)
 
 
 def find_index(zl,zu):
-    ind = np.transpose(np.nonzero((z >= zl)))# & (z <= zu)))
+    ind = np.transpose(np.nonzero((z >= zl) & (z <= zu)))
     return ind
         
-maxMstell, minMstell, zmid = [], [], []
+maxMhalo, minMhalo, maxMstell, minMstell, zmid = [], [], [], [], []
 
 for i in range(7):
     print 'finding max and min stellar mass in range ' + str(i/2.0) + ' < z < ' + str((i+1)/2.0)
     bini = find_index(i/2.0,(i+1.0)/2.0)
     zmidi = 0.5*i+0.25
     Mstelli = Mstell[bini[:,0]]
+    Mhaloi = Mhalo[bini[:,0]]
+    
     maxMstelli = np.amax(Mstelli)
     minMstelli = np.amin(Mstelli)
+    maxMhaloi = np.amax(Mhaloi)
+    minMhaloi = np.amin(Mhaloi)
+        
     maxMstell.append(maxMstelli)
     minMstell.append(minMstelli)
+    maxMhalo.append(maxMhaloi)
+    minMhalo.append(minMhaloi)
     zmid.append(zmidi)
 
 plt.fill_between(zmid, maxMstell, minMstell,
     alpha=0.5, edgecolor='#CC4F1B', facecolor='#FF9848')
     
-plt.semilogy(zmid, maxMstell, 'r-')
+plt.semilogy(zmid, maxMstell, 'r-', label=r'Stellar Mass')
 plt.semilogy(zmid, minMstell, 'r-')
+
+plt.fill_between(zmid, maxMhalo, minMhalo,
+    alpha=0.5, edgecolor='green', facecolor='lightgreen')
+    
+plt.semilogy(zmid, maxMhalo, 'g-', label=r'Halo Mass')
+plt.semilogy(zmid, minMhalo, 'g-')
 
 plt.xlabel(r'Redshift, $z$', fontsize=16)
 plt.ylabel(r'Mass $(M_{\odot}/h)$',fontsize=16)
-plt.title('Stellar Mass in Millenium Simulation', fontsize=16)
+plt.title('Mass Content of Millenium Simulation', fontsize=16)
 
 plt.tight_layout()
-#plt.legend()
+plt.legend(loc=4)
 
 savedfile = "mill_mass_z.pdf"
 plt.savefig(savedfile,dpi=300)
