@@ -42,17 +42,28 @@ def find_index(redshift,zl,zu):
 WM = 0.3
 WV = 0.7
 H0 = 70 # km/s/Mpc
+h = H0 / 100.0
 c = 299792.458 # km/s
-
-def Hubble(x):
-    """c / Hubble parameter in Mpc"""
-    return c/(H0 * np.sqrt(WV + WM*(1 + x)**3))
+DH = c/H0
+solidangle = 2.39E-4 # solid angle of cone subtending 1 degree
+    
+def EZ(x):
+    """ 1/Hubble parameter E(z)"""
+    return DH /(np.sqrt(WV + WM*(1 + x)**3))
     
 def CMD(xmin,xmax):
     """Calculate comoving distance"""
-    cmd = integrate.quad(Hubble, xmin, xmax)
+    cmd = integrate.quad(EZ, xmin, xmax)
     return cmd[0]
+
+def CMV_element(x):
+    return DH * EZ(x) * CMD(0.0,x) 
     
+def CMV(xmin,xmax):
+    """Calculate comoving volume"""
+    cmv = integrate.quad(CMV_element, xmin, xmax)
+    return solidangle * cmv[0]
+        
 def proper_size(z):
     """Calculates proper size of 1 degree length at redshift z"""
     theta = 0.01745 # 1 degree in radians
@@ -85,8 +96,8 @@ alpha_l = smf[:,18]
 catalog = np.genfromtxt('../calib/Millennium/catalog_example.txt', skip_header=1)
 
 z_ms = catalog[:,5]
-Mhalo_ms = catalog[:,9]
-Mstell_ms = catalog[:,11]
+Mhalo_ms = h * catalog[:,9]
+Mstell_ms =h * catalog[:,11]
 
 plt.figure(1, figsize=(4,16))
 
@@ -99,11 +110,11 @@ for i in range(len(z)):
     
     Mstelli = np.log10(Mstell_ms[zrange[:,0]])
 
-    # proper volume at zmid
-    volume = proper_size(zmid) ** 3.0
+    # comoving volume
+    volume = CMV(z_low[i], z_high[i])
     
-    print len(Mstelli),' objects at z = ' ,zmid
-    print 'in a proper volume of ' ,volume, 'Mpc^3'
+    print len(Mstelli),'objects at z =',zmid
+    print 'in a comoving volume of' ,volume, 'Mpc^3'
     
     # Kernel density
     flens_kde = gaussian_kde(Mstelli)
@@ -126,8 +137,9 @@ for i in range(len(z)):
                             
     plt.ylabel(str(z_low[i])+r' < z < '+str(z_high[i]))
     plt.tight_layout()
+
 phi_M = np.array(phi_M)
-print phi_M    
+
 plt.xlabel(r'$\log(M_{stell}/M_{\odot})$', fontsize=16)
 
 savedfile = "mill_mass_histograms.pdf"
@@ -152,7 +164,7 @@ for i in range(len(z)):
 
     plt.semilogy(Mstell, schechterSMF(Mstell, Phistar[i], Mstar[i], alpha[i]), 
                 label=str(z_low[i])+r'$< z <$'+str(z_high[i]),color=colors[i])
-    print 'Plotting SMF in range ',z_low[i],' < z < ',z_high[i]
+    print 'Plotting SMF in range',z_low[i],'< z <',z_high[i]
 
 plt.xlabel(r'$\log(M_{stell}/M_{\odot})$', fontsize=16)
 plt.ylabel(r'$\log$ ${\Phi}$ $($Mpc$^{-3})$', fontsize=16)

@@ -374,16 +374,19 @@ class Lightcone(object):
         gammaHalo *= (G-F)
 
         phi = self.galaxies.phi
-
+        
         kappa = kappaHalo 
         gamma = gammaHalo
         gamma1 = gamma*numpy.cos(2*phi)
         gamma2 = gamma*numpy.sin(2*phi)
+        
+        mu = 1.0/((1.0 - kappa)**2.0 + gamma**2.0)
 
         self.writeColumn('kappa',kappa)
         self.writeColumn('gamma',gamma)
         self.writeColumn('gamma1',-gamma1)
         self.writeColumn('gamma2',-gamma2)
+        self.writeColumn('mu',mu)
         
         return
         
@@ -438,6 +441,18 @@ class Lightcone(object):
         #print self.kappa_add_total
 
         return self.kappa_add_total
+        
+# ----------------------------------------------------------------------------
+
+    def combineMus(self):
+    
+        M=self.galaxies.mu
+
+        self.writeColumn('mu_add',M)
+
+        self.mu_add_total=numpy.sum(self.galaxies.mu)
+
+        return self.mu_add_total        
 
 # ----------------------------------------------------------------------------
 # Plotting
