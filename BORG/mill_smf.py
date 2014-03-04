@@ -82,9 +82,9 @@ Mstar = smf[:,4]
 Mstar_u = smf[:,7]
 Mstar_l = smf[:,8]
 
-Phistar = (smf[:,9])/10
-Phistar_u = (smf[:,12])/10
-Phistar_l = (smf[:,13])/10
+Phistar = (smf[:,9])/10000
+Phistar_u = (smf[:,12])/10000
+Phistar_l = (smf[:,13])/10000
 
 alpha = smf[:,14]
 alpha_u = smf[:,17]
