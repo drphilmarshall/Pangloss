@@ -12,7 +12,7 @@
 # 12 nfdet 
 # 13 nfobs 
 #
-# id     zb   zbmin  zbmax     tb    odds    zml    tml    chisq      M0      chisq2    nfdet  nfobs  
+  id     zb   zbmin  zbmax     tb    odds    zml    tml    chisq     M0      chisq2    nfdet  nfobs  
     1   0.60  0.443   0.757  6.333  1.0000   0.61  6.333     0.761  21.808      0.1746      4      4
     2   0.25  0.070   2.480  4.000  0.5528   3.13  5.333     0.032  22.082      1.0768      4      4
     3   0.59  0.270   4.350  3.000  0.2909   4.30  5.000     0.316  25.349      1.6559      4      4
