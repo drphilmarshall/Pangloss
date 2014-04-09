@@ -96,8 +96,8 @@ def Drill(argv):
     # There should only be one observed catalog!
     obscat = experiment.parameters['ObservedCatalog'][0]
     # Note nRA - -RA(rad) and Dec is also in rad...
-    x0 = experiment.parameters['nRA']
-    y0 = experiment.parameters['Dec']
+    x0 = experiment.parameters['nRA']*206264.806247
+    y0 = experiment.parameters['Dec']*206264.806247
     # Write the observed lightcone to the same directory 
     # as its parent catalog:
     obspickle = experiment.getLightconePickleName('real')
