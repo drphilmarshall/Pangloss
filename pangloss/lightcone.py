@@ -380,7 +380,7 @@ class Lightcone(object):
         gamma1 = gamma*numpy.cos(2*phi)
         gamma2 = gamma*numpy.sin(2*phi)
         
-        mu = 1.0/((1.0 - kappa)**2.0 + gamma**2.0)
+        mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
         self.writeColumn('kappa',kappa)
         self.writeColumn('gamma',gamma)
@@ -447,10 +447,25 @@ class Lightcone(object):
     def combineMus(self):
     
         M=self.galaxies.mu
-
+        K=self.galaxies.kappa
+        G=self.galaxies.gamma
+        G1=self.galaxies.gamma1
+        G2=self.galaxies.gamma2
+        
         self.writeColumn('mu_add',M)
-
-        self.mu_add_total=numpy.sum(self.galaxies.mu)
+        
+        self.kappa_add_total=numpy.sum(K)
+        self.gamma1_add_total=numpy.sum(G1)
+        self.gamma2_add_total=numpy.sum(G2)
+        
+        Ksum = self.kappa_add_total
+        G1sum = self.gamma1_add_total
+        G2sum = self.gamma2_add_total
+        Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
+        
+        Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
+     
+        self.mu_add_total=Msum
 
         return self.mu_add_total        
 
@@ -476,6 +491,10 @@ class Lightcone(object):
        elif quantity == 'kappa':
            plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o', s=(self.galaxies.kappa)*30000)    
            plt.title('Convergence')
+       
+       elif quantity == 'mu':
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o', s=(self.galaxies.mu))    
+           plt.title('Magnification')
        
        elif quantity == 'stellarmass':
            plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o', s=(numpy.log(self.galaxies.Mstar)/2),edgecolor = 'none' )     
@@ -527,7 +546,12 @@ class Lightcone(object):
            size = ((self.galaxies.kappa[subset])*30000.0)
            plt.scatter(z, y, c='r', marker='o', s=size, edgecolor='k' )
            plt.title('Line-of-sight Convergence')
-  
+       
+       elif quantity == 'mu':
+           size = ((self.galaxies.mu[subset]))
+           plt.scatter(z, y, c='r', marker='o', s=size, edgecolor='k' )
+           plt.title('Line-of-sight Magnification')  
+       
        elif quantity == 'stellarmass':
            size = ((numpy.log(self.galaxies.Mstar[subset]))/2.0)
            plt.scatter(z, y, c='y', marker='o', s=size, edgecolor='none' )
@@ -558,7 +582,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def plot(self,output=None):
+    def plot(self,var,output=None):
 
        plt.clf()
 
@@ -572,11 +596,11 @@ class Lightcone(object):
 
        # Panel 3: Kappa contributions:
        ax3 = plt.subplot(3,3,(3,6), aspect ='equal')
-       self.plotFieldOfView('kappa',ax3)
+       self.plotFieldOfView(var,ax3)
        
        # Lower panel: View along redshift axis
        ax4 = plt.subplot(3,3,(7,9))
-       self.plotLineOfSight('kappa',ax4)
+       self.plotLineOfSight(var,ax4)
        
        if output != None:
            pangloss.rm(output)

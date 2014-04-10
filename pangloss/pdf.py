@@ -92,6 +92,7 @@ class PDF(object):
             key2==None
         
         reformatnames={}
+        reformatnames["mu_halo"]="$\mu$"
         reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
         reformatnames["Kappah_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
 
@@ -127,8 +128,11 @@ class PDF(object):
         
             plt.figure()
             plt.hist(par1,weights=weights,bins=bins)
+            plt.ticklabel_format(useOffset=False, axis='x')
             plt.xlabel(key1name)
-            plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
+            plt.ylabel("P(%s)"%key1name)
+
+            #plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

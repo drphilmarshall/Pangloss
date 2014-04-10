@@ -98,6 +98,7 @@ def Drill(argv):
     # Note nRA - -RA(rad) and Dec is also in rad...
     x0 = experiment.parameters['nRA']*pangloss.rad2arcmin*60
     y0 = experiment.parameters['Dec']*pangloss.rad2arcmin*60
+
     # Write the observed lightcone to the same directory 
     # as its parent catalog:
     obspickle = experiment.getLightconePickleName('real')
