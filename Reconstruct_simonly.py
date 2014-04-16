@@ -4,6 +4,8 @@
 import pangloss
 
 import sys,getopt,cPickle,numpy
+import matplotlib.pyplot as plt
+
 
 # ======================================================================
 
@@ -230,9 +232,20 @@ def Reconstruct(argv):
 
                 print "Reconstruct: saved visualisation of lightcone in "+pngfile
         
+        # Plot p(mu) histogram
         pmu.plot('mu_halo',output="pofmu.png")
 
-                
+        redshift = lc.galaxies.z
+        magnification = lc.galaxies.mu
+        
+        plt.scatter(redshift, magnification)
+        plt.xlabel(r'Redshift, $z$', fontsize=16)
+        plt.ylabel(r'Magnification, $\mu$', fontsize=16)
+        plt.title(r'Distribution of Magnification')
+        plt.savefig('mu_z',dpi=300,bbox_inches='tight')
+
+        plt.show()
+                        
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 

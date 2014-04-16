@@ -493,7 +493,7 @@ class Lightcone(object):
            plt.title('Convergence')
        
        elif quantity == 'mu':
-           plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o', s=(self.galaxies.mu))    
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='g', marker='o', s=((self.galaxies.mu-1.0)*3E4))    
            plt.title('Magnification')
        
        elif quantity == 'stellarmass':
@@ -528,9 +528,11 @@ class Lightcone(object):
 
     def plotLineOfSight(self,quantity,AX):
        
+       
        # Only plot a subset of points, in a slice down the middle of 
        # the light cone:
        subset = numpy.abs(self.galaxies.x)<0.3
+       #print self.galaxies.mu[subset]
  
        # Point positions:
        z = self.galaxies.z[subset]
@@ -548,10 +550,10 @@ class Lightcone(object):
            plt.title('Line-of-sight Convergence')
        
        elif quantity == 'mu':
-           size = ((self.galaxies.mu[subset]))
-           plt.scatter(z, y, c='r', marker='o', s=size, edgecolor='k' )
-           plt.title('Line-of-sight Magnification')  
-       
+           size = ((self.galaxies.mu[subset]-1.0)*3E4)
+           plt.scatter(z, y, c='g', marker='o', s=size, edgecolor='k' )
+           plt.title(r'Line-of-sight Magnification $(\mu - 1)$')  
+
        elif quantity == 'stellarmass':
            size = ((numpy.log(self.galaxies.Mstar[subset]))/2.0)
            plt.scatter(z, y, c='y', marker='o', s=size, edgecolor='none' )
