@@ -234,13 +234,46 @@ def Reconstruct(argv):
         
         # Plot p(mu) histogram
         pmu.plot('mu_halo',output="pofmu.png")
-
+        pk.plot('kappa_halo',output="pofkappa.png")
+        
         redshift = lc.galaxies.z
         magnification = lc.galaxies.mu
         
-        plt.scatter(redshift, magnification)
+        z_bins = numpy.linspace(0, 3.5, 8)
+        
+        def find_index(z,zl,zu):
+            """
+            Finds the indices of all elements in array that are within given
+            redshift range
+            """
+            ind = numpy.transpose(numpy.nonzero((z >= zl) & (z <= zu)))
+            return ind
+        
+        Musum=[]
+        z_mid=[]
+        for j in range(len(z_bins)-1):
+            zrange = find_index(redshift, z_bins[j], z_bins[j+1])
+            zmid = 0.5 * (z_bins[j]+z_bins[j+1])
+            subset = zrange[:,0]
+            mu_subset = magnification[subset]
+            K=lc.galaxies.kappa[subset]
+            G1=lc.galaxies.gamma1[subset]
+            G2=lc.galaxies.gamma2[subset]
+            
+            Ksum = numpy.sum(K)
+            G1sum = numpy.sum(G1)
+            G2sum = numpy.sum(G2)
+            Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
+            
+            Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
+            Musum.append(Msum)
+            z_mid.append(zmid)
+
+        plt.clf()
+        plt.bar(z_mid, Musum, 0.35, color='g', align='center', alpha=0.4)
         plt.xlabel(r'Redshift, $z$', fontsize=16)
         plt.ylabel(r'Magnification, $\mu$', fontsize=16)
+        plt.ylim(0.9,1.2)
         plt.title(r'Distribution of Magnification')
         plt.savefig('mu_z',dpi=300,bbox_inches='tight')
 
