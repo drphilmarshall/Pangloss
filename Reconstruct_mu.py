@@ -4,8 +4,6 @@
 import pangloss
 
 import sys,getopt,cPickle,numpy
-import matplotlib.pyplot as plt
-
 
 # ======================================================================
 
@@ -15,7 +13,7 @@ def Reconstruct(argv):
         Reconstruct.py
 
     PURPOSE
-        Read in a simulation lightcone (or list of lightcones) and compute all 
+        Read in a lightcone (or list of lightcones) and compute all 
         quantities needed to estimate kappah, the convergence due to
         halos, at the centre of the lightcone. Output is a list of sample
         kappah values drawn from Pr(kappah|D), where D refers to either 
@@ -155,8 +153,8 @@ def Reconstruct(argv):
         calcones=[]
         calpickles=[]
 
-    allcones = calcones#+[obscone]
-    allconefiles = calpickles#+[obspickle]
+    allcones = calcones+[obscone]
+    allconefiles = calpickles+[obspickle]
 
     # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
@@ -164,14 +162,13 @@ def Reconstruct(argv):
     for i in range(len(allcones)):
 
         print pangloss.dashedline
-        print "Reconstruct: drawing %i samples from Pr(kappah|D)" % (Ns)
+        print "Reconstruct: drawing %i samples from Pr(mu|D)" % (Ns)
         print "Reconstruct:   given data in "+allconefiles[i]
 
         # Get lightcone, and start PDF for its kappa_halo:
         lc = allcones[i]
-        pk = pangloss.PDF('kappa_halo')
-        pmu = pangloss.PDF('mu_halo')
-
+        #p = pangloss.PDF('kappa_halo')
+        p = pangloss.PDF('mu_halo')
         # coming soon: gamma1, gamma2...
 
         # Redshift scaffolding:
@@ -191,34 +188,32 @@ def Reconstruct(argv):
                 print ("Reconstruct: ...on sample %i out of %i..." % (j,Ns))
 
             # Draw z from z_obs:
-            #lc.mimicPhotozError(sigma=zperr)
+            lc.mimicPhotozError(sigma=zperr)
             lc.snapToGrid(grid)
             
             # Simulated lightcones need mock observed Mstar_obs values 
             # drawing from their Mhalos:
-            #if lc.flavor == 'simulated': lc.drawMstars(shmr)
+            if lc.flavor == 'simulated': lc.drawMstars(shmr)
             
             # Draw Mstar from Mstar_obs:
-            #lc.mimicMstarError(sigmaP=MserrP,sigmaS=MserrS)
+            lc.mimicMstarError(sigmaP=MserrP,sigmaS=MserrS)
 
             # Draw Mhalo from Mstar, and then c from Mhalo:
-            #lc.drawMhalos(shmr)
+            lc.drawMhalos(shmr)
             lc.drawConcentrations(errors=True)
 
             # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=10)
             
-            k_add=lc.combineKappas()
-
             mu_add=lc.combineMus()
 
-            pmu.append([lc.mu_add_total])
-
             if RTscheme == 'sum':
-                pk.append([lc.kappa_add_total])
+                #p.append([lc.kappa_add_total])
+                p.append([lc.mu_add_total])
+
                 # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
             elif RTscheme == 'keeton':
-                pk.append([lc.kappa_keeton])
+                p.append([lc.kappa_keeton])
             else:
                 raise "Unknown ray-tracing scheme: "+RTscheme
             
@@ -226,88 +221,29 @@ def Reconstruct(argv):
             # two example cases:
             if j ==0 and (lc.flavor == 'real' or i == 0):
                 x = allconefiles[i]
-                pngfile = x.split('.')[0]
-                lc.plot('kappa', output=pngfile+"_kappa.png")
-                lc.plot('mu', output=pngfile+"_mu.png")
-
+                pngfile = x.split('.')[0]+".png"
+                lc.plot(output=pngfile)
                 print "Reconstruct: saved visualisation of lightcone in "+pngfile
         
-        # Plot p(mu) histogram
-        pmu.plot('mu_halo',output="pofmu.png")
-        pk.plot('kappa_halo',output="pofkappa.png")
-        
-        redshift = lc.galaxies.z
-        magnification = lc.galaxies.mu
-        
-        z_bins = numpy.linspace(0, 3.5, 8)
-        
-        def find_index(z,zl,zu):
-            """
-            Finds the indices of all elements in array that are within given
-            redshift range
-            """
-            ind = numpy.transpose(numpy.nonzero((z >= zl) & (z <= zu)))
-            return ind
-        
-
-        K=lc.galaxies.kappa
-        G1=lc.galaxies.gamma1
-        G2=lc.galaxies.gamma2
-            
-        Ksum = numpy.sum(K)
-        G1sum = numpy.sum(G1)
-        G2sum = numpy.sum(G2)
-        Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
-            
-        total_Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
-        
-        Musum=[]
-        z_mid=[]
-        for j in range(len(z_bins)-1):
-            zrange = find_index(redshift, z_bins[j], z_bins[j+1])
-            zmid = 0.5 * (z_bins[j]+z_bins[j+1])
-            subset = zrange[:,0]
-            mu_subset = magnification[subset]
-            K=lc.galaxies.kappa[subset]
-            G1=lc.galaxies.gamma1[subset]
-            G2=lc.galaxies.gamma2[subset]
-            
-            Ksum = numpy.sum(K)
-            G1sum = numpy.sum(G1)
-            G2sum = numpy.sum(G2)
-            Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
-            
-            Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
-            Musum.append(Msum)
-            z_mid.append(zmid)
-
-        plt.clf()
-        plt.bar(z_mid, Musum/total_Msum, 0.35, color='g', align='center', alpha=0.4)
-        plt.xlabel(r'Redshift, $z$', fontsize=16)
-        plt.ylabel(r'Magnification, $\mu$', fontsize=16)
-        plt.title(r'Distribution of Magnification')
-        plt.savefig('mu_z_prob.png',dpi=300,bbox_inches='tight')
-
-        plt.show()
-                        
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
+
         # Take Hilbert ray-traced kappa for this lightcone as "truth":
-        pk.truth[0] = lc.kappa_hilbert
+        p.truth[0] = lc.kappa_hilbert
         
         # Pickle this lightcone's PDF:
         x = allconefiles[i]
-        pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
-        pangloss.writePickle(pk,pfile)
+        pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMuh.pickle"
+        pangloss.writePickle(p,pfile)
 
-        print "Reconstruct: Pr(kappah|D) saved to "+pfile
+        print "Reconstruct: Pr(mu|D) saved to "+pfile
         
         # To save loading in time in Calibrate.py we compute the median
         # of kappah and save it in a separate file, with kappaHilbert
         if lc.flavor=="simulated":
             pfile2 = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
-            pangloss.writePickle([pk.truth[0],[numpy.median(pk.samples)]],pfile2)
+            pangloss.writePickle([p.truth[0],[numpy.median(p.samples)]],pfile2)
 
             # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
             # BUG: and named appropriately? 

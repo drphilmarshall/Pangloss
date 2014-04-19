@@ -5,6 +5,8 @@ import pangloss
 import cPickle
 import numpy
 import pylab as plt
+from math import pi
+
 
 # ======================================================================
 
@@ -469,6 +471,18 @@ class Lightcone(object):
 
         return self.mu_add_total        
 
+# ----------------------------------------------------------------------------
+
+    def allMass(self, tau=5):
+        
+        Mvir = self.galaxies.Mh
+        self.M0 = 4.*Mvir/(pi - 2.)
+        self.Mhalo = self.M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
+        self.writeColumn('truncNFW_Mhalo',self.Mhalo)
+
+        self.totalMhalo = numpy.sum(self.Mhalo)
+        
+        return self.totalMhalo
 # ----------------------------------------------------------------------------
 # Plotting
 # ----------------------------------------------------------------------------
