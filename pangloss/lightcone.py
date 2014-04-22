@@ -357,7 +357,7 @@ class Lightcone(object):
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        kappa_s = rho_s * r_s /self.galaxies.sigma_crit
+        kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s

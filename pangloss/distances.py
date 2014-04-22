@@ -10,6 +10,7 @@ c = 299792458.
 G = 4.3e-6
 from math import pi
 import warnings
+import numpy
 warnings.warn("Default cosmology is Om=0.25,Ol=0.75,h=0.73,w=-1 (MS fiducial) and distance units are Mpc!",ImportWarning) #MS fiducial.
 
 class Distance:
@@ -93,7 +94,7 @@ class Distance:
     def luminosity_distance(self,z):
         return (1.+z)*self.comoving_transverse_distance(z)
 
-    def comoving_volume(self,z1,z2=0.):
+    def comoving_volume(self,z1,z2=0.,solidangle=1.):
         from scipy import integrate
         if z2<z1:
             z1,z2 = z2,z1
@@ -101,7 +102,7 @@ class Distance:
         om = self.OMEGA_M
         ol = self.OMEGA_L
         ok = 1.-om-ol
-        return 4*pi*(c/self.h)*integrate.romberg(f,z1,z2,(om,ol,ok))/1e5
+        return solidangle*4*pi*(c/self.h)*integrate.romberg(f,z1,z2,(om,ol,ok))/1e5
 
     def distance_modulus(self,z):
         from math import log10
@@ -122,3 +123,24 @@ class Distance:
     def rho_crit_univ(self,z):   #critical density of the universe at z
        ro= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
        return ro 
+       
+# ============================================================================
+# CM's additions to this class:
+# ----------------------------------------------------------------------------
+    def comoving_mass(self,z1,z2=0.,solidangle=1.):
+        from scipy import integrate
+        if z2<z1:
+            z1,z2 = z2,z1
+        rho_crit = (self.h**2) * 3E7 / (8 * pi * G)   # Msun/Mpc^3
+        f = lambda z,m,l,k: (m*rho_crit*(1.+z)**3)*(self.comoving_distance(0.,z)**2)/((m*(1.+z)**3+k*(1.+z)**2+l)**0.5)
+        om = self.OMEGA_M
+        ol = self.OMEGA_L
+        ok = 1.-om-ol
+        return solidangle*4*pi*(c/self.h)*integrate.romberg(f,z1,z2,(om,ol,ok))/1e5    
+
+    def total_trunc_mass(self, Mvir, tau=5):
+        """Calculates mass within truncation radius tau*R_vir for BMO07 truncated NFW profile"""   
+        M0 = 4.*Mvir/(pi - 2.)
+        Mhalo = M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
+        totalMhalo = numpy.sum(Mhalo)            
+        return totalMhalo   

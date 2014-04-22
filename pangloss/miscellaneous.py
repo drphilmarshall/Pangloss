@@ -30,6 +30,10 @@ import numpy
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
+rad2deg = 180.0/numpy.pi
+deg2rad = 1.0/rad2deg
+
+squaredeg = (numpy.pi/180.0)**2./(4*numpy.pi) # solid angle of cone subtending 1 square degree
 
 dashedline = '--------------------------------------------------------------------------------'
 doubledashedline = '================================================================================'

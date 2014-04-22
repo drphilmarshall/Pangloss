@@ -159,6 +159,21 @@ def Reconstruct(argv):
     allconefiles = calpickles#+[obspickle]
 
     # --------------------------------------------------------------------
+    # Calculate kappa_smooth
+    simcat = experiment.parameters['CalibrationCatalogs']
+    simcat = pangloss.readCatalog(simcat,experiment)
+    
+    simcat.defineSystem(zd,zs)
+    simcat.loadGrid(grid) 
+       
+        r200 = self.galaxies.r200
+        x = self.galaxies.X
+        r_s = self.galaxies.rs
+        rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
+        kappa_s = rho_s * r_s /self.galaxies.sigma_crit 
+    
+    
+    # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
 
     for i in range(len(allcones)):
