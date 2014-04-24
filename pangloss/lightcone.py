@@ -357,12 +357,12 @@ class Lightcone(object):
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
+        self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s
-        kappaHalo = kappa_s*1.0
-        gammaHalo = kappa_s*1.0
+        kappaHalo = self.kappa_s*1.0
+        gammaHalo = self.kappa_s*1.0
         
         if profile=="BMO1":
             F=pangloss.BMO1Ffunc(x,xtrunc)

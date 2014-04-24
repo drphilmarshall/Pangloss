@@ -123,8 +123,12 @@ class PDF(object):
                 # print "pdf: plotting unweighted histogram..."
             weights /= numpy.sum(weights)
             
+            par1range = par1.max() - par1.min()
+            par1mean = numpy.mean(par1)
+            
             if bins==None:
                 nb=len(par1)*0.05
+                
                 if nb<20: nb=20
                 bins=numpy.linspace(par1.min(),par1.max(),20)
         
@@ -132,6 +136,7 @@ class PDF(object):
             plt.hist(par1,weights=weights,bins=bins)
             plt.ticklabel_format(useOffset=False, axis='x')
             plt.xlabel(key1name)
+            #if par1range > 50: plt.xlim(par1mean-25.,par1mean+25.)
             plt.ylabel("P(%s)"%key1name)
 
             #plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)

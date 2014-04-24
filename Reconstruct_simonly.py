@@ -150,32 +150,18 @@ def Reconstruct(argv):
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
     obscone = pangloss.readPickle(obspickle)
-
+    print calcones[1]
     if DoCal=="False": #must be string type
         calcones=[]
         calpickles=[]
 
     allcones = calcones#+[obscone]
-    allconefiles = calpickles#+[obspickle]
-
-    # --------------------------------------------------------------------
-    # Calculate kappa_smooth
-    simcat = experiment.parameters['CalibrationCatalogs']
-    simcat = pangloss.readCatalog(simcat,experiment)
-    
-    simcat.defineSystem(zd,zs)
-    simcat.loadGrid(grid) 
-       
-        r200 = self.galaxies.r200
-        x = self.galaxies.X
-        r_s = self.galaxies.rs
-        rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        kappa_s = rho_s * r_s /self.galaxies.sigma_crit 
-    
+    allconefiles = calpickles#+[obspickle]   
     
     # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
-
+    pk = pangloss.PDF('kappa_halo')
+    pmu = pangloss.PDF('mu_halo')
     for i in range(len(allcones)):
 
         print pangloss.dashedline
@@ -184,8 +170,8 @@ def Reconstruct(argv):
 
         # Get lightcone, and start PDF for its kappa_halo:
         lc = allcones[i]
-        pk = pangloss.PDF('kappa_halo')
-        pmu = pangloss.PDF('mu_halo')
+       # pk = pangloss.PDF('kappa_halo')
+       # pmu = pangloss.PDF('mu_halo')
 
         # coming soon: gamma1, gamma2...
 
@@ -247,9 +233,11 @@ def Reconstruct(argv):
 
                 print "Reconstruct: saved visualisation of lightcone in "+pngfile
         
-        # Plot p(mu) histogram
-        pmu.plot('mu_halo',output="pofmu.png")
-        pk.plot('kappa_halo',output="pofkappa.png")
+        
+
+        
+        """# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        # Plot mu vs z
         
         redshift = lc.galaxies.z
         magnification = lc.galaxies.mu
@@ -257,10 +245,10 @@ def Reconstruct(argv):
         z_bins = numpy.linspace(0, 3.5, 8)
         
         def find_index(z,zl,zu):
-            """
+           
             Finds the indices of all elements in array that are within given
             redshift range
-            """
+            
             ind = numpy.transpose(numpy.nonzero((z >= zl) & (z <= zu)))
             return ind
         
@@ -304,7 +292,7 @@ def Reconstruct(argv):
         plt.savefig('mu_z_prob.png',dpi=300,bbox_inches='tight')
 
         plt.show()
-                        
+        """                
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
@@ -330,6 +318,14 @@ def Reconstruct(argv):
 
         #print numpy.median(p.samples)
     # --------------------------------------------------------------------
+    
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    # Plot p(mu) histogram
+        
+    pmu.plot('mu_halo',output="pofmu.png")
+    pk.plot('kappa_halo',output="pofkappa.png")
+    
+    
     print pangloss.doubledashedline
     return
 
