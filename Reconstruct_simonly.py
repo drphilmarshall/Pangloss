@@ -150,7 +150,6 @@ def Reconstruct(argv):
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
     obscone = pangloss.readPickle(obspickle)
-    print calcones[1]
     if DoCal=="False": #must be string type
         calcones=[]
         calpickles=[]

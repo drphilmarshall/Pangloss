@@ -70,26 +70,44 @@ def RemoveSmooth(argv):
     # Calculate kappa_smooth
     experiment = pangloss.Configuration(configfile)
 
+    calpickles = []
+    Nc = experiment.parameters['NCalibrationLightcones']
+    Ns = experiment.parameters['NRealisations']
+        
+    for i in range(Nc):
+        calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+    
+    obspickle = experiment.getLightconePickleName('real')
+    
+    # Ray tracing:
+    RTscheme = experiment.parameters['RayTracingScheme']
+    
+    # SHM relation parameters:
+    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+    
     zd = experiment.parameters['StrongLensRedshift']
     zs = experiment.parameters['SourceRedshift']
     
+    calcones = []
+    for i in range(Nc):
+        calcones.append(pangloss.readPickle(calpickles[i]))
+    simcat = pangloss.readPickle(obspickle)
+    
     grid = pangloss.Grid(zd,zs,nplanes=100)
-    
-    simcat = experiment.parameters['CalibrationCatalogs']
-    simcat = pangloss.readCatalog(simcat,experiment)
-    
+      
     simcat.defineSystem(zd,zs)
     simcat.loadGrid(grid) 
-    simcat.snapToGrid(grid)
+    for j in range(Ns):
+        simcat.snapToGrid(grid)
 
-    simcat.drawConcentrations(errors=True)
+        simcat.drawConcentrations(errors=True)
    
-    kappa_slice = simcat.kappa_s
-    z_slice = grid.redshifts
+        kappa_slice = simcat.kappa_s
+        z_slice = grid.redshifts
     
-    plt.figure()
-    plt.plot(z_slice, kappa_slice)
-    plt.savefig('kappa_smooth.png',dpi=300)
+        plt.figure()
+        plt.plot(z_slice, kappa_slice)
+        plt.savefig('kappa_smooth.png',dpi=300)
 
     plt.show()
     
