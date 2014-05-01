@@ -85,6 +85,8 @@ class Lightcone(object):
         self.xmin = self.catalog['nRA'].min()
         self.ymax = self.catalog['Dec'].max()
         self.ymin = self.catalog['Dec'].min() 
+        
+        self.catalog.add_column('z_cat',self.catalog['z_obs']*1.0)
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -123,6 +125,8 @@ class Lightcone(object):
             # Take the log of the halo mass, and set up the parameter array:
             self.galaxies.add_column('Mh_obs',numpy.log10(self.galaxies.Mhalo_obs))
             self.galaxies.add_column('Mh',self.galaxies.Mh_obs*1.0)
+            self.catalog.add_column('Mh_obs_cat',numpy.log10(self.catalog.Mhalo_obs))
+            self.catalog.add_column('Mh_cat',self.catalog.Mh_obs_cat*1.0)
             # Stellar masses will be added by drawMstars
             # Halo masses will be replaced by drawMhalos
 
@@ -137,8 +141,8 @@ class Lightcone(object):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
         # Save memory! 
-        del self.catalog
-        del catalog
+        #del self.catalog
+        #del catalog
         
         return None
 
@@ -289,13 +293,21 @@ class Lightcone(object):
 
     def snapToGrid(self, Grid):
         z = self.galaxies.z
+        z_cat = self.catalog.z_cat
         sz,p = Grid.snap(z)
+        sz_cat,p_cat = Grid.snap(z_cat)
+
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
         self.writeColumn('sigma_crit',Grid.sigma_crit[p])
         self.writeColumn('beta',Grid.beta[p])
         rphys = self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
         self.writeColumn('rphys',rphys)
+        
+        self.writeColumn('Da_p_cat',Grid.Da_p[p_cat])
+        self.writeColumn('rho_crit_cat',Grid.rho_crit[p_cat])
+        self.writeColumn('sigma_crit_cat',Grid.sigma_crit[p_cat])
+        self.writeColumn('beta_cat',Grid.beta[p_cat])
 
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
@@ -337,15 +349,29 @@ class Lightcone(object):
     def drawConcentrations(self,errors=False):
         M200 = 10**self.galaxies.Mh        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
-        self.writeColumn("r200",r200)
         
+        M200_cat = 10**self.catalog.Mh_cat        
+        r200_cat = (3*M200/(800*3.14159*self.galaxies.rho_crit_cat))**(1./3)        
+        
+        self.writeColumn("r200",r200)
+        self.writeColumn("r200_cat",r200_cat)
+
         c200 = pangloss.MCrelation(M200,scatter=errors)
+        c200_cat = pangloss.MCrelation(M200_cat,scatter=errors)
         
         self.writeColumn("c200",c200)
+        
         r_s = r200/c200        
         self.writeColumn('rs',r_s)
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
+        
+        self.writeColumn("c200_cat",c200_cat)
+        
+        r_s_cat = r200_cat/c200_cat        
+        self.writeColumn('rs_cat',r_s_cat)
+        x_cat = self.galaxies.rphys/r_s_cat
+        self.writeColumn('X_cat',x_cat)
         return
 
 # ----------------------------------------------------------------------------
@@ -357,8 +383,8 @@ class Lightcone(object):
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
+        self.kappa_s_smooth = (rho_s * r_s - self.sigma_s_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone
         self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
-        
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s
         kappaHalo = self.kappa_s*1.0
@@ -391,6 +417,51 @@ class Lightcone(object):
         self.writeColumn('mu',mu)
         
         return
+        
+# ----------------------------------------------------------------------------
+# Compute all catalog halos' contributions to the convergence:
+
+    def makeKappas_catalog(self,errors=False,truncationscale=5,profile="BMO1"):
+        c200 = self.galaxies.c200_cat
+        r200 = self.galaxies.r200_cat
+        x = self.galaxies.X_cat
+        self.r_s = self.galaxies.rs_cat
+        rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit_cat
+        self.sigma_s_cat = rho_s * r_s 
+        self.kappa_s_cat = rho_s * r_s /self.galaxies.sigma_crit_cat  #kappa slice for each lightcone
+        
+        r_trunc = truncationscale*r200
+        xtrunc = r_trunc/r_s
+        kappaHalo = self.kappa_s*1.0
+        gammaHalo = self.kappa_s*1.0
+        
+        if profile=="BMO1":
+            F=pangloss.BMO1Ffunc(x,xtrunc)
+            G=pangloss.BMO1Gfunc(x,xtrunc)
+        
+        if profile=="BMO2":
+            F=pangloss.BMO2Ffunc(x,xtrunc)
+            G=pangloss.BMO2Gfunc(x,xtrunc)
+        
+        kappaHalo *= F
+        gammaHalo *= (G-F)
+
+        phi = self.galaxies.phi
+        
+        kappa = kappaHalo 
+        gamma = gammaHalo
+        gamma1 = gamma*numpy.cos(2*phi)
+        gamma2 = gamma*numpy.sin(2*phi)
+        
+        mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
+
+        self.writeColumn('kappa_cat',kappa_cat)
+        self.writeColumn('gamma_cat',gamma_cat)
+        self.writeColumn('gamma1_cat',-gamma1_cat)
+        self.writeColumn('gamma2_cat',-gamma2_cat)
+        self.writeColumn('mu_cat',mu_cat)
+        
+        return        
         
 # ----------------------------------------------------------------------------
 
@@ -443,7 +514,54 @@ class Lightcone(object):
         #print self.kappa_add_total
 
         return self.kappa_add_total
+
+# ----------------------------------------------------------------------------
+
+    def combineKappas_catalog(self):
+    
+        B=self.galaxies.beta_cat
+        K=self.galaxies.kappa_cat
+        G=self.galaxies.gamma_cat
+        G1=self.galaxies.gamma1_cat
+        G2=self.galaxies.gamma2_cat
+
+        self.writeColumn('kappa_add_cat',K)
+        self.writeColumn('gamma1_add_cat',G1)
+        self.writeColumn('gamma2_add_cat',G2)
+
+        self.kappa_add_total_cat=numpy.sum(K)
+        self.gamma1_add_total_cat=numpy.sum(G1)
+        self.gamma2_add_total_cat=numpy.sum(G2)
+
+        return self.kappa_add_total
+                
+# ----------------------------------------------------------------------------
+
+    def combineMus_catalog(self):
+    
+        M=self.galaxies.mu_cat
+        K=self.galaxies.kappa_cat
+        G=self.galaxies.gamma_cat
+        G1=self.galaxies.gamma1_cat
+        G2=self.galaxies.gamma2_cat
         
+        self.writeColumn('mu_add_cat',M)
+        
+        self.kappa_add_total_cat=numpy.sum(K)
+        self.gamma1_add_total_cat=numpy.sum(G1)
+        self.gamma2_add_total_cat=numpy.sum(G2)
+        
+        Ksum = self.kappa_add_total_cat
+        G1sum = self.gamma1_add_total_cat
+        G2sum = self.gamma2_add_total_cat
+        Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
+        
+        Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
+     
+        self.mu_add_total_cat=Msum
+
+        return self.mu_add_total_cat        
+
 # ----------------------------------------------------------------------------
 
     def combineMus(self):
@@ -469,7 +587,7 @@ class Lightcone(object):
      
         self.mu_add_total=Msum
 
-        return self.mu_add_total        
+        return self.mu_add_total       
 
 # ----------------------------------------------------------------------------
 

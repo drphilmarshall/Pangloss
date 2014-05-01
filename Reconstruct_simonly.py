@@ -160,7 +160,11 @@ def Reconstruct(argv):
     # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
     pk = pangloss.PDF('kappa_halo')
+    pk_cat = pangloss.PDF('kappa_halo_cat')
+
     pmu = pangloss.PDF('mu_halo')
+    pmu_cat = pangloss.PDF('mu_halo_cat')
+
     for i in range(len(allcones)):
 
         print pangloss.dashedline
@@ -209,13 +213,17 @@ def Reconstruct(argv):
             lc.makeKappas(truncationscale=10)
             
             k_add=lc.combineKappas()
+            k_add_cat=lc.combineKappas_catalog()
 
             mu_add=lc.combineMus()
+            mu_add_cat=lc.combineMus_catalog()
 
             pmu.append([lc.mu_add_total])
+            pmu_cat.append([lc.mu_add_total_cat])
 
             if RTscheme == 'sum':
                 pk.append([lc.kappa_add_total])
+                pk_cat.append([lc.kappa_add_total_cat])
                 # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
             elif RTscheme == 'keeton':
                 pk.append([lc.kappa_keeton])
@@ -322,7 +330,10 @@ def Reconstruct(argv):
     # Plot p(mu) histogram
         
     pmu.plot('mu_halo',output="pofmu.png")
+    pmu_cat.plot('mu_halo',output="pofmu_cat.png")
+
     pk.plot('kappa_halo',output="pofkappa.png")
+    pk_cat.plot('kappa_halo',output="pofkappa_cat.png")
     
     
     print pangloss.doubledashedline
