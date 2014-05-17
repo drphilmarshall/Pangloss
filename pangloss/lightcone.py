@@ -117,6 +117,10 @@ class Lightcone(object):
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
+        try: 
+            self.bighalos = self.bighalos.where(self.bighalos.Type != 2) 
+        except AttributeError: pass                    
+
 
         # Now we have a small catalog, just for the requested lightcone.
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -357,7 +361,7 @@ class Lightcone(object):
         M200 = 10**self.galaxies.Mh        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
         
-        M200_cat = self.bighalos.Mhalo_obs     
+        M200_cat = numpy.log10(self.bighalos.Mhalo_obs)    
         r200_cat = (3*M200_cat/(800*3.14159*self.bighalos.rho_crit))**(1./3)        
         
         self.writeColumn("r200",r200)
@@ -383,19 +387,54 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
 
+    def removeSmooth(self, nbins=20):
+        zmax = self.bighalos.z_obs.max()
+        zmin = self.bighalos.z_obs.min()
+        
+        zbins = numpy.linspace(zmin, zmax, nbins)
+        
+        def find_index(redshift,zl,zu):
+            """
+            Finds the indices of all elements in array that are within given
+            redshift range
+            """
+            ind = numpy.transpose(numpy.nonzero((redshift >= zl) & (redshift <= zu)))
+            return ind
+        
+        sigma_tot = numpy.zeros(len(self.galaxies.z))
+        
+        for i in range(len(zbins)-1):
+            z_low =  zbins[i]
+            z_high = zbins[i+1]
+    
+            #z_index = find_index(self.bighalos.z_obs, z_low, z_high)
+            z_index_gal = find_index(self.galaxies.z, z_low, z_high)
+    
+            c200_bin = self.galaxies.c200[z_index_gal[:,0]]
+            r_s_bin = self.galaxies.rs[z_index_gal[:,0]]
+            rho_s_bin = pangloss.delta_c(c200_bin)*self.galaxies.rho_crit[z_index_gal[:,0]]
+            sigma_s_bin = rho_s_bin * r_s_bin
+            sigma_s_sum = numpy.sum(sigma_s_bin)
+            
+            sigma_tot[z_index_gal] = sigma_s_sum
+                                                                                  
+
+        self.writeColumn('sigma_smooth',sigma_tot)
+
+        return
+
+# ----------------------------------------------------------------------------
+# Compute halos' contributions to the convergence:
+
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
-        c200_cat = self.bighalos.c200
-        r_s_cat = self.bighalos.rs
-        rho_s_cat = pangloss.delta_c(c200_cat)*self.bighalos.rho_crit
-        sigma_s_cat = rho_s_cat * r_s_cat 
-        self.sigma_s_cat =  sigma_s_cat[self.bighalos.z_obs == self.galaxies.z]
-               
+            
         c200 = self.galaxies.c200
         r200 = self.galaxies.r200
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        kappa_s_smooth = (rho_s * r_s - self.sigma_s_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
+        sigma_cat = self.galaxies.sigma_smooth
+        kappa_s_smooth = ((rho_s * r_s) - sigma_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
         self.kappa_s = kappa_s_smooth  #kappa slice for each lightcone
 #        self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         r_trunc = truncationscale*r200

@@ -207,7 +207,10 @@ def Reconstruct(argv):
             # Draw Mhalo from Mstar, and then c from Mhalo:
             #lc.drawMhalos(shmr)
             lc.drawConcentrations(errors=True)
-
+            
+            # Calculate total surface density due to all mass in redshift slices 
+            lc.removeSmooth()
+            
             # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=10)
             
