@@ -93,8 +93,11 @@ class PDF(object):
         
         reformatnames={}
         reformatnames["mu_halo"]="$\mu$"
-        reformatnames["kappa_halo"]="$\kappa_{\mathrm{halos}}$"
-
+        reformatnames["kappa_halo"]="$\kappa$"
+        
+        reformatnames["mu_tot"]="$\mu_{\mathrm{tot}}$"
+        reformatnames["kappa_tot"]="$\kappa_{\mathrm{tot}}$"
+        
         reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
         reformatnames["Kappah_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
 

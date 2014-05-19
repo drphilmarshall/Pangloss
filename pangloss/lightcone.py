@@ -433,10 +433,10 @@ class Lightcone(object):
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        sigma_cat = self.galaxies.sigma_smooth
-        kappa_s_smooth = ((rho_s * r_s) - sigma_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
-        self.kappa_s = kappa_s_smooth  #kappa slice for each lightcone
-#        self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
+#        sigma_cat = self.galaxies.sigma_smooth
+#        kappa_s_smooth = ((rho_s * r_s) - sigma_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
+#        self.kappa_s = kappa_s_smooth  #kappa slice for each lightcone
+        self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s
         kappaHalo = self.kappa_s*1.0

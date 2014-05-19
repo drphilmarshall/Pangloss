@@ -159,9 +159,10 @@ def Reconstruct(argv):
     
     # --------------------------------------------------------------------
     # Make realisations of each lightcone, and store sample kappah vals:
-    pk = pangloss.PDF('kappa_halo')
-
-    pmu = pangloss.PDF('mu_halo')
+    
+    # Start PDF for total kappa and mu for all lightcones
+    pk_tot = pangloss.PDF('kappa_tot')
+    pmu_tot = pangloss.PDF('mu_tot')
 
 
     for i in range(len(allcones)):
@@ -172,9 +173,9 @@ def Reconstruct(argv):
 
         # Get lightcone, and start PDF for its kappa_halo:
         lc = allcones[i]
-       # pk = pangloss.PDF('kappa_halo')
-       # pmu = pangloss.PDF('mu_halo')
-
+        pk = pangloss.PDF('kappa_halo')
+        pmu = pangloss.PDF('mu_halo')
+        
         # coming soon: gamma1, gamma2...
 
         # Redshift scaffolding:
@@ -221,9 +222,12 @@ def Reconstruct(argv):
 
             pmu.append([lc.mu_add_total])
 
+            pmu_tot.append([lc.mu_add_total])
 
             if RTscheme == 'sum':
                 pk.append([lc.kappa_add_total])
+                pk_tot.append([lc.kappa_add_total])
+
                 # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
             elif RTscheme == 'keeton':
                 pk.append([lc.kappa_keeton])
@@ -235,73 +239,12 @@ def Reconstruct(argv):
             if j ==0 and (lc.flavor == 'real' or i == 0):
                 x = allconefiles[i]
                 pngfile = x.split('.')[0]
-                lc.plot('kappa', output=pngfile+"_kappa.png")
-                lc.plot('mu', output=pngfile+"_mu.png")
+                lc.plot('kappa', output=pngfile+"_kappa_uncalib.png")
+                lc.plot('mu', output=pngfile+"_mu_uncalib.png")
 
-                print "Reconstruct: saved visualisation of lightcone in "+pngfile
-        
-        
-
-        
-        """# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-        # Plot mu vs z
-        
-        redshift = lc.galaxies.z
-        magnification = lc.galaxies.mu
-        
-        z_bins = numpy.linspace(0, 3.5, 8)
-        
-        def find_index(z,zl,zu):
-           
-            Finds the indices of all elements in array that are within given
-            redshift range
-            
-            ind = numpy.transpose(numpy.nonzero((z >= zl) & (z <= zu)))
-            return ind
-        
-
-        K=lc.galaxies.kappa
-        G1=lc.galaxies.gamma1
-        G2=lc.galaxies.gamma2
-            
-        Ksum = numpy.sum(K)
-        G1sum = numpy.sum(G1)
-        G2sum = numpy.sum(G2)
-        Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
-            
-        total_Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
-        
-        Musum=[]
-        z_mid=[]
-        for j in range(len(z_bins)-1):
-            zrange = find_index(redshift, z_bins[j], z_bins[j+1])
-            zmid = 0.5 * (z_bins[j]+z_bins[j+1])
-            subset = zrange[:,0]
-            mu_subset = magnification[subset]
-            K=lc.galaxies.kappa[subset]
-            G1=lc.galaxies.gamma1[subset]
-            G2=lc.galaxies.gamma2[subset]
-            
-            Ksum = numpy.sum(K)
-            G1sum = numpy.sum(G1)
-            G2sum = numpy.sum(G2)
-            Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
-            
-            Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
-            Musum.append(Msum)
-            z_mid.append(zmid)
-
-        plt.clf()
-        plt.bar(z_mid, Musum/total_Msum, 0.35, color='g', align='center', alpha=0.4)
-        plt.xlabel(r'Redshift, $z$', fontsize=16)
-        plt.ylabel(r'Magnification, $\mu$', fontsize=16)
-        plt.title(r'Distribution of Magnification')
-        plt.savefig('mu_z_prob.png',dpi=300,bbox_inches='tight')
-
-        plt.show()
-        """                
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
+                print "Reconstruct: saved visualisation of uncalibrated lightcone in "+pngfile
+                
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
 
         # Take Hilbert ray-traced kappa for this lightcone as "truth":
         pk.truth[0] = lc.kappa_hilbert
@@ -329,10 +272,28 @@ def Reconstruct(argv):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     # Plot p(mu) histogram
         
-    pmu.plot('mu_halo',output="pofmu.png")
+    pmu_tot.plot('mu_tot',output="pofmu_tot.png", title=r'$P(\mu)$ from all LoS')
 
-    pk.plot('kappa_halo',output="pofkappa.png")
+    pk_tot.plot('kappa_tot',output="pofkappa_tot.png", title=r'$P(\kappa)$ from all LoS')
     
+    mu_tot_mean = numpy.mean(pmu_tot.samples)
+    k_tot_mean = numpy.mean(pk_tot.samples)
+    
+    print mu_tot_mean, k_tot_mean
+    
+    for i in range(len(allcones)-1):
+        pk_cone = pangloss.PDF('kappa_cone')
+        pmu_cone = pangloss.PDF('mu_cone')
+        
+        mu_cone = pmu_tot.samples[Ns*i:Ns*(i+1),0] + 1. - mu_tot_mean         
+        k_cone = pk_tot.samples[Ns*i:Ns*(i+1),0] - k_tot_mean
+   
+        pk_cone.append(k_cone)
+        pmu_cone.append(mu_cone)
+        
+        if i==0:
+            pmu_cone.plot('mu_cone',output="pofmu_calib.png")
+            pk_cone.plot('kappa_cone',output="pofkappa_calib.png")
     
     print pangloss.doubledashedline
     return
