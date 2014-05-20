@@ -553,10 +553,12 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def allMass(self, tau=5):
+    def allMass(self, truncationscale=5):
+        
+        tau = truncationscale
         
         Mvir = self.galaxies.Mh
-        self.M0 = 4.*Mvir/(pi - 2.)
+        self.M0 = 4.*Mvir/(pi - 2.)   # this is so wrong, I don't even know where this is from...
         self.Mhalo = self.M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
         self.writeColumn('truncNFW_Mhalo',self.Mhalo)
 

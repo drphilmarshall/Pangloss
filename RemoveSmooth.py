@@ -6,6 +6,8 @@ import pangloss
 import sys,getopt,cPickle,numpy
 import matplotlib.pyplot as plt
 
+from math import pi
+
 
 # ======================================================================
 
@@ -57,60 +59,152 @@ def RemoveSmooth(argv):
         print pangloss.doubledashedline
         print pangloss.hello
         print pangloss.doubledashedline
-        print "RemoveSmooth: removing the smooth component of convergence"
+        print "RemoveSmooth: finding the smooth component of convergence"
         print "RemoveSmooth: taking instructions from",configfile
     else:
         print RemoveSmooth.__doc__
         return
 
+
+
     # --------------------------------------------------------------------
-    # Read in configuration, and extract the ones we need:
+    # Read in configuration
     # --------------------------------------------------------------------
     # --------------------------------------------------------------------
-    # Calculate kappa_smooth
+    # Read in the whole catalog
+    
     experiment = pangloss.Configuration(configfile)
 
-    calpickles = []
-    Nc = experiment.parameters['NCalibrationLightcones']
-    Ns = experiment.parameters['NRealisations']
-        
-    for i in range(Nc):
-        calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+    catalog = experiment.parameters['ObservedCatalog'][0]
     
-    obspickle = experiment.getLightconePickleName('real')
-    
-    # Ray tracing:
-    RTscheme = experiment.parameters['RayTracingScheme']
-    
-    # SHM relation parameters:
-    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
-    
+    table = pangloss.readCatalog(catalog,experiment)
+
     zd = experiment.parameters['StrongLensRedshift']
     zs = experiment.parameters['SourceRedshift']
+    print 'Reading in the catalog...' 
+    # Calculate the area of the patch, catalog is in radians, so convert to arcmin
+    xmax = table['nRA'].max()
+    xmin = table['nRA'].min()
+    ymax = table['Dec'].max()
+    ymin = table['Dec'].min()     
     
-    calcones = []
-    for i in range(Nc):
-        calcones.append(pangloss.readPickle(calpickles[i]))
-    simcat = pangloss.readPickle(obspickle)
+    xrange_rad = numpy.abs(xmax - xmin)
+    yrange_rad = numpy.abs(ymax - ymin)
+    area_rad = xrange_rad * yrange_rad
     
-    grid = pangloss.Grid(zd,zs,nplanes=100)
-      
-    simcat.defineSystem(zd,zs)
-    simcat.loadGrid(grid) 
-    for j in range(Ns):
-        simcat.snapToGrid(grid)
+    print 'Calculating the area of the catalog...'    
+    # --------------------------------------------------------------------    
+    # Remove the subhalos if they remain (they have no stars...)
+    try: 
+        halos = table.where(table.Type != 2) 
+    except AttributeError: pass    
+    
+    # Apply a magnitude cut
+    halos = halos.where(halos.mag < 24)    
+    nhalos = len(halos)   
 
-        simcat.drawConcentrations(errors=True)
-   
-        kappa_slice = simcat.kappa_s
-        z_slice = grid.redshifts
-    
-        plt.figure()
-        plt.plot(z_slice, kappa_slice)
-        plt.savefig('kappa_smooth.png',dpi=300)
+    # --------------------------------------------------------------------
+    # Add galaxy property column, overwriting any values that already exist:
 
-    plt.show()
+    def writeColumn(string,values):
+        try:
+           halos.add_column('%s'%string,values)
+        except ValueError:
+           halos["%s"%string]=values    
     
+    # --------------------------------------------------------------------
+    # Bin catalog into redshift slices      
+    nplanes=100
+    
+    grid = pangloss.Grid(zd,zs,nplanes)
+
+    halos = halos.where(halos.z_obs<zs+0.2)
+    
+    print 'Binning the catalog into',nplanes,'redshift slices...'
+    
+    # ----------------------------------------------------------------------------
+    # Load the grid, find cosmology values for all the halos
+    def loadGrid(Grid):
+        if numpy.abs(zd-Grid.zltrue) > 0.05: print "Grid zl != lens zl" 
+        if numpy.abs(zs-Grid.zs)     > 0.05: print "Grid zs != lens zs" 
+        redshifts,dz = Grid.redshifts,Grid.dz
+        Da_l,Da_s,Da_ls = Grid.Da_l,Grid.Da_s,Grid.Da_ls
+        return
+                 
+    loadGrid(grid)
+                           
+    z=halos.z_obs
+    sz,p = grid.snap(z)
+    writeColumn('plane',p)
+    
+    # Rho_crit and sigma_crit at each redshift      
+    writeColumn('rho_crit',grid.rho_crit[p])
+    writeColumn('sigma_crit',grid.sigma_crit[p])
+    
+    # Angular diameter distance
+    writeColumn('Da_p',grid.Da_p[p])
+    
+    
+    # ----------------------------------------------------------------------------
+                       
+    # Get the parameters for the halos
+    M200 = halos.Mhalo_obs        
+    r200 = (3*M200/(800*pi*halos.rho_crit))**(1./3)
+        
+    c200 = pangloss.MCrelation(M200,scatter=True)
+    r_s = r200/c200        
+    writeColumn('rs',r_s)
+    
+    
+    # ----------------------------------------------------------------------------
+    # Now calculate total mass in each redshift slice, must be in solar mass
+    # Divide by area of slice in Mpc^2
+    
+    def NFWtruncMass(truncationscale=10):
+        """ Calculate all mass using formula from BMO09 within truncation scale """
+        tau = truncationscale
+        delta_c =  pangloss.delta_c(c200)
+        
+        M0 = 16*pi*(r_s**3)*delta_c*halos.rho_crit
+        
+        M_trunc = M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
+        writeColumn('M_trunc', M_trunc)
+        
+        return
+        
+    # --------------------------------------------------------------------
+
+    NFWtruncMass(truncationscale=10)
+    print 'Calculating the truncated NFW profile mass of each halo...'
+    
+    kappa_slice = numpy.zeros(nplanes)
+    
+    for p in range(nplanes):
+        
+        # Get subset of halos at each redshift slice
+        halos_slice = halos.where(halos.plane == p)
+        
+        if len(halos_slice) > 0:
+        
+            # Add up all the mass
+            mass_tot = numpy.sum(halos_slice.M_trunc)
+    
+            # Proper area of each slice in Mpc^2
+            area_prop = area_rad*(halos_slice.Da_p[0]**2)
+            
+            # Sigma of each slice in Msun/Mpc^2
+            sigma_slice = mass_tot/area_prop
+            
+            # Kappa slice
+            kappa_slice[p] = sigma_slice / halos_slice.sigma_crit[0]
+
+        else:
+            kappa_slice[p] = 0.
+            
+    kappa_smooth = numpy.sum(kappa_slice)
+       
+    print 'The smooth component of the universe has kappa =',kappa_smooth
+     
     return
     
     
