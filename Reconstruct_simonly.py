@@ -164,6 +164,7 @@ def Reconstruct(argv):
     pk_tot = pangloss.PDF('kappa_tot')
     pmu_tot = pangloss.PDF('mu_tot')
 
+    kappa_smooth = 0.188247882068
 
     for i in range(len(allcones)):
 
@@ -172,9 +173,13 @@ def Reconstruct(argv):
         print "Reconstruct:   given data in "+allconefiles[i]
 
         # Get lightcone, and start PDF for its kappa_halo:
-        lc = allcones[i]
-        pk = pangloss.PDF('kappa_halo')
-        pmu = pangloss.PDF('mu_halo')
+        lc = allcones[i] 
+        
+        num_density = lc.countGalaxies()
+        print 'This lightcone is',num_density,'times denser than the average...'
+        
+        pk = pangloss.PDF('kappa_cone')
+        pmu = pangloss.PDF('mu_cone')
         
         # coming soon: gamma1, gamma2...
 
@@ -210,23 +215,21 @@ def Reconstruct(argv):
             lc.drawConcentrations(errors=True)
             
             # Calculate total surface density due to all mass in redshift slices 
-            lc.removeSmooth()
+           # lc.removeSmooth()
             
             # Compute each halo's contribution to the convergence:
-            lc.makeKappas(truncationscale=10)
+            lc.makeKappas(truncationscale=5)
             
             k_add=lc.combineKappas()
 
             mu_add=lc.combineMus()
+    
+            
+            pmu.append([lc.mu_add_total-(1.+2.*(kappa_smooth))])
 
-
-            pmu.append([lc.mu_add_total])
-
-            pmu_tot.append([lc.mu_add_total])
 
             if RTscheme == 'sum':
-                pk.append([lc.kappa_add_total])
-                pk_tot.append([lc.kappa_add_total])
+                pk.append([lc.kappa_add_total-kappa_smooth])
 
                 # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
             elif RTscheme == 'keeton':
@@ -243,14 +246,19 @@ def Reconstruct(argv):
                 lc.plot('mu', output=pngfile+"_mu_uncalib.png")
 
                 print "Reconstruct: saved visualisation of uncalibrated lightcone in "+pngfile
+            
+ 
+        x = allconefiles[i]
                 
+        pmu.plot('mu_cone',output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
+        pk.plot('kappa_cone',output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappa.png")    
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
 
         # Take Hilbert ray-traced kappa for this lightcone as "truth":
         pk.truth[0] = lc.kappa_hilbert
         
         # Pickle this lightcone's PDF:
-        x = allconefiles[i]
+
         pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
         pangloss.writePickle(pk,pfile)
 
@@ -269,31 +277,7 @@ def Reconstruct(argv):
         #print numpy.median(p.samples)
     # --------------------------------------------------------------------
     
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-    # Plot p(mu) histogram
-        
-    pmu_tot.plot('mu_tot',output="pofmu_tot.png", title=r'$P(\mu)$ from all LoS')
 
-    pk_tot.plot('kappa_tot',output="pofkappa_tot.png", title=r'$P(\kappa)$ from all LoS')
-    
-    mu_tot_mean = numpy.mean(pmu_tot.samples)
-    k_tot_mean = numpy.mean(pk_tot.samples)
-    
-    print mu_tot_mean, k_tot_mean
-    
-    for i in range(len(allcones)-1):
-        pk_cone = pangloss.PDF('kappa_cone')
-        pmu_cone = pangloss.PDF('mu_cone')
-        
-        mu_cone = pmu_tot.samples[Ns*i:Ns*(i+1),0] + 1. - mu_tot_mean         
-        k_cone = pk_tot.samples[Ns*i:Ns*(i+1),0] - k_tot_mean
-   
-        pk_cone.append(k_cone)
-        pmu_cone.append(mu_cone)
-        
-        if i==0:
-            pmu_cone.plot('mu_cone',output="pofmu_calib.png")
-            pk_cone.plot('kappa_cone',output="pofkappa_calib.png")
     
     print pangloss.doubledashedline
     return

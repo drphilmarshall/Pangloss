@@ -385,6 +385,18 @@ class Lightcone(object):
         return
 
 # ----------------------------------------------------------------------------
+# Count galaxies to compare to work out over/underdensity
+
+    def countGalaxies(self, nbins=20):
+        radius = self.rmax
+        area = pi * (radius**2) # in square arcmins
+
+        num_gals = len(self.galaxies)
+        print 'The number of galaxies in this lightcone is',num_gals 
+        self.num_density = num_gals/area
+        
+        return self.num_density/86.0480379792
+# ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
 
     def removeSmooth(self, nbins=20):
@@ -481,6 +493,8 @@ class Lightcone(object):
         G1=self.galaxies.gamma1
         G2=self.galaxies.gamma2
         D= K**2-G**2
+
+        self.kappa_smooth = 0.188247882068
 
         kappa_keeton  = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )    
         gamma1_keeton = (1.-B) * (G1) /  ( (1-B*K)**2   - (B*G)**2   )  

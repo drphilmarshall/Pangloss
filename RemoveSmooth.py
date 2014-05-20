@@ -38,7 +38,6 @@ def RemoveSmooth(argv):
     """
     # --------------------------------------------------------------------
 
-    print 'hello'
     try:
        opts, args = getopt.getopt(argv,"h",["help"])
     except getopt.GetoptError, err:
@@ -82,7 +81,8 @@ def RemoveSmooth(argv):
     zd = experiment.parameters['StrongLensRedshift']
     zs = experiment.parameters['SourceRedshift']
     print 'Reading in the catalog...' 
-    # Calculate the area of the patch, catalog is in radians, so convert to arcmin
+    
+    # Calculate the area of the patch in square radians
     xmax = table['nRA'].max()
     xmin = table['nRA'].min()
     ymax = table['Dec'].max()
@@ -91,8 +91,11 @@ def RemoveSmooth(argv):
     xrange_rad = numpy.abs(xmax - xmin)
     yrange_rad = numpy.abs(ymax - ymin)
     area_rad = xrange_rad * yrange_rad
-    
+    area_arcmin = area_rad * (pangloss.rad2arcmin**2)
+    D = pangloss.Distance()
+
     print 'Calculating the area of the catalog...'    
+    
     # --------------------------------------------------------------------    
     # Remove the subhalos if they remain (they have no stars...)
     try: 
@@ -100,9 +103,12 @@ def RemoveSmooth(argv):
     except AttributeError: pass    
     
     # Apply a magnitude cut
-    halos = halos.where(halos.mag < 24)    
+    nhalos_all = len(halos)
+    halos = halos.where(halos.mag < 25)    
     nhalos = len(halos)   
-
+    print 'There are',nhalos_all,'halos in this catalog'
+    num_density = nhalos_all/area_arcmin
+    print 'The number density of halos is',num_density,'in 1 square arcmin of sky...'
     # --------------------------------------------------------------------
     # Add galaxy property column, overwriting any values that already exist:
 
@@ -174,9 +180,12 @@ def RemoveSmooth(argv):
         
     # --------------------------------------------------------------------
 
-    NFWtruncMass(truncationscale=10)
+    NFWtruncMass(truncationscale=5)
+    mass_total = numpy.sum(halos.M_trunc)
+    log_mtot = numpy.log10(mass_total)
     print 'Calculating the truncated NFW profile mass of each halo...'
-    
+    print 'The total halo mass is 10^'+ '%.2f' % log_mtot +' M_sun if truncation radius is 10 R_vir...'
+
     kappa_slice = numpy.zeros(nplanes)
     
     for p in range(nplanes):
@@ -202,9 +211,11 @@ def RemoveSmooth(argv):
             kappa_slice[p] = 0.
             
     kappa_smooth = numpy.sum(kappa_slice)
-       
+    
+    print pangloss.doubledashedline       
     print 'The smooth component of the universe has kappa =',kappa_smooth
-     
+    print pangloss.doubledashedline 
+    
     return
     
     

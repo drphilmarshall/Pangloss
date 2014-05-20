@@ -92,8 +92,8 @@ class PDF(object):
             key2==None
         
         reformatnames={}
-        reformatnames["mu_halo"]="$\mu$"
-        reformatnames["kappa_halo"]="$\kappa$"
+        reformatnames["mu_cone"]="$\mu_{lc}$"
+        reformatnames["kappa_cone"]="$\kappa_{lc}$"
         
         reformatnames["mu_tot"]="$\mu_{\mathrm{tot}}$"
         reformatnames["kappa_tot"]="$\kappa_{\mathrm{tot}}$"
@@ -142,6 +142,7 @@ class PDF(object):
             #if par1range > 50: plt.xlim(par1mean-25.,par1mean+25.)
             plt.ylabel("P(%s)"%key1name)
 
+            plt.annotate("<"+key1name+"> = "+str(par1mean), xy=(0.9, 0.9), xycoords='axes fraction', fontsize=14)
             #plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 
