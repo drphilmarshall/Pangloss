@@ -4,6 +4,10 @@ import pangloss
 
 import numpy
 
+from scipy.stats.kde import gaussian_kde
+from scipy import integrate
+
+
 # ============================================================================
 
 class PDF(object):
@@ -80,7 +84,7 @@ class PDF(object):
 # ----------------------------------------------------------------------------
 # Plot rough 1D histogram or 2D scatter plot:
 
-    def plot(self,key1,key2=None,weight="weight",output=None,bins=None,title=None):
+    def plot(self,key1,key2=None,smooth=0,density=None,weight="weight",output=None,bins=None,title=None):
 
         import pylab as plt
         
@@ -115,7 +119,7 @@ class PDF(object):
 
         if key2 == None:
 
-            par1 = self.getParameter(key1)
+            par1 = self.getParameter(key1) - smooth
             
             # Check to see if samples are weighted:
             if weight!=None and weight in self.parameters: 
@@ -136,13 +140,28 @@ class PDF(object):
                 bins=numpy.linspace(par1.min(),par1.max(),20)
         
             plt.figure()
-            plt.hist(par1,weights=weights,bins=bins)
+               
+            par1_kde = gaussian_kde(par1)
+            x = numpy.linspace(par1.min()-0.1,par1.max()+0.1,100)
+            
+            norm = integrate.quad(par1_kde, par1.min()-0.1, par1.max()+0.1)[0]
+            #print norm
+            
+            plt.plot(x, par1_kde(x)/norm, 'r') # distribution function
+            
+            plt.hist(par1,weights=weights,bins=bins,normed=True)
             plt.ticklabel_format(useOffset=False, axis='x')
             plt.xlabel(key1name)
             #if par1range > 50: plt.xlim(par1mean-25.,par1mean+25.)
             plt.ylabel("P(%s)"%key1name)
-
-            plt.annotate("<"+key1name+"> = "+str(par1mean), xy=(0.9, 0.9), xycoords='axes fraction', fontsize=14)
+            if density is not None:
+                plt.annotate(r'$\xi = $'+str(density), xy=(0.7, 0.9), xycoords='axes fraction', fontsize=14)
+            
+            
+            plt.annotate(r'$\langle$'+key1name+r'$\rangle =$'+ '%.3f' % (par1mean), xy=(0.7, 0.8), xycoords='axes fraction', fontsize=14)
+            
+            plt.vlines(0.0, 0.0,30, 'k', linestyle='dashed')
+            plt.xlim(-0.2,0.2)
             #plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 

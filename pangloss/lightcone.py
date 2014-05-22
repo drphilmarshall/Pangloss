@@ -100,8 +100,6 @@ class Lightcone(object):
                                            (self.catalog.Dec > (self.xc[1]-dx)) & \
                                            (self.catalog.Dec < (self.xc[1]+dx))   )
 
-      #  self.bighalos = self.catalog.where(self.catalog.Mhalo_obs > 1E12)
-        self.bighalos = self.catalog.where(self.catalog.mag < 25.9)
         
         # Trim it to a circle:
         x = (self.galaxies.nRA - self.xc[0])*pangloss.rad2arcmin
@@ -117,9 +115,7 @@ class Lightcone(object):
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
-        try: 
-            self.bighalos = self.bighalos.where(self.bighalos.Type != 2) 
-        except AttributeError: pass                    
+                
 
 
         # Now we have a small catalog, just for the requested lightcone.
@@ -276,15 +272,6 @@ class Lightcone(object):
             self.galaxies["%s"%string]=values
 
 # ----------------------------------------------------------------------------
-
-# Add catalog property column, overwriting any values that already exist:
-
-    def writeCatColumn(self,string,values):
-        try:
-            self.bighalos.add_column('%s'%string,values)
-        except ValueError:
-            self.bighalos["%s"%string]=values
-# ----------------------------------------------------------------------------
  
     def mimicPhotozError(self,sigma=0.1):
 
@@ -307,12 +294,9 @@ class Lightcone(object):
 
     def snapToGrid(self, Grid):
         z = self.galaxies.z
-        z_cat = self.bighalos.z_obs
+
 
         sz,p = Grid.snap(z)
-        sz_cat,p_cat = Grid.snap(z_cat)
-
-        self.writeCatColumn('rho_crit',Grid.rho_crit[p_cat])
 
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
@@ -359,16 +343,11 @@ class Lightcone(object):
 
     def drawConcentrations(self,errors=False):
         M200 = 10**self.galaxies.Mh        
-        r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
-        
-        M200_cat = numpy.log10(self.bighalos.Mhalo_obs)    
-        r200_cat = (3*M200_cat/(800*3.14159*self.bighalos.rho_crit))**(1./3)        
+        r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)      
         
         self.writeColumn("r200",r200)
-        self.writeCatColumn("r200_cat",r200_cat)
 
         c200 = pangloss.MCrelation(M200,scatter=errors)
-        c200_cat = pangloss.MCrelation(M200_cat,scatter=errors)
         
         self.writeColumn("c200",c200)
         
@@ -376,11 +355,6 @@ class Lightcone(object):
         self.writeColumn('rs',r_s)
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
-        
-        self.writeCatColumn("c200",c200_cat)
-        
-        r_s_cat = r200_cat/c200_cat        
-        self.writeCatColumn('rs',r_s_cat)
 
         return
 
@@ -392,48 +366,10 @@ class Lightcone(object):
         area = pi * (radius**2) # in square arcmins
 
         num_gals = len(self.galaxies)
-        print 'The number of galaxies in this lightcone is',num_gals 
+        #print 'The number of galaxies in this lightcone is',num_gals 
         self.num_density = num_gals/area
         
         return self.num_density/86.0480379792
-# ----------------------------------------------------------------------------
-# Compute halos' contributions to the convergence:
-
-    def removeSmooth(self, nbins=20):
-        zmax = self.bighalos.z_obs.max()
-        zmin = self.bighalos.z_obs.min()
-        
-        zbins = numpy.linspace(zmin, zmax, nbins)
-        
-        def find_index(redshift,zl,zu):
-            """
-            Finds the indices of all elements in array that are within given
-            redshift range
-            """
-            ind = numpy.transpose(numpy.nonzero((redshift >= zl) & (redshift <= zu)))
-            return ind
-        
-        sigma_tot = numpy.zeros(len(self.galaxies.z))
-        
-        for i in range(len(zbins)-1):
-            z_low =  zbins[i]
-            z_high = zbins[i+1]
-    
-            #z_index = find_index(self.bighalos.z_obs, z_low, z_high)
-            z_index_gal = find_index(self.galaxies.z, z_low, z_high)
-    
-            c200_bin = self.galaxies.c200[z_index_gal[:,0]]
-            r_s_bin = self.galaxies.rs[z_index_gal[:,0]]
-            rho_s_bin = pangloss.delta_c(c200_bin)*self.galaxies.rho_crit[z_index_gal[:,0]]
-            sigma_s_bin = rho_s_bin * r_s_bin
-            sigma_s_sum = numpy.sum(sigma_s_bin)
-            
-            sigma_tot[z_index_gal] = sigma_s_sum
-                                                                                  
-
-        self.writeColumn('sigma_smooth',sigma_tot)
-
-        return
 
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:

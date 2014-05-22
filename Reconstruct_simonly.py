@@ -90,6 +90,9 @@ def Reconstruct(argv):
 
     # Get the experiment name from the configfile name instead?
     EXP_NAME = experiment.parameters['ExperimentName']
+    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+    
+    Rc = experiment.parameters['LightconeRadius'] # in arcmin
 
     zd = experiment.parameters['StrongLensRedshift']
     zs = experiment.parameters['SourceRedshift']
@@ -98,46 +101,16 @@ def Reconstruct(argv):
     Nc = experiment.parameters['NCalibrationLightcones']
     for i in range(Nc):
         calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
-    
-    obspickle = experiment.getLightconePickleName('real')
-    
+       
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
     
-    # SHM relation parameters:
-    SHMrelation = experiment.parameters['StellarMass2HaloMassRelation']
-    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
-    SHMfile = CALIB_DIR+'/'+SHMrelation+'.pickle'
-    
-    # Halo mass function data:
-    HMFfile = experiment.parameters['HMFfile'][0]
-    
-    # Photo-zs:
-    zperr = experiment.parameters['PhotozError']
-    
-    # Stellar mass observations:
-    MserrP = experiment.parameters['PhotometricMstarError']
-    MserrS = experiment.parameters['SpectroscopicMstarError']
     # Sampling Pr(kappah|D):
     Ns = experiment.parameters['NRealisations']
     
     # Reconstruct calibration lines of sight?
     DoCal = experiment.parameters['ReconstructCalibrations']
 
-    # --------------------------------------------------------------------
-    # Load in stellar mass to halo relation, or make a new one:
-
-    try:
-        shmr = pangloss.readPickle('dummy')#SHMfile)
-    except IOError:
-        print "Reconstruct: generating the stellar mass to halo mass grid."
-        print "Reconstruct: this may take a moment..."
-        shmr = pangloss.SHMR(method=SHMrelation)
-        shmr.makeHaloMassFunction(HMFfile)
-        shmr.makeCDFs()
-        pangloss.writePickle(shmr,SHMfile)
-        print "Reconstruct: SHMR saved to "+SHMfile
-    
     # --------------------------------------------------------------------
     # Make redshift grid:
     
@@ -149,40 +122,55 @@ def Reconstruct(argv):
     calcones = []
     for i in range(Nc):
         calcones.append(pangloss.readPickle(calpickles[i]))
-    obscone = pangloss.readPickle(obspickle)
+
     if DoCal=="False": #must be string type
         calcones=[]
         calpickles=[]
 
-    allcones = calcones#+[obscone]
-    allconefiles = calpickles#+[obspickle]   
+    allcones = calcones
+    allconefiles = calpickles 
     
     # --------------------------------------------------------------------
-    # Make realisations of each lightcone, and store sample kappah vals:
+    # Set up kappa_smooth
+    #kappa_smooth = 0.188247882068  # BORG
+    kappa_smooth = 0.0716519068853 # Zach
+    density = 1.2
+    drange = 0.1
     
-    # Start PDF for total kappa and mu for all lightcones
-    pk_tot = pangloss.PDF('kappa_tot')
-    pmu_tot = pangloss.PDF('mu_tot')
-
-    kappa_smooth = 0.188247882068
-
+    # --------------------------------------------------------------------
+    # Select only lightcones within certain number density limits
+    subcones = []
+    lc_num = []
     for i in range(len(allcones)):
 
-        print pangloss.dashedline
-        print "Reconstruct: drawing %i samples from Pr(kappah|D)" % (Ns)
-        print "Reconstruct:   given data in "+allconefiles[i]
+        #print pangloss.dashedline
+        #print "Reconstruct:   given data in "+allconefiles[i]
 
         # Get lightcone, and start PDF for its kappa_halo:
         lc = allcones[i] 
         
-        num_density = lc.countGalaxies()
-        print 'This lightcone is',num_density,'times denser than the average...'
+        lc_density = lc.countGalaxies()
+        #print 'This lightcone is',lc_density,'times denser than the average...'
         
-        pk = pangloss.PDF('kappa_cone')
-        pmu = pangloss.PDF('mu_cone')
+        if density - drange <= lc_density <= density + drange:
+            subcones.append(allcones[i])
+            lc_num.append(i)
+    
+    # --------------------------------------------------------------------
+    # Make realisations using each lighcone of given number density, and store sample kappah vals:
+    pk = pangloss.PDF('kappa_cone')
+    pmu = pangloss.PDF('mu_cone')
+    
+    Nsub = len(subcones)
+    
+    print pangloss.dashedline
+    print "Reconstruct: sampling %i LoS with number density ~ %.1f the average" % (Nsub, density)   
+    print pangloss.dashedline
+    
+    for j in range(Nsub):        
+         
+        lc = subcones[j]
         
-        # coming soon: gamma1, gamma2...
-
         # Redshift scaffolding:
         lc.defineSystem(zd,zs)
         lc.loadGrid(grid)
@@ -190,94 +178,58 @@ def Reconstruct(argv):
         # Figure out data quality etc:
         lc.configureForSurvey(experiment)
 
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        if j % 50 == 0 and j !=0:
+            print ("Reconstruct: ...on sample %i out of %i..." % (j,Nsub))
 
-        # Draw Ns sample realisations of this lightcone, and hence
-        # accumulate samples from Pr(kappah|D):
-        for j in range(Ns):
-
-            if j % 20 == 0 and j !=0:
-                print ("Reconstruct: ...on sample %i out of %i..." % (j,Ns))
-
-            # Draw z from z_obs:
-            #lc.mimicPhotozError(sigma=zperr)
-            lc.snapToGrid(grid)
+        lc.snapToGrid(grid)
             
-            # Simulated lightcones need mock observed Mstar_obs values 
-            # drawing from their Mhalos:
-            #if lc.flavor == 'simulated': lc.drawMstars(shmr)
+        # Draw c from Mhalo:
+        lc.drawConcentrations(errors=True)
             
-            # Draw Mstar from Mstar_obs:
-            #lc.mimicMstarError(sigmaP=MserrP,sigmaS=MserrS)
-
-            # Draw Mhalo from Mstar, and then c from Mhalo:
-            #lc.drawMhalos(shmr)
-            lc.drawConcentrations(errors=True)
+        # Compute each halo's contribution to the convergence:
+        lc.makeKappas(truncationscale=5)
             
-            # Calculate total surface density due to all mass in redshift slices 
-           # lc.removeSmooth()
-            
-            # Compute each halo's contribution to the convergence:
-            lc.makeKappas(truncationscale=5)
-            
-            k_add=lc.combineKappas()
-
-            mu_add=lc.combineMus()
+        k_add=lc.combineKappas()
+        mu_add=lc.combineMus()
     
             
-            pmu.append([lc.mu_add_total-(1.+2.*(kappa_smooth))])
+        pmu.append([lc.mu_add_total])
+        pk.append([lc.kappa_add_total])
 
-
-            if RTscheme == 'sum':
-                pk.append([lc.kappa_add_total-kappa_smooth])
-
-                # coming soon: lc.gamma1_add_total, lc.gamma2_add_total
-            elif RTscheme == 'keeton':
-                pk.append([lc.kappa_keeton])
-            else:
-                raise "Unknown ray-tracing scheme: "+RTscheme
             
-            # Make a nice visualisation of one of the realisations, in
-            # two example cases:
-            if j ==0 and (lc.flavor == 'real' or i == 0):
-                x = allconefiles[i]
-                pngfile = x.split('.')[0]
-                lc.plot('kappa', output=pngfile+"_kappa_uncalib.png")
-                lc.plot('mu', output=pngfile+"_mu_uncalib.png")
+        # Make a nice visualisation of one of the realisations, in
+        # two example cases:
+        if j ==0 and (lc.flavor == 'real' or i == 0):
+            lc.plot('kappa', output=CALIB_DIR+"example_snapshot_kappa_uncalib.png")
+            lc.plot('mu', output=CALIB_DIR+"example_snapshot_mu_uncalib.png")
 
-                print "Reconstruct: saved visualisation of uncalibrated lightcone in "+pngfile
+          #  print "Reconstruct: saved visualisation of uncalibrated lightcone..."
             
  
-        x = allconefiles[i]
-                
-        pmu.plot('mu_cone',output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
-        pk.plot('kappa_cone',output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappa.png")    
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
+        x = allconefiles[lc_num[j]]
 
-        # Take Hilbert ray-traced kappa for this lightcone as "truth":
-        pk.truth[0] = lc.kappa_hilbert
+
+    # --------------------------------------------------------------------
         
         # Pickle this lightcone's PDF:
 
         pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
         pangloss.writePickle(pk,pfile)
 
-        print "Reconstruct: Pr(kappah|D) saved to "+pfile
+     #   print "Reconstruct: Pr(kappah|D) saved to "+pfile
         
-        # To save loading in time in Calibrate.py we compute the median
-        # of kappah and save it in a separate file, with kappaHilbert
-        if lc.flavor=="simulated":
-            pfile2 = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_median.pickle"
-            pangloss.writePickle([pk.truth[0],[numpy.median(pk.samples)]],pfile2)
-
-            # BUG: shouldn't Pr(kappa,<kappah>) be pickled as a PDF?
-            # BUG: and named appropriately? 
-            # No, this is just a pair of values
-
-        #print numpy.median(p.samples)
     # --------------------------------------------------------------------
     
+    outputfile = "figs/"+EXP_NAME+"_n"+str(density)+"_PofKappa" 
+               
+    #pmu.plot('mu_cone', mean=(1.+2*kappa_smooth), density=num_density, output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
+    pk.plot('kappa_cone', smooth=0, density=density, output=outputfile+"_uncalib.png", title=r'All LoS with $\xi \sim$'+str(density)+r', no $\kappa_{smooth}$ correction')    
+    pk.plot('kappa_cone', smooth=kappa_smooth, density=density, output=outputfile+"_kappasmooth.png", title=r'All LoS with $\xi \sim$'+str(density)+r', with $\kappa_{smooth}$ correction')
+    
+    print pangloss.doubledashedline
+    print "Reconstruct: saved P(kappa) to",outputfile
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
     
     print pangloss.doubledashedline
     return
