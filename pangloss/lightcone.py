@@ -361,15 +361,15 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Count galaxies to compare to work out over/underdensity
 
-    def countGalaxies(self, nbins=20):
+    def countGalaxies(self, ndensity):
         radius = self.rmax
         area = pi * (radius**2) # in square arcmins
 
-        num_gals = len(self.galaxies)
+        self.num_gals = len(self.galaxies)
         #print 'The number of galaxies in this lightcone is',num_gals 
-        self.num_density = num_gals/area
+        self.num_density = self.num_gals/area
         
-        return self.num_density/86.0480379792
+        return self.num_density/ndensity
 
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
