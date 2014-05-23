@@ -215,20 +215,24 @@ def Reconstruct(argv):
             lc.configureForSurvey(experiment)
     
             if j % 100 == 0 and j !=0:
-                print ("Reconstruct: ...on sample %i out of %i..." % (j,Nsub))
+                print ("Reconstruct: ...on lightcone %i out of %i..." % (j,Nsub))
     
+                    # Draw Ns sample realisations of this lightcone, and hence
+        # accumulate samples from Pr(kappah|D):
+           # for k in range(Ns):
+                
             lc.snapToGrid(grid)
-                
-            # Draw c from Mhalo:
+                    
+                # Draw c from Mhalo:
             lc.drawConcentrations(errors=True)
-                
-            # Compute each halo's contribution to the convergence:
+                    
+                # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=5)
-                
+                    
             k_add=lc.combineKappas()
             mu_add=lc.combineMus()
-        
-                
+            
+                    
             pmu.append([lc.mu_add_total])
             pk.append([lc.kappa_add_total])
     
@@ -266,43 +270,51 @@ def Reconstruct(argv):
     # Plot the pdfs
     
     kappa_smooth = numpy.mean(all_pk[density == 1.0])
-    
+    mu_smooth = numpy.mean(all_pmu[density == 1.0]) -1.0
     c = ['k','r','b','g']
     
-    outputfile = "figs/"+EXP_NAME+"_PofKappa.pdf" 
+    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':all_pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':40},
+            {'param':'Mu', 'name':r'$\mu$', 'lc':all_pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':20}]
     
-    plt.figure(2)
+    for i in range(2):
+        var = pdf[i]
     
-    print "Reconstruct: constructing PDFs..."
-    
-    for j in range(len(density)):
-      
-        par1 = all_pk[j][:,0] - kappa_smooth
-        par1mean = numpy.mean(par1)  
-
-        par1_kde = gaussian_kde(par1)
-        x = numpy.linspace(par1.min()-0.02,par1.max()+0.02,1000)
+        outputfile = "figs/"+EXP_NAME+"_Pof"+var['param']+".png" 
+        
+        plt.figure(i+1)
+        
+        print "Reconstruct: constructing PDFs..."
+        
+        name = var['name']
+        for j in range(len(density)):
+            par1 = var['lc'][j][:,0] - var['smooth']
+            par1mean = numpy.mean(par1)  
+            Nlos = len(par1)
             
-        #norm = integrate.quad(par1_kde, par1.min()-0.1, par1.max()+0.1)[0]
-            
-        plt.plot(x, par1_kde(x), color=c[j], label=r'$\xi = $'+str(density[j])) # distribution function
-            
-    plt.ticklabel_format(useOffset=False, axis='x')
-
-    plt.xlabel(r"$\kappa_{lc}$")
-    plt.ylabel(r"$P(\kappa_{lc})$")
-            
-    plt.title(r'Convergence PDF for a source at z = %.1f' % zs)
+            par1_kde = gaussian_kde(par1)
+            x = numpy.linspace(par1.min()-0.1,par1.max()+0.1,2*Nlos)
+                            
+            #norm = integrate.quad(par1_kde, par1.min()-0.1, par1.max()+0.1)[0]
+                
+            plt.plot(x, par1_kde(x), color=c[j], label=r'$\xi = $'+str(density[j])+r', $\langle$'+name+r'$\rangle = $%.3f' % par1mean) # distribution function
+                
+        plt.ticklabel_format(useOffset=False, axis='x')
     
-    plt.vlines(0.0, 0.0,30, 'k', linestyle='dashed')
-    plt.xlim(-0.05,0.2)
-    
-    plt.legend(loc=4)
-                      
-    #pmu.plot('mu_cone', mean=(1.+2*kappa_smooth), density=num_density, output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
-    #pk.plot('kappa_cone', smooth=0, density=density, output=outputfile+"_uncalib.png", title=r'All LoS with $\xi \sim$'+str(density)+r', no $\kappa_{smooth}$ correction')    
-    #pk.plot('kappa_cone', smooth=kappa_smooth, density=density, output=outputfile+"_kappasmooth.png", title=r'All LoS with $\xi \sim$'+str(density)+r', with $\kappa_{smooth}$ correction')
-    plt.savefig(outputfile,dpi=300)
+        plt.xlabel(name)
+        plt.ylabel(r"P(%s)"%name)
+                
+        plt.title(r'PDF for $z_s =$ %.1f, $z_d =$ %.1f' % (zs,zd))
+        
+        plt.vlines(var['mean'], 0.0,var['height'], 'k', linestyle='dashed')
+        plt.xlim(var['mean']-0.1,var['mean']+0.3)
+#        plt.ylim(0,40)
+        
+        plt.legend(loc=1)
+                        
+        #pmu.plot('mu_cone', mean=(1.+2*kappa_smooth), density=num_density, output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
+        #pk.plot('kappa_cone', smooth=0, density=density, output=outputfile+"_uncalib.png", title=r'All LoS with $\xi \sim$'+str(density)+r', no $\kappa_{smooth}$ correction')    
+        #pk.plot('kappa_cone', smooth=kappa_smooth, density=density, output=outputfile+"_kappasmooth.png", title=r'All LoS with $\xi \sim$'+str(density)+r', with $\kappa_{smooth}$ correction')
+        plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline
     print "Reconstruct: saved P(kappa) to",outputfile
