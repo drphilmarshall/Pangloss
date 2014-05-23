@@ -476,7 +476,7 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 
 
-    def combineMus(self):
+    def combineMus(self,weakapprox=True):
     
         M=self.galaxies.mu
         K=self.galaxies.kappa
@@ -495,7 +495,9 @@ class Lightcone(object):
         G2sum = self.gamma2_add_total
         Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
         
-        Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
+        if weakapprox is True:
+            Msum = 1.0 + 2.0*Ksum
+        else: Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
      
         self.mu_add_total=Msum
 

@@ -230,7 +230,7 @@ def Reconstruct(argv):
             lc.makeKappas(truncationscale=5)
                     
             k_add=lc.combineKappas()
-            mu_add=lc.combineMus()
+            mu_add=lc.combineMus(weakapprox=False)
             
                     
             pmu.append([lc.mu_add_total])
@@ -273,13 +273,13 @@ def Reconstruct(argv):
     mu_smooth = numpy.mean(all_pmu[density == 1.0]) -1.0
     c = ['k','r','b','g']
     
-    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':all_pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':40},
-            {'param':'Mu', 'name':r'$\mu$', 'lc':all_pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':20}]
+    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':all_pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':11},
+            {'param':'Mu', 'name':r'$\mu$', 'lc':all_pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':3}]
     
     for i in range(2):
         var = pdf[i]
     
-        outputfile = "figs/"+EXP_NAME+"_Pof"+var['param']+".png" 
+        outputfile = "figs/Pof"+var['param']++EXP_NAME+"_notwla.png" 
         
         plt.figure(i+1)
         
@@ -292,7 +292,7 @@ def Reconstruct(argv):
             Nlos = len(par1)
             
             par1_kde = gaussian_kde(par1)
-            x = numpy.linspace(par1.min()-0.1,par1.max()+0.1,2*Nlos)
+            x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,2*Nlos)
                             
             #norm = integrate.quad(par1_kde, par1.min()-0.1, par1.max()+0.1)[0]
                 
@@ -306,7 +306,7 @@ def Reconstruct(argv):
         plt.title(r'PDF for $z_s =$ %.1f, $z_d =$ %.1f' % (zs,zd))
         
         plt.vlines(var['mean'], 0.0,var['height'], 'k', linestyle='dashed')
-        plt.xlim(var['mean']-0.1,var['mean']+0.3)
+#        plt.xlim(var['mean']-0.1,var['mean']+0.3)
 #        plt.ylim(0,40)
         
         plt.legend(loc=1)
