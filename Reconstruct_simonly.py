@@ -85,8 +85,9 @@ def Reconstruct(argv):
         print Reconstruct.__doc__
         return
 
-    # --------------------------------------------------------------------
+    # ==============================================================
     # Read in configuration, and extract the ones we need:
+    # ==============================================================
     
     experiment = pangloss.Configuration(configfile)
 
@@ -133,11 +134,13 @@ def Reconstruct(argv):
     allconefiles = calpickles 
     
     ndensity_field = 86.0480379792 # in num/arcmin^2    
-    # --------------------------------------------------------------------
+    
+    # ==============================================================
     # Test how density scales with LoS
+    # ==============================================================
     print "Reconstruct: finding the distribution of lightcones with density..."
     dens = numpy.arange(0.5,1.5,0.1)
-    drange = 0.05
+    drange = 0.02
     num_cones = []
     for j in range(len(dens)):
         subcones = []
@@ -145,7 +148,6 @@ def Reconstruct(argv):
             lc = allcones[i] 
             
             lc_density = lc.countGalaxies(ndensity = ndensity_field)
-            #print 'This lightcone is',lc_density,'times denser than the average...'
             
             if dens[j] - drange <= lc_density <= dens[j] + drange:
                 subcones.append(allcones[i])
@@ -160,160 +162,141 @@ def Reconstruct(argv):
     plt.ylabel('Fraction of lightcones')
     plt.savefig("figs/lc_density.pdf",dpi=300)
 
-    # --------------------------------------------------------------------
+    # ==============================================================
     # Set up kappa_smooth
+    # ==============================================================
     #kappa_smooth = 0.188247882068  # BORG
     #kappa_smooth = 0.0716519068853 # Zach
 
     print pangloss.dashedline
     density = [1.0,0.75,1.25]
     drange = 0.02
-    
-    all_pk = []
-    all_pmu = []
+
     # --------------------------------------------------------------------
-    # Select only lightcones within certain number density limits
-    for j in range(len(density)):
-        
-        subcones = []
-        lc_num = []
-        for i in range(len(allcones)):
+    # Select ALL lightcones and find their convergences
     
-            #print pangloss.dashedline
-            #print "Reconstruct:   given data in "+allconefiles[i]
+    pk = []
+    pmu =[] 
+    lc_density = []           
+    for j in range(len(allcones)):        
     
-            # Get lightcone, and start PDF for its kappa_halo:
-            lc = allcones[i] 
+        # Get lightcone, and start PDF for its kappa_halo:
+        lc = allcones[j] 
             
-            lc_density = lc.countGalaxies(ndensity = ndensity_field)
-            #print 'This lightcone is',lc_density,'times denser than the average...'
-            
-            if density[j] - drange <= lc_density <= density[j] + drange:
-                subcones.append(allcones[i])
-                lc_num.append(i)
+        lc_dens = lc.countGalaxies(ndensity = ndensity_field)
+        lc_density.append(lc_dens)           
         
         # --------------------------------------------------------------------
-        # Make realisations using each lighcone of given number density, and store sample kappah vals:
-        #pk = pangloss.PDF('kappa_cone')
-        #pmu = pangloss.PDF('mu_cone')
-        pk = []
-        pmu =[]
-        Nsub = len(subcones)
-        
-        print "Reconstruct: sampling %i LoS with number density ~ %.2f the average" % (Nsub, density[j])   
-        print pangloss.dashedline
-        
-        for j in range(Nsub):        
+        # Calculate mu and kappa for all lightcones
             
-            lc = subcones[j]
-            
-            # Redshift scaffolding:
-            lc.defineSystem(zd,zs)
-            lc.loadGrid(grid)
+        # Redshift scaffolding:
+        lc.defineSystem(zd,zs)
+        lc.loadGrid(grid)
     
-            # Figure out data quality etc:
-            lc.configureForSurvey(experiment)
+        # Figure out data quality etc:
+        lc.configureForSurvey(experiment)
     
-            if j % 100 == 0 and j !=0:
-                print ("Reconstruct: ...on lightcone %i out of %i..." % (j,Nsub))
-    
-                    # Draw Ns sample realisations of this lightcone, and hence
-        # accumulate samples from Pr(kappah|D):
-           # for k in range(Ns):
+        if j % 100 == 0 and j !=0:
+            print ("Reconstruct: ...on lightcone %i out of %i..." % (j,Nc))
+
                 
-            lc.snapToGrid(grid)
+        lc.snapToGrid(grid)
                     
-                # Draw c from Mhalo:
-            lc.drawConcentrations(errors=True)
+        # Draw c from Mhalo:
+        lc.drawConcentrations(errors=True)
                     
-                # Compute each halo's contribution to the convergence:
-            lc.makeKappas(truncationscale=5)
+        # Compute each halo's contribution to the convergence:
+        lc.makeKappas(truncationscale=5)
                     
-            k_add=lc.combineKappas()
-            mu_add=lc.combineMus(weakapprox=False)
-            
-                    
-            pmu.append([lc.mu_add_total])
-            pk.append([lc.kappa_add_total])
+        k_add=lc.combineKappas()
+        mu_add=lc.combineMus(weakapprox=False)
+                               
+        pmu.append([lc.mu_add_total])
+        pk.append([lc.kappa_add_total])
     
                 
-            # Make a nice visualisation of one of the realisations, in
-            # two example cases:
-            if j ==0 and (lc.flavor == 'real' or i == 0):
-                lc.plot('kappa', output=CALIB_DIR+"example_snapshot_kappa_uncalib.png")
-                lc.plot('mu', output=CALIB_DIR+"example_snapshot_mu_uncalib.png")
+        # Make a nice visualisation of one of the realisations, in
+        # two example cases:
+        if j ==0 and (lc.flavor == 'real' or i == 0):
+            lc.plot('kappa', output=CALIB_DIR+"example_snapshot_kappa_uncalib.png")
+            lc.plot('mu', output=CALIB_DIR+"example_snapshot_mu_uncalib.png")
     
-            #  print "Reconstruct: saved visualisation of uncalibrated lightcone..."
-                
-    
-            x = allconefiles[lc_num[j]]
+                    
+        x = allconefiles[j]
         
-        pk = numpy.array(pk)
-        pmu = numpy.array(pmu)    
+    # Add magnification and convergence to global PDF
+    pk = numpy.array(pk)
+    pmu = numpy.array(pmu)    
+
         
-        all_pmu.append(pmu)
-        all_pk.append(pk)
-    
-    all_pk = numpy.array(all_pk)
-    all_pmu = numpy.array(all_pmu)
-        
-    # --------------------------------------------------------------------
-            
-            # Pickle this lightcone's PDF:
-    
-            #pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofKappah.pickle"
-            #pangloss.writePickle(pk,pfile)
-    
-        #   print "Reconstruct: Pr(kappah|D) saved to "+pfile
-            
-    # --------------------------------------------------------------------
+    # ==============================================================
     # Plot the pdfs
+    # ==============================================================
     
-    kappa_smooth = numpy.mean(all_pk[density == 1.0])
-    mu_smooth = numpy.mean(all_pmu[density == 1.0]) -1.0
-    c = ['k','r','b','g']
+    kappa_smooth = numpy.mean(pk)
+    mu_smooth = numpy.mean(pmu)
+    c = ['r','b','g']
     
-    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':all_pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':11},
-            {'param':'Mu', 'name':r'$\mu$', 'lc':all_pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':3}]
-    
-    for i in range(2):
-        var = pdf[i]
-    
-        outputfile = "figs/Pof"+var['param']++EXP_NAME+"_notwla.png" 
+    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':60, 'min':-0.05, 'max':0.2},
+            {'param':'Mu', 'name':r'$\mu$', 'lc':pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.8, 'max':1.5}]
+       
+    # Plotting convergence and magnification
+    for k in range(len(pdf)):
+
+        var = pdf[k]
+        full_pdf = var['lc'][:,0]
+        outputfile = "figs/Pof"+var['param']+"_"+EXP_NAME+"_uncalib.png" 
+        name = var['name']     
         
         plt.figure(i+1)
         
-        print "Reconstruct: constructing PDFs..."
-        
-        name = var['name']
-        for j in range(len(density)):
-            par1 = var['lc'][j][:,0] - var['smooth']
-            par1mean = numpy.mean(par1)  
-            Nlos = len(par1)
+        all_LOS = full_pdf# - var['smooth'] + var['mean']
+        all_kde = gaussian_kde(all_LOS)
+        x = numpy.linspace(all_LOS.min()-0.2,all_LOS.max()+0.2,3*Nc)
+        plt.plot(x, all_kde(x), color='k', label=r'All LOS, $\langle$'+name+r'$\rangle = $%.3f' % var['smooth']) # distribution function
             
+        print pangloss.dashedline
+        print "Reconstruct: constructing PDF for", var['param'],"..."
+            
+   
+                
+        # Select only lightcones within certain number density limits
+        for i in range(len(density)):
+            sub_pdf = [] 
+            
+            for j in range(len(allcones)):
+                if density[i] - drange <= lc_density[j] <= density[i] + drange:
+                    sub_pdf.append(full_pdf[j])
+            
+            Nsub = len(sub_pdf)
+        
+            sub_pdf = numpy.array(sub_pdf)
+            
+            print "Reconstruct: sampling %i LoS with number density ~ %.2f the average" % (Nsub, density[i])   
+            
+            par1 = sub_pdf# - var['smooth'] + var['mean']
+            par1mean = numpy.mean(par1) 
+            Nlos = len(par1)
+                    
             par1_kde = gaussian_kde(par1)
-            x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,2*Nlos)
-                            
-            #norm = integrate.quad(par1_kde, par1.min()-0.1, par1.max()+0.1)[0]
-                
-            plt.plot(x, par1_kde(x), color=c[j], label=r'$\xi = $'+str(density[j])+r', $\langle$'+name+r'$\rangle = $%.3f' % par1mean) # distribution function
-                
+            x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,3*Nlos)
+                                    
+                        
+            plt.plot(x, par1_kde(x), color=c[i], label=r'$\xi = $'+str(density[i])+r', $\langle$'+name+r'$\rangle = $%.3f' % par1mean) # distribution function
+                        
+        
         plt.ticklabel_format(useOffset=False, axis='x')
     
         plt.xlabel(name)
         plt.ylabel(r"P(%s)"%name)
                 
-        plt.title(r'PDF for $z_s =$ %.1f, $z_d =$ %.1f' % (zs,zd))
+        plt.title(r'PDF for $z_s =$ %.1f' % (zs))
         
         plt.vlines(var['mean'], 0.0,var['height'], 'k', linestyle='dashed')
-#        plt.xlim(var['mean']-0.1,var['mean']+0.3)
-#        plt.ylim(0,40)
+        plt.xlim(var['min'],var['max'])
         
         plt.legend(loc=1)
                         
-        #pmu.plot('mu_cone', mean=(1.+2*kappa_smooth), density=num_density, output=x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_PofMu.png")
-        #pk.plot('kappa_cone', smooth=0, density=density, output=outputfile+"_uncalib.png", title=r'All LoS with $\xi \sim$'+str(density)+r', no $\kappa_{smooth}$ correction')    
-        #pk.plot('kappa_cone', smooth=kappa_smooth, density=density, output=outputfile+"_kappasmooth.png", title=r'All LoS with $\xi \sim$'+str(density)+r', with $\kappa_{smooth}$ correction')
         plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline

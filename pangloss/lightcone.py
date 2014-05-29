@@ -295,7 +295,6 @@ class Lightcone(object):
     def snapToGrid(self, Grid):
         z = self.galaxies.z
 
-
         sz,p = Grid.snap(z)
 
         self.writeColumn('Da_p',Grid.Da_p[p])
@@ -464,12 +463,6 @@ class Lightcone(object):
         self.gamma2_add_total=numpy.sum(self.galaxies.gamma2)
         self.gamma2_keeton_total=numpy.sum(self.galaxies.gamma2_keeton)
         self.gamma2_tom_total=numpy.sum(self.galaxies.gamma2_tom)
-        
-
-        #print self.galaxies.Mstar.max()
-        #print self.galaxies.Mh.max()
-        #print self.galaxies.kappa.max()
-        #print self.kappa_add_total
 
         return self.kappa_add_total
 
@@ -503,20 +496,7 @@ class Lightcone(object):
 
         return self.mu_add_total       
 
-# ----------------------------------------------------------------------------
 
-    def allMass(self, truncationscale=5):
-        
-        tau = truncationscale
-        
-        Mvir = self.galaxies.Mh
-        self.M0 = 4.*Mvir/(pi - 2.)   # this is so wrong, I don't even know where this is from...
-        self.Mhalo = self.M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
-        self.writeColumn('truncNFW_Mhalo',self.Mhalo)
-
-        self.totalMhalo = numpy.sum(self.Mhalo)
-        
-        return self.totalMhalo
 # ----------------------------------------------------------------------------
 # Plotting
 # ----------------------------------------------------------------------------
