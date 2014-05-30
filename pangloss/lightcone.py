@@ -343,15 +343,14 @@ class Lightcone(object):
     def drawConcentrations(self,errors=False):
         M200 = 10**self.galaxies.Mh        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)      
-        
         self.writeColumn("r200",r200)
 
         c200 = pangloss.MCrelation(M200,scatter=errors)
-        
         self.writeColumn("c200",c200)
         
         r_s = r200/c200        
         self.writeColumn('rs',r_s)
+        
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
 
@@ -384,6 +383,7 @@ class Lightcone(object):
 #        kappa_s_smooth = ((rho_s * r_s) - sigma_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
 #        self.kappa_s = kappa_s_smooth  #kappa slice for each lightcone
         self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
+        
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s
         kappaHalo = self.kappa_s*1.0
@@ -477,21 +477,20 @@ class Lightcone(object):
         G1=self.galaxies.gamma1
         G2=self.galaxies.gamma2
         
-        self.writeColumn('mu_add',M)
+        self.writeColumn('mu_add',M)                                                                                                  
         
-        self.kappa_add_total=numpy.sum(K)
-        self.gamma1_add_total=numpy.sum(G1)
-        self.gamma2_add_total=numpy.sum(G2)
-        
-        Ksum = self.kappa_add_total
-        G1sum = self.gamma1_add_total
-        G2sum = self.gamma2_add_total
-        Gsum = numpy.sqrt(G1sum**2 + G2sum**2)
-        
+        Ksum = self.kappa_add_total #numpy.sum(K)
+        self.G1sum = numpy.sum(G1)
+        self.G2sum = numpy.sum(G2)
+        self.Gsum = numpy.sqrt(self.G1sum**2 + self.G2sum**2)
+        #self.Gsum = numpy.abs(self.G1sum + self.G2sum)
+       
         if weakapprox is True:
             Msum = 1.0 + 2.0*Ksum
-        else: Msum = 1.0/(((1.0 - Ksum)**2.0) - (Gsum**2.0))
-     
+        else:
+            inverseMsum = (1.0 - Ksum)**2.0 - self.Gsum**2.0
+            Msum = 1.0/inverseMsum
+            
         self.mu_add_total=Msum
 
         return self.mu_add_total       

@@ -14,7 +14,7 @@ from scipy.stats.kde import gaussian_kde
 def Reconstruct(argv):
     """
     NAME
-        Reconstruct.py
+        Reconstruct_simonly.py
 
     PURPOSE
         Read in a simulation lightcone (or list of lightcones) and compute all 
@@ -43,7 +43,7 @@ def Reconstruct(argv):
         samples       Catalog(s) of samples from Pr(kappah|D)
 
     EXAMPLE
-        Reconstruct.py example.config
+        Reconstruct_simonly.py example.config
 
     BUGS
         - Code is incomplete.
@@ -55,6 +55,7 @@ def Reconstruct(argv):
 
     HISTORY
       2013-03-21 started Collett & Marshall (Oxford)
+      2014-04-09 modified for BoRG, C Mason (UCSB)
     """
 
     # --------------------------------------------------------------------
@@ -79,7 +80,7 @@ def Reconstruct(argv):
         print pangloss.doubledashedline
         print pangloss.hello
         print pangloss.doubledashedline
-        print "Reconstruct: assigning halo mass to various lightcones"
+        print "Reconstruct: generating magnification PDFs for lightcones of given density"
         print "Reconstruct: taking instructions from",configfile
     else:
         print Reconstruct.__doc__

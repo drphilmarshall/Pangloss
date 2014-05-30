@@ -61,11 +61,11 @@ class Distance:
             #return exp(3.*integrate.romberg(wa,0,z))
             return exp(3.*integrate.quad(wa,0,z)[0])
         if type(self.w)==type(self.comoving_distance) or type(self.w)==type(fa):
-            f = lambda z,m,l,k : (m*(1.+z)**3+k*(1.+z)**2+l*fa(z))**-0.5
+            f = lambda z,m,l,k : (m*(1.+z)**3.+k*(1.+z)**2.+l*fa(z))**-0.5
         elif self.w!=-1.:
-            f = lambda z,m,l,k : (m*(1.+z)**3+k*(1.+z)**2+l*(1.+z)**(3.*(1.+self.w)))**-0.5
+            f = lambda z,m,l,k : (m*(1.+z)**3.+k*(1.+z)**2.+l*(1.+z)**(3.*(1.+self.w)))**-0.5
         else:
-            f = lambda z,m,l,k : (m*(1.+z)**3+k*(1.+z)**2+l)**-0.5
+            f = lambda z,m,l,k : (m*(1.+z)**3.+k*(1.+z)**2.+l)**-0.5
         om = self.OMEGA_M
         ol = self.OMEGA_L
         ok = 1.-om-ol
@@ -121,8 +121,8 @@ class Distance:
 # ----------------------------------------------------------------------------
 
     def rho_crit_univ(self,z):   #critical density of the universe at z
-       ro= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
-       return ro 
+       rho= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
+       return rho 
        
 # ============================================================================
 # CM's additions to this class:

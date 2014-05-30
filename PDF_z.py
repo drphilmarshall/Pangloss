@@ -11,42 +11,34 @@ from scipy.stats.kde import gaussian_kde
 
 # ======================================================================
 
-def Reconstruct(argv):
+def CompareHilbert07(argv):
     """
     NAME
-        Reconstruct.py
+        PDF_z.py
 
     PURPOSE
-        Read in a simulation lightcone (or list of lightcones) and compute all 
-        quantities needed to estimate kappah, the convergence due to
-        halos, at the centre of the lightcone. Output is a list of sample
-        kappah values drawn from Pr(kappah|D), where D refers to either 
-        observed data, or simulated data from a calibration line of
-        sight.
-
+        Read simulation lightcones and produce PDFs for convergence,
+        shear, and magnification across all lines of sight used for various
+        redshifts
+        
     COMMENTS
         The config file contains the list of lightcones to be
         reconstructed, in the form of either a directory or a single
-        instance. If a directory is specified, one also gives a number
-        ("batchsize") of lightcones to be reconstructed at a time. 
-        The number of kappah samples desired must also be given in the
-        config file.
+        instance.
 
     FLAGS
         -h            Print this message [0]
 
     INPUTS
         configfile    Plain text file containing Pangloss configuration
+        parameter     Must be either Kappa, Mu or Gamma
 
     OUTPUTS
-        stdout        Useful information
-        samples       Catalog(s) of samples from Pr(kappah|D)
 
     EXAMPLE
-        Reconstruct.py example.config
+        PDF_z.py example.config
 
     BUGS
-        - Code is incomplete.
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -54,7 +46,7 @@ def Reconstruct(argv):
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
-      2013-03-21 started Collett & Marshall (Oxford)
+      2014-05-29    Started Charlotte Mason (UCSB)
     """
 
     # --------------------------------------------------------------------
@@ -63,26 +55,28 @@ def Reconstruct(argv):
        opts, args = getopt.getopt(argv,"h",["help"])
     except getopt.GetoptError, err:
        print str(err) # will print something like "option -a not recognized"
-       print Reconstruct.__doc__  # will print the big comment above.
+       print CompareHilbert07.__doc__  # will print the big comment above.
        return
 
     for o,a in opts:
        if o in ("-h", "--help"):
-          print Reconstruct.__doc__
+          print CompareHilbert07.__doc__
           return
        else:
           assert False, "unhandled option"
 
     # Check for setup file in array args:
-    if len(args) == 1:
+    if len(args) == 2:
         configfile = args[0]
+        parameter = args[1]
         print pangloss.doubledashedline
         print pangloss.hello
         print pangloss.doubledashedline
-        print "Reconstruct: assigning halo mass to various lightcones"
-        print "Reconstruct: taking instructions from",configfile
+        print "CompareHilbert07: calculating PDF for",parameter,"at various redshifts for all LOS"
+        print "CompareHilbert07: taking instructions from",configfile
+        print pangloss.dashedline
     else:
-        print Reconstruct.__doc__
+        print CompareHilbert07.__doc__
         return
 
     # ==============================================================
@@ -114,8 +108,6 @@ def Reconstruct(argv):
     # Reconstruct calibration lines of sight?
     DoCal = experiment.parameters['ReconstructCalibrations']
 
-    # --------------------------------------------------------------------
-
     
     # --------------------------------------------------------------------
     # Read in lightcones from pickles:
@@ -135,51 +127,43 @@ def Reconstruct(argv):
     
 
     # ==============================================================
-    # Set up kappa_smooth
+    # Produce the PDFs
     # ==============================================================
-    #kappa_smooth = 0.188247882068  # BORG
-    #kappa_smooth = 0.0716519068853 # Zach
-
-    print pangloss.dashedline
-    density = [1.0,0.75,1.25]
-    drange = 0.02
 
     # --------------------------------------------------------------------
-    # Select ALL lightcones and find their convergences at each redshift
+    # Select ALL lightcones and start PDFs for the lensing parameters
     
     c = ['r','b','g']       
     
     plt.figure()
     
     for i in range(len(zs)):
-        # Make redshift grid:
-    
-        grid = pangloss.Grid(zd,zs[i],nplanes=100)
+        
+        # Make redshift grid
+        grid = pangloss.Grid(zd, zs[i], nplanes=100)
         
         pk = []
         pmu =[] 
+        pg1=[]
+        pg2=[]
+        pg=[]
+        
         lc_density = []   
+        
         for j in range(len(allcones)):        
     
-            # Get lightcone, and start PDF for its kappa_halo:
+            # Get lightcone, and fill PDFs
             lc = allcones[j] 
                 
             lc_dens = lc.countGalaxies(ndensity = ndensity_field)
             lc_density.append(lc_dens)           
-            
-            # --------------------------------------------------------------------
-            # Calculate mu and kappa for all lightcones
-                
+                            
             # Redshift scaffolding:
             lc.defineSystem(zd,zs[i])
             lc.loadGrid(grid)
         
             # Figure out data quality etc:
-            lc.configureForSurvey(experiment)
-        
-            if j % 100 == 0 and j !=0:
-                print ("Reconstruct: ...on lightcone %i out of %i..." % (j,Nc))
-    
+            lc.configureForSurvey(experiment)    
                     
             lc.snapToGrid(grid)
                         
@@ -192,57 +176,124 @@ def Reconstruct(argv):
             k_add=lc.combineKappas()
             mu_add=lc.combineMus(weakapprox=False)
                                 
+            # Add lensing parameters to global PDFs
             pmu.append([lc.mu_add_total])
+
             pk.append([lc.kappa_add_total])
                 
-                        
+            pg1.append([lc.G1sum])
+            pg2.append([lc.G2sum])
+            pg.append([lc.Gsum])
+                                  
             x = allconefiles[j]
             
-        # Add magnification and convergence to global PDF
         pk = numpy.array(pk)
+        
         pmu = numpy.array(pmu)    
     
+        pg1 = numpy.array(pg1)    
+        pg2 = numpy.array(pg2)    
+        pg = numpy.array(pg)    
             
         # ==============================================================
         # Plot the pdfs
         # ==============================================================
         
+        # Smooth component corrections
         kappa_smooth = numpy.mean(pk)
         mu_smooth = numpy.mean(pmu)
      
-
-        outputfile = "figs/PofKappa_"+EXP_NAME+"_compare_z.png" 
-  
+    #    params = {'param':['Kappa','Mu', 'Gamma'], 'name':[r'$\kappa$',r'$\mu$', r'$\gamma$'],
+    #            'pdf':[pk,pmu,pg], 'smooth':[kappa_smooth, mu_smooth, 0.], 
+    #            'mean':[0.0, 1.0, 0.0], 'height':[35,18]}
         
-        par1 = pk[:,0] - kappa_smooth
-               
-        #par1 = pmu[:,0] - mu_smooth + 1.0
-        par1mean = numpy.mean(par1) 
-        Nlos = len(par1)
-                        
-        par1_kde = gaussian_kde(par1)
-        x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,3*Nlos)
-                                    
-        plt.plot(x, par1_kde(x), color=c[i], label=r'$z_s = $'+str(zs[i]))#+r', $\langle \mu \rangle = $%.3f' % par1mean) # distribution function
-                        
+        if parameter == 'Kappa':
+            params = {'param':'Kappa', 'name':r'$\kappa$', 'pdf':pk,
+                        'smooth':kappa_smooth, 'mean':0.0, 'height':35}            
         
-    plt.ticklabel_format(useOffset=False, axis='x')
+        elif parameter == 'Gamma':
+            params = {'param':'Gamma', 'name':r'$\gamma$', 'pdf':pg} 
+        
+        else:
+            params = {'param':'Mu', 'name':r'$\mu$', 'pdf':pmu,
+                        'smooth':mu_smooth, 'mean':1.0, 'height':18}
+           
+        param = params['param']
+        name = params['name']
+        pdf = params['pdf']
+        
+        par = pdf[:,0] 
+            
+        if param == 'Kappa':
+            smooth = params['smooth']
+            mean = params['mean']
+            par = par - smooth + mean
+        
+        if param == 'Mu':
+            smooth = params['smooth']
+            mean = params['mean']
+            par1 = par - smooth + mean
+            print par1.min(), par1.max()
+            mask = numpy.where((par > -1.0) & (par < 2.0)) 
+            par = par[mask]
+            smooth_new = numpy.mean(par) 
+            par = par - smooth_new + mean
+            par_mean = numpy.mean(par) 
+            plt.xlim(0.75,1.25)
+            
+        outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_final.png" 
+             
+        par_mean = numpy.mean(par) 
+        
+        Nlos = len(par)
+        print par_mean, par.min(), par.max()
+            
+            
+        """    
+            par1 = pg1[:,0]
+            par2 = pg2[:,0]
+            par = pg[:,0]
     
-    plt.xlabel(r'$\kappa$')
-    plt.ylabel(r"$P(\kappa)$")
+                            
+            par1_kde = gaussian_kde(par1)
+            par2_kde = gaussian_kde(par2)
+            par_kde = gaussian_kde(par)
+    
+            x = numpy.linspace(par1.min(),par1.max(),3*Nlos)
+            y = numpy.linspace(par.min(),par.max(),3*Nlos)
+                    
+            n1, bins1, patches1 = plt.hist(par1, 8, facecolor='None', histtype='step',linestyle=('dashed'), normed=True, label=r'$\gamma_1, z_s = $'+str(zs[i]))
+            plt.setp(patches1, 'edgecolor', c[i])  
+            n2, bins2, patches2 = plt.hist(par2, 8, facecolor='None', histtype='step', linestyle=('dotted'), normed=True, label=r'$\gamma_2$')
+            plt.setp(patches2, 'edgecolor', c[i])        
+            n, bins, patches = plt.hist(par, 8, facecolor=c[i], alpha=0.4, normed=True, label=r'|$\gamma$|')
+            plt.setp(patches, 'edgecolor', 'none') 
+        """
+                                        
+        #   n, bins, patches = plt.hist(par1, 20, facecolor=None,  histtype='step', normed=True, label=r'$z_s = $'+str(zs[i]))
+                    
+        n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+        plt.setp(patches, 'edgecolor', 'None')
+            
+        par_kde = gaussian_kde(par)
+        x = numpy.linspace(par.min()-0.05,par.max()+0.05,3*Nlos)
+        plt.plot(x, par_kde(x), color=c[i])
+                                        
+        if 'height' in params:
+            height = params['height']
+            plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
+            
+        plt.xlabel(name)
+        plt.ylabel(r'P(%s)' % name)   
                 
-  #  plt.title(r'PDF for $z_s =$ %.1f' % (zs))
-        
-    plt.vlines(0.0, 0.0, 35, 'k', linestyle='dashed')
- #   plt.xlim(0.7,1.3)
-    plt.xlim(-0.15,0.15)
-        
+    plt.ticklabel_format(useOffset=False, axis='x')
+                                                        
     plt.legend(loc=1)
-                        
+                            
     plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline
-    print "Reconstruct: saved P(kappa) to",outputfile
+    print "Reconstruct: saved P("+param+") to",outputfile
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
     
@@ -252,6 +303,6 @@ def Reconstruct(argv):
 # ======================================================================
 
 if __name__ == '__main__': 
-    Reconstruct(sys.argv[1:])
+    CompareHilbert07(sys.argv[1:])
 
 # ======================================================================
