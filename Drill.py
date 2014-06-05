@@ -196,10 +196,10 @@ def Drill(argv):
 # Draw calibration sightlines at random:
 
 def sample_sky(table,Rc,Nc,method='random'):
-    xmax = table['nRA'].max()
-    xmin = table['nRA'].min()
-    ymax = table['Dec'].max()
-    ymin = table['Dec'].min()
+    xmax = table['nRA'].max() *pangloss.arcmin2rad
+    xmin = table['nRA'].min() *pangloss.arcmin2rad
+    ymax = table['Dec'].max()*pangloss.arcmin2rad
+    ymin = table['Dec'].min()*pangloss.arcmin2rad
     Rcrad = Rc*pangloss.arcmin2rad
     if method == 'random':
         x = numpy.random.uniform(xmin+Rcrad,xmax-Rcrad,Nc)

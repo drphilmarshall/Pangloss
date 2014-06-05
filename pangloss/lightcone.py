@@ -111,12 +111,13 @@ class Lightcone(object):
         self.galaxies.add_column('r',r)
         self.galaxies.add_column('phi',phi)
         self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
-
+        
+        
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
                 
-
+        self.allgalaxies = self.galaxies
 
         # Now we have a small catalog, just for the requested lightcone.
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -359,15 +360,16 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Count galaxies to compare to work out over/underdensity
 
-    def countGalaxies(self, ndensity):
+    def countGalaxies(self, ndensity, maglim):
         radius = self.rmax
         area = pi * (radius**2) # in square arcmins
 
-        self.num_gals = len(self.galaxies)
+        bright_galaxies = self.galaxies.where(self.galaxies.mag < maglim) 
+        self.num_gals = len(self.allgalaxies)
         #print 'The number of galaxies in this lightcone is',num_gals 
         self.num_density = self.num_gals/area
         
-        return self.num_density/ndensity
+        return self.num_density/ndensity, self.num_gals
 
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:

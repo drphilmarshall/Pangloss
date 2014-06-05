@@ -92,7 +92,8 @@ def CompareHilbert07(argv):
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
 
     zd = experiment.parameters['StrongLensRedshift']
-    zs = [1.1, 2.1, 5.7]
+    zs = numpy.arange(1.0, 8.0, 0.5)
+    #zs = [1.1, 2.1, 5.7]
 
     calpickles = []
     Nc = experiment.parameters['NCalibrationLightcones']
@@ -125,7 +126,8 @@ def CompareHilbert07(argv):
     
     ndensity_field = 86.0480379792 # in num/arcmin^2    
     
-
+    density = 1.1 # overdensity we are looking at
+    drange = 0.05
     # ==============================================================
     # Produce the PDFs
     # ==============================================================
@@ -133,33 +135,41 @@ def CompareHilbert07(argv):
     # --------------------------------------------------------------------
     # Select ALL lightcones and start PDFs for the lensing parameters
     
-    c = ['r','b','g']       
+    c = ['r','b','g','orange','yellow']       
     
+    mean_mu=[]
+    sd_mu = []
+        
     plt.figure()
     
     for i in range(len(zs)):
+        print zs[i]
         
         # Make redshift grid
         grid = pangloss.Grid(zd, zs[i], nplanes=100)
         
-        pk = []
-        pmu =[] 
-        pg1=[]
-        pg2=[]
-        pg=[]
+        pk = numpy.zeros(len(allcones))
+        pmu =numpy.zeros(len(allcones))
+        pg1=numpy.zeros(len(allcones))
+        pg2=numpy.zeros(len(allcones))
+        pg=numpy.zeros(len(allcones))
         
-        lc_density = []   
-        
+       # lc_density = []   
+                     
+        sub_pdf = [] 
+                
         for j in range(len(allcones)):        
-    
+
             # Get lightcone, and fill PDFs
             lc = allcones[j] 
-                
-            lc_dens = lc.countGalaxies(ndensity = ndensity_field)
-            lc_density.append(lc_dens)           
-                            
+
+            count_gals = lc.countGalaxies(ndensity = ndensity_field, maglim=30.0)    
+            lc_dens = count_gals[0]
+            n_gals = count_gals[1]
+         #   lc_density.append(lc_dens)           
+            if j == 0: print lc_dens, len(allcones), n_gals                          
             # Redshift scaffolding:
-            lc.defineSystem(zd,zs[i])
+            lc.defineSystem(zd, zs[i])
             lc.loadGrid(grid)
         
             # Figure out data quality etc:
@@ -177,16 +187,21 @@ def CompareHilbert07(argv):
             mu_add=lc.combineMus(weakapprox=False)
                                 
             # Add lensing parameters to global PDFs
-            pmu.append([lc.mu_add_total])
+            pmu[j] = lc.mu_add_total
 
-            pk.append([lc.kappa_add_total])
+            pk[j]=lc.kappa_add_total
                 
-            pg1.append([lc.G1sum])
-            pg2.append([lc.G2sum])
-            pg.append([lc.Gsum])
-                                  
-            x = allconefiles[j]
+            pg[j]=lc.G1sum
+            pg2[j]=lc.G2sum
+            pg[j]=lc.Gsum
             
+            if density - drange <= lc_dens <= density + drange:
+                sub_pdf.append(mu_add)  
+               
+                                                                     
+            x = allconefiles[j]
+        
+      #s  print lc_density[0]    
         pk = numpy.array(pk)
         
         pmu = numpy.array(pmu)    
@@ -194,7 +209,8 @@ def CompareHilbert07(argv):
         pg1 = numpy.array(pg1)    
         pg2 = numpy.array(pg2)    
         pg = numpy.array(pg)    
-            
+         
+        sub_pdf = numpy.array(sub_pdf)       
         # ==============================================================
         # Plot the pdfs
         # ==============================================================
@@ -202,7 +218,12 @@ def CompareHilbert07(argv):
         # Smooth component corrections
         kappa_smooth = numpy.mean(pk)
         mu_smooth = numpy.mean(pmu)
-     
+
+        sub_mu = sub_pdf - mu_smooth + 1.0
+        print numpy.mean(sub_mu)
+        mean_mu.append(numpy.mean(sub_mu))
+        sd_mu.append(numpy.std(sub_mu))
+        
     #    params = {'param':['Kappa','Mu', 'Gamma'], 'name':[r'$\kappa$',r'$\mu$', r'$\gamma$'],
     #            'pdf':[pk,pmu,pg], 'smooth':[kappa_smooth, mu_smooth, 0.], 
     #            'mean':[0.0, 1.0, 0.0], 'height':[35,18]}
@@ -222,8 +243,8 @@ def CompareHilbert07(argv):
         name = params['name']
         pdf = params['pdf']
         
-        par = pdf[:,0] 
-            
+        par = pdf                  
+                            
         if param == 'Kappa':
             smooth = params['smooth']
             mean = params['mean']
@@ -233,20 +254,21 @@ def CompareHilbert07(argv):
             smooth = params['smooth']
             mean = params['mean']
             par1 = par - smooth + mean
-            print par1.min(), par1.max()
+           # print par1.min(), par1.max()
             mask = numpy.where((par > -1.0) & (par < 2.0)) 
             par = par[mask]
             smooth_new = numpy.mean(par) 
             par = par - smooth_new + mean
             par_mean = numpy.mean(par) 
-            plt.xlim(0.75,1.25)
-            
-        outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_final.png" 
+          #  plt.xlim(0.75,1.25)    
+                
+                        
+        outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_many.png" 
              
         par_mean = numpy.mean(par) 
         
         Nlos = len(par)
-        print par_mean, par.min(), par.max()
+       # print par_mean, par.min(), par.max()
             
             
         """    
@@ -272,24 +294,34 @@ def CompareHilbert07(argv):
                                         
         #   n, bins, patches = plt.hist(par1, 20, facecolor=None,  histtype='step', normed=True, label=r'$z_s = $'+str(zs[i]))
                     
-        n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
-        plt.setp(patches, 'edgecolor', 'None')
+        #n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+        #plt.setp(patches, 'edgecolor', 'None')
             
         par_kde = gaussian_kde(par)
         x = numpy.linspace(par.min()-0.05,par.max()+0.05,3*Nlos)
-        plt.plot(x, par_kde(x), color=c[i])
+        #plt.plot(x, par_kde(x), color=c[i])
                                         
         if 'height' in params:
             height = params['height']
-            plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
+        #    plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
             
-        plt.xlabel(name)
-        plt.ylabel(r'P(%s)' % name)   
+       # plt.xlabel(name)
+        #plt.ylabel(r'P(%s)' % name)   
                 
-    plt.ticklabel_format(useOffset=False, axis='x')
+   # plt.ticklabel_format(useOffset=False, axis='x')
                                                         
     plt.legend(loc=1)
+    #                        
+    #plt.savefig(outputfile,dpi=300)
+    
+    #plt.figure()
+    plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
+  #  plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
+    plt.xlabel(r'$z_s$')
+    plt.legend(loc=1)
                             
+    outputfile = "figs/Mu_zs.png" 
+
     plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline

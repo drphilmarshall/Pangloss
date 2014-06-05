@@ -148,7 +148,7 @@ def Reconstruct(argv):
         for i in range(len(allcones)):
             lc = allcones[i] 
             
-            lc_density = lc.countGalaxies(ndensity = ndensity_field)
+            lc_density = lc.countGalaxies(ndensity = ndensity_field, maglim=25)
             
             if dens[j] - drange <= lc_density <= dens[j] + drange:
                 subcones.append(allcones[i])
@@ -184,7 +184,7 @@ def Reconstruct(argv):
         # Get lightcone, and start PDF for its kappa_halo:
         lc = allcones[j] 
             
-        lc_dens = lc.countGalaxies(ndensity = ndensity_field)
+        lc_dens = lc.countGalaxies(ndensity = ndensity_field, maglim=25)
         lc_density.append(lc_dens)           
         
         # --------------------------------------------------------------------
@@ -229,7 +229,13 @@ def Reconstruct(argv):
     pk = numpy.array(pk)
     pmu = numpy.array(pmu)    
 
-        
+    
+    # Remove mu outliers
+    """mask = numpy.where((par > -1.0) & (par < 2.0)) 
+    par = par[mask]
+    smooth_new = numpy.mean(par) 
+    par = par - smooth_new + mean
+    par_mean = numpy.mean(par)  """ 
     # ==============================================================
     # Plot the pdfs
     # ==============================================================
@@ -238,14 +244,14 @@ def Reconstruct(argv):
     mu_smooth = numpy.mean(pmu)
     c = ['r','b','g']
     
-    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':pk, 'smooth':kappa_smooth, 'mean':0.0, 'height':60, 'min':-0.05, 'max':0.2},
-            {'param':'Mu', 'name':r'$\mu$', 'lc':pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.8, 'max':1.5}]
+    pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':pk[:,0], 'smooth':kappa_smooth, 'mean':0.0, 'height':60, 'min':-0.05, 'max':0.2},
+            {'param':'Mu', 'name':r'$\mu$', 'lc':pmu[:,0], 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.8, 'max':1.5}]
        
     # Plotting convergence and magnification
     for k in range(len(pdf)):
 
         var = pdf[k]
-        full_pdf = var['lc'][:,0]
+        full_pdf = var['lc']
         outputfile = "figs/Pof"+var['param']+"_"+EXP_NAME+"_uncalib.png" 
         name = var['name']     
         
@@ -278,7 +284,10 @@ def Reconstruct(argv):
             par1 = sub_pdf# - var['smooth'] + var['mean']
             par1mean = numpy.mean(par1) 
             Nlos = len(par1)
-                    
+            
+            n, bins, patches = plt.hist(par1, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+            plt.setp(patches, 'edgecolor', 'None')
+                        
             par1_kde = gaussian_kde(par1)
             x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,3*Nlos)
                                     
