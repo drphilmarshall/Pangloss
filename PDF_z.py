@@ -7,7 +7,7 @@ import sys,getopt,cPickle,numpy
 import matplotlib.pyplot as plt
 
 from scipy.stats.kde import gaussian_kde
-
+from math import pi
 
 # ======================================================================
 
@@ -93,7 +93,7 @@ def CompareHilbert07(argv):
 
     zd = experiment.parameters['StrongLensRedshift']
     zs = numpy.arange(1.0, 8.0, 0.5)
-    #zs = [1.1, 2.1, 5.7]
+ #   zs = [1.1, 2.1, 5.7]
 
     calpickles = []
     Nc = experiment.parameters['NCalibrationLightcones']
@@ -127,7 +127,7 @@ def CompareHilbert07(argv):
     ndensity_field = 86.0480379792 # in num/arcmin^2    
     
     density = 1.1 # overdensity we are looking at
-    drange = 0.05
+    drange = 0.03
     # ==============================================================
     # Produce the PDFs
     # ==============================================================
@@ -139,8 +139,14 @@ def CompareHilbert07(argv):
     
     mean_mu=[]
     sd_mu = []
+    
+    radius_cone = 1.0
+    area = pi * radius_cone**2.
+    
+    ndensity_field = 7.87131907218 # galaxies brighter than F125W 22 in num/arcmin^2  Henriques
         
-    plt.figure()
+ 
+    plt.figure(1)
     
     for i in range(len(zs)):
         print zs[i]
@@ -163,9 +169,9 @@ def CompareHilbert07(argv):
             # Get lightcone, and fill PDFs
             lc = allcones[j] 
 
-            count_gals = lc.countGalaxies(ndensity = ndensity_field, maglim=30.0)    
-            lc_dens = count_gals[0]
-            n_gals = count_gals[1]
+            n_gals = lc.numberWithin(radius=radius_cone,cut=[16,22],band="F125W",units="arcmin")
+            lc_dens = n_gals/(area * ndensity_field)
+
          #   lc_density.append(lc_dens)           
             if j == 0: print lc_dens, len(allcones), n_gals                          
             # Redshift scaffolding:
@@ -260,7 +266,7 @@ def CompareHilbert07(argv):
             smooth_new = numpy.mean(par) 
             par = par - smooth_new + mean
             par_mean = numpy.mean(par) 
-          #  plt.xlim(0.75,1.25)    
+           # plt.xlim(0.75,1.25)    
                 
                         
         outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_many.png" 
@@ -290,33 +296,34 @@ def CompareHilbert07(argv):
             plt.setp(patches2, 'edgecolor', c[i])        
             n, bins, patches = plt.hist(par, 8, facecolor=c[i], alpha=0.4, normed=True, label=r'|$\gamma$|')
             plt.setp(patches, 'edgecolor', 'none') 
-        """
-                                        
+        
+        """                                
         #   n, bins, patches = plt.hist(par1, 20, facecolor=None,  histtype='step', normed=True, label=r'$z_s = $'+str(zs[i]))
                     
-        #n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
-        #plt.setp(patches, 'edgecolor', 'None')
+    #    n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+    #    plt.setp(patches, 'edgecolor', 'None')
             
         par_kde = gaussian_kde(par)
         x = numpy.linspace(par.min()-0.05,par.max()+0.05,3*Nlos)
-        #plt.plot(x, par_kde(x), color=c[i])
+      #  plt.plot(x, par_kde(x), color=c[i])
                                         
         if 'height' in params:
             height = params['height']
-        #    plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
+            plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
             
-       # plt.xlabel(name)
-        #plt.ylabel(r'P(%s)' % name)   
+        plt.xlabel(name)
+        plt.ylabel(r'P(%s)' % name)   
                 
-   # plt.ticklabel_format(useOffset=False, axis='x')
+    plt.ticklabel_format(useOffset=False, axis='x')
                                                         
     plt.legend(loc=1)
     #                        
-    #plt.savefig(outputfile,dpi=300)
+    plt.savefig(outputfile,dpi=300)
     
-    #plt.figure()
+    plt.figure(2)
+
     plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
-  #  plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
+    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
     plt.xlabel(r'$z_s$')
     plt.legend(loc=1)
                             

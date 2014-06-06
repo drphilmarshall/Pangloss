@@ -74,14 +74,22 @@ def RemoveSmooth(argv):
     
     experiment = pangloss.Configuration(configfile)
 
-    catalog = experiment.parameters['ObservedCatalog'][0]
-    
+    catalog = experiment.parameters['CalibrationCatalogs'][0]
+#    CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+   
     table = pangloss.readCatalog(catalog,experiment)
 
-    zd = experiment.parameters['StrongLensRedshift']
-    zs = experiment.parameters['SourceRedshift']
+#    zd = experiment.parameters['StrongLensRedshift']
+#    zs = experiment.parameters['SourceRedshift']
+
+    units = experiment.parameters['Units']
+
     print 'Reading in the catalog...' 
     
+    if units == 'deg':
+        table['nRA'] = -table['nRA'] * pangloss.deg2rad
+        table['Dec'] = table['Dec'] * pangloss.deg2rad
+        
     # Calculate the area of the patch in square radians
     xmax = table['nRA'].max()
     xmin = table['nRA'].min()
@@ -94,22 +102,24 @@ def RemoveSmooth(argv):
     area_arcmin = area_rad * (pangloss.rad2arcmin**2)
     D = pangloss.Distance()
 
-    print 'Calculating the area of the catalog...'    
+    print 'The catalog has a total area',area_arcmin,'sq arcmins...'    
     
     # --------------------------------------------------------------------    
     # Remove the subhalos if they remain (they have no stars...)
+    halos =table
     try: 
         halos = table.where(table.Type != 2) 
     except AttributeError: pass    
     
     # Apply a magnitude cut
     nhalos_all = len(halos)
-    halos = halos.where(halos.mag < 25)    
+    halos = halos.where(halos.mag < 22)    
     nhalos = len(halos)   
-    print 'There are',nhalos_all,'halos in this catalog'
-    num_density = nhalos_all/area_arcmin
+    print 'There are',nhalos,'halos in this catalog with F125W mag < 22'
+    num_density = nhalos/area_arcmin
     print 'The number density of halos is',num_density,'in 1 square arcmin of sky...'
     # --------------------------------------------------------------------
+    """    
     # Add galaxy property column, overwriting any values that already exist:
 
     def writeColumn(string,values):
@@ -167,7 +177,7 @@ def RemoveSmooth(argv):
     # Divide by area of slice in Mpc^2
     
     def NFWtruncMass(truncationscale=10):
-        """ Calculate all mass using formula from BMO09 within truncation scale """
+         Calculate all mass using formula from BMO09 within truncation scale 
         tau = truncationscale
         delta_c =  pangloss.delta_c(c200)
         
@@ -214,6 +224,7 @@ def RemoveSmooth(argv):
     
     print pangloss.doubledashedline       
     print 'The smooth component of the universe has kappa =',kappa_smooth
+    """
     print pangloss.doubledashedline 
     
     return

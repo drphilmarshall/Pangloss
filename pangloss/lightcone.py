@@ -81,6 +81,7 @@ class Lightcone(object):
         self.kappa_hilbert = None # until set!
         
         # Catalog limits:
+        
         self.xmax = self.catalog['nRA'].max()
         self.xmin = self.catalog['nRA'].min()
         self.ymax = self.catalog['Dec'].max()
@@ -157,28 +158,32 @@ class Lightcone(object):
 # Tell me the number of galaxies within a certain radius, that pass a 
 # certain magnitude cut.
 
-    def galaxiesWithin(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
+    def galaxiesWithin(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcmin"):
 
         if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W"
+        elif band == "WFC125" or band == "F125W" or band == "F125" or band == "125" or band == 125:
+            col = "WFC125"
         else:
             col = "mag_%s" % band
-        if radius < 10: 
-            print "Warning: Default units for radius are arcsec!"
+        if radius < 0.1: 
+            print "Warning: Default units for radius are arcmin!"
+        if radius_unit == "arcmin":
+            radius = radius
         if radius_unit == "arcsec":
-            radius = radius/60.
+            radius = radius/60.            
         if col != "warning":
-            self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
-                                              (self.galaxies["%s"%col] < cut[1])& \
+          #  self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
+          #                                    (self.galaxies["%s"%col] < cut[1])& \
+          #                                (self.galaxies["%s"%col] > cut[0]))
+            self.N_cut=self.galaxies.where((self.galaxies["%s"%col] < cut[1])& \
                                           (self.galaxies["%s"%col] > cut[0]))
+                                          
+            return self.N_cut
 
-            return self.galaxies.where((self.galaxies.r < radius) & \
-                                          (self.galaxies["%s"%col] < cut[1])& \
-                                          (self.galaxies["%s"%col] > cut[0]))
-
-    def numberWithin(self,radius,cut=[18.5,24.5],band="F814W",units="arcsec"):
+    def numberWithin(self,radius,cut=[18.5,24.5],band="F125W",units="arcmin"):
         Ntable = self.galaxiesWithin(radius,cut,band,units)
         return len(Ntable.r)
 
@@ -220,6 +225,8 @@ class Lightcone(object):
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W" #note that this isn't included atm
+        elif band == "WFC125" or band == "F125" or band == "F125W" or band == "125" or band == 125:
+            col = "WFC125" #note that this isn't included atm
         else:
             col = "mag_%s" % band
             
