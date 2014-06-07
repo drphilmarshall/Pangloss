@@ -135,7 +135,7 @@ def MakePDF(argv):
     allcones = calcones
     allconefiles = calpickles 
     
-   # ndensity_field = 4.2110897902 # galaxies brighter than F125W 22 in num/arcmin^2   hilbert 
+   # ndensity_field = 4.2110897902 # galaxies brighter than i 22 in num/arcmin^2   hilbert 
     radius_cone = 1.0
     area = pi * radius_cone**2.
     
@@ -182,6 +182,14 @@ def MakePDF(argv):
     
     pk = []
     pmu =[] 
+
+    zmax = zs+0.1
+    zbins = numpy.linspace(0.0,zmax,100)
+    
+    kappa_cont = numpy.zeros((len(allcones), len(zbins)))
+    Mh_cont = numpy.zeros((len(allcones), len(zbins))) 
+    Mstell_cont = numpy.zeros((len(allcones), len(zbins)))
+               
     for j in range(len(allcones)):        
     
         # Get lightcone, and start PDF for its kappa_halo:
@@ -215,12 +223,19 @@ def MakePDF(argv):
         pmu.append([lc.mu_add_total])
         pk.append([lc.kappa_add_total])
     
-                
+        kappa_cont[j:,] = lc.findContributions('kappa')   
+        Mh_cont[j:,] = lc.findContributions('mass') 
+        Mstell_cont[j:,] = lc.findContributions('stellarmass') 
+            
         # Make a nice visualisation of one of the realisations, in
         # two example cases:
         if j ==0:
-            lc.plot('kappa', output=CALIB_DIR+"example_snapshot_kappa_uncalib.png")
-            lc.plot('mu', output=CALIB_DIR+"example_snapshot_mu_uncalib.png")
+            lc.plots('kappa', output=CALIB_DIR+"/example_snapshot_kappa_uncalib.png")
+            lc.plots('mu', output=CALIB_DIR+"/example_snapshot_mu_uncalib.png")
+        #    lc.plotContributions('kappa', output=CALIB_DIR+"/kappa_contribution_uncalib.png")
+        #   lc.plotContributions('mass', output=CALIB_DIR+"/Mh_contribution_uncalib.png")
+        #   lc.plotContributions('mu', output=CALIB_DIR+"/mu_contribution_uncalib.png")
+        #    lc.plotContributions('stellarmass', output=CALIB_DIR+"/Mstell_contribution_uncalib.png")
     
                     
         x = allconefiles[j]
@@ -229,7 +244,23 @@ def MakePDF(argv):
     pk = numpy.array(pk)
     pmu = numpy.array(pmu)    
 
+    mean_kappa_cont = numpy.mean(kappa_cont, axis=0)
+    mean_Mh_cont = numpy.mean(Mh_cont, axis=0)
+    mean_Mstell_cont = numpy.mean(Mstell_cont, axis=0)
     
+    plt.clf()
+    plt.figure()
+    
+    ax1 = plt.subplot(2,1,1)
+    ax1.plot(zbins, mean_Mh_cont)
+    ax1.set_ylabel(r'Cumulative Sum of $M_h$')
+    ax2 = plt.subplot(2,1,2)
+    ax2.plot(zbins, mean_kappa_cont)
+    ax2.set_ylabel(r'Cumulative Sum of $\kappa_h$') 
+    plt.tight_layout()
+    plt.xlabel('Redshift, z')
+    plt.savefig("figs/contribution_z.png",dpi=300)
+
     # Remove mu outliers
 
     
@@ -249,6 +280,7 @@ def MakePDF(argv):
     # Plotting convergence and magnification
     for k in range(len(pdf)):
 
+        plt.clf()
         var = pdf[k]
         
         full_pdf = var['lc']
@@ -262,7 +294,7 @@ def MakePDF(argv):
         outputfile = "figs/Pof"+var['param']+"_"+EXP_NAME+"_test.png" 
         name = var['name']     
         
-        plt.figure(i+1)
+        plt.figure()
         
         all_LOS = full_pdf - var['smooth'] + var['mean']
         all_kde = gaussian_kde(all_LOS)

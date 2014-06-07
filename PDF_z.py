@@ -11,7 +11,7 @@ from math import pi
 
 # ======================================================================
 
-def CompareHilbert07(argv):
+def PDF_z(argv):
     """
     NAME
         PDF_z.py
@@ -55,12 +55,12 @@ def CompareHilbert07(argv):
        opts, args = getopt.getopt(argv,"h",["help"])
     except getopt.GetoptError, err:
        print str(err) # will print something like "option -a not recognized"
-       print CompareHilbert07.__doc__  # will print the big comment above.
+       print PDF_z.__doc__  # will print the big comment above.
        return
 
     for o,a in opts:
        if o in ("-h", "--help"):
-          print CompareHilbert07.__doc__
+          print PDF_z.__doc__
           return
        else:
           assert False, "unhandled option"
@@ -72,11 +72,11 @@ def CompareHilbert07(argv):
         print pangloss.doubledashedline
         print pangloss.hello
         print pangloss.doubledashedline
-        print "CompareHilbert07: calculating PDF for",parameter,"at various redshifts for all LOS"
-        print "CompareHilbert07: taking instructions from",configfile
+        print "PDF_z: calculating PDF for",parameter,"at various redshifts for all LOS"
+        print "PDF_z: taking instructions from",configfile
         print pangloss.dashedline
     else:
-        print CompareHilbert07.__doc__
+        print PDF_z.__doc__
         return
 
     # ==============================================================
@@ -93,7 +93,7 @@ def CompareHilbert07(argv):
 
     zd = experiment.parameters['StrongLensRedshift']
     zs = numpy.arange(1.0, 8.0, 0.5)
- #   zs = [1.1, 2.1, 5.7]
+  #  zs = [1.1, 2.1, 5.7, 8.0]
 
     calpickles = []
     Nc = experiment.parameters['NCalibrationLightcones']
@@ -124,9 +124,10 @@ def CompareHilbert07(argv):
     allcones = calcones
     allconefiles = calpickles 
     
-    ndensity_field = 86.0480379792 # in num/arcmin^2    
+#    ndensity_field = 4.2110897902 # galaxies brighter than i 22 in num/arcmin^2   hilbert    
+    ndensity_field = 7.87131907218 # galaxies brighter than F125W 22 in num/arcmin^2  Henriques  
     
-    density = 1.1 # overdensity we are looking at
+    density = 1.0 # overdensity we are looking at
     drange = 0.03
     # ==============================================================
     # Produce the PDFs
@@ -141,15 +142,12 @@ def CompareHilbert07(argv):
     sd_mu = []
     
     radius_cone = 1.0
-    area = pi * radius_cone**2.
-    
-    ndensity_field = 7.87131907218 # galaxies brighter than F125W 22 in num/arcmin^2  Henriques
-        
+    area = pi * radius_cone**2.        
  
     plt.figure(1)
     
     for i in range(len(zs)):
-        print zs[i]
+        print 'Source redshift =',zs[i]
         
         # Make redshift grid
         grid = pangloss.Grid(zd, zs[i], nplanes=100)
@@ -171,9 +169,7 @@ def CompareHilbert07(argv):
 
             n_gals = lc.numberWithin(radius=radius_cone,cut=[16,22],band="F125W",units="arcmin")
             lc_dens = n_gals/(area * ndensity_field)
-
-         #   lc_density.append(lc_dens)           
-            if j == 0: print lc_dens, len(allcones), n_gals                          
+                        
             # Redshift scaffolding:
             lc.defineSystem(zd, zs[i])
             lc.loadGrid(grid)
@@ -201,13 +197,13 @@ def CompareHilbert07(argv):
             pg2[j]=lc.G2sum
             pg[j]=lc.Gsum
             
+            # Select cones by overdensity for the mu vs z plot
             if density - drange <= lc_dens <= density + drange:
                 sub_pdf.append(mu_add)  
-               
-                                                                     
+                                                                                    
             x = allconefiles[j]
         
-      #s  print lc_density[0]    
+      #  print lc_density[0]    
         pk = numpy.array(pk)
         
         pmu = numpy.array(pmu)    
@@ -216,7 +212,9 @@ def CompareHilbert07(argv):
         pg2 = numpy.array(pg2)    
         pg = numpy.array(pg)    
          
-        sub_pdf = numpy.array(sub_pdf)       
+        sub_pdf = numpy.array(sub_pdf) 
+        print 'For fields of overdensity %.2f, we have %i lightcones'%(density,len(sub_pdf))
+                            
         # ==============================================================
         # Plot the pdfs
         # ==============================================================
@@ -226,13 +224,9 @@ def CompareHilbert07(argv):
         mu_smooth = numpy.mean(pmu)
 
         sub_mu = sub_pdf - mu_smooth + 1.0
-        print numpy.mean(sub_mu)
+#        print numpy.mean(sub_mu)
         mean_mu.append(numpy.mean(sub_mu))
         sd_mu.append(numpy.std(sub_mu))
-        
-    #    params = {'param':['Kappa','Mu', 'Gamma'], 'name':[r'$\kappa$',r'$\mu$', r'$\gamma$'],
-    #            'pdf':[pk,pmu,pg], 'smooth':[kappa_smooth, mu_smooth, 0.], 
-    #            'mean':[0.0, 1.0, 0.0], 'height':[35,18]}
         
         if parameter == 'Kappa':
             params = {'param':'Kappa', 'name':r'$\kappa$', 'pdf':pk,
@@ -266,16 +260,14 @@ def CompareHilbert07(argv):
             smooth_new = numpy.mean(par) 
             par = par - smooth_new + mean
             par_mean = numpy.mean(par) 
-           # plt.xlim(0.75,1.25)    
+#            plt.xlim(0.75,1.25)    
                 
                         
-        outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_many.png" 
+ #       outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_many.png" 
              
         par_mean = numpy.mean(par) 
         
-        Nlos = len(par)
-       # print par_mean, par.min(), par.max()
-            
+        Nlos = len(par)            
             
         """    
             par1 = pg1[:,0]
@@ -299,13 +291,13 @@ def CompareHilbert07(argv):
         
         """                                
         #   n, bins, patches = plt.hist(par1, 20, facecolor=None,  histtype='step', normed=True, label=r'$z_s = $'+str(zs[i]))
-                    
-    #    n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
-    #    plt.setp(patches, 'edgecolor', 'None')
+        """            
+        n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+        plt.setp(patches, 'edgecolor', 'None')
             
         par_kde = gaussian_kde(par)
         x = numpy.linspace(par.min()-0.05,par.max()+0.05,3*Nlos)
-      #  plt.plot(x, par_kde(x), color=c[i])
+        plt.plot(x, par_kde(x), color=c[i])
                                         
         if 'height' in params:
             height = params['height']
@@ -319,11 +311,11 @@ def CompareHilbert07(argv):
     plt.legend(loc=1)
     #                        
     plt.savefig(outputfile,dpi=300)
-    
+    """
     plt.figure(2)
 
     plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
-    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
+#    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
     plt.xlabel(r'$z_s$')
     plt.legend(loc=1)
                             
@@ -332,7 +324,7 @@ def CompareHilbert07(argv):
     plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline
-    print "Reconstruct: saved P("+param+") to",outputfile
+    print "PDF_z: saved P("+param+") to",outputfile
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   
     
@@ -342,6 +334,6 @@ def CompareHilbert07(argv):
 # ======================================================================
 
 if __name__ == '__main__': 
-    CompareHilbert07(sys.argv[1:])
+    PDF_z(sys.argv[1:])
 
 # ======================================================================

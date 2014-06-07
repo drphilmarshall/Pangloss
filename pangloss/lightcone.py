@@ -504,6 +504,45 @@ class Lightcone(object):
 
         return self.mu_add_total       
 
+# ----------------------------------------------------------------------------
+
+    def findContributions(self,quantity):
+       
+       # Point positions:
+       zmax = self.zs+0.1
+       z = numpy.linspace(0.0,zmax,100)
+       # Plot the points:
+       if quantity == 'mass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mhalo_obs
+               contr[i] = numpy.sum(size)
+      
+       elif quantity == 'kappa':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.kappa
+               contr[i] = numpy.sum(size)           
+       
+       elif quantity == 'mu':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.mu
+               contr[i] = numpy.sum(size)           
+
+       elif quantity == 'stellarmass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mstar_obs
+               contr[i] = numpy.sum(size)           
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+
+       return contr
 
 # ----------------------------------------------------------------------------
 # Plotting
@@ -620,7 +659,72 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def plot(self,var,output=None):
+    def plotContributions(self,quantity,output):
+       
+       plt.clf()
+ 
+       # Point positions:
+       zmax = self.zs+0.1
+       z = numpy.linspace(0.0,zmax,100)
+       # Plot the points:
+       if quantity == 'mass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mhalo_obs
+               contr[i] = numpy.sum(size)
+           plt.plot(z, contr)
+           plt.title('Cumulative Sum of Halo Mass')
+      
+       elif quantity == 'kappa':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.kappa
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title(r'Cumulative Sum of $\kappa_h$')
+       
+       elif quantity == 'mu':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.mu
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title(r'Cumulative Sum of $\mu_h$')  
+
+       elif quantity == 'stellarmass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mstar_obs
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title('Cumulative Sum of Stellar Mass')
+
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+
+       # Axis limits:
+       zmax = max(self.galaxies.z.max(),self.zs+0.1)
+#       AX.axis([0,zmax+0.1,-self.rmax-0.1,self.rmax+0.1])
+
+       # Labels:
+       plt.xlabel('redshift z')
+      
+       # Add lines marking source and lens plane, and optical axis:
+ #      plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
+ #      plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
+
+       if output != None:
+           pangloss.rm(output)
+           plt.savefig(output,dpi=300)
+
+       return
+# ----------------------------------------------------------------------------
+
+    def plots(self,var,output=None):
 
        plt.clf()
 

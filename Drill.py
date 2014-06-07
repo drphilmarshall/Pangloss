@@ -5,6 +5,8 @@ import pangloss
 
 import sys,glob,getopt,numpy
 
+from math import pi
+
 # ======================================================================
 
 def Drill(argv):
@@ -84,6 +86,17 @@ def Drill(argv):
 
     experiment = pangloss.Configuration(configfile)
 
+   # sim_area = experiment.parameters['TotalArea']
+    
+    borg = numpy.genfromtxt('data/borg_overdensity.txt', skip_header=1)
+
+    borg_field = borg[:,0]
+    borg_area = borg[:,1]
+    borg_overdensity = borg[:,2]
+    
+   # Rc = numpy.sqrt(borg_area/pi)  # in arcmin
+  #  Nc = round(2 * sim_area/borg_area) 
+    
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
     Nc = experiment.parameters['NCalibrationLightcones']
 
