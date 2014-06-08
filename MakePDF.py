@@ -116,9 +116,9 @@ def MakePDF(argv):
 
     # For BoRG need to have lightcones for field area
     if EXP_NAME == 'borg':
-        for i in range(Nc):
+        for j in range(len(borg_area)):
             borg_calpickles = []
-            for j in range(len(borg_area)):
+            for i in range(Nc):
                 area = str(borg_area[j])
                 x = "%s/%s/pointing_%i" % (CALIB_DIR,area,i)            
                 borg_calpickles.append(x+"_lightcone.pickle")
@@ -128,7 +128,7 @@ def MakePDF(argv):
     else:
         for i in range(Nc):
             calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
-        
+            
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
     
@@ -144,9 +144,17 @@ def MakePDF(argv):
     # Read in lightcones from pickles:
 
     calcones = []
-    for i in range(Nc):
-        calcones.append(pangloss.readPickle(calpickles[i]))
-
+    if EXP_NAME == 'borg':
+        for j in range(len(borg_area)):
+            borg_calcones = []
+            borg_calpickles = calpickles[j]
+            for i in range(Nc):
+                borg_calcones.append(pangloss.readPickle(borg_calpickles[i]))
+        calcones.append(borg_calcones)
+    else:
+        for i in range(Nc):
+            calcones.append(pangloss.readPickle(calpickles[i]))
+    
     if DoCal=="False": #must be string type
         calcones=[]
         calpickles=[]
