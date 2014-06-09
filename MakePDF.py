@@ -143,6 +143,7 @@ def MakePDF(argv):
     # --------------------------------------------------------------------
     # Read in lightcones from pickles:
 
+    # For BoRG make a list of lists of lightcones for each field 
     calcones = []
     if EXP_NAME == 'borg':
         for j in range(len(borg_area)):
@@ -173,16 +174,35 @@ def MakePDF(argv):
 
     lc_dens = []
     
+    # --------------------------------------------------------------------
     # Find the overdensity of lightcones cut at m<22 in F125W
-    for i in range(len(allcones)):
-        lc = allcones[i] 
-            
-        num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
-        lc_density = num_galaxies/(area * ndensity_field)
-            
-        lc_dens.append(lc_density)
     
+    # Sort into lightcones for each field
+    if EXP_NAME == 'borg':   
+        for fields in range(len(allcones)):
+            field_lc = allcones[fields] 
+            field_dens = []
+            
+            # Find in the overdensities in lightcones for each field
+            for i in range(len(fields)): 
+                lc = field_lc[i]   
+                num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
+                lc_density = num_galaxies/(area * ndensity_field)
+                
+                field_dens.append(lc_density)
+            lc_dens.append(field_dens)
+    
+    else:
+        for i in range(len(allcones)): 
+            lc = allcones[i]   
+            num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
+            lc_density = num_galaxies/(area * ndensity_field)
+                    
+            lc_dens.append(lc_density)        
+
+    # --------------------------------------------------------------------    
     # Plot histogram of overdensities
+
     plt.figure(1)
     
     n, bins, patches = plt.hist(lc_dens, 20, facecolor='k', alpha=0.4)
@@ -405,7 +425,7 @@ def MakePDF(argv):
             print "MakePDF: saved PDFs to",outputfile
 
     # =====================================================================
-    # For all values of density
+    # For all values of density e.g. BORG
     # =====================================================================    
 
     else:
