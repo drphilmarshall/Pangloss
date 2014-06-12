@@ -114,20 +114,8 @@ def MakePDF(argv):
     calpickles = []
     Nc = experiment.parameters['NCalibrationLightcones']
 
-    # For BoRG need to have lightcones for field area
-    if EXP_NAME == 'borg':
-        for j in range(len(borg_area)):
-            borg_calpickles = []
-            for i in range(Nc):
-                area = str(borg_area[j])
-                x = "%s/%s/pointing_%i" % (CALIB_DIR,area,i)            
-                borg_calpickles.append(x+"_lightcone.pickle")
-            calpickles.append(borg_calpickles)
-    
-    # Otherwise all the same area
-    else:
-        for i in range(Nc):
-            calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+    for i in range(Nc):
+        calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
             
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
@@ -142,19 +130,10 @@ def MakePDF(argv):
     
     # --------------------------------------------------------------------
     # Read in lightcones from pickles:
-
-    # For BoRG make a list of lists of lightcones for each field 
     calcones = []
-    if EXP_NAME == 'borg':
-        for j in range(len(borg_area)):
-            borg_calcones = []
-            borg_calpickles = calpickles[j]
-            for i in range(Nc):
-                borg_calcones.append(pangloss.readPickle(borg_calpickles[i]))
-        calcones.append(borg_calcones)
-    else:
-        for i in range(Nc):
-            calcones.append(pangloss.readPickle(calpickles[i]))
+
+    for i in range(Nc):
+        calcones.append(pangloss.readPickle(calpickles[i]))
     
     if DoCal=="False": #must be string type
         calcones=[]
@@ -178,27 +157,12 @@ def MakePDF(argv):
     # Find the overdensity of lightcones cut at m<22 in F125W
     
     # Sort into lightcones for each field
-    if EXP_NAME == 'borg':   
-        for fields in range(len(allcones)):
-            field_lc = allcones[fields] 
-            field_dens = []
-            
-            # Find in the overdensities in lightcones for each field
-            for i in range(len(fields)): 
-                lc = field_lc[i]   
-                num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
-                lc_density = num_galaxies/(area * ndensity_field)
-                
-                field_dens.append(lc_density)
-            lc_dens.append(field_dens)
-    
-    else:
-        for i in range(len(allcones)): 
-            lc = allcones[i]   
-            num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
-            lc_density = num_galaxies/(area * ndensity_field)
+    for i in range(len(allcones)): 
+        lc = allcones[i]   
+        num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
+        lc_density = num_galaxies/(area * ndensity_field)
                     
-            lc_dens.append(lc_density)        
+        lc_dens.append(lc_density)        
 
     # --------------------------------------------------------------------    
     # Plot histogram of overdensities
@@ -324,7 +288,6 @@ def MakePDF(argv):
     mu_smooth = numpy.mean(pmu)
     print 'Uncalibrated: <kappa> =',kappa_smooth, '<mu> =',mu_smooth
 
-
     # --------------------------------------------------------------------
     # Plotting convergence and magnification
     c = ['r','b','g']
@@ -344,7 +307,7 @@ def MakePDF(argv):
             print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
             
             # --------------------------------------------------------------------
-            # Remove outliers  !!! Do I need to do this if I plot histograms?
+            # Remove outliers --  only for v high overdensity?
             """
             mask = numpy.where((full_pdf > -1.) & (full_pdf < 2.)) 
             par = full_pdf[mask]
@@ -356,7 +319,7 @@ def MakePDF(argv):
             smooth_new = numpy.mean(par) 
             full_pdf = par - smooth_new + var['mean']
             par_mean = numpy.mean(par)
-            print '         New mean:', par_mean        
+            print 'New mean (this should be',var['mean'],'):', par_mean         
             """
             # --------------------------------------------------------------------
             # Plot PDF for all lines of sight
@@ -425,7 +388,7 @@ def MakePDF(argv):
             print "MakePDF: saved PDFs to",outputfile
 
     # =====================================================================
-    # For all values of density e.g. BORG
+    # For many values of overdensity e.g. BORG
     # =====================================================================    
 
     else:
@@ -437,7 +400,7 @@ def MakePDF(argv):
             print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
             
             # --------------------------------------------------------------------
-            # Remove outliers  !!! Do I need to do this if I plot histograms?
+            # Remove outliers  !!! I think this is only important for v. high overdensity
             """
             mask = numpy.where((full_pdf > -1.) & (full_pdf < 2.)) 
             par = full_pdf[mask]
@@ -449,7 +412,7 @@ def MakePDF(argv):
             smooth_new = numpy.mean(par) 
             full_pdf = par - smooth_new + var['mean']
             par_mean = numpy.mean(par)
-            print '         New mean:', par_mean        
+            print 'New mean (this should be',var['mean'],'):', par_mean        
             """
             # --------------------------------------------------------------------
             # Plot all lines of sight
@@ -463,7 +426,7 @@ def MakePDF(argv):
             all_LOS = full_pdf
 
             # Histogram
-            n, bins, patches = plt.hist(full_pdf, 20, facecolor=0.4, normed=True,alpha=0.2)
+            n, bins, patches = plt.hist(full_pdf, 50, facecolor=0.4, normed=True, alpha=0.2)
             plt.setp(patches, 'edgecolor', 'None')            
 
             # Gaussian KDE            
@@ -499,7 +462,7 @@ def MakePDF(argv):
                 # Plot PDFs
                 
                 # Histogram
-                n, bins, patches = plt.hist(par1, 20, facecolor='r', normed=True, alpha=0.3)
+                n, bins, patches = plt.hist(par1, 50, facecolor='r', normed=True, alpha=0.3)
                 plt.setp(patches, 'edgecolor', 'None')
                             
                 # Gaussian KDE               
