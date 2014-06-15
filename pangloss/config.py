@@ -98,8 +98,8 @@ class Configuration(object):
             self.parameters[key] = paths
 
         # Calibration catalogs and kappa maps must come in pairs...
-        assert len(self.parameters['CalibrationCatalogs']) == \
-               len(self.parameters['CalibrationKappamaps'])
+       # assert len(self.parameters['CalibrationCatalogs']) == \
+       #        len(self.parameters['CalibrationKappamaps'])
 
 
         surveycoveragekeys=['PhotometricRadius','PhotometricDepth','SpectroscopicDepth','SpectroscopicRadius']
@@ -139,7 +139,8 @@ class Configuration(object):
             # In this case, need the CALIB_DIR and pointing number:
             assert pointing != None
             CALIB_DIR = self.parameters['CalibrationFolder'][0]
-            x = "%s/pointing_%i" % (CALIB_DIR,pointing)
+            EXP_NAME = self.parameters['ExperimentName']            
+            x = "%s/%s_pointing_%i" % (CALIB_DIR, EXP_NAME, pointing)
             return x+"_lightcone.pickle"
 
         return

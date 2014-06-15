@@ -102,6 +102,7 @@ def Drill(argv):
 
     # There should only be one calibration folder!
     CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+    EXP_NAME = experiment.parameters['ExperimentName']            
             
     calcats = experiment.parameters['CalibrationCatalogs']
     Ncalcats = len(calcats)
@@ -159,8 +160,8 @@ def Drill(argv):
             print "Drill: Sampling sky positions in",units,"..."
             x,y = sample_sky(table,Rc,Ncones,method='random')
 
-            print "Drill: Reading in kappa map from "+kappamaps[i]
-            MSconvergence = pangloss.Kappamap(kappamaps[i])
+#            print "Drill: Reading in kappa map from "+kappamaps[i]
+#            MSconvergence = pangloss.Kappamap(kappamaps[i])
 
             # Coming soon...
             #   gammafile1 = gamma1[i]
@@ -175,7 +176,7 @@ def Drill(argv):
 
                 lc = pangloss.Lightcone(table,'simulated',[x[k],y[k]],Rc)
 
-                lc.kappa_hilbert = MSconvergence.at(x[k],y[k],coordinate_system='physical')
+                #lc.kappa_hilbert = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
                 # Coming soon...
                 #   lc.gamma1_hilbert = MSgamma1.at(x[k],y[k],coordinate_system='physical')
@@ -185,6 +186,13 @@ def Drill(argv):
                 pangloss.writePickle(lc,calpickle)
 
                 count += 1
+            
+            
+            # Save memory! 
+            del table
+            del lc
+            del catalog
+            
             print "Drill: ...done."
 
         print ("Drill: All %i calibration lightcones made." % (count))

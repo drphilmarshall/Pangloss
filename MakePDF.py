@@ -3,7 +3,7 @@
 
 import pangloss
 
-import sys,getopt,cPickle,numpy
+import sys,getopt,cPickle,numpy,glob
 import matplotlib.pyplot as plt
 
 from scipy.stats.kde import gaussian_kde
@@ -96,7 +96,11 @@ def MakePDF(argv):
     # Get the experiment name from the configfile name instead?
     EXP_NAME = experiment.parameters['ExperimentName']
     CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
+   
+    mag = experiment.parameters['MagName']
     
+    Ncats = 21
+     
     borg = numpy.genfromtxt('data/borg_overdensity.txt', skip_header=1)
 
     borg_field = borg[:,0]
@@ -112,10 +116,11 @@ def MakePDF(argv):
     # Load the lightcone pickles
     
     calpickles = []
-    Nc = experiment.parameters['NCalibrationLightcones']
+    Nc = experiment.parameters['NCalibrationLightcones'] * Ncats       ### should be 24
 
-    for i in range(Nc):
-        calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+    paths = '%s/*_lightcone.pickle' % (CALIB_DIR)
+    found = glob.glob(paths)
+    if len(found) > 0: calpickles = found
             
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
@@ -132,7 +137,7 @@ def MakePDF(argv):
     # Read in lightcones from pickles:
     calcones = []
 
-    for i in range(Nc):
+    for i in range(Nc):         
         calcones.append(pangloss.readPickle(calpickles[i]))
     
     if DoCal=="False": #must be string type
@@ -155,22 +160,27 @@ def MakePDF(argv):
     
     # --------------------------------------------------------------------
     # Find the overdensity of lightcones cut at m<22 in F125W
+    total_galaxies = 0
+    lc_galaxies = []
     
     # Sort into lightcones for each field
     for i in range(len(allcones)): 
         lc = allcones[i]   
-        num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
-        lc_density = num_galaxies/(area * ndensity_field)
-                    
-        lc_dens.append(lc_density)        
+ #       num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band="F125W",units="arcmin")
+        num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band=mag,units="arcmin")
+        lc_galaxies.append(num_galaxies)   
+        # Add to the total number of galaxies
+        total_galaxies += num_galaxies
+
+    total_density = total_galaxies/Nc
+    lc_dens = [Nc * float(x)/float(total_galaxies) for x in lc_galaxies]
 
     # --------------------------------------------------------------------    
     # Plot histogram of overdensities
 
     plt.figure(1)
     
-    n, bins, patches = plt.hist(lc_dens, 20, facecolor='k', alpha=0.4)
-    plt.setp(patches, 'edgecolor', 'None')
+    n, bins, patches = plt.hist(lc_dens, 20, facecolor='r', alpha=0.4)
                         
     plt.xlabel(r'Overdensity of halos, $\xi$')
     plt.ylabel('Number of lightcones')
@@ -188,10 +198,10 @@ def MakePDF(argv):
     # Set up overdensity range
 
 #    density = borg_overdensity
-#    density = [1.0,0.75,1.25]
-    density = [1.0,0.5,1.5]
+    density = [1.0,0.75,1.25]
+#    density = [1.0,0.5,1.5]
 
-    drange = 0.05   # ~0.02 is what Zach used
+    drange = 0.025   # ~0.02 is what Zach used
 
     # --------------------------------------------------------------------
     # Find contribution to total kappa and mass at redshift intervals
@@ -268,7 +278,7 @@ def MakePDF(argv):
     
     ax1 = plt.subplot(2,1,1)
     ax1.plot(zbins, mean_Mh_cont)
-    ax1.set_ylabel(r'Cumulative Sum of $M_h$')
+    ax1.set_ylabel(r'Cumulative Sum of $M_h/M_{\odot}$')
     
     ax2 = plt.subplot(2,1,2)
     ax2.plot(zbins, mean_kappa_cont)
@@ -293,7 +303,7 @@ def MakePDF(argv):
     c = ['r','b','g']
     
     pdf = [{'param':'Kappa', 'name':r'$\kappa$', 'lc':pk[:,0], 'smooth':kappa_smooth, 'mean':0.0, 'height':60, 'min':-0.05, 'max':0.2},
-            {'param':'Mu', 'name':r'$\mu$', 'lc':pmu[:,0], 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.8, 'max':1.5}]
+            {'param':'Mu', 'name':r'$\mu$', 'lc':pmu[:,0], 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.7, 'max':1.8}]
 
     # =====================================================================
     # For only <=3 values of density
@@ -302,9 +312,9 @@ def MakePDF(argv):
         for k in range(len(pdf)):
       
             var = pdf[k]
-            full_pdf = var['lc']
+            full_pdf = var['lc'] - var['smooth'] + var['mean']
             name = var['name']     
-            print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
+           # print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
             
             # --------------------------------------------------------------------
             # Remove outliers --  only for v high overdensity?
@@ -333,12 +343,12 @@ def MakePDF(argv):
             all_LOS = full_pdf
 
             # Histogram
-            n, bins, patches = plt.hist(full_pdf, 20, facecolor=0.4, normed=True,alpha=0.2)
+            n, bins, patches = plt.hist(full_pdf, 20, facecolor='k', normed=True,alpha=0.2)
             plt.setp(patches, 'edgecolor', 'None')            
 
             # Gaussian KDE            
             all_kde = gaussian_kde(all_LOS)
-            x = numpy.linspace(all_LOS.min()-0.2,all_LOS.max()+0.2,3*Nc)
+            x = numpy.linspace(all_LOS.min()-0.2,all_LOS.max()-0.2,3*Nc)
             plt.plot(x, all_kde(x), color='k', label=r'All LOS, $\langle$'+name+r'(uncalib)$\rangle = $%.3f' % var['smooth']) # distribution function
                     
             # --------------------------------------------------------------------
@@ -372,10 +382,10 @@ def MakePDF(argv):
                 x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,3*Nlos)                        
                 plt.plot(x, par1_kde(x), color=c[i], label=r'$\xi = $'+str(density[i])+r', $\langle$'+name+r'$\rangle = $%.3f' % par1mean) # distribution function
                             
-            
+            plt.xlim(var['min'], var['max'])
             plt.ticklabel_format(useOffset=False, axis='x')
 
-            plt.axvline(x=var['mean'], 'k', linestyle='dashed')
+            plt.axvline(x=var['mean'], color='k', linestyle='dashed')
         
             plt.xlabel(name)
             plt.ylabel(r"P(%s)"%name)
@@ -395,9 +405,9 @@ def MakePDF(argv):
         for k in range(len(pdf)):
       
             var = pdf[k]
-            full_pdf = var['lc']
+            full_pdf = var['lc']  - var['smooth'] + var['mean']
             name = var['name']     
-            print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
+         #   print 'MakePDF: Old min and max:', full_pdf.min(), full_pdf.max()
             
             # --------------------------------------------------------------------
             # Remove outliers  !!! I think this is only important for v. high overdensity
@@ -426,7 +436,7 @@ def MakePDF(argv):
             all_LOS = full_pdf
 
             # Histogram
-            n, bins, patches = plt.hist(full_pdf, 50, facecolor=0.4, normed=True, alpha=0.2)
+            n, bins, patches = plt.hist(full_pdf, 20, facecolor='k', normed=True, alpha=0.2)
             plt.setp(patches, 'edgecolor', 'None')            
 
             # Gaussian KDE            
@@ -459,10 +469,17 @@ def MakePDF(argv):
                 print "MakePDF: %s - sampling %i LoS with number density ~ %.2f the average" % (borg_field[j], Nlos, density[i])   
     
                 # --------------------------------------------------------------------
+                # Write PDFs to pickles
+                    
+                x = borg_field[j]
+                pfile = x+"_Pof"+var['param']+".pickle"
+                pangloss.writePickle(par1,pfile)
+    
+                # --------------------------------------------------------------------
                 # Plot PDFs
                 
                 # Histogram
-                n, bins, patches = plt.hist(par1, 50, facecolor='r', normed=True, alpha=0.3)
+                n, bins, patches = plt.hist(par1, 20, facecolor='r', normed=True, alpha=0.3)
                 plt.setp(patches, 'edgecolor', 'None')
                             
                 # Gaussian KDE               
@@ -470,8 +487,10 @@ def MakePDF(argv):
                 x = numpy.linspace(par1.min()-0.2,par1.max()+0.2,3*Nlos)                                        
                 plt.plot(x, par1_kde(x), color='r', label=r'$\xi = $'+str(density[i])+r', $\langle$'+name+r'$\rangle = $%.3f' % par1mean) # distribution function
                 
-                plt.axvline(x=var['mean'], 'k', linestyle='dashed')
-            
+                plt.axvline(x=var['mean'], color='k', linestyle='dashed')
+                
+                plt.xlim(var['min'], var['max'])
+
                 plt.ticklabel_format(useOffset=False, axis='x')
             
                 plt.xlabel(name)
