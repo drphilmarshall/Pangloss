@@ -510,32 +510,33 @@ class Lightcone(object):
        
        # Point positions:
        zmax = self.zs+0.1
-       z = numpy.linspace(0.0,zmax,100)
+       zbins = 25
+       z = numpy.linspace(0.0,zmax,zbins)
        # Plot the points:
        if quantity == 'mass':
-           contr = numpy.zeros(len(z))
-           for i in range(len(z)):
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
                galaxies = self.galaxies.where(self.galaxies.z <= z[i])
                size = galaxies.Mhalo_obs
                contr[i] = numpy.sum(size)
       
        elif quantity == 'kappa':
-           contr = numpy.zeros(len(z))
-           for i in range(len(z)):
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
                galaxies = self.galaxies.where(self.galaxies.z <= z[i])
                size = galaxies.kappa
                contr[i] = numpy.sum(size)           
        
        elif quantity == 'mu':
-           contr = numpy.zeros(len(z))
-           for i in range(len(z)):
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
                galaxies = self.galaxies.where(self.galaxies.z <= z[i])
                size = galaxies.mu
                contr[i] = numpy.sum(size)           
 
        elif quantity == 'stellarmass':
-           contr = numpy.zeros(len(z))
-           for i in range(len(z)):
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
                galaxies = self.galaxies.where(self.galaxies.z <= z[i])
                size = galaxies.Mstar_obs
                contr[i] = numpy.sum(size)           

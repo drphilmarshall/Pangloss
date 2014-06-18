@@ -142,7 +142,13 @@ class Configuration(object):
             EXP_NAME = self.parameters['ExperimentName']            
             x = "%s/%s_pointing_%i" % (CALIB_DIR, EXP_NAME, pointing)
             return x+"_lightcone.pickle"
-
+        
+        elif flavor == 'sim_notborg':
+            # In this case, need the CALIB_DIR and pointing number:
+            assert pointing != None
+            CALIB_DIR = self.parameters['CalibrationFolder'][0]          
+            x = "%s/pointing_%i" % (CALIB_DIR, pointing)
+            return x+"_lightcone.pickle"
         return
 
 

@@ -36,7 +36,7 @@ def PDF_z(argv):
     OUTPUTS
 
     EXAMPLE
-        PDF_z.py example.config
+        PDF_z.py example.config Mu
 
     BUGS
 
@@ -92,13 +92,13 @@ def PDF_z(argv):
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
 
     zd = experiment.parameters['StrongLensRedshift']
-    zs = numpy.arange(1.0, 8.0, 0.5)
-  #  zs = [1.1, 2.1, 5.7, 8.0]
+  #  zs = numpy.arange(1.0, 8.0, 0.5)
+    zs = [1.1, 2.1, 5.7, 8.0]
 
     calpickles = []
     Nc = experiment.parameters['NCalibrationLightcones']
     for i in range(Nc):
-        calpickles.append(experiment.getLightconePickleName('simulated',pointing=i))
+        calpickles.append(experiment.getLightconePickleName('sim_notborg',pointing=i))
        
     # Ray tracing:
     RTscheme = experiment.parameters['RayTracingScheme']
@@ -290,8 +290,7 @@ def PDF_z(argv):
             plt.setp(patches, 'edgecolor', 'none') 
         
         """                                
-        #   n, bins, patches = plt.hist(par1, 20, facecolor=None,  histtype='step', normed=True, label=r'$z_s = $'+str(zs[i]))
-        """            
+                   
         n, bins, patches = plt.hist(par, 20, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
         plt.setp(patches, 'edgecolor', 'None')
             
@@ -299,29 +298,28 @@ def PDF_z(argv):
         x = numpy.linspace(par.min()-0.05,par.max()+0.05,3*Nlos)
         plt.plot(x, par_kde(x), color=c[i])
                                         
-        if 'height' in params:
-            height = params['height']
-            plt.vlines(par_mean, 0.0, height, 'k', linestyle='dashed')
+        plt.axvline(x=par_mean, color='k', linestyle='dashed')
             
         plt.xlabel(name)
         plt.ylabel(r'P(%s)' % name)   
                 
     plt.ticklabel_format(useOffset=False, axis='x')
-                                                        
-    plt.legend(loc=1)
+    plt.legend(loc=1)                                                        
+
+    outputfile = "figs/"+EXP_NAME+"_compare_z_Pof"+param+"_many_test.pdf"
     #                        
     plt.savefig(outputfile,dpi=300)
-    """
-    plt.figure(2)
 
-    plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
-#    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
-    plt.xlabel(r'$z_s$')
-    plt.legend(loc=1)
-                            
-    outputfile = "figs/Mu_zs.png" 
-
-    plt.savefig(outputfile,dpi=300)
+#    plt.figure(2)
+#
+#    plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
+##    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
+#    plt.xlabel(r'$z_s$')
+#    plt.legend(loc=1)
+#                            
+#    outputfile = "figs/Mu_zs.png" 
+#
+#    plt.savefig(outputfile,dpi=300)
     
     print pangloss.doubledashedline
     print "PDF_z: saved P("+param+") to",outputfile
