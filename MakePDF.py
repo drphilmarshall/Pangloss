@@ -516,6 +516,8 @@ def MakePDF(argv):
                     print "MakePDF: %s - no PDF will be made for this field" % (borg_field[i])    
                 
                 else:
+                    if var['param']=='Mu':
+                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", sub_pdf) 
                     sub_mean = numpy.mean(sub_pdf) 
                                 
                     print "MakePDF: %s - sampling %i LoS with number density ~ %.2f the average" % (borg_field[i], Nlos, density[i])   
