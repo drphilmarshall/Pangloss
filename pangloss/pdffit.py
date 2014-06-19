@@ -1,39 +1,52 @@
 import numpy as np
 import pylab as plt
+import scipy
 import numpy.polynomial.hermite as H
 from math import pi
 
 class GaussHermiteModel:
-    def __init__(self, n, mean, sd, uncertainty=1.):
+    def __init__(self, mean, sd, uncertainty=0.0):
         # Initial mean and sd are directly from the data
         self.initial_mean = mean
         self.initial_sd = sd
-        self.initial_guess = np.array([mean, sd, 1. ,0., 0., 0., 0.])
-        self.n = n
-        self.uncertainty = uncertainty
-    
+        self.initial_parameters = np.array([1. ,0., 0., 0., 0.])
+        
     def B(self, x, order):
         """"
-        Gauss-Hermite basis functions. Need to divide by function by sigma
+        Gauss-Hermite basis functions. Need to divide by sqrt(sigma) in the matrix
         ----------------------------------------------------------------------- 
         Input: x = mu - <mu> / sigma
                order < 5
         """
         herm_poly = [1., 2.*x, 4*(x**2.) - 2., 8*(x**3.) - 12*x, 16*(x**4.) - 48*(x**2) + 12.]
-        prefactor = (2.**float(order) * np.sqrt(pi) * np.factorial(order))**0.5
+        prefactor = (2.**float(order) * np.sqrt(pi) * np.math.factorial(order))**-0.5
         return prefactor*herm_poly[order]*np.exp(-(x**2.)/2.)
     
-    def fit_matrix(self, data, parameters):
+    def matrix_row(self, datapoint, mean, sd):
+        """
+        Fill each row with basis functions (known - calculated from mean, sd)     
+        """
+        x = (datapoint - mean)/sd        
+        row = np.array([self.B(x, 0), self.B(x, 1), self.B(x, 2), self.B(x, 3), self.B(x, 4)])
+        self.row = row/np.sqrt(sd)
+        
+        return self.row
+    
+    def fill_matrix(self, data, mean, sd):
         """
         A is matrix of basis functions (known - calculated from mean, sd)     
+        Fill each row of the matrix with the basis using for a given data point
         """
-        mean, sd = parameters
-        self.x = (data - mean)/sd
+        n_points = len(data)
+        n_params = len(self.initial_parameters)
         
-        self.A = []
-        for i in range(5): self.A.append(self.B(self.x, i))
+        self.A = np.zeros((n_points,n_params))
+        for i in range(n_points):
+            self.A[i,:] = self.matrix_row(data[i], mean, sd) 
+
+        return self.A
         
-    def predicted_values(self, Cn):
+    def predicted_values(self, A, Cn):
         """
         Fit for yi = Aij*Cj + ei, returns fitted values yfi
         -----------------------------------------------------------------------
@@ -41,68 +54,64 @@ class GaussHermiteModel:
         Cn is vector of coefficients (unknown - we want to find this)        
         """
         self.Cn = Cn
-        return np.dot(self.A, Cn)    
-    
-    def uncertainties(self, parameters):
-        return self.uncertainty*np.ones(self.n)
-    
-    def generate(self, parameters):
-        return (self.predicted_values(parameters) +
-            np.random.normal(scale=self.uncertainty,size=self.n))   
-            
-            
-            
+        return np.dot(A, Cn)     
+                             
 
 # ===============================================  
 
-def fit_linear_least_squares(model, data):
-    mean = np.mean(data)
-    sd = np.std(data)
+def fit_linear_least_squares(model, measured, points):
+    mean = np.mean(measured)
+    sd = np.std(measured) 
     
-    n_params = len(model.initial_guess)
-    n_data = len(data)
-    assert len(model.predicted_values(model.initial_guess))==n_data    
-    
-    coefficient_matrix = np.zeros((n_data,n_params))
-    for i in range(n_params):
-        params = np.zeros(n_params)
-        params[i] = 1
-        coefficient_matrix[:,i] = model.predicted_values(params)
-        
-    U,S,V = np.linalg.svd(arr, full_matrices=False)
+    # Fill each row of the matrix with the basis using for a given data point
+    # (data is the mu values)
+    coefficient_matrix = model.fill_matrix(points, mean, sd)
 
-    # v should be sorted.
-    # this solution should be equivalent to v[1,0] / -v[1,1]
-    # but I'm using this: http://stackoverflow.com/questions/5879986/pseudo-inverse-of-sparse-matrix-in-python
-    M = V[-1,0]/-V[-1,-1]
-    
-    x, residues, rank, s = np.linalg.lstsq(coefficient_matrix, data)
-    
-    return x
+    # Calculate the Least Squares solution from the matrix we just made
+    C, residues, rank, s = np.linalg.lstsq(coefficient_matrix, measured)
+#    C, residues = scipy.optimize.nnls(coefficient_matrix, measured)
+    print 'singular values:',s
+    return C, coefficient_matrix, residues
 
 # ===============================================   
      
 def demo_linear_least_squares():
-    true_parameters = np.array([2.,-1.])
-    n = 10
-    uncertainty = 0.1
+    """
+    Demo with a true gaussian
+    """
+    pdf = np.genfromtxt("../../BORG/LensingModifications/pangloss/figs/borg/all_PofMu.txt")            
+    points = pdf[:,0]
+    measure = pdf[:,1]
+    # Set up the true Cn
+    true_parameters = np.array([2., 0.0, -0.3, 0.5, 0.])
     
-    model = GaussHermiteModel(n,uncertainty)
+    # Make a Gaussion over the range 0-3 with mean=1, sd=0.2
+#    points = np.linspace(-2.,5.0,1001)
+    mean, sd = np.mean(pdf), np.std(pdf)
+    print mean, sd
     
-    xs = np.arange(n)/float(n)
-    data = model.generate(true_parameters)
+    # Initialise the model with given mean and sd
+    model = GaussHermiteModel(mean, sd) 
     
-    fit_parameters = fit_linear_least_squares(model, data)
-    
+    # Build the measured values      
+#    measure = np.exp(-(np.log(points) - mean)**2./(2.*sd**2.))/(np.sqrt(2.*pi)*points*sd)
+    measure_matrix = model.fill_matrix(points, mean, sd)
+    MTM = np.dot(measure_matrix.T, measure_matrix)
+    detMTM = np.linalg.det(MTM)
+    print detMTM
+#    measure = model.predicted_values(measure_matrix, true_parameters)
+                                         
+    # Find the Cn and matrix by fitting the model to the 'measured' data and the data points    
+    fit_parameters, matrix, residues = fit_linear_least_squares(model, measure, points)
+    print 'residues:',residues  
+    print 'parameters:',fit_parameters  
     
     plt.figure()
-    plt.errorbar(xs, data, uncertainty, label="data", fmt="+")
-    plt.plot(xs,model.fitting_function(true_parameters), label="true value")
-    plt.plot(xs,model.fitting_function(fit_parameters), label="fitted value")
-    plt.xlim(0,1)
+    plt.plot(points, measure, label="true values")
+    plt.plot(points, model.predicted_values(matrix, fit_parameters), label="fitted values")
     plt.title("Simple linear least-squares fitting")
     plt.legend(loc="best")
-    plt.savefig("linear-least-squares-1.png")
+    plt.savefig("linear-least-squares-hermitegauss1.png")
         
         
 if __name__=='__main__':

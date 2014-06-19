@@ -490,6 +490,10 @@ def MakePDF(argv):
             all_kde.covariance_factor = lambda : .2
             all_kde._compute_covariance()
             x = numpy.linspace(new_pdf.min()-0.2,new_pdf.max()+0.2,2000)
+
+            if var['param']=='Mu':
+                pmu_table = numpy.array([x, all_kde(x)]).T
+                numpy.savetxt("figs/borg/all_PofMu.txt", pmu_table)            
             plt.plot(x, all_kde(x), color='k', label=r'All LOS, $\langle$'+name+r'$_{uncalib}\rangle = $%.3f' % var['smooth']) # distribution function
                 
             plt.legend(loc=1)
@@ -516,8 +520,7 @@ def MakePDF(argv):
                     print "MakePDF: %s - no PDF will be made for this field" % (borg_field[i])    
                 
                 else:
-                    if var['param']=='Mu':
-                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", sub_pdf) 
+ 
                     sub_mean = numpy.mean(sub_pdf) 
                                 
                     print "MakePDF: %s - sampling %i LoS with number density ~ %.2f the average" % (borg_field[i], Nlos, density[i])   
@@ -536,6 +539,10 @@ def MakePDF(argv):
                     sub_kde = gaussian_kde(sub_pdf, bw_method=0.1)
                     sub_kde.covariance_factor = lambda : .2
                     sub_kde._compute_covariance()
+                    
+                    if var['param']=='Mu':
+                        pmu_table = numpy.array([x, sub_kde(x)]).T
+                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", pmu_table)
                 #    x = numpy.linspace(sub_pdf.min()-0.2,sub_pdf.max()+0.2,3*Nlos)                                        
                     plt.plot(x, all_kde(x), color='k', label=r'All LOS') # distribution function
                     plt.plot(x, sub_kde(x), color='r', label=r'$\xi = $ %.3f' % (density[i]) + r', $\langle$'+name+r'$\rangle = $%.3f' % sub_mean) # distribution function

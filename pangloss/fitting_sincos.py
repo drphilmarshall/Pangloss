@@ -8,7 +8,7 @@ class SinCosModel:
         self.n = n
         self.uncertainty = uncertainty
     
-    def fitting_function(self, parameters):
+    def predicted_values(self, parameters):
         a, b = parameters
         xs = np.arange(self.n)/float(self.n)
         return a*np.sin(2*np.pi*xs) + b*np.cos(2*np.pi*xs)
@@ -56,8 +56,8 @@ def demo_linear_least_squares():
     
     plt.figure()
     plt.errorbar(xs, data, uncertainty, label="data", fmt="+")
-    plt.plot(xs,model.fitting_function(true_parameters), label="true value")
-    plt.plot(xs,model.fitting_function(fit_parameters), label="fitted value")
+    plt.plot(xs,model.predicted_values(true_parameters), label="true value")
+    plt.plot(xs,model.predicted_values(fit_parameters), label="fitted value")
     plt.xlim(0,1)
     plt.title("Simple linear least-squares fitting")
     plt.legend(loc="best")
