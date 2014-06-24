@@ -542,7 +542,8 @@ def MakePDF(argv):
                     
                     if var['param']=='Mu':
                         pmu_table = numpy.array([x, sub_kde(x)]).T
-                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", pmu_table)
+                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu_gkde.txt", pmu_table)
+                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", sub_pdf)
                 #    x = numpy.linspace(sub_pdf.min()-0.2,sub_pdf.max()+0.2,3*Nlos)                                        
                     plt.plot(x, all_kde(x), color='k', label=r'All LOS') # distribution function
                     plt.plot(x, sub_kde(x), color='r', label=r'$\xi = $ %.3f' % (density[i]) + r', $\langle$'+name+r'$\rangle = $%.3f' % sub_mean) # distribution function
