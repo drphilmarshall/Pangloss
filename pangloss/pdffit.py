@@ -1,125 +1,260 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# ===========================================================================
+# Fit BoRG pdfs with 2 gaussians
+
+# http://nbviewer.ipython.org/github/CamDavidsonPilon/Probabilistic-Programming-and-Bayesian-Methods-for-Hackers/blob/master/Chapter3_MCMC/IntroMCMC.ipynb
+
+# ===========================================================================
+
+__author__ = 'cmason'
+
+# ===========================================================================
+# Import useful packages
+
 import numpy as np
+import pymc
 import pylab as plt
-import scipy
-import numpy.polynomial.hermite as H
+import scipy.stats as stats
+from astropy.io import ascii
+import os
+
 from math import pi
 
-class GaussHermiteModel:
-    def __init__(self, mean, sd, uncertainty=0.0):
-        # Initial mean and sd are directly from the data
-        self.initial_mean = mean
-        self.initial_sd = sd
-        self.initial_parameters = np.array([1. ,0., 0., 0., 0.])
-        
-    def B(self, x, order):
-        """"
-        Gauss-Hermite basis functions. Need to divide by sqrt(sigma) in the matrix
-        ----------------------------------------------------------------------- 
-        Input: x = mu - <mu> / sigma
-               order < 5
-        """
-        herm_poly = [1., 2.*x, 4*(x**2.) - 2., 8*(x**3.) - 12*x, 16*(x**4.) - 48*(x**2) + 12.]
-        prefactor = (2.**float(order) * np.sqrt(pi) * np.math.factorial(order))**-0.5
-        return prefactor*herm_poly[order]*np.exp(-(x**2.)/2.)
+# ============================================================================
+
+def fit_gauss(pdf, sample1, burnin, sample2):
     
-    def matrix_row(self, datapoint, mean, sd):
-        """
-        Fill each row with basis functions (known - calculated from mean, sd)     
-        """
-        x = (datapoint - mean)/sd        
-        row = np.array([self.B(x, 0), self.B(x, 1), self.B(x, 2), self.B(x, 3), self.B(x, 4)])
-        self.row = row/sd
-#        self.row = row/np.sqrt(sd)
-        
-        return self.row
-    
-    def fill_matrix(self, data, mean, sd):
-        """
-        A is matrix of basis functions (known - calculated from mean, sd)     
-        Fill each row of the matrix with the basis using for a given data point
-        """
-        n_points = len(data)
-        n_params = len(self.initial_parameters)
-        
-        self.A = np.zeros((n_points,n_params))
-        for i in range(n_points):
-            self.A[i,:] = self.matrix_row(data[i], mean, sd) 
-
-        return self.A
-        
-    def predicted_values(self, A, Cn):
-        """
-        Fit for yi = Aij*Cj + ei, returns fitted values yfi
-        -----------------------------------------------------------------------
-        A is matrix of basis functions (known - calculated from mean, sd)
-        Cn is vector of coefficients (unknown - we want to find this)        
-        """
-        self.Cn = Cn
-        return np.dot(A, Cn)     
-                             
-
-# ===============================================  
-
-def fit_linear_least_squares(model, measured, points):
-    mean = np.mean(measured)
-    sd = np.std(measured) 
-    
-    # Fill each row of the matrix with the basis using for a given data point
-    # (data is the mu values)
-    coefficient_matrix = model.fill_matrix(points, mean, sd)
-
-    # Calculate the Least Squares solution from the matrix we just made
-    C, residues, rank, s = np.linalg.lstsq(coefficient_matrix, measured)
-#    C, residues = scipy.optimize.nnls(coefficient_matrix, measured)
-    print 'singular values:',s
-    return C, coefficient_matrix, residues
-
-# ===============================================   
-     
-def demo_linear_least_squares():
     """
-    Demo with a true gaussian
+    We're going to fit with 2 gaussians - one broad, with mean ~ 1, 
+    one narrow, with mean <1
+    
+    We do this by assuming two clusters of the data:
+        1) For each data point, it belongs in cluster 1 with probability p
+            or in cluster 2 with probability 1-p (cluster number i=0,1)
+        2) Draw a random variate from a Normal distribution with parameters 
+            μi and σi where i was chosen in step 1
+        3) Repeat
     """
-    pdf = np.genfromtxt("../../BORG/LensingModifications/pangloss/figs/borg/all_PofMu.txt")            
-    points = pdf[:,0]
-    measure = pdf[:,1]
-    mean, sd = np.mean(pdf), np.std(pdf)
+
+    # ===========================================================================
+    # MCMC Fit
+
+    # ----------------------------------------------------------------------------
+    # We don't know p but it is between 0 and 1. Assume it is uniformly distributed
+    p = pymc.Uniform("p", 0, 1)
     
-    # Set up the true Cn
-    # Make a Gaussion over the range 0-3 with mean=1, sd=0.2
-    '''
-    true_parameters = np.array([1., 0.0, 0., 0., 0.])
-    points = np.linspace(-3.,3.,1000)
-    mean, sd = 1.0, 0.5
-    '''
-    print mean, sd
+    # Assign data points to clusters using Categorical: value=k-length array of probs
+    assignment = pymc.Categorical("assignment", [p, 1 - p], size=borg_pdf.shape[0])
+    print "prior assignment, with p = %.2f:" % p.value
+    print assignment.value[:10], "..."
     
-    # Initialise the model with given mean and sd
-    model = GaussHermiteModel(mean, sd) 
+    # ----------------------------------------------------------------------------
+    # tau is 'Precision'. Give the range of standard deviations
+    taus = 1.0 / pymc.Uniform("stds", 0, 1 , size=2) ** 2
+    #taus = 1.0 / pymc.Normal("stds", [0.2, 0.8], [4.0, 1.0], size=2) ** 2
     
-    # Build the measured values      
-#    measure_pure = np.exp(-(points - mean)**2./(2.*(sd**2.)))/(np.sqrt(2.*pi)*sd)
-#    measure_matrix = model.fill_matrix(points, mean, sd)
-    #MTM = np.dot(measure_matrix.T, measure_matrix)
-    #detMTM = np.linalg.det(MTM)
-    #print detMTM
-#    measure = model.predicted_values(measure_matrix, true_parameters)
-                                         
-    # Find the Cn and matrix by fitting the model to the 'measured' data and the data points    
-    fit_parameters, matrix, residues = fit_linear_least_squares(model, measure, points)
-    print 'residues:',residues  
-    print 'parameters:',fit_parameters  
+    # Priors: predict centres and taus (1/std^2)
+    centers = pymc.Normal("centers", [0.8, 1.0], [25.0, 0.25], size=2)
+    
+    """
+    The below deterministic functions map an assignment, in this case 0 or 1,
+    to a set of parameters, located in the (1,2) arrays `taus` and `centers`.
+    """
+    
+    @pymc.deterministic
+    def center_i(assignment=assignment, centers=centers):
+        return centers[assignment]
+    
+    @pymc.deterministic
+    def tau_i(assignment=assignment, taus=taus):
+        return taus[assignment]
+    
+    print "Random assignments: ", assignment.value[:4], "..."
+    print "Assigned center: ", center_i.value[:4], "..."
+    print "Assigned precision: ", tau_i.value[:4], "..."
+    
+    # and to combine it with the observations:
+    observations = pymc.Normal("obs", center_i, tau_i, value=borg_pdf, observed=True)
+    
+    # below we create a model class
+    model = pymc.Model([p, assignment, taus, centers])
+    
+    # Sample the space with 50000 steps
+    map_ = pymc.MAP( model )
+    map_.fit()
+    print "means MAP:",centers.value,"std MAP:",1./np.sqrt(taus.value)
+
+    mcmc = pymc.MCMC(model)
+    mcmc.sample(sample1, burnin)
+    sample1_ = sample1 - burnin
+    
+    # ----------------------------------------------------------------------------
+    # Plot the traces of the parameters - i.e. do they converge?
+    center_trace = mcmc.trace("centers")[:]
+    std_trace = mcmc.trace("stds")[:]    
+    p_trace = mcmc.trace("p")[:]
+
+    colors = ["#A60628", "#348ABD"]
+
+    # plt.figure(figsize=(12.5, 9))
+
+    # lw = 1
+
+    
+    # plt.subplot(311)
+    # plt.plot(center_trace[:, 0], label="trace of center 0", c=colors[0], lw=lw)
+    # plt.plot(center_trace[:, 1], label="trace of center 1", c=colors[1], lw=lw)
+    # plt.title("Traces of unknown parameters")
+    # leg = plt.legend(loc="upper right")
+    # leg.get_frame().set_alpha(0.7)
+    
+    # plt.subplot(312)
+    # plt.plot(std_trace[:, 0], label="trace of standard deviation of cluster 0",
+    #     c=colors[0], lw=lw)
+    # plt.plot(std_trace[:, 1], label="trace of standard deviation of cluster 1",
+    #     c=colors[1], lw=lw)
+    # plt.legend(loc="upper left")
+    
+    # plt.subplot(313)
+    # plt.plot(p_trace, label="$p$: frequency of assignment to cluster 0",
+    #     color="#467821", lw=lw)
+    # plt.xlabel("Steps")
+    # plt.ylim(0, 1)
+    # plt.legend()
+    
+    # ----------------------------------------------------------------------------   
+    # sample again
+    mcmc.sample(sample2)
+    
+    # plt.figure(figsize=(12.5, 4))
+    # center_trace = mcmc.trace("centers", chain=1)[:]
+    # prev_center_trace = mcmc.trace("centers", chain=0)[:]
+    
+    # x = np.arange(sample1_)
+    # plt.plot(x, prev_center_trace[:, 0], label="previous trace of center 0",
+    #     lw=lw, alpha=0.4, c=colors[1])
+    # plt.plot(x, prev_center_trace[:, 1], label="previous trace of center 1",
+    #     lw=lw, alpha=0.4, c=colors[0])
+    
+    # x = np.arange(sample1_, sample1_ + sample2)
+    # plt.plot(x, center_trace[:, 0], label="new trace of center 0", lw=lw, c="#348ABD")
+    # plt.plot(x, center_trace[:, 1], label="new trace of center 1", lw=lw, c="#A60628")
+    
+    # plt.title("Traces of unknown center parameters")
+    # leg = plt.legend(loc="upper right")
+    # leg.get_frame().set_alpha(0.8)
+    # plt.xlabel("Steps")
+
+
+    # ----------------------------------------------------------------------------   
+    # # Plot the posteriors for each cluster
+    # plt.figure()
+    # _i = [1, 2, 3, 0]
+    # for i in range(2):
+    #     plt.subplot(2, 2, _i[2 * i])
+    #     plt.title("Posterior of center of cluster %d" % i)
+    #     plt.hist(center_trace[:, i], color=colors[i], bins=30,
+    #             histtype="stepfilled")
+    
+    #     plt.subplot(2, 2, _i[2 * i + 1])
+    #     plt.title("Posterior of standard deviation of cluster %d" % i)
+    #     plt.hist(std_trace[:, i], color=colors[i], bins=30,
+    #             histtype="stepfilled")
+    #     # plt.autoscale(tight=True)
+    
+ 
+
+
+    # p, std are uniform - so get their means
+    # centers are normal, so want most probable value
+
+#   posterior_center_means = center_trace.mean(axis=0)
+    posterior_center_mostprob = [np.mean(center_trace[:,0]), np.mean(center_trace[:,1])]
+#    posterior_std_means = [np.mean(std_trace[:,0]), np.mean(std_trace[:,1])]
+    posterior_std_means = std_trace.mean(axis=0)
+    posterior_p_mean = mcmc.trace("p")[:].mean()
+
+    del model
+    del mcmc
+    del map_
+    del taus, assignment, observations, centers
+
+    return posterior_p_mean, posterior_center_mostprob[0], posterior_std_means[0], posterior_center_mostprob[1], posterior_std_means[1]
+
+# ===========================================================================
+# Get the BoRG pdfs
+
+dropout_fields = np.genfromtxt('../BORG/LensingModifications/python/data/borg_fields.csv', comments = '#', delimiter="\t", usecols=0, dtype='S30')
+borg_pdf_table = []
+
+# 12 at a time
+for i in range(11):
+    pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu.txt"
+    borg_pdf = np.genfromtxt(pdf_file, comments = '#')
+
+    mask = np.where(borg_pdf >= 0.)
+    borg_pdf = borg_pdf[mask]
+
+    # ----------------------------------------------------------------------------   
+    # Do the fit
+    p, mean1, std1, mean2, std2 = fit_gauss(borg_pdf, 50000, 40000, 150000)
+
+    # ----------------------------------------------------------------------------   
+    # Plot the final pdfs
+
+    colors = ["#A60628", "#348ABD"]
     
     plt.figure()
-    plt.plot(points, measure, label="true values")
-#    plt.plot(points, model.predicted_values(matrix, true_parameters), label="true values via matrix")
-    plt.plot(points, model.predicted_values(matrix, fit_parameters), label="fitted values")
-    plt.title("Simple linear least-squares fitting")
-    plt.legend(loc="best")
-    plt.savefig("linear-least-squares-hermitegauss1.png")
-        
-        
-if __name__=='__main__':
-  np.random.seed(0)
-  demo_linear_least_squares()
-  plt.show()            
+    x = np.linspace(0.0, borg_pdf.max(), 500)
+    
+    # Plot kde
+    kde = stats.kde.gaussian_kde(borg_pdf)
+    plt.plot(x, kde(x), color='k', linestyle='dashed', label="Gaussian KDE")
+    
+    # Plot histogram
+    plt.hist(borg_pdf, bins=20, histtype="step", normed=True, color="k",
+                        lw=2, label="Histogram")
+
+    # Cluster 1
+    y1 = p * stats.norm.pdf(x, loc=mean1, scale=std1)
+    plt.plot(x, y1, color=colors[0], label="Cluster 0", lw=3)
+    plt.fill_between(x, y1, color=colors[0], alpha=0.3)
+   
+    # Cluster 2    
+    y2 = (1 - p) * stats.norm.pdf(x, loc=mean2, scale=std2)
+    plt.plot(x, y2, color=colors[1], label="Cluster 1", lw=3)
+    plt.fill_between(x, y2, color=colors[1], alpha=0.3)
+
+    # Joint pdf
+    plt.plot(x, y1+y2, label="Joint pdf", color="orange", lw=3)                
+
+    plt.xlabel(r'$\mu$')
+    plt.ylabel(r'$P(\mu)$')
+    plt.legend(loc="upper right")
+    plt.tight_layout()
+    
+    plt.title(dropout_fields[i]+": Magnification PDF")
+    
+    plt.tight_layout()
+    savedfile = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu_MCMC.pdf"
+    plt.savefig(savedfile,dpi=300)
+    print "Plot saved as "+os.getcwd()+"/"+savedfile
+
+    # ----------------------------------------------------------------------------   
+    # Save the parameters to a file
+
+    table = [p, mean1, std1, mean2, std2 ]
+    borg_pdf_table.append(table)
+    
+    plt.clf()
+
+    del table
+
+borg_pdf_table = np.array(borg_pdf_table)
+ascii.write(borg_pdf_table, 'borg_pdf_table1.txt', names=['p', 'mean1', 'std1', 'mean2', 'std2'])
+
+
+
+
