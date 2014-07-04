@@ -190,7 +190,7 @@ dropout_fields = np.genfromtxt('../BORG/LensingModifications/python/data/borg_fi
 borg_pdf_table = []
 
 # 12 at a time
-for i in range(11):
+for i in range(20):
     pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu.txt"
     borg_pdf = np.genfromtxt(pdf_file, comments = '#')
 
