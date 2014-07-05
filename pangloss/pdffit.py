@@ -170,8 +170,8 @@ def fit_gauss(pdf, sample1, burnin, sample2):
     # p, std are uniform - so get their means
     # centers are normal, so want most probable value
 
-#   posterior_center_means = center_trace.mean(axis=0)
-    posterior_center_mostprob = [np.mean(center_trace[:,0]), np.mean(center_trace[:,1])]
+    posterior_center_means = center_trace.mean(axis=0)
+#    posterior_center_mostprob = [np.mean(center_trace[:,0]), np.mean(center_trace[:,1])]
 #    posterior_std_means = [np.mean(std_trace[:,0]), np.mean(std_trace[:,1])]
     posterior_std_means = std_trace.mean(axis=0)
     posterior_p_mean = mcmc.trace("p")[:].mean()
@@ -199,7 +199,7 @@ for i in range(20):
 
     # ----------------------------------------------------------------------------   
     # Do the fit
-    p, mean1, std1, mean2, std2 = fit_gauss(borg_pdf, 50000, 40000, 150000)
+    p, mean1, std1, mean2, std2 = fit_gauss(borg_pdf, 50000, 40000, 100000)
 
     # ----------------------------------------------------------------------------   
     # Plot the final pdfs
