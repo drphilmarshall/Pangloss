@@ -204,56 +204,56 @@ for i in range(20):
     # ----------------------------------------------------------------------------   
     # Plot the final pdfs
 
-    colors = ["#A60628", "#348ABD"]
+    # colors = ["#A60628", "#348ABD"]
     
-    plt.figure()
-    x = np.linspace(0.0, borg_pdf.max(), 500)
+    # plt.figure()
+    # x = np.linspace(0.0, borg_pdf.max(), 500)
     
-    # Plot kde
-    kde = stats.kde.gaussian_kde(borg_pdf)
-    plt.plot(x, kde(x), color='k', linestyle='dashed', label="Gaussian KDE")
+    # # Plot kde
+    # kde = stats.kde.gaussian_kde(borg_pdf)
+    # plt.plot(x, kde(x), color='k', linestyle='dashed', label="Gaussian KDE")
     
-    # Plot histogram
-    plt.hist(borg_pdf, bins=20, histtype="step", normed=True, color="k",
-                        lw=2, label="Histogram")
+    # # Plot histogram
+    # plt.hist(borg_pdf, bins=20, histtype="step", normed=True, color="k",
+    #                     lw=2, label="Histogram")
 
-    # Cluster 1
-    y1 = p * stats.norm.pdf(x, loc=mean1, scale=std1)
-    plt.plot(x, y1, color=colors[0], label="Cluster 0", lw=3)
-    plt.fill_between(x, y1, color=colors[0], alpha=0.3)
+    # # Cluster 1
+    # y1 = p * stats.norm.pdf(x, loc=mean1, scale=std1)
+    # plt.plot(x, y1, color=colors[0], label="Cluster 0", lw=3)
+    # plt.fill_between(x, y1, color=colors[0], alpha=0.3)
    
-    # Cluster 2    
-    y2 = (1 - p) * stats.norm.pdf(x, loc=mean2, scale=std2)
-    plt.plot(x, y2, color=colors[1], label="Cluster 1", lw=3)
-    plt.fill_between(x, y2, color=colors[1], alpha=0.3)
+    # # Cluster 2    
+    # y2 = (1 - p) * stats.norm.pdf(x, loc=mean2, scale=std2)
+    # plt.plot(x, y2, color=colors[1], label="Cluster 1", lw=3)
+    # plt.fill_between(x, y2, color=colors[1], alpha=0.3)
 
-    # Joint pdf
-    plt.plot(x, y1+y2, label="Joint pdf", color="orange", lw=3)                
+    # # Joint pdf
+    # plt.plot(x, y1+y2, label="Joint pdf", color="orange", lw=3)                
 
-    plt.xlabel(r'$\mu$')
-    plt.ylabel(r'$P(\mu)$')
-    plt.legend(loc="upper right")
-    plt.tight_layout()
+    # plt.xlabel(r'$\mu$')
+    # plt.ylabel(r'$P(\mu)$')
+    # plt.legend(loc="upper right")
+    # plt.tight_layout()
     
-    plt.title(dropout_fields[i]+": Magnification PDF")
+    # plt.title(dropout_fields[i]+": Magnification PDF")
     
-    plt.tight_layout()
-    savedfile = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu_MCMC.pdf"
-    plt.savefig(savedfile,dpi=300)
-    print "Plot saved as "+os.getcwd()+"/"+savedfile
+    # plt.tight_layout()
+    # savedfile = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu_MCMC.pdf"
+    # plt.savefig(savedfile,dpi=300)
+    # print "Plot saved as "+os.getcwd()+"/"+savedfile
 
     # ----------------------------------------------------------------------------   
     # Save the parameters to a file
 
-    table = [p, mean1, std1, mean2, std2 ]
+    table = [dropout_fields[i], p, mean1, std1, mean2, std2 ]
     borg_pdf_table.append(table)
     
-    plt.clf()
+    # plt.clf()
 
-    del table
+    # del table
 
 borg_pdf_table = np.array(borg_pdf_table)
-ascii.write(borg_pdf_table, 'borg_pdf_table1.txt', names=['p', 'mean1', 'std1', 'mean2', 'std2'])
+ascii.write(borg_pdf_table, 'borg_pdf_table1.txt', names=['Field', 'p', 'mean1', 'std1', 'mean2', 'std2'])
 
 
 
