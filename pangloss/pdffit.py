@@ -24,7 +24,7 @@ from math import pi
 
 # ============================================================================
 
-def fit_gauss(pdf, sample1, burnin, sample2):
+def fit_gauss(pdf, center1, center2, sample1, burnin, sample2):
     
     """
     We're going to fit with 2 gaussians - one broad, with mean ~ 1, 
@@ -56,7 +56,7 @@ def fit_gauss(pdf, sample1, burnin, sample2):
     #taus = 1.0 / pymc.Normal("stds", [0.2, 0.8], [4.0, 1.0], size=2) ** 2
     
     # Priors: predict centres and taus (1/std^2)
-    centers = pymc.Normal("centers", [0.8, 1.0], [25.0, 0.25], size=2)
+    centers = pymc.Normal("centers", [center1, center2], [25.0, 0.25], size=2)
     
     """
     The below deterministic functions map an assignment, in this case 0 or 1,
@@ -181,71 +181,38 @@ def fit_gauss(pdf, sample1, burnin, sample2):
     del map_
     del taus, assignment, observations, centers
 
-    return posterior_p_mean, posterior_center_mostprob[0], posterior_std_means[0], posterior_center_mostprob[1], posterior_std_means[1]
+    return posterior_p_mean, posterior_center_means[0], posterior_std_means[0], posterior_center_means[1], posterior_std_means[1]
 
 # ===========================================================================
 # Get the BoRG pdfs
 
-dropout_fields = np.genfromtxt('../BORG/LensingModifications/python/data/borg_fields.csv', comments = '#', delimiter="\t", usecols=0, dtype='S30')
+borg_field = np.genfromtxt('../BORG/LensingModifications/pangloss/data/borg_overdensity.txt', comments = '#', skip_header=1, usecols=0, dtype='S30')
 borg_pdf_table = []
 
+# doagain = ['borg_0240-1857','borg_0952+5304', 'borg_1031+5052', 'borg_1059+0519', 
+#             'borg_1119+4026', 'borg_1301+0000', 'borg_1358+4326', '1408+5503']
+doagain = ['borg_1059+0519']
+
+
 # 12 at a time
-for i in range(20):
-    pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu.txt"
+for i in range(len(doagain)):
+    print len(doagain)
+    field = doagain[i] #borg_field[i+60]
+    pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+field+"_PofMu.txt"
     borg_pdf = np.genfromtxt(pdf_file, comments = '#')
 
     mask = np.where(borg_pdf >= 0.)
     borg_pdf = borg_pdf[mask]
 
+    mode = stats.mode(borg_pdf)[0]
     # ----------------------------------------------------------------------------   
     # Do the fit
-    p, mean1, std1, mean2, std2 = fit_gauss(borg_pdf, 50000, 40000, 100000)
+    p, mean1, std1, mean2, std2 = fit_gauss(pdf=borg_pdf, center1 = mode, center2 = 1.2, sample1=50000, burnin=40000, sample2=200000)
 
-    # ----------------------------------------------------------------------------   
-    # Plot the final pdfs
 
-    # colors = ["#A60628", "#348ABD"]
-    
-    # plt.figure()
-    # x = np.linspace(0.0, borg_pdf.max(), 500)
-    
-    # # Plot kde
-    # kde = stats.kde.gaussian_kde(borg_pdf)
-    # plt.plot(x, kde(x), color='k', linestyle='dashed', label="Gaussian KDE")
-    
-    # # Plot histogram
-    # plt.hist(borg_pdf, bins=20, histtype="step", normed=True, color="k",
-    #                     lw=2, label="Histogram")
-
-    # # Cluster 1
-    # y1 = p * stats.norm.pdf(x, loc=mean1, scale=std1)
-    # plt.plot(x, y1, color=colors[0], label="Cluster 0", lw=3)
-    # plt.fill_between(x, y1, color=colors[0], alpha=0.3)
-   
-    # # Cluster 2    
-    # y2 = (1 - p) * stats.norm.pdf(x, loc=mean2, scale=std2)
-    # plt.plot(x, y2, color=colors[1], label="Cluster 1", lw=3)
-    # plt.fill_between(x, y2, color=colors[1], alpha=0.3)
-
-    # # Joint pdf
-    # plt.plot(x, y1+y2, label="Joint pdf", color="orange", lw=3)                
-
-    # plt.xlabel(r'$\mu$')
-    # plt.ylabel(r'$P(\mu)$')
-    # plt.legend(loc="upper right")
-    # plt.tight_layout()
-    
-    # plt.title(dropout_fields[i]+": Magnification PDF")
-    
-    # plt.tight_layout()
-    # savedfile = "../BORG/LensingModifications/pangloss/figs/borg/"+dropout_fields[i]+"_PofMu_MCMC.pdf"
-    # plt.savefig(savedfile,dpi=300)
-    # print "Plot saved as "+os.getcwd()+"/"+savedfile
-
-    # ----------------------------------------------------------------------------   
     # Save the parameters to a file
 
-    table = [dropout_fields[i], p, mean1, std1, mean2, std2 ]
+    table = [field, p, mean1, std1, mean2, std2 ]
     borg_pdf_table.append(table)
     
     # plt.clf()
@@ -253,7 +220,7 @@ for i in range(20):
     # del table
 
 borg_pdf_table = np.array(borg_pdf_table)
-ascii.write(borg_pdf_table, 'borg_pdf_table1.txt', names=['Field', 'p', 'mean1', 'std1', 'mean2', 'std2'])
+ascii.write(borg_pdf_table, 'borg_pdf_table_again2.txt', names=['Field', 'p', 'mean1', 'std1', 'mean2', 'std2'])
 
 
 
