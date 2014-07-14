@@ -155,7 +155,7 @@ def PDF_z(argv):
     radius_cone = 1.0
     area = pi * radius_cone**2.        
  
-    plt.figure(1)
+    # plt.figure(1)
     
     for i in range(len(zs)):
         print 'Source redshift =',zs[i]
