@@ -195,10 +195,13 @@ doagain = ['borg_1059+0519']
 
 
 # 12 at a time
-for i in range(len(doagain)):
-    print len(doagain)
-    field = doagain[i] #borg_field[i+60]
-    pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+field+"_PofMu.txt"
+for i in range(1):
+    field = "All BoRG fields"
+    pdf_file = 
+
+    # field = doagain[i] #borg_field[i+60]
+    # pdf_file = "../BORG/LensingModifications/pangloss/figs/borg/"+field+"_PofMu.txt"
+
     borg_pdf = np.genfromtxt(pdf_file, comments = '#')
 
     mask = np.where(borg_pdf >= 0.)

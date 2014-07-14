@@ -95,7 +95,7 @@ def PDF_z(argv):
 
     zd = experiment.parameters['StrongLensRedshift']
   #  zs = numpy.arange(1.0, 8.0, 0.5)
-    zs = [1.1, 2.1, 5.7, 8.0]
+    zs = [1.1, 2.1, 5.7, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0]
 
     Ncats = 21
     
@@ -228,7 +228,7 @@ def PDF_z(argv):
 #        del pk
         del pmu
     
-        pmu = pangloss.readPickle(CALIB_DIR+"/many_z_PofMu_z="+str(zs)+".pickle")
+        #pmu = pangloss.readPickle(CALIB_DIR+"/many_z_PofMu_z="+str(zs)+".pickle")
 #        pk = pangloss.readPickle(CALIB_DIR+"/Pofk_z="+str(zs)+".pickle")
     
         
@@ -240,60 +240,60 @@ def PDF_z(argv):
 #        sub_pdf = numpy.array(sub_pdf) 
 #        print 'For fields of overdensity %.2f, we have %i lightcones'%(density,len(sub_pdf))
                             
-        # ==============================================================
-        # Plot the pdfs
-        # ==============================================================
-        
-        # Smooth component corrections
-#        kappa_smooth = numpy.mean(pk)
-        mu_smooth = numpy.mean(pmu)
-
-        sub_mu = sub_pdf - mu_smooth + 1.0
-#        print numpy.mean(sub_mu)
-        mean_mu.append(numpy.mean(sub_mu))
-        sd_mu.append(numpy.std(sub_mu))
-        
-        if parameter == 'Kappa':
-            pass
-#            params = {'param':'Kappa', 'name':r'$\kappa$', 'pdf':pk,
-#                        'smooth':kappa_smooth, 'mean':0.0, 'height':35}            
-        
-        elif parameter == 'Gamma':
-            params = {'param':'Gamma', 'name':r'$\gamma$', 'pdf':pg} 
-        
-        else:
-            params = {'param':'Mu', 'name':r'$\mu$', 'pdf':pmu,
-                        'smooth':mu_smooth, 'mean':1.0, 'height':18}
-           
-        param = params['param']
-        name = params['name']
-        pdf = params['pdf']
-        
-        par = pdf                  
-                            
-        if param == 'Kappa':
-            smooth = params['smooth']
-            mean = params['mean']
-            par = par - smooth + mean
-        
-        if param == 'Mu':
-            smooth = params['smooth']
-            mean = params['mean']
-            par1 = par - smooth + mean
-           # print par1.min(), par1.max()
-            mask = numpy.where((par > -1.0) & (par < 2.0)) 
-            par = par[mask]
-            smooth_new = numpy.mean(par) 
-            par = par - smooth_new + mean
-            par_mean = numpy.mean(par) 
-#            plt.xlim(0.75,1.25)    
-                
-                        
-#        outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many.pdf" 
-             
-        par_mean = numpy.mean(par) 
-        
-        Nlos = len(par)            
+#        # ==============================================================
+#        # Plot the pdfs
+#        # ==============================================================
+#        
+#        # Smooth component corrections
+##        kappa_smooth = numpy.mean(pk)
+#        mu_smooth = numpy.mean(pmu)
+#
+#        sub_mu = sub_pdf - mu_smooth + 1.0
+##        print numpy.mean(sub_mu)
+#        mean_mu.append(numpy.mean(sub_mu))
+#        sd_mu.append(numpy.std(sub_mu))
+#        
+#        if parameter == 'Kappa':
+#            pass
+##            params = {'param':'Kappa', 'name':r'$\kappa$', 'pdf':pk,
+##                        'smooth':kappa_smooth, 'mean':0.0, 'height':35}            
+#        
+#        elif parameter == 'Gamma':
+#            params = {'param':'Gamma', 'name':r'$\gamma$', 'pdf':pg} 
+#        
+#        else:
+#            params = {'param':'Mu', 'name':r'$\mu$', 'pdf':pmu,
+#                        'smooth':mu_smooth, 'mean':1.0, 'height':18}
+#           
+#        param = params['param']
+#        name = params['name']
+#        pdf = params['pdf']
+#        
+#        par = pdf                  
+#                            
+#        if param == 'Kappa':
+#            smooth = params['smooth']
+#            mean = params['mean']
+#            par = par - smooth + mean
+#        
+#        if param == 'Mu':
+#            smooth = params['smooth']
+#            mean = params['mean']
+#            par1 = par - smooth + mean
+#           # print par1.min(), par1.max()
+#            mask = numpy.where((par > -1.0) & (par < 2.0)) 
+#            par = par[mask]
+#            smooth_new = numpy.mean(par) 
+#            par = par - smooth_new + mean
+#            par_mean = numpy.mean(par) 
+##            plt.xlim(0.75,1.25)    
+#                
+#                        
+##        outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many.pdf" 
+#             
+#        par_mean = numpy.mean(par) 
+#        
+#        Nlos = len(par)            
             
         """    
             par1 = pg1[:,0]
@@ -316,34 +316,34 @@ def PDF_z(argv):
             plt.setp(patches, 'edgecolor', 'none') 
         
         """                                
-        IQR = numpy.percentile(par, 75) - numpy.percentile(par, 25)
-        Nbins = 6./(2 * IQR * (float(Nlos))**(-1./3.))
-        Nbins = int(round(Nbins,-1))/10
-        print 'Nbins =', Nbins                  
-        
-        n, bins, patches = plt.hist(par, Nbins, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
-        plt.setp(patches, 'edgecolor', 'None')
-            
-        par_kde = gaussian_kde(par, bw_method=0.1)#/new_pdf.std(ddof=1))
-        par_kde.covariance_factor = lambda : .05
-        par_kde._compute_covariance()        
-                
-        x = numpy.linspace(par.min()-0.05,par.max()+0.05,1000)
-        plt.plot(x, par_kde(x), color=c[i])
-                                        
-        plt.axvline(x=par_mean, color='k', linestyle='dashed')
-            
-        plt.xlabel(name)
-        plt.ylabel(r'P(%s)' % name)   
-                
-    plt.ticklabel_format(useOffset=False, axis='x')
-    plt.legend(loc=1)                                                        
-
-    outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many_test.pdf"
-                           
-    plt.savefig(outputfile,dpi=300)
-
-#    plt.figure(2)
+#        IQR = numpy.percentile(par, 75) - numpy.percentile(par, 25)
+#        Nbins = 6./(2 * IQR * (float(Nlos))**(-1./3.))
+#        Nbins = int(round(Nbins,-1))/10
+#        print 'Nbins =', Nbins                  
+#        
+#        n, bins, patches = plt.hist(par, Nbins, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+#        plt.setp(patches, 'edgecolor', 'None')
+#            
+#        par_kde = gaussian_kde(par, bw_method=0.1)#/new_pdf.std(ddof=1))
+#        par_kde.covariance_factor = lambda : .05
+#        par_kde._compute_covariance()        
+#                
+#        x = numpy.linspace(par.min()-0.05,par.max()+0.05,1000)
+#        plt.plot(x, par_kde(x), color=c[i])
+#                                        
+#        plt.axvline(x=par_mean, color='k', linestyle='dashed')
+#            
+#        plt.xlabel(name)
+#        plt.ylabel(r'P(%s)' % name)   
+#                
+#    plt.ticklabel_format(useOffset=False, axis='x')
+#    plt.legend(loc=1)                                                        
+#
+#    outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many_test.pdf"
+#                           
+#    plt.savefig(outputfile,dpi=300)
+#
+##    plt.figure(2)
 #
 #    plt.plot(zs, mean_mu, label=r'$\langle \mu \rangle$')
 ##    plt.plot(zs, sd_mu, label=r'$\sigma_\mu$')
