@@ -96,7 +96,7 @@ def PDF_z(argv):
     zd = experiment.parameters['StrongLensRedshift']
   #  zs = numpy.arange(1.0, 8.0, 0.5)
     #zs = [1.1, 2.1, 5.7]
-    zs = [12.0, 14.0, 16.0, 18.0, 20.0]
+    zs = [16.0, 18.0, 20.0]
 
     Ncats = 21
     
