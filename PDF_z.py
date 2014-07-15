@@ -224,7 +224,7 @@ def PDF_z(argv):
     # Write PDFs to pickles
                     
 #        pangloss.writePickle(pk,CALIB_DIR+"/Pofk_z="+str(zs)+".pickle")
-        pangloss.writePickle(pmu,CALIB_DIR+"/many_z_PofMu_z="+str(zs)+".pickle")
+        pangloss.writePickle(pmu,CALIB_DIR+"/many_z_PofMu_z="+str(zs[i])+".pickle")
         
 #        del pk
         del pmu
