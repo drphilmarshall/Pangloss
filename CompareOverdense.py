@@ -8,7 +8,6 @@ import pangloss
 import sys,getopt,cPickle,numpy,glob
 import matplotlib.pyplot as plt
 
-from scipy.stats.kde import gaussian_kde
 from math import pi
 from astropy.io import ascii
 import os
@@ -108,9 +107,6 @@ def CompareOverdense(argv):
     
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
 
-    zd = experiment.parameters['StrongLensRedshift']
-    zs = 8.0 #experiment.parameters['SourceRedshift']
-
     # --------------------------------------------------------------------    
     # Load the lightcone pickles
     
@@ -125,23 +121,6 @@ def CompareOverdense(argv):
                
     # Reconstruct calibration lines of sight?
     DoCal = experiment.parameters['ReconstructCalibrations']
-
-    
-    # --------------------------------------------------------------------
-    # Read in lightcones from pickles:
-
-    calcones = []
-
-    for i in xrange(Nc):         
-        calcones.append(pangloss.readPickle(calpickles[i]))
-        if i==0: print calpickles[i]
-    
-    if DoCal=="False": #must be string type
-        calcones=[]
-        calpickles=[]
-
-    allcones = calcones
-    allconefiles = calpickles 
     
     # ==============================================================    
     # Test how density scales with LoS
@@ -162,23 +141,28 @@ def CompareOverdense(argv):
    
     # Sort into lightcones for each field
     for i in xrange(Nc): 
+        if i % 1000 == 0 and i !=0:
+            print ("Drill: ...on cone %i out of %i..." % (i,Nc))
+        
         lc = pangloss.readPickle(calpickles[i])  
         num_galaxies = lc.numberWithin(radius=Rc,cut=[16,22],band=mag,units="arcmin")
         lc_galaxies.append(num_galaxies)   
         # Add to the total number of galaxies
         total_galaxies += num_galaxies
         del lc
-
+    
+    del calpickles
+    
     lc_dens = [Nc * float(x)/float(total_galaxies) for x in lc_galaxies]
     print 'Mean overdensity in lightcones =',numpy.mean(numpy.array(lc_dens))
     
     # --------------------------------------------------------------------    
     # Find over density in BoRG fields
-    borg_dens = numpy.genfromtxt('../BORG/LensingModifications/pangloss/data/borg_overdensity.txt')[:,2]
+    borg_dens = numpy.genfromtxt('data/borg_overdensity.txt')[:,2]
 
     print 'Mean overdensity in BoRG =',numpy.mean(borg_dens)
     
-    very_overdense = numpy.where(borg_dens >= 2.5)
+    very_overdense = numpy.where(borg_dens <= 2.5)
     borg_dens = borg_dens[very_overdense]
 
     # --------------------------------------------------------------------        
@@ -186,17 +170,27 @@ def CompareOverdense(argv):
   
     plt.figure(1)
     
-    n_lc, bins_lc, patches_lc = plt.hist(lc_dens, 20, facecolor='r', alpha=0.4, normed=True, label='Henriques et al. (2012) lightcones')
-    n_borg, bins_borg, patches_borg = plt.hist(lc_dens, 20, facecolor='b', alpha=0.4, normed=True, label='BoRG fields')
+    n_lc, bins_lc, patches_lc = plt.hist(lc_dens, 20, facecolor='DarkOrange', alpha=0.4, normed=True, label='Henriques et al. (2012)')
+    n_borg, bins_borg, patches_borg = plt.hist(borg_dens, 10, facecolor='DarkBlue', alpha=0.4, normed=True, label='BoRG fields')
                         
     plt.xlabel(r'$\xi$')
-    plt.ylabel('$P(\xi)$')
+    plt.ylabel(r'$P(\xi)$')
+    plt.xlim(0,2.5)
     
     print pangloss.dashedline
     del lc_dens
 
     plt.legend(loc=1)  
     
-    savedfile = "../BORG/LensingModifications/figs/overdensity_compare.pdf"
+    savedfile = "../figs/overdensity_compare.pdf"
     plt.savefig(savedfile,dpi=300)
     print "Plot saved as "+os.getcwd()+"/"+savedfile
+    
+    return
+
+# ======================================================================
+
+if __name__ == '__main__': 
+    CompareOverdense(sys.argv[1:])
+
+# ======================================================================
