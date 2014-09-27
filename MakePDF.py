@@ -210,8 +210,8 @@ def MakePDF(argv):
 #    # --------------------------------------------------------------
 #    # Set up overdensity range
 #
-    density = borg_overdensity
-#    density = [0.75,1.25,1.5]
+#    density = borg_overdensity
+    density = [0.75,1.25,1.5]
 ##    density = [1.0,0.5,1.5]
 #
     drange = 0.02   # ~0.02 is what Zach used
@@ -431,7 +431,7 @@ def MakePDF(argv):
                             
                 # Gaussian KDE            
                 sub_pdf_kde = gaussian_kde(sub_pdf, bw_method=0.1)#)/sub_pdf.std(ddof=1))
-                sub_pdf_kde.covariance_factor = lambda : .15
+                sub_pdf_kde.covariance_factor = lambda : .1
                 sub_pdf_kde._compute_covariance()
                 
                 plt.plot(x, sub_pdf_kde(x), color=c[i]) # distribution function
@@ -444,7 +444,7 @@ def MakePDF(argv):
         
             plt.xlabel(name)
             plt.ylabel(r"P(%s)"%name)
-            plt.title(r'PDF for $z_s =$ %.1f' % (zs))
+        #    plt.title(r'PDF for $z_s =$ %.1f' % (zs))
                         
             plt.legend(loc=1)
             

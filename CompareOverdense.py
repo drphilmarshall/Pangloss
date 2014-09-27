@@ -170,8 +170,8 @@ def CompareOverdense(argv):
   
     plt.figure(1)
     
-    n_lc, bins_lc, patches_lc = plt.hist(lc_dens, 20, facecolor='DarkOrange', alpha=0.4, normed=True, label='Henriques et al. (2012)')
-    n_borg, bins_borg, patches_borg = plt.hist(borg_dens, 10, facecolor='DarkBlue', alpha=0.4, normed=True, label='BoRG fields')
+    n_lc, bins_lc, patches_lc = plt.hist(lc_dens, 20, facecolor='DarkOrange', alpha=0.4, histtype='stepfilled', normed=True, label='Henriques et al. (2012)')
+    n_borg, bins_borg, patches_borg = plt.hist(borg_dens, 10, facecolor='DarkBlue', alpha=0.4, histtype='stepfilled', normed=True, label='BoRG fields')
                         
     plt.xlabel(r'$\xi$')
     plt.ylabel(r'$P(\xi)$')
