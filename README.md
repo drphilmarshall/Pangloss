@@ -14,10 +14,7 @@ problem, you should:
 * [Browse the wiki](https://github.com/drphilmarshall/Pangloss/wiki) 
 to see what our current plans are;
 * [Fork the code](https://github.com/drphilmarshall/Pangloss) and play around with it;
-* Contact us (Phil Marshall, dr.phil.marshall@gmail.com, and Tom
-Collett, tcollett@ast.cam.ac.uk). We are keen to hear from other
-researchers in the field who would like to coordinate and/or collaborate
-with us!
+* Contact us! [Phil](mailto:dr.phil.marshall@gmail.com) and [Tom](mailto:tcollett@ast.cam.ac.uk) are keen to hear from other researchers in the field who would like to coordinate and/or collaborate.
 
 ## License
 
@@ -27,7 +24,7 @@ anything you like with it, as long as you keep propagating the license
 information.
 
 However, when reporting on your use of Pangloss, we do ask that you include:
-* A citation to: **Collett et al. (2013), MNRAS accepted, arxiv/1303.6564**
+* A citation to: **[Collett et al. (2013), MNRAS, 432, 679, arxiv/1303.6564](http://adsabs.harvard.edu/abs/2013MNRAS.432..679C)**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and
 Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
@@ -106,3 +103,6 @@ Analysing from start to finish will take some time. Be patient!
 (Drill ~2 mins, Reconstruct ~10 mins)
 
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
+Also, check out Tom's flowchart that describes the process of data simulation and testing carried out in Collett et al (2013):
+
+![Collet et al 2013 flowchart](https://github.com/drphilmarshall/Pangloss/blob/master/doc/flowchart.png?raw=true)
