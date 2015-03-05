@@ -105,4 +105,4 @@ Analysing from start to finish will take some time. Be patient!
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
 Also, check out Tom's flowchart that describes the process of data simulation and testing carried out in Collett et al (2013):
 
-![Collet et al 2013 flowchart](https://github.com/drphilmarshall/Pangloss/blob/master/doc/flowchart.pdf?raw=true)
+![Collet et al 2013 flowchart](https://github.com/drphilmarshall/Pangloss/blob/master/doc/flowchart.png?raw=true)
