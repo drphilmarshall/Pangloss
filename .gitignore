@@ -10,6 +10,7 @@
 *.png
 doc/wiki
 doc/litter
+doc/proposals
 attic
 calib/Millennium
 calib/SHMR
