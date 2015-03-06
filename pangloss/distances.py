@@ -123,24 +123,3 @@ class Distance:
     def rho_crit_univ(self,z):   #critical density of the universe at z
        rho= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
        return rho 
-       
-# ============================================================================
-# CM's additions to this class:
-# ----------------------------------------------------------------------------
-    def comoving_mass(self,z1,z2=0.,solidangle=1.):
-        from scipy import integrate
-        if z2<z1:
-            z1,z2 = z2,z1
-        rho_crit = (self.h**2) * 3E7 / (8 * pi * G)   # Msun/Mpc^3
-        f = lambda z,m,l,k: (m*rho_crit*(1.+z)**3)*(self.comoving_distance(0.,z)**2)/((m*(1.+z)**3+k*(1.+z)**2+l)**0.5)
-        om = self.OMEGA_M
-        ol = self.OMEGA_L
-        ok = 1.-om-ol
-        return solidangle*4*pi*(c/self.h)*integrate.romberg(f,z1,z2,(om,ol,ok))/1e5    
-
-    def total_trunc_mass(self, Mvir, tau=5):
-        """Calculates mass within truncation radius tau*R_vir for BMO07 truncated NFW profile"""   
-        M0 = 4.*Mvir/(pi - 2.)
-        Mhalo = M0 * (tau**2/(tau**2 + 1.)**2) * ((tau**2 - 1.)*numpy.log(tau) + tau*pi - tau**2 - 1)
-        totalMhalo = numpy.sum(Mhalo)            
-        return totalMhalo   
