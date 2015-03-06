@@ -104,8 +104,8 @@ def MakePDF(argv):
     
     Ncats = 21
     
-    borg = numpy.genfromtxt('data/borg_overdensity.txt', skip_header=1)[:,1:]
-    borg_field = numpy.genfromtxt('data/borg_overdensity.txt', skip_header=1, usecols=0, dtype='S30')
+    borg = numpy.genfromtxt('data/borg_overdensity_remove_1815-3244.txt', skip_header=1)[:,1:]
+    borg_field = numpy.genfromtxt('data/borg_overdensity_remove_1815-3244.txt', skip_header=1, usecols=0, dtype='S30')
 
     borg_area = borg[:,0]
     borg_overdensity = borg[:,1]
@@ -118,26 +118,26 @@ def MakePDF(argv):
     # --------------------------------------------------------------------    
     # Load the lightcone pickles
     
-    calpickles = []
-    Nc = experiment.parameters['NCalibrationLightcones'] * Ncats       ### should be 24
-
-    paths = '%s/*_lightcone.pickle' % (CALIB_DIR)
-    found = glob.glob(paths)
-    if len(found) > 0: calpickles = found
-
-    print "MakePDF: found the lightcones..."
-            
-    # Ray tracing:
-    RTscheme = experiment.parameters['RayTracingScheme']
-    
-    # Reconstruct calibration lines of sight?
-    DoCal = experiment.parameters['ReconstructCalibrations']
-
-    # --------------------------------------------------------------------
-    # Make redshift grid:
-    
-    grid = pangloss.Grid(zd,zs,nplanes=100)
-    
+#    calpickles = []
+#    Nc = experiment.parameters['NCalibrationLightcones'] * Ncats       ### should be 24
+#
+#    paths = '%s/*_lightcone.pickle' % (CALIB_DIR)
+#    found = glob.glob(paths)
+#    if len(found) > 0: calpickles = found
+#
+#    print "MakePDF: found the lightcones..."
+#            
+#    # Ray tracing:
+#    RTscheme = experiment.parameters['RayTracingScheme']
+#    
+#    # Reconstruct calibration lines of sight?
+#    DoCal = experiment.parameters['ReconstructCalibrations']
+#
+#    # --------------------------------------------------------------------
+#    # Make redshift grid:
+#    
+#    grid = pangloss.Grid(zd,zs,nplanes=100)
+#    
     # --------------------------------------------------------------------
 #    # Read in lightcones from pickles:
 #
@@ -331,7 +331,7 @@ def MakePDF(argv):
 
     pmu = pmu - mu_smooth + 1.
     pk = pk - kappa_smooth + 0.
-
+    print 'mean mu now = ', numpy.mean(pmu)
     # --------------------------------------------------------------------
     # Plotting convergence and magnification
     c = ['purple','g','r','b']
@@ -342,7 +342,10 @@ def MakePDF(argv):
     pdf = [{'param':'Mu', 'name':r'$\mu$', 'lc':pmu, 'smooth':mu_smooth, 'mean':1.0, 'height':30, 'min':0.4, 'max':2.0}]
     
     lc_density = numpy.genfromtxt(CALIB_DIR+"/lc_density.txt", comments="#")
-
+    
+    from matplotlib import rc_file
+    rc_file('matplotlibrc')
+    plt.rc('text', usetex=True) 
     # =====================================================================
     # For only <=4 values of density
     # =====================================================================    
@@ -389,7 +392,7 @@ def MakePDF(argv):
             plt.figure()
 
             # Histogram
-            n, bins, patches = plt.hist(new_pdf, Nbins, facecolor='k', normed=True, alpha=0.2, label=r'All LoS')#, $\langle$'+name+r'(uncalib)$\rangle = $%.3f' % var['smooth'])
+            n, bins, patches = plt.hist(new_pdf, Nbins, facecolor='k', normed=True, alpha=0.2)#, $\langle$'+name+r'(uncalib)$\rangle = $%.3f' % var['smooth'])
             plt.setp(patches, 'edgecolor', 'None')            
 
             # Gaussian KDE            
@@ -397,7 +400,7 @@ def MakePDF(argv):
             all_kde.covariance_factor = lambda : .07
             all_kde._compute_covariance()
             x = numpy.linspace(new_pdf.min()-0.2,new_pdf.max()+0.2,3000)
-            plt.plot(x, all_kde(x), color='k')#, label=r'All LOS, $\langle$'+name+r'(uncalib)$\rangle = $%.3f' % var['smooth']) # distribution function
+            plt.plot(x, all_kde(x), color='k', linestyle='dashed', lw=2, label=r'All LoS')#, label=r'All LOS, $\langle$'+name+r'(uncalib)$\rangle = $%.3f' % var['smooth']) # distribution function
                     
             # --------------------------------------------------------------------
             # Select only lightcones within certain number density limits
@@ -426,27 +429,29 @@ def MakePDF(argv):
                 if Nbins > 500: Nbins = Nbins/10
                 
                 # Histogram
-                n, bins, patches = plt.hist(sub_pdf, Nbins, facecolor=c[i], normed=True, alpha=0.2, label=r'$\xi = $'+str(density[i])+r', $\langle$'+name+r'$\rangle = $%.3f' % sub_mean)#, histtype='step'
+                n, bins, patches = plt.hist(sub_pdf, Nbins, facecolor=c[i], normed=True, alpha=0.2)#, histtype='step'
                 plt.setp(patches, 'edgecolor', 'None')
                             
                 # Gaussian KDE            
-                sub_pdf_kde = gaussian_kde(sub_pdf, bw_method=0.1)#)/sub_pdf.std(ddof=1))
+                sub_pdf_kde = gaussian_kde(sub_pdf, bw_method=0.2)#)/sub_pdf.std(ddof=1))
                 sub_pdf_kde.covariance_factor = lambda : .1
                 sub_pdf_kde._compute_covariance()
                 
-                plt.plot(x, sub_pdf_kde(x), color=c[i]) # distribution function
+                plt.plot(x, sub_pdf_kde(x), color=c[i], label=r'$\xi = %.2f, \, \langle $%s$ \rangle = %.2f$' % (density[i],name,sub_mean)) # distribution function
                             
        #     plt.ylim(-1, 30)
             plt.ticklabel_format(useOffset=False, axis='x')
+            plt.tick_params(axis='both', which='major', labelsize=20)
 
             plt.axvline(x=var['mean'], color='k', linestyle='dashed')
             plt.xlim(var['min'], var['max'])
         
-            plt.xlabel(name)
-            plt.ylabel(r"P(%s)"%name)
+            plt.xlabel(name, fontsize=24)
+            plt.ylabel(r"$p($%s$)$"%name, fontsize=24)
         #    plt.title(r'PDF for $z_s =$ %.1f' % (zs))
+            plt.tight_layout()
                         
-            plt.legend(loc=1)
+            plt.legend(loc=1, fontsize=20)
             
             outputfile = "figs/final_Pof"+var['param']+"_"+EXP_NAME+"_z="+str(zs)+".pdf"                 
             plt.savefig(outputfile,dpi=300)
@@ -469,7 +474,8 @@ def MakePDF(argv):
             if var['param']=='Kappa':
                 mask = numpy.where(full_pdf==full_pdf)
             if var['param']=='Mu':
-                mask = numpy.where((full_pdf > var['smooth']-5.) & (full_pdf < 6.+var['smooth']))
+                mask = numpy.where((full_pdf >= 0.) & (full_pdf < 2.))
+#                mask = numpy.where((full_pdf > var['smooth']-5.) & (full_pdf < 6.+var['smooth']))
             
             par = full_pdf[mask]
             new_density = lc_density[mask]
@@ -511,7 +517,7 @@ def MakePDF(argv):
             if var['param']=='Mu':
                 pmu_table = numpy.array([x, all_kde(x)]).T
                 numpy.savetxt("figs/borg/all_PofMu.txt", pmu_table)            
-            plt.plot(x, all_kde(x), color='k', label=r'All LOS, $\langle$'+name+r'$_{uncalib}\rangle = $%.3f' % var['smooth']) # distribution function
+            plt.plot(x, all_kde(x), color='k', linestyle='dashed', lw=2, label=r'All LOS, $\langle$'+name+r'$_{uncalib}\rangle = $%.3f' % var['smooth']) # distribution function
             
             plt.xlim(var['min'], var['max'])
                 
@@ -523,6 +529,8 @@ def MakePDF(argv):
             # --------------------------------------------------------------------
             # Select only lightcones within certain number density limits
             # Need to mask out the outliers
+            
+            means, fieldname = [], []
             
             for i in range(len(density)):
                 sub_pdf = [] 
@@ -542,7 +550,7 @@ def MakePDF(argv):
  
                     sub_mean = numpy.mean(sub_pdf) 
                                 
-                    print "MakePDF: %s - sampling %i LoS with number density ~ %.2f the average" % (borg_field[i], Nlos, density[i])   
+                    print "MakePDF: %s - sampling %i LoS with number density ~ %.2f the average, mean mu=%.2f" % (borg_field[i], Nlos, density[i], sub_mean)   
                     
                     IQR = numpy.percentile(sub_pdf, 75) - numpy.percentile(sub_pdf, 25)
                     Nbins = 6./(2 * IQR * (float(Nlos))**(-1./3.))
@@ -555,7 +563,6 @@ def MakePDF(argv):
     
                     # Histogram
                     if Nbins > 500: Nbins = Nbins/10  
-                    print Nbins
                     
                     n, bins, patches = plt.hist(sub_pdf, 100, facecolor='r', normed=True, alpha=0.3)
                     plt.setp(patches, 'edgecolor', 'None')
@@ -567,10 +574,10 @@ def MakePDF(argv):
                     
                     if var['param']=='Mu':
                         pmu_table = numpy.array([x, sub_kde(x)]).T
-                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu_gkde.txt", pmu_table)
-                        numpy.savetxt("figs/borg/"+str(borg_field[i])+"_PofMu.txt", sub_pdf)
+#                        numpy.savetxt("figs/borg_remove1815/"+str(borg_field[i])+"_PofMu_gkde.txt", pmu_table)
+                        numpy.savetxt("figs/borg_remove1815/"+str(borg_field[i])+"_PofMu.txt", sub_pdf)
 
-                    plt.plot(x, all_kde(x), color='k', label=r'All LOS') # distribution function
+                    plt.plot(x, all_kde(x), color='k', linestyle='dashed', lw=2, label=r'All LOS') # distribution function
                     plt.plot(x, sub_kde(x), color='r', label=r'$\xi = $ %.3f' % (density[i]) + r', $\langle$'+name+r'$\rangle = $%.3f' % sub_mean) # distribution function
                     
                     plt.axvline(x=var['mean'], color='k', linestyle='dashed')
@@ -586,10 +593,18 @@ def MakePDF(argv):
                     plt.legend(loc=1)
                     
                     # Make pdf for each field            
-                    outputfile = "figs/borg/"+str(borg_field[i])+"_Pof"+var['param']+".pdf"                 
+                    outputfile = "figs/borg_remove1815/"+str(borg_field[i])+"_Pof"+var['param']+".pdf"                 
                     plt.savefig(outputfile,dpi=300) 
                     plt.close('all')                
+                    
+                    means.append(sub_mean)
+                    fieldname.append(borg_field[i])
 
+            meanmu_table = numpy.array([fieldname, means]).T
+            ascii.write(meanmu_table, "figs/borg_remove1815/borg_pdf_table_means.txt", names=['#field','mean_mu'])
+ #           numpy.savetxt("figs/borg_remove1815/borg_pdf_table_means.txt", meanmu_table)
+
+            print "Mean mu of all the fields = ",numpy.mean(means)        
             print "MakePDF: saved PDFs to",outputfile 
             
     print pangloss.doubledashedline

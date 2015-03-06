@@ -101,46 +101,46 @@ def PDF_z(argv):
 
     Ncats = 21
     
-    calpickles = []
-    Nc = experiment.parameters['NCalibrationLightcones'] * Ncats       ### should be 24
-
-    paths = '%s/*_lightcone.pickle' % (CALIB_DIR)
-    found = glob.glob(paths)
-    if len(found) > 0: calpickles = found
-    
-#    Nc = experiment.parameters['NCalibrationLightcones']
-#    for i in range(Nc):
- #       calpickles.append(experiment.getLightconePickleName('sim_notborg',pointing=i))
-       
-    # Ray tracing:
-    RTscheme = experiment.parameters['RayTracingScheme']
-    
-    # Sampling Pr(kappah|D):
-    Ns = experiment.parameters['NRealisations']
-    
-    # Reconstruct calibration lines of sight?
-    DoCal = experiment.parameters['ReconstructCalibrations']
-
-    
-    # --------------------------------------------------------------------
-    # Read in lightcones from pickles:
-
-#    calcones = []
-#    for i in range(Nc):
-#        calcones.append(pangloss.readPickle(calpickles[i]))
-
-    if DoCal=="False": #must be string type
-        calcones=[]
-        calpickles=[]
-
-#    allcones = calcones
-#    allconefiles = calpickles 
-    
-#    ndensity_field = 4.2110897902 # galaxies brighter than i 22 in num/arcmin^2   hilbert    
-    ndensity_field = 7.87131907218 # galaxies brighter than F125W 22 in num/arcmin^2  Henriques  
-    
-    density = 1.0 # overdensity we are looking at
-    drange = 0.03
+#    calpickles = []
+#    Nc = experiment.parameters['NCalibrationLightcones'] * Ncats       ### should be 24
+#
+#    paths = '%s/*_lightcone.pickle' % (CALIB_DIR)
+#    found = glob.glob(paths)
+#    if len(found) > 0: calpickles = found
+#    
+##    Nc = experiment.parameters['NCalibrationLightcones']
+##    for i in range(Nc):
+# #       calpickles.append(experiment.getLightconePickleName('sim_notborg',pointing=i))
+#       
+#    # Ray tracing:
+#    RTscheme = experiment.parameters['RayTracingScheme']
+#    
+#    # Sampling Pr(kappah|D):
+#    Ns = experiment.parameters['NRealisations']
+#    
+#    # Reconstruct calibration lines of sight?
+#    DoCal = experiment.parameters['ReconstructCalibrations']
+#
+#    
+#    # --------------------------------------------------------------------
+#    # Read in lightcones from pickles:
+#
+##    calcones = []
+##    for i in range(Nc):
+##        calcones.append(pangloss.readPickle(calpickles[i]))
+#
+#    if DoCal=="False": #must be string type
+#        calcones=[]
+#        calpickles=[]
+#
+##    allcones = calcones
+##    allconefiles = calpickles 
+#    
+##    ndensity_field = 4.2110897902 # galaxies brighter than i 22 in num/arcmin^2   hilbert    
+#    ndensity_field = 7.87131907218 # galaxies brighter than F125W 22 in num/arcmin^2  Henriques  
+#    
+#    density = 1.0 # overdensity we are looking at
+#    drange = 0.03
     # ==============================================================
     # Produce the PDFs
     # ==============================================================
@@ -150,86 +150,90 @@ def PDF_z(argv):
     
     c = ['r','b','g','orange','yellow']       
     
-    mean_mu=[]
-    sd_mu = []
+    from matplotlib import rc_file
+    rc_file('matplotlibrc')
+    plt.rc('text', usetex=True) 
     
-    radius_cone = 1.0
-    area = pi * radius_cone**2.        
- 
-    # plt.figure(1)
-    
+#    mean_mu=[]
+#    sd_mu = []
+#    
+#    radius_cone = 1.0
+#    area = pi * radius_cone**2.        
+# 
+#    # plt.figure(1)
+#    
     for i in range(len(zs)):
         print 'Source redshift =',zs[i]
-        
-        # Make redshift grid
-        grid = pangloss.Grid(zd, zs[i], nplanes=100)
-        
-#        pk = numpy.zeros(len(Nc))
-        pmu =numpy.zeros(Nc)
-#        pg1=numpy.zeros(len(Nc))
-#        pg2=numpy.zeros(len(Nc))
-#        pg=numpy.zeros(len(Nc))
-        
-       # lc_density = []   
-                     
-        sub_pdf = [] 
-                
-        for j in range(Nc):        
+#        
+#        # Make redshift grid
+#        grid = pangloss.Grid(zd, zs[i], nplanes=100)
+#        
+##        pk = numpy.zeros(len(Nc))
+#        pmu =numpy.zeros(Nc)
+##        pg1=numpy.zeros(len(Nc))
+##        pg2=numpy.zeros(len(Nc))
+##        pg=numpy.zeros(len(Nc))
+#        
+#       # lc_density = []   
+#                     
+#        sub_pdf = [] 
+#                
+#        for j in range(Nc):        
+#
+#            # Get lightcone, and fill PDFs
+#            lc = pangloss.readPickle(calpickles[j])
+#
+#
+#    #        n_gals = lc.numberWithin(radius=radius_cone,cut=[16,22],band="F125W",units="arcmin")
+#    #        lc_dens = n_gals/(area * ndensity_field)
+#                        
+#            # Redshift scaffolding:
+#            lc.defineSystem(zd, zs[i])
+#            lc.loadGrid(grid)
+#        
+#            # Figure out data quality etc:
+#            lc.configureForSurvey(experiment)    
+#                    
+#            lc.snapToGrid(grid)
+#                        
+#            # Draw c from Mhalo:
+#            lc.drawConcentrations(errors=True)
+#                        
+#            # Compute each halo's contribution to the convergence:
+#            lc.makeKappas(truncationscale=5)
+#                        
+#            k_add=lc.combineKappas()
+#            mu_add=lc.combineMus(weakapprox=False)
+#                                
+#            # Add lensing parameters to global PDFs
+#            pmu[j] = lc.mu_add_total
+#
+##            pk[j]=lc.kappa_add_total
+#                
+##            pg[j]=lc.G1sum
+##            pg2[j]=lc.G2sum
+##            pg[j]=lc.Gsum
+#            
+#            # Select cones by overdensity for the mu vs z plot
+##            if density - drange <= lc_dens <= density + drange:
+##                sub_pdf.append(mu_add)  
+#                                                                                    
+##            x = allconefiles[j]
+#        
+#      #  print lc_density[0]    
+##        pk = numpy.array(pk)
+#        
+#        pmu = numpy.array(pmu)    
+#    
+#    # --------------------------------------------------------------------
+#    # Write PDFs to pickles
+#                    
+##        pangloss.writePickle(pk,CALIB_DIR+"/Pofk_z="+str(zs)+".pickle")
+#        pangloss.writePickle(pmu,CALIB_DIR+"/many_z_PofMu_z="+str(zs[i])+".pickle")
+#        
+##        del pk
+#        del pmu
 
-            # Get lightcone, and fill PDFs
-            lc = pangloss.readPickle(calpickles[j])
-
-
-    #        n_gals = lc.numberWithin(radius=radius_cone,cut=[16,22],band="F125W",units="arcmin")
-    #        lc_dens = n_gals/(area * ndensity_field)
-                        
-            # Redshift scaffolding:
-            lc.defineSystem(zd, zs[i])
-            lc.loadGrid(grid)
-        
-            # Figure out data quality etc:
-            lc.configureForSurvey(experiment)    
-                    
-            lc.snapToGrid(grid)
-                        
-            # Draw c from Mhalo:
-            lc.drawConcentrations(errors=True)
-                        
-            # Compute each halo's contribution to the convergence:
-            lc.makeKappas(truncationscale=5)
-                        
-            k_add=lc.combineKappas()
-            mu_add=lc.combineMus(weakapprox=False)
-                                
-            # Add lensing parameters to global PDFs
-            pmu[j] = lc.mu_add_total
-
-#            pk[j]=lc.kappa_add_total
-                
-#            pg[j]=lc.G1sum
-#            pg2[j]=lc.G2sum
-#            pg[j]=lc.Gsum
-            
-            # Select cones by overdensity for the mu vs z plot
-#            if density - drange <= lc_dens <= density + drange:
-#                sub_pdf.append(mu_add)  
-                                                                                    
-#            x = allconefiles[j]
-        
-      #  print lc_density[0]    
-#        pk = numpy.array(pk)
-        
-        pmu = numpy.array(pmu)    
-    
-    # --------------------------------------------------------------------
-    # Write PDFs to pickles
-                    
-#        pangloss.writePickle(pk,CALIB_DIR+"/Pofk_z="+str(zs)+".pickle")
-        pangloss.writePickle(pmu,CALIB_DIR+"/many_z_PofMu_z="+str(zs[i])+".pickle")
-        
-#        del pk
-        del pmu
-    
         pmu = pangloss.readPickle(CALIB_DIR+"/many_z_PofMu_z="+str(zs[i])+".pickle")
 #        pk = pangloss.readPickle(CALIB_DIR+"/Pofk_z="+str(zs)+".pickle")
     
@@ -281,7 +285,7 @@ def PDF_z(argv):
         if param == 'Mu':
             smooth = params['smooth']
             mean = params['mean']
-            par1 = par - smooth + mean
+            par = par - smooth + mean
            # print par1.min(), par1.max()
             mask = numpy.where((par > -1.0) & (par < 2.0)) 
             par = par[mask]
@@ -323,25 +327,29 @@ def PDF_z(argv):
         Nbins = int(round(Nbins,-1))/10
         print 'Nbins =', Nbins                  
         
-        n, bins, patches = plt.hist(par, Nbins, facecolor=c[i], normed=True,alpha=0.4, label=r'$z_s = $'+str(zs[i]))
+        nbins = Nbins/2.
+        n, bins, patches = plt.hist(par, 25, facecolor=c[i], normed=True,alpha=0.4)
         plt.setp(patches, 'edgecolor', 'None')
             
         par_kde = gaussian_kde(par, bw_method=0.1)#/new_pdf.std(ddof=1))
-        par_kde.covariance_factor = lambda : .05
+        par_kde.covariance_factor = lambda : .2
         par_kde._compute_covariance()        
                 
-        x = numpy.linspace(par.min()-0.05,par.max()+0.05,1000)
-        plt.plot(x, par_kde(x), color=c[i])
+        x = numpy.linspace(par.min()-0.1,par.max()+0.05,1000)
+        plt.plot(x, par_kde(x), color=c[i], label=r'$z_s = \, %i$' % zs[i])
                                         
-        plt.axvline(x=par_mean, color='k', linestyle='dashed')
+    plt.axvline(x=par_mean, color='k', linestyle='dashed')
             
-        plt.xlabel(name)
-        plt.ylabel(r'P(%s)' % name)   
-                
+    plt.xlabel(name, fontsize=24)
+    plt.ylabel(r'$p($%s$)$' % name, fontsize=24)   
+    plt.xlim(0.6,1.6)             
     plt.ticklabel_format(useOffset=False, axis='x')
-    plt.legend(loc=1)                                                        
+    plt.tick_params(axis='both', which='major', labelsize=20)
 
-    outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many_test2.pdf"
+    plt.legend(loc=1, fontsize=20)                                                        
+    plt.tight_layout()
+    
+    outputfile = "figs/final_"+EXP_NAME+"_compare_z_Pof"+param+"_many_test3.pdf"
                            
     plt.savefig(outputfile,dpi=300)
 

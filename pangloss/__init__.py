@@ -16,3 +16,5 @@ from ndinterp import *
 
 
 from miscellaneous import *
+
+import fitting_twogauss

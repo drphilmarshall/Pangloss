@@ -168,19 +168,25 @@ def CompareOverdense(argv):
     # --------------------------------------------------------------------        
     # Plot histogram of overdensities
   
+    from matplotlib import rc_file
+    rc_file('matplotlibrc')
+    plt.rc('text', usetex=True) 
+
     plt.figure(1)
     
     n_lc, bins_lc, patches_lc = plt.hist(lc_dens, 20, facecolor='DarkOrange', alpha=0.4, histtype='stepfilled', normed=True, label='Henriques et al. (2012)')
     n_borg, bins_borg, patches_borg = plt.hist(borg_dens, 10, facecolor='DarkBlue', alpha=0.4, histtype='stepfilled', normed=True, label='BoRG fields')
                         
-    plt.xlabel(r'$\xi$')
-    plt.ylabel(r'$P(\xi)$')
+    plt.xlabel(r'$\xi$', fontsize=24)
+    plt.ylabel(r'$p(\xi)$', fontsize=24)
     plt.xlim(0,2.5)
+    plt.tick_params(axis='both', which='major', labelsize=20)
+    plt.tight_layout()
     
     print pangloss.dashedline
     del lc_dens
 
-    plt.legend(loc=1)  
+    plt.legend(loc=1, fontsize=20)  
     
     savedfile = "../figs/overdensity_compare.pdf"
     plt.savefig(savedfile,dpi=300)

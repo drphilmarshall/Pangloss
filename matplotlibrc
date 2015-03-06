@@ -65,23 +65,25 @@ backend      : qt4agg
 #datapath : /home/jdhunter/mpldata
 
 # Charlotte's edits
-axes.labelsize  : 13.0  # fontsize of the x any y labels
-xtick.labelsize : 13.0  # fontsize of the tick labels
-ytick.labelsize : 13.0  # fontsize of the tick labels
-legend.fontsize : 14.0
+text.usetex     : True  # use latex for all text handling
+axes.labelsize  : 24.0  # fontsize of the x any y labels
+xtick.labelsize : 20.0  # fontsize of the tick labels
+ytick.labelsize : 20.0  # fontsize of the tick labels
+legend.fontsize : 20.0
 font.family     : serif
 font.serif      : Bitstream Vera Serif
-#text.usetex     : True  # use latex for all text handling
 #figure.figsize  : 7.3, 4.2
 text.dvipnghack : True  
-axes.linewidth      : 1.2    # edge linewidth
+axes.linewidth      : 1.5    # edge linewidth
 xtick.major.width    : 1.0    # major tick width in points
 xtick.minor.width    : 1.0    # minor tick width in points
 ytick.major.width    : 1.0    # major tick width in points
 ytick.minor.width    : 1.0    # minor tick width in points
 lines.linewidth   : 1.2     # line width in points
-
-
+xtick.major.size     : 6      # major tick size in points
+ytick.major.size     : 6      # major tick size in points
+xtick.minor.size     : 3      # major tick size in points
+ytick.minor.size     : 3      # major tick size in points
 ### LINES
 # See http://matplotlib.org/api/artist_api.html#module-matplotlib.lines for more
 # information on line properties.
