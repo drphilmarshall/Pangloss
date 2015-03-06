@@ -131,16 +131,14 @@ class PDF(object):
             weights /= numpy.sum(weights)
 
             if bins==None:
-                nb=len(par1)*0.05               
+                nb=len(par1)*0.05
                 if nb<20: nb=20
                 bins=numpy.linspace(par1.min(),par1.max(),20)
-        
-            plt.figure()               
-            plt.hist(par1,weights=weights,bins=bins,normed=True)
-            #plt.ticklabel_format(useOffset=False, axis='x')
-            plt.xlabel(key1name)           
-            plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)          
             
+            plt.figure()
+            plt.hist(par1,weights=weights,bins=bins)
+            plt.xlabel(key1name)
+            plt.ylabel("P(%s|$\mathcal{D}$)"%key1name)
             if title != None: plt.title(title)
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
