@@ -4,6 +4,7 @@
 *.bbl
 *.blg
 *.dvi
+*.pdf
 *.pickle
 *.fits
 *.png
