@@ -725,7 +725,7 @@ class Lightcone(object):
        return
 # ----------------------------------------------------------------------------
 
-    def plots(self,var,output=None):
+    def plot(self,var='kappa',output=None):
 
        plt.clf()
 

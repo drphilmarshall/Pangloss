@@ -219,7 +219,7 @@ def Reconstruct(argv):
             if j ==0 and (lc.flavor == 'real' or i == 0):
                 x = allconefiles[i]
                 pngfile = x.split('.')[0]+".png"
-                lc.plot('kappa', output=pngfile)
+                lc.plot(output=pngfile)
                 print "Reconstruct: saved visualisation of lightcone in "+pngfile
         
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
