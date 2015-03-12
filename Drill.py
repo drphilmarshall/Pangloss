@@ -85,17 +85,6 @@ def Drill(argv):
     # Read in configuration, and extract the ones we need:
 
     experiment = pangloss.Configuration(configfile)
-
-   # sim_area = experiment.parameters['TotalArea']
-    
-    borg = numpy.genfromtxt('data/borg_overdensity.txt', skip_header=1)
-
-    borg_field = borg[:,0]
-    borg_area = borg[:,1]
-    borg_overdensity = borg[:,2]
-    
-   # Rc = numpy.sqrt(borg_area/pi)  # in arcmin
-  #  Nc = round(2 * sim_area/borg_area) 
     
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
     Nc = experiment.parameters['NCalibrationLightcones']
@@ -160,8 +149,9 @@ def Drill(argv):
             print "Drill: Sampling sky positions in",units,"..."
             x,y = sample_sky(table,Rc,Ncones,method='random')
 
-#            print "Drill: Reading in kappa map from "+kappamaps[i]
-#            MSconvergence = pangloss.Kappamap(kappamaps[i])
+           if kappamaps is not None:
+               print "Drill: Reading in kappa map from "+kappamaps[i]
+               MSconvergence = pangloss.Kappamap(kappamaps[i])
 
             # Coming soon...
             #   gammafile1 = gamma1[i]
@@ -176,7 +166,8 @@ def Drill(argv):
 
                 lc = pangloss.Lightcone(table,'simulated',[x[k],y[k]],Rc)
 
-                #lc.kappa_hilbert = MSconvergence.at(x[k],y[k],coordinate_system='physical')
+                if kappamaps is not None:
+                    lc.kappa_hilbert = MSconvergence.at(x[k],y[k],coordinate_system='physical')
 
                 # Coming soon...
                 #   lc.gamma1_hilbert = MSgamma1.at(x[k],y[k],coordinate_system='physical')

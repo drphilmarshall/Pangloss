@@ -81,14 +81,11 @@ class Lightcone(object):
         self.kappa_hilbert = None # until set!
         
         # Catalog limits:
-        
         self.xmax = self.catalog['nRA'].max()
         self.xmin = self.catalog['nRA'].min()
         self.ymax = self.catalog['Dec'].max()
         self.ymin = self.catalog['Dec'].min() 
         
-        #self.catalog.add_column('z_cat',self.catalog.z_obs*1.0)
-
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
         # Cut out a square cone:
@@ -101,7 +98,6 @@ class Lightcone(object):
                                            (self.catalog.Dec > (self.xc[1]-dx)) & \
                                            (self.catalog.Dec < (self.xc[1]+dx))   )
 
-        
         # Trim it to a circle:
         x = (self.galaxies.nRA - self.xc[0])*pangloss.rad2arcmin
         y = (self.galaxies.Dec - self.xc[1])*pangloss.rad2arcmin
@@ -111,8 +107,7 @@ class Lightcone(object):
         self.galaxies.add_column('y',y)
         self.galaxies.add_column('r',r)
         self.galaxies.add_column('phi',phi)
-        self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
-        
+        self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)        
         
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
@@ -178,8 +173,9 @@ class Lightcone(object):
           #  self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
           #                                    (self.galaxies["%s"%col] < cut[1])& \
           #                                (self.galaxies["%s"%col] > cut[0]))
-            self.N_cut=self.galaxies.where((self.galaxies["%s"%col] < cut[1])& \
-                                          (self.galaxies["%s"%col] > cut[0]))
+            self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
+                                           (self.galaxies["%s"%col] < cut[1])& \
+                                           (self.galaxies["%s"%col] > cut[0]))
                                           
             return self.N_cut
 
@@ -226,7 +222,7 @@ class Lightcone(object):
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W" #note that this isn't included atm
         elif band == "WFC125" or band == "F125" or band == "F125W" or band == "125" or band == 125:
-            col = "WFC125" #note that this isn't included atm
+            col = "WFC125" #this was the matching band for BoRG
         else:
             col = "mag_%s" % band
             
@@ -302,9 +298,7 @@ class Lightcone(object):
 
     def snapToGrid(self, Grid):
         z = self.galaxies.z
-
         sz,p = Grid.snap(z)
-
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
         self.writeColumn('sigma_crit',Grid.sigma_crit[p])
@@ -350,33 +344,15 @@ class Lightcone(object):
 
     def drawConcentrations(self,errors=False):
         M200 = 10**self.galaxies.Mh        
-        r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)      
+        r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
         self.writeColumn("r200",r200)
-
         c200 = pangloss.MCrelation(M200,scatter=errors)
         self.writeColumn("c200",c200)
-        
         r_s = r200/c200        
         self.writeColumn('rs',r_s)
-        
         x = self.galaxies.rphys/r_s
         self.writeColumn('X',x)
-
         return
-
-# ----------------------------------------------------------------------------
-# Count galaxies to compare to work out over/underdensity
-
-    def countGalaxies(self, ndensity, maglim):
-        radius = self.rmax
-        area = pi * (radius**2) # in square arcmins
-
-        bright_galaxies = self.galaxies.where(self.galaxies.mag < maglim) 
-        self.num_gals = len(self.allgalaxies)
-        #print 'The number of galaxies in this lightcone is',num_gals 
-        self.num_density = self.num_gals/area
-        
-        return self.num_density/ndensity, self.num_gals
 
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
@@ -388,9 +364,6 @@ class Lightcone(object):
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-#        sigma_cat = self.galaxies.sigma_smooth
-#        kappa_s_smooth = ((rho_s * r_s) - sigma_cat)/self.galaxies.sigma_crit  #kappa slice for each lightcone removing smooth component
-#        self.kappa_s = kappa_s_smooth  #kappa slice for each lightcone
         self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         
         r_trunc = truncationscale*r200
@@ -409,8 +382,7 @@ class Lightcone(object):
         kappaHalo *= F
         gammaHalo *= (G-F)
 
-        phi = self.galaxies.phi
-        
+        phi = self.galaxies.phi        
         kappa = kappaHalo 
         gamma = gammaHalo
         gamma1 = gamma*numpy.cos(2*phi)
@@ -438,8 +410,6 @@ class Lightcone(object):
         G2=self.galaxies.gamma2
         D= K**2-G**2
 
-        self.kappa_smooth = 0.188247882068
-
         kappa_keeton  = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )    
         gamma1_keeton = (1.-B) * (G1) /  ( (1-B*K)**2   - (B*G)**2   )  
         gamma2_keeton = (1.-B) * (G2) /  ( (1-B*K)**2   - (B*G)**2   )  
@@ -460,7 +430,6 @@ class Lightcone(object):
         self.writeColumn('gamma1_add',G1)
         self.writeColumn('gamma2_add',G2)
 
-
         self.kappa_add_total=numpy.sum(self.galaxies.kappa)
         self.kappa_keeton_total=numpy.sum(self.galaxies.kappa_keeton)
         self.kappa_tom_total=numpy.sum(self.galaxies.kappa_tom)
@@ -476,7 +445,7 @@ class Lightcone(object):
         return self.kappa_add_total
 
 # ----------------------------------------------------------------------------
-
+# Calculate magnification along line of sight
 
     def combineMus(self,weakapprox=True):
     
@@ -485,14 +454,11 @@ class Lightcone(object):
         G=self.galaxies.gamma
         G1=self.galaxies.gamma1
         G2=self.galaxies.gamma2
-        
-        self.writeColumn('mu_add',M)                                                                                                  
-        
+                
         Ksum = self.kappa_add_total #numpy.sum(K)
         self.G1sum = numpy.sum(G1)
         self.G2sum = numpy.sum(G2)
         self.Gsum = numpy.sqrt(self.G1sum**2 + self.G2sum**2)
-        #self.Gsum = numpy.abs(self.G1sum + self.G2sum)
        
         if weakapprox is True:
             Msum = 1.0 + 2.0*Ksum
@@ -505,12 +471,14 @@ class Lightcone(object):
         return self.mu_add_total       
 
 # ----------------------------------------------------------------------------
+# Find contribution of various quantities along LoS at given z
+# for plotting cumulative sums of parameters with z
 
     def findContributions(self,quantity):
        
        # Point positions:
        zmax = self.zs+0.1
-       zbins = 25
+       zbins = 15
        z = numpy.linspace(0.0,zmax,zbins)
        # Plot the points:
        if quantity == 'mass':
@@ -602,13 +570,11 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def plotLineOfSight(self,quantity,AX):
-       
+    def plotLineOfSight(self,quantity,AX):       
        
        # Only plot a subset of points, in a slice down the middle of 
        # the light cone:
        subset = numpy.abs(self.galaxies.x)<0.3
-       #print self.galaxies.mu[subset]
  
        # Point positions:
        z = self.galaxies.z[subset]
@@ -659,6 +625,7 @@ class Lightcone(object):
        return
 
 # ----------------------------------------------------------------------------
+# Plotting cumulative sum of parameters with redshift
 
     def plotContributions(self,quantity,output):
        
@@ -709,14 +676,9 @@ class Lightcone(object):
 
        # Axis limits:
        zmax = max(self.galaxies.z.max(),self.zs+0.1)
-#       AX.axis([0,zmax+0.1,-self.rmax-0.1,self.rmax+0.1])
-
+       
        # Labels:
        plt.xlabel('redshift z')
-      
-       # Add lines marking source and lens plane, and optical axis:
- #      plt.axvline(x=self.zl, ymin=0, ymax=1,color='black', ls='dotted',label='bla')
- #      plt.axvline(x=self.zs, ymin=0, ymax=1,color='black', ls='dotted')
 
        if output != None:
            pangloss.rm(output)
