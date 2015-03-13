@@ -45,6 +45,8 @@ def Magnifier(argv):
         FieldOverdensity    Plain text or csv file containing list of field
                             overdensities. Must be in same order as field 
                             names, can be None
+                            If FieldName is none, FieldOverdensity can be a list
+                            of overdensities, e.g. [0.75, 1.0, 1.25] for testing
 
     OUTPUTS
         stdout        Useful information
