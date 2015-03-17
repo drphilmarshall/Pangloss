@@ -9,7 +9,6 @@
 *.fits
 *.png
 doc/wiki
-doc/litter
 attic
 calib/Millennium
 calib/SHMR
