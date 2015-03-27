@@ -34,6 +34,7 @@ class PDF(object):
 
     HISTORY
       2013-03-21  Marshall & Collett (Oxford)
+      2014-04-09  modified for BoRG, C Mason (UCSB)
     """
 
 # ----------------------------------------------------------------------------
@@ -92,6 +93,15 @@ class PDF(object):
             key2==None
         
         reformatnames={}
+        
+        reformatnames["mu"]="$\mu$"
+
+        reformatnames["mu_cone"]="$\mu_{lc}$"
+        reformatnames["kappa_cone"]="$\kappa_{lc}$"
+        
+        reformatnames["mu_tot"]="$\mu_{\mathrm{tot}}$"
+        reformatnames["kappa_tot"]="$\kappa_{\mathrm{tot}}$"
+        
         reformatnames["kappa_ext"]="$\kappa_{\mathrm{ext}}$"
         reformatnames["Kappah_median"]="$\widetilde{\kappa}_{\mathrm{halos}}$"
 
@@ -119,12 +129,12 @@ class PDF(object):
                 weights = numpy.ones(len(par1))*1.0
                 # print "pdf: plotting unweighted histogram..."
             weights /= numpy.sum(weights)
-            
+
             if bins==None:
                 nb=len(par1)*0.05
                 if nb<20: nb=20
                 bins=numpy.linspace(par1.min(),par1.max(),20)
-        
+            
             plt.figure()
             plt.hist(par1,weights=weights,bins=bins)
             plt.xlabel(key1name)

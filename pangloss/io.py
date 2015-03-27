@@ -77,7 +77,7 @@ def readCatalog(filename,config):
         table.add_column('mag',mag)
     except: 
         raise "Error in io.readCatalog: no mag column called "+config.parameters['MagName']
-   
+
     return table
 
 # ----------------------------------------------------------------------------

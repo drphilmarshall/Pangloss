@@ -79,7 +79,7 @@ class Grid():
             self.rho_crit[i] = D.rho_crit_univ(z)
             self.Da_ps[i] = D.Da(z,zs)
             self.Da_pl[i] = D.Da(z,zl)
-            self.sigma_crit[i] = (1.663*10**18)*(self.Da_s/(self.Da_p[i]*self.Da_ps[i]))
+            self.sigma_crit[i] = (1.663*10**18)*(self.Da_s/(self.Da_p[i]*self.Da_ps[i]))  # units M_sun/Mpc^2
             if z > zl: # 1 is lens, 2 is perturber
                 D1s = self.Da_ls
                 D2  = self.Da_p[i]

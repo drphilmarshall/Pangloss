@@ -5,6 +5,8 @@ import pangloss
 import cPickle
 import numpy
 import pylab as plt
+from math import pi
+
 
 # ======================================================================
 
@@ -83,7 +85,7 @@ class Lightcone(object):
         self.xmin = self.catalog['nRA'].min()
         self.ymax = self.catalog['Dec'].max()
         self.ymin = self.catalog['Dec'].min() 
-
+        
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
         # Cut out a square cone:
@@ -105,11 +107,13 @@ class Lightcone(object):
         self.galaxies.add_column('y',y)
         self.galaxies.add_column('r',r)
         self.galaxies.add_column('phi',phi)
-        self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)
-
+        self.galaxies = self.galaxies.where(self.galaxies.r < self.rmax)        
+        
         try: 
             self.galaxies = self.galaxies.where(self.galaxies.Type != 2) 
         except AttributeError: pass
+                
+        self.allgalaxies = self.galaxies
 
         # Now we have a small catalog, just for the requested lightcone.
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -149,28 +153,33 @@ class Lightcone(object):
 # Tell me the number of galaxies within a certain radius, that pass a 
 # certain magnitude cut.
 
-    def galaxiesWithin(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcsec"):
+    def galaxiesWithin(self,radius,cut=[18.5,24.5], band="F814W", radius_unit="arcmin"):
 
         if band == "u" or band ==  "g" or band == "r" or band ==  "i" or band == "z":
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W"
+        elif band == "WFC125" or band == "F125W" or band == "F125" or band == "125" or band == 125:
+            col = "WFC125"
         else:
             col = "mag_%s" % band
-        if radius < 10: 
-            print "Warning: Default units for radius are arcsec!"
+        if radius < 0.1: 
+            print "Warning: Default units for radius are arcmin!"
+        if radius_unit == "arcmin":
+            radius = radius
         if radius_unit == "arcsec":
-            radius = radius/60.
+            radius = radius/60.            
         if col != "warning":
+          #  self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
+          #                                    (self.galaxies["%s"%col] < cut[1])& \
+          #                                (self.galaxies["%s"%col] > cut[0]))
             self.N_cut=self.galaxies.where((self.galaxies.r < radius)  & \
-                                              (self.galaxies["%s"%col] < cut[1])& \
-                                          (self.galaxies["%s"%col] > cut[0]))
+                                           (self.galaxies["%s"%col] < cut[1])& \
+                                           (self.galaxies["%s"%col] > cut[0]))
+                                          
+            return self.N_cut
 
-            return self.galaxies.where((self.galaxies.r < radius) & \
-                                          (self.galaxies["%s"%col] < cut[1])& \
-                                          (self.galaxies["%s"%col] > cut[0]))
-
-    def numberWithin(self,radius,cut=[18.5,24.5],band="F814W",units="arcsec"):
+    def numberWithin(self,radius,cut=[18.5,24.5],band="F125W",units="arcmin"):
         Ntable = self.galaxiesWithin(radius,cut,band,units)
         return len(Ntable.r)
 
@@ -212,6 +221,8 @@ class Lightcone(object):
             col = "mag_SDSS_%s" % band
         elif band == "F814" or band == "F814W" or band == "814" or band == 814:
             col = "mag_F814W" #note that this isn't included atm
+        elif band == "WFC125" or band == "F125" or band == "F125W" or band == "125" or band == 125:
+            col = "WFC125" #this was the matching band for BoRG
         else:
             col = "mag_%s" % band
             
@@ -294,7 +305,6 @@ class Lightcone(object):
         self.writeColumn('beta',Grid.beta[p])
         rphys = self.galaxies.r*pangloss.arcmin2rad*self.galaxies.Da_p
         self.writeColumn('rphys',rphys)
-
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
 
@@ -336,9 +346,7 @@ class Lightcone(object):
         M200 = 10**self.galaxies.Mh        
         r200 = (3*M200/(800*3.14159*self.galaxies.rho_crit))**(1./3)
         self.writeColumn("r200",r200)
-        
         c200 = pangloss.MCrelation(M200,scatter=errors)
-        
         self.writeColumn("c200",c200)
         r_s = r200/c200        
         self.writeColumn('rs',r_s)
@@ -350,17 +358,18 @@ class Lightcone(object):
 # Compute halos' contributions to the convergence:
 
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
+            
         c200 = self.galaxies.c200
         r200 = self.galaxies.r200
         x = self.galaxies.X
         r_s = self.galaxies.rs
         rho_s = pangloss.delta_c(c200)*self.galaxies.rho_crit
-        kappa_s = rho_s * r_s /self.galaxies.sigma_crit
+        self.kappa_s = rho_s * r_s /self.galaxies.sigma_crit  #kappa slice for each lightcone
         
         r_trunc = truncationscale*r200
         xtrunc = r_trunc/r_s
-        kappaHalo = kappa_s*1.0
-        gammaHalo = kappa_s*1.0
+        kappaHalo = self.kappa_s*1.0
+        gammaHalo = self.kappa_s*1.0
         
         if profile=="BMO1":
             F=pangloss.BMO1Ffunc(x,xtrunc)
@@ -373,20 +382,23 @@ class Lightcone(object):
         kappaHalo *= F
         gammaHalo *= (G-F)
 
-        phi = self.galaxies.phi
-
+        phi = self.galaxies.phi        
         kappa = kappaHalo 
         gamma = gammaHalo
         gamma1 = gamma*numpy.cos(2*phi)
         gamma2 = gamma*numpy.sin(2*phi)
+        
+        mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
         self.writeColumn('kappa',kappa)
         self.writeColumn('gamma',gamma)
         self.writeColumn('gamma1',-gamma1)
         self.writeColumn('gamma2',-gamma2)
+        self.writeColumn('mu',mu)
         
         return
         
+
 # ----------------------------------------------------------------------------
 
     def combineKappas(self):
@@ -418,7 +430,6 @@ class Lightcone(object):
         self.writeColumn('gamma1_add',G1)
         self.writeColumn('gamma2_add',G2)
 
-
         self.kappa_add_total=numpy.sum(self.galaxies.kappa)
         self.kappa_keeton_total=numpy.sum(self.galaxies.kappa_keeton)
         self.kappa_tom_total=numpy.sum(self.galaxies.kappa_tom)
@@ -430,14 +441,77 @@ class Lightcone(object):
         self.gamma2_add_total=numpy.sum(self.galaxies.gamma2)
         self.gamma2_keeton_total=numpy.sum(self.galaxies.gamma2_keeton)
         self.gamma2_tom_total=numpy.sum(self.galaxies.gamma2_tom)
-        
-
-        #print self.galaxies.Mstar.max()
-        #print self.galaxies.Mh.max()
-        #print self.galaxies.kappa.max()
-        #print self.kappa_add_total
 
         return self.kappa_add_total
+
+# ----------------------------------------------------------------------------
+# Calculate magnification along line of sight
+
+    def combineMus(self,weakapprox=True):
+    
+        M=self.galaxies.mu
+        K=self.galaxies.kappa
+        G=self.galaxies.gamma
+        G1=self.galaxies.gamma1
+        G2=self.galaxies.gamma2
+                
+        Ksum = self.kappa_add_total #numpy.sum(K)
+        self.G1sum = numpy.sum(G1)
+        self.G2sum = numpy.sum(G2)
+        self.Gsum = numpy.sqrt(self.G1sum**2 + self.G2sum**2)
+       
+        if weakapprox is True:
+            Msum = 1.0 + 2.0*Ksum
+        else:
+            inverseMsum = (1.0 - Ksum)**2.0 - self.Gsum**2.0
+            Msum = 1.0/inverseMsum
+            
+        self.mu_add_total=Msum
+
+        return self.mu_add_total       
+
+# ----------------------------------------------------------------------------
+# Find contribution of various quantities along LoS at given z
+# for plotting cumulative sums of parameters with z
+
+    def findContributions(self,quantity):
+       
+       # Point positions:
+       zmax = self.zs+0.1
+       zbins = 15
+       z = numpy.linspace(0.0,zmax,zbins)
+       # Plot the points:
+       if quantity == 'mass':
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mhalo_obs
+               contr[i] = numpy.sum(size)
+      
+       elif quantity == 'kappa':
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.kappa
+               contr[i] = numpy.sum(size)           
+       
+       elif quantity == 'mu':
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.mu
+               contr[i] = numpy.sum(size)           
+
+       elif quantity == 'stellarmass':
+           contr = numpy.zeros(zbins)
+           for i in range(zbins):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mstar_obs
+               contr[i] = numpy.sum(size)           
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+
+       return contr
 
 # ----------------------------------------------------------------------------
 # Plotting
@@ -461,6 +535,10 @@ class Lightcone(object):
        elif quantity == 'kappa':
            plt.scatter(self.galaxies.x, self.galaxies.y, c='r', marker='o', s=(self.galaxies.kappa)*30000)    
            plt.title('Convergence')
+       
+       elif quantity == 'mu':
+           plt.scatter(self.galaxies.x, self.galaxies.y, c='g', marker='o', s=((self.galaxies.mu-1.0)*3E4))    
+           plt.title('Magnification')
        
        elif quantity == 'stellarmass':
            plt.scatter(self.galaxies.x, self.galaxies.y, c='y', marker='o', s=(numpy.log(self.galaxies.Mstar)/2),edgecolor = 'none' )     
@@ -492,7 +570,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def plotLineOfSight(self,quantity,AX):
+    def plotLineOfSight(self,quantity,AX):       
        
        # Only plot a subset of points, in a slice down the middle of 
        # the light cone:
@@ -512,7 +590,12 @@ class Lightcone(object):
            size = ((self.galaxies.kappa[subset])*30000.0)
            plt.scatter(z, y, c='r', marker='o', s=size, edgecolor='k' )
            plt.title('Line-of-sight Convergence')
-  
+       
+       elif quantity == 'mu':
+           size = ((self.galaxies.mu[subset]-1.0)*3E4)
+           plt.scatter(z, y, c='g', marker='o', s=size, edgecolor='k' )
+           plt.title(r'Line-of-sight Magnification $(\mu - 1)$')  
+
        elif quantity == 'stellarmass':
            size = ((numpy.log(self.galaxies.Mstar[subset]))/2.0)
            plt.scatter(z, y, c='y', marker='o', s=size, edgecolor='none' )
@@ -542,8 +625,69 @@ class Lightcone(object):
        return
 
 # ----------------------------------------------------------------------------
+# Plotting cumulative sum of parameters with redshift
 
-    def plot(self,output=None):
+    def plotContributions(self,quantity,output):
+       
+       plt.clf()
+ 
+       # Point positions:
+       zmax = self.zs+0.1
+       z = numpy.linspace(0.0,zmax,100)
+       # Plot the points:
+       if quantity == 'mass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mhalo_obs
+               contr[i] = numpy.sum(size)
+           plt.plot(z, contr)
+           plt.title('Cumulative Sum of Halo Mass')
+      
+       elif quantity == 'kappa':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.kappa
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title(r'Cumulative Sum of $\kappa_h$')
+       
+       elif quantity == 'mu':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.mu
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title(r'Cumulative Sum of $\mu_h$')  
+
+       elif quantity == 'stellarmass':
+           contr = numpy.zeros(len(z))
+           for i in range(len(z)):
+               galaxies = self.galaxies.where(self.galaxies.z <= z[i])
+               size = galaxies.Mstar_obs
+               contr[i] = numpy.sum(size)           
+           plt.plot(z, contr)
+           plt.title('Cumulative Sum of Stellar Mass')
+
+       else:
+           raise "Lightcone plotting error: unknown quantity "+quantity
+
+       # Axis limits:
+       zmax = max(self.galaxies.z.max(),self.zs+0.1)
+       
+       # Labels:
+       plt.xlabel('redshift z')
+
+       if output != None:
+           pangloss.rm(output)
+           plt.savefig(output,dpi=300)
+
+       return
+# ----------------------------------------------------------------------------
+
+    def plot(self,var='kappa',output=None):
 
        plt.clf()
 
@@ -557,11 +701,11 @@ class Lightcone(object):
 
        # Panel 3: Kappa contributions:
        ax3 = plt.subplot(3,3,(3,6), aspect ='equal')
-       self.plotFieldOfView('kappa',ax3)
+       self.plotFieldOfView(var,ax3)
        
        # Lower panel: View along redshift axis
        ax4 = plt.subplot(3,3,(7,9))
-       self.plotLineOfSight('kappa',ax4)
+       self.plotLineOfSight(var,ax4)
        
        if output != None:
            pangloss.rm(output)

@@ -103,6 +103,16 @@ Analysing from start to finish will take some time. Be patient!
 (Drill ~2 mins, Reconstruct ~10 mins)
 
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
+
 Also, check out Tom's flowchart that describes the process of data simulation and testing carried out in Collett et al (2013):
 
 ![Collet et al 2013 flowchart](https://github.com/drphilmarshall/Pangloss/blob/master/doc/flowchart.png?raw=true)
+
+## PDFs based on overdensities
+
+The [original 
+Pangloss](https://github.com/drphilmarshall/Pangloss) has been 
+modified so that it can be used to find convergence and 
+magnification pdfs for any given group of fields based on 
+comparing overdensities of the observed fields with simulation 
+lightcones.

@@ -98,8 +98,9 @@ class Configuration(object):
             self.parameters[key] = paths
 
         # Calibration catalogs and kappa maps must come in pairs...
-        assert len(self.parameters['CalibrationCatalogs']) == \
-               len(self.parameters['CalibrationKappamaps'])
+        if self.parameters['CalibrationKappamaps'] != None:
+            assert len(self.parameters['CalibrationCatalogs']) == \
+                  len(self.parameters['CalibrationKappamaps'])
 
 
         surveycoveragekeys=['PhotometricRadius','PhotometricDepth','SpectroscopicDepth','SpectroscopicRadius']
@@ -134,12 +135,23 @@ class Configuration(object):
             # In this case, need the name of the obscat:
             x = self.parameters['ObservedCatalog'][0]
             return x.split('.')[0]+"_lightcone.pickle"
-
+        
         elif flavor == 'simulated':
             # In this case, need the CALIB_DIR and pointing number:
             assert pointing != None
+            CALIB_DIR = self.parameters['CalibrationFolder'][0]          
+            x = "%s/pointing_%i" % (CALIB_DIR, pointing)
+            return x+"_lightcone.pickle"
+
+        elif flavor == 'simulated_borg':
+            # In this case, need the CALIB_DIR and pointing number:
+            assert pointing != None
             CALIB_DIR = self.parameters['CalibrationFolder'][0]
-            x = "%s/pointing_%i" % (CALIB_DIR,pointing)
+
+            # This is for multiple catalogs to help separate them
+            EXP_NAME = self.parameters['ExperimentName']            
+            x = "%s/%s_pointing_%i" % (CALIB_DIR, EXP_NAME, pointing)
+
             return x+"_lightcone.pickle"
 
         return
