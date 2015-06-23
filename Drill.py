@@ -85,14 +85,14 @@ def Drill(argv):
     # Read in configuration, and extract the ones we need:
 
     experiment = pangloss.Configuration(configfile)
-    
+
     Rc = experiment.parameters['LightconeRadius'] # in arcmin
     Nc = experiment.parameters['NCalibrationLightcones']
 
     # There should only be one calibration folder!
     CALIB_DIR = experiment.parameters['CalibrationFolder'][0]
-    EXP_NAME = experiment.parameters['ExperimentName']            
-            
+    EXP_NAME = experiment.parameters['ExperimentName']
+
     calcats = experiment.parameters['CalibrationCatalogs']
     Ncalcats = len(calcats)
     kappamaps = experiment.parameters['CalibrationKappamaps']
@@ -100,21 +100,21 @@ def Drill(argv):
 
     # There should only be one observed catalog!
     obscat = experiment.parameters['ObservedCatalog'][0]
-    
+
     # Note nRA - -RA(rad) and Dec is also in rad...
     x0 = experiment.parameters['nRA']
     y0 = experiment.parameters['Dec']
 
     units = experiment.parameters['Units']
-    
-    # Write the observed lightcone to the same directory 
+
+    # Write the observed lightcone to the same directory
     # as its parent catalog:
     obspickle = experiment.getLightconePickleName('real')
 
 
     makeNewCalCones=experiment.parameters['MakeNewCalibrations']
 
-    
+
     # --------------------------------------------------------------------
     # First, make any calibration lightcones required:
 
@@ -132,7 +132,7 @@ def Drill(argv):
 
             print "Drill: Reading in calibration catalog from "+catalog+"..."
             table = pangloss.readCatalog(catalog,experiment)
-            
+
             if units == 'deg':
                 table['nRA'] = -table['nRA'] * pangloss.deg2rad
                 table['Dec'] = table['Dec'] * pangloss.deg2rad
@@ -149,9 +149,9 @@ def Drill(argv):
             print "Drill: Sampling sky positions in",units,"..."
             x,y = sample_sky(table,Rc,Ncones,method='random')
 
-           if kappamaps is not None:
-               print "Drill: Reading in kappa map from "+kappamaps[i]
-               MSconvergence = pangloss.Kappamap(kappamaps[i])
+            if kappamaps is not None:
+                print "Drill: Reading in kappa map from "+kappamaps[i]
+                MSconvergence = pangloss.Kappamap(kappamaps[i])
 
             # Coming soon...
             #   gammafile1 = gamma1[i]
@@ -177,13 +177,13 @@ def Drill(argv):
                 pangloss.writePickle(lc,calpickle)
 
                 count += 1
-            
-            
-            # Save memory! 
+
+
+            # Save memory!
             del table
             del lc
             del catalog
-            
+
             print "Drill: ...done."
 
         print ("Drill: All %i calibration lightcones made." % (count))
@@ -192,20 +192,20 @@ def Drill(argv):
     # Now, make any observed lightcones required:
     if obscat != 'none':
         if (len(obscat) > 0):
-    
+
             print pangloss.dashedline
             print "Drill: Reading in observed catalog: "+obscat
-    
+
             flavor = 'real'
-    
+
             table = pangloss.readCatalog(obscat,experiment)
-            
+
             xc = [x0,y0]
             lc = pangloss.Lightcone(table,'real',xc,Rc)
-    
+
             obspickle = experiment.getLightconePickleName('real')
             pangloss.writePickle(lc,obspickle)
-    
+
             print "Drill: Observed lightcone pickled to "+obspickle
 
     # --------------------------------------------------------------------
@@ -222,9 +222,9 @@ def sample_sky(table,Rc,Nc,method='random'):
     xmin = table['nRA'].min()
     ymax = table['Dec'].max()
     ymin = table['Dec'].min()
-    
-    Rcrad = Rc*pangloss.arcmin2rad            
-    
+
+    Rcrad = Rc*pangloss.arcmin2rad
+
     if method == 'random':
         x = numpy.random.uniform(xmin+Rcrad,xmax-Rcrad,Nc)
         y = numpy.random.uniform(ymin+Rcrad,ymax-Rcrad,Nc)
