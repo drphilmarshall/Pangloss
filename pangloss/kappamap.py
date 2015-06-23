@@ -1,7 +1,9 @@
 
 import numpy, os, string
-import struct, pyfits
+import struct
 import cPickle
+import astropy.io.fits as pyfits
+#from astropy.io.fits import fits as pyfits
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -329,7 +331,7 @@ if __name__ == '__main__':
 
         kappa=kappa.ravel()
 
-        pangloss.writePickle(kappa,'kappalist.dat')
+        #pangloss.writePickle(kappa,'kappalist.dat')
         print numpy.mean(kappa)
 
         plt.hist(kappa)
