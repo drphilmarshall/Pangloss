@@ -331,7 +331,7 @@ if __name__ == '__main__':
 
         kappa=kappa.ravel()
 
-        #pangloss.writePickle(kappa,'kappalist.dat')
+        pangloss.writePickle(kappa,'kappalist.dat')
         print numpy.mean(kappa)
 
         plt.hist(kappa)
