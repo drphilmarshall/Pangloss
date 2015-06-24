@@ -3,6 +3,7 @@ import numpy, os, string
 import struct
 import cPickle
 import astropy.io.fits as pyfits
+import matplotlib.pyplot as plt
 #from astropy.io.fits import fits as pyfits
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
@@ -248,6 +249,20 @@ class Kappamap:
         return i,j
 
 # ----------------------------------------------------------------------------
+    # plots the convergence field of a .fits file
+    
+    def plot(self,fig_size=10): # fig_size in inches
+        if self.input.lower().endswith('.fits'):
+            image_data = pyfits.getdata(self.input,0)
+        else:
+            image_data = pyfits.getdata(self.output,0)
+        plt.imshow(image_data,cmap = 'gray')
+        plt.colorbar
+        fig = plt.gcf()
+        fig.set_size_inches(fig_size,fig_size)
+        return None
+        
+# ----------------------------------------------------------------------------
 
     def lookup(self,i,j):
       
@@ -266,7 +281,7 @@ class Kappamap:
             mean = 0.0        
 
         return mean
-      
+
 # ============================================================================
 
 if __name__ == '__main__':
