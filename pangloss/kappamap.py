@@ -1,9 +1,8 @@
 
 import numpy, os, string
-import struct
-import cPickle
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
+from wlmap import WLMap
 #from astropy.io.fits import fits as pyfits
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
@@ -15,7 +14,7 @@ vb = False
 
 # ============================================================================
 
-class Kappamap:
+class Kappamap(WLMap):
     """
     NAME
         Kappamap
@@ -70,219 +69,78 @@ class Kappamap:
     def __init__(self,kappafile,FITS=True):
 
         self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.6'
-        self.input = kappafile
-
-        # Read in data from file:
-
-        if FITS:
-            # Read in FITS image, extract wcs:
-            if vb: print "Reading in map from file "+kappafile
-            self.read_in_fits_data()
-
-        else:
-            # Initialise some necessary WCS parameters:
-            self.field = 4.0 # degrees
-            self.NX = 4096
-            self.PIXSCALE = self.field/(1.0*self.NX) # degrees
-            self.setwcs()
-
-            # Read in binary data, to self.values:
-            if vb: print "Reading in map from file "+kappafile
-            self.read_in_binary_data()
-
-            # If it doesn't already exist, output the map to FITS file:
-            # pieces = string.split(self.input,'.')
-            # self.output = string.join(pieces[0:len(pieces)-1],'.')+'.fits'
-            self.output = self.input+'.fits'
-            if os.path.exists(self.output): 
-              if vb: print "FITS version already exists: ",self.output
-            else:  
-              if vb: print "Writing map to "+self.output
-              self.write_out_to_fits()
-            # This should probably not be in __init__ but hopefully it only gets run once.  
-
-        return None
+        # Calls the map superclass
+        WLMap.__init__(self,kappafile,FITS)
 
 # ----------------------------------------------------------------------------
 
     def __str__(self):
+        ## Add more information!!
         return 'Convergence map'
 
 # ----------------------------------------------------------------------------
-
-    def read_in_fits_data(self):
-        hdu = pyfits.open(self.input)[0]
-        hdr = hdu.header
-        self.get_fits_wcs(hdr)
-        self.values = hdu.data
-        # This transpose is necessary so that ds9 displays the image correctly.
-        self.values = self.values.transpose()
-        self.NX = self.values.shape[0]
-        self.PIXSCALE = self.wcs['CD1_1']
-        self.field = self.NX*self.PIXSCALE
-
-        return None
-
-# ----------------------------------------------------------------------------
-
-    def read_in_binary_data(self):
-        file = open(self.input,"rb")
-        data = file.read()
-        fmt = str(self.NX*self.NX)+'f'
-        start = 0
-        stop = struct.calcsize(fmt)
-        values = struct.unpack(fmt,data[start:stop])
-        self.values = numpy.array(values,dtype=numpy.float32).reshape(self.NX,self.NX)
-        return None
-
-# ----------------------------------------------------------------------------
-# WCS parameters: to allow conversions between
-#  image coordinates i,j (pixels)
-#  physical coordinates x,y (rad)
-#  sky coordinates ra,dec (deg, left-handed system)
-
-    def setwcs(self):
-        self.wcs = dict()
-        # ra  = CRVAL1 + CD1_1*(i-CRPIX1) 
-        # dec = CRVAL2 + CD2_2*(j-CRPIX2) 
-        self.wcs['CRPIX1'] = 0.0
-        self.wcs['CRPIX2'] = 0.0
-        self.wcs['CRVAL1'] =  0.5*self.field + 0.5*self.PIXSCALE
-        self.wcs['CRVAL2'] = -0.5*self.field + 0.5*self.PIXSCALE
-        self.wcs['CD1_1'] = -self.PIXSCALE
-        self.wcs['CD1_2'] = 0.0
-        self.wcs['CD2_1'] = 0.0
-        self.wcs['CD2_2'] = self.PIXSCALE
-        self.wcs['CTYPE1'] = 'RA---TAN'
-        self.wcs['CTYPE2'] = 'DEC--TAN'
-
-        # i = LTV1 + LTM1_1*(x/rad) 
-        # j = LTV2 + LTM2_2*(y/rad) 
-        self.wcs['LTV1'] = 0.5*self.field/self.PIXSCALE - 0.5
-        self.wcs['LTV2'] = 0.5*self.field/self.PIXSCALE - 0.5
-        self.wcs['LTM1_1'] = 1.0/(self.PIXSCALE*deg2rad)
-        self.wcs['LTM2_2'] = 1.0/(self.PIXSCALE*deg2rad)
-        return None
-
-# ----------------------------------------------------------------------------
-
-    def get_fits_wcs(self,hdr):
-        self.wcs = dict()
-        for keyword in hdr.keys():
-           self.wcs[keyword] = hdr[keyword]      
-        return None
-
-# ----------------------------------------------------------------------------
-
-    def write_out_to_fits(self):
-
-        # Start a FITS header + data unit:
-        hdu = pyfits.PrimaryHDU()
-        # Add WCS keywords to the FITS header (in apparently random order):
-        for keyword in self.wcs.keys():
-          hdu.header.update(keyword,self.wcs[keyword])
-        # Make image array. The transpose is necessary so that ds9 displays 
-        # the image correctly.
-        hdu.data = self.values.transpose()
-        # Verify and write to file:
-        hdu.verify()
-        hdu.writeto(self.output)
-
-        return None
-
-# ----------------------------------------------------------------------------
-# Interpolating the map to return a single value at a specified point - this 
-# is the most important method of this class.
-
-    def at(self,x,y,coordinate_system='physical'):
-
-        if vb: 
-            print " "
-            print "Looking up kappa value at position",x,",",y," in the "+coordinate_system+" coordinate system"
-
-        # Get pixel indices of desired point, 
-        # and also work out other positions for completeness, if verbose:
-        if coordinate_system == 'physical':
-           i,j = self.physical2image(x,y)
-           if vb: print "  - image coordinates:",i,j
-        elif coordinate_system == 'image':
-           i = x
-           j = y
-           if vb: 
-               x,y = self.image2physical(i,j)
-               print "  - physical coordinates:",x,y,"(radians)"
-
-        if vb:
-            a,d = self.image2world(i,j)
-            print "  - approximate world coordinates:",a,d,"(degrees)"
-            print "  - ds9 image coordinates:",i+1,j+1
-
-        # Now look up correct value, doing some bilinear interpolation:
-
-        kappa = self.lookup(i,j)
-        if vb: print "  Value of kappa = ",kappa
-
-        return kappa
-
-# ----------------------------------------------------------------------------
-
-    def image2physical(self,i,j):
-        x = (i - self.wcs['LTV1'])/self.wcs['LTM1_1'] # x in rad 
-        y = (j - self.wcs['LTV2'])/self.wcs['LTM2_2'] # y in rad 
-        return x,y
-
-    def physical2image(self,x,y):
-        i = self.wcs['LTV1'] + self.wcs['LTM1_1']*x # x in rad 
-        j = self.wcs['LTV2'] + self.wcs['LTM2_2']*y # y in rad 
-        return i,j
-
-     # Only approximate WCS transformations - assumes dec=0.0 and small field
-    def image2world(self,i,j):
-        a = self.wcs['CRVAL1'] + self.wcs['CD1_1']*(i - self.wcs['CRPIX1'])
-        if a < 0.0: a += 360.0
-        d = self.wcs['CRVAL2'] + self.wcs['CD2_2']*(j - self.wcs['CRPIX2'])
-        return a,d
-
-    def world2image(self,a,d):
-        i = (a - self.wcs['CRVAL1'])/self.wcs['CD1_1'] + self.wcs['CRPIX1']
-        j = (d - self.wcs['CRVAL2'])/self.wcs['CD2_2'] + self.wcs['CRPIX2']
-        return i,j
-
-# ----------------------------------------------------------------------------
-    # plots the convergence field of a .fits file
+# Plot the convergence as grayscale:
     
-    def plot(self,fig_size=10): # fig_size in inches
-        if self.input.lower().endswith('.fits'):
-            image_data = pyfits.getdata(self.input,0)
-        else:
-            image_data = pyfits.getdata(self.output,0)
-        plt.imshow(image_data,cmap = 'gray')
-        plt.colorbar
+    def plot(self,fig_size=10,subplot=None): # fig_size in inches, default subplot is entire image
+
+        if subplot is None:
+            subplot = [0,self.NX,0,self.NX]
+            
+        xi, xf = subplot[0], subplot[1]
+        yi, yf = subplot[2], subplot[3]
+        Lx = xf-xi
+        Ly = yf-yi
+            
+        plt.imshow(self.values[xi:xf,yi:yf],cmap = 'gray_r',origin = 'lower')
+        plt.title('Convergence map of '+self.input)
+        
+        # Convert axes to physical coordinates, scale correctly with subplot
+        xlNew = []; ylNew = [];
+        xl = numpy.arange(xi,xf,Lx/10)
+        yl = numpy.arange(yi,yf,Ly/10)
+        
+        for x in xl:
+            xN,yN = self.image2physical(x,0)
+            xlNew.append(xN)
+        for y in yl:
+            xN,yN = self.image2physical(0,y)
+            ylNew.append(yN)
+            
+        xlabels = ['%.3f' % a for a in xlNew]
+        ylabels = ['%.3f' % a for a in ylNew]
+        xlocs = numpy.arange(0,Lx,Lx/10)
+        ylocs = numpy.arange(0,Ly,Ly/10)
+        
+        plt.xticks(xlocs,xlabels)
+        plt.yticks(ylocs,ylabels)
+        plt.xlabel('Physical Coordinate (rad)')
+        plt.ylabel('Physical Coordinate (rad)')
+        
+        '''
+        plt.xlabel('Angle (Deg)')
+        xlocs = numpy.arange(0,self.NX,self.NX/10)
+        xlabs = self.PIXSCALE*numpy.arange(-self.NX/2,self.NX/2,self.NX/10)
+        nxlabs = ['%.1f' % a for a in xlabs]
+        plt.xticks(xlocs,nxlabs)
+        
+        plt.ylabel('Angle (Deg)')
+        ylocs = numpy.arange(0,self.NX,self.NX/10)
+        ylabs = self.PIXSCALE*numpy.arange(-self.NX/2,self.NX/2,self.NX/10)
+        nylabs = ['%.1f' % a for a in ylabs]
+        plt.yticks(ylocs,nylabs)
+        '''
+        
+        #xx, locs = plt.xticks()
+        #ll = ['%.1f' % a for a in xx]
+        #plt.xticks(xx, ll)
+        #plt.ticklabel_format(**kwargs)
         fig = plt.gcf()
         fig.set_size_inches(fig_size,fig_size)
         return None
-        
-# ----------------------------------------------------------------------------
-
-    def lookup(self,i,j):
-      
-        # Weighted mean of 4 neighbouring pixels, as suggested by Stefan.
-        ix = int(i)
-        iy = int(j)
-        px = i - ix
-        py = j - iy
-
-        if ((0 <= ix) and (ix < self.NX-1) and (0 <= iy) and (iy < self.NX-1)):
-            mean =   self.values[ix,iy]    *(1.0-px)*(1.0-py) \
-                  + self.values[ix+1,iy]  * px     *(1.0-py) \
-                  + self.values[ix,iy+1]  *(1.0-px)* py      \
-                  + self.values[ix+1,iy+1]* px     * py
-        else:
-            mean = 0.0        
-
-        return mean
 
 # ============================================================================
+'''
+Old Test
 
 if __name__ == '__main__':
 
@@ -353,4 +211,4 @@ if __name__ == '__main__':
         plt.show()
 
 # ============================================================================
-
+'''
