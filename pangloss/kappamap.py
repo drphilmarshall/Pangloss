@@ -31,27 +31,9 @@ class Kappamap(WLMap):
         FITS           Data file format (def=True)
             
     METHODS
-        read_in_fits_data(self):
-
-        read_in_binary_data(self): to cope with hilbert's homegrown format
-
-        setwcs(self): simulated maps often don't have WCS
-
-        get_fits_wcs(self,hdr):
-
-        write_out_to_fits(self):
-
-        image2physical(self,i,j): coord transformation, returns x,y
-
-        physical2image(self,x,y): coord transformation, returns i,j
-
-        image2world(self,i,j): coord transformation, returns a,d
-
-        world2image(self,a,d): coord transformation, returns a,d
-
-        at(self,x,y,coordinate_system='physical'): return pixel values
-
-        lookup(self,i,j): return pixel values given image coords
+        plot(self,fig_size=10,subplot=None): Plots either the whole image or a 
+                                             given sub-image in physical
+                                             coordinates
 
     BUGS
 
@@ -62,6 +44,7 @@ class Kappamap(WLMap):
 
     HISTORY
       2013-03-23  Marshall & Collett (Oxford)
+      2015-06-24  Everett (SLAC)
     """
 
 # ----------------------------------------------------------------------------
@@ -83,21 +66,23 @@ class Kappamap(WLMap):
     
     def plot(self,fig_size=10,subplot=None): # fig_size in inches, default subplot is entire image
 
+        # Maybe add the ability for subplot to be entered in physical coordiantes as well
         if subplot is None:
             subplot = [0,self.NX,0,self.NX]
             
-        xi, xf = subplot[0], subplot[1]
-        yi, yf = subplot[2], subplot[3]
-        Lx = xf-xi
-        Ly = yf-yi
+        xi, xf = subplot[0], subplot[1]    # x-limits for subplot
+        yi, yf = subplot[2], subplot[3]    # y-limits for subplot
+        Lx = xf-xi    # length of x-axis subplot
+        Ly = yf-yi    # length of y-axis subplot
+        N = 8    #number of ticks
             
-        plt.imshow(self.values[xi:xf,yi:yf],cmap = 'gray_r',origin = 'lower')
+        plt.imshow(self.values[yi:yf,xi:xf],cmap = 'gray_r',origin = 'lower')
         plt.title('Convergence map of '+self.input)
         
         # Convert axes to physical coordinates, scale correctly with subplot
         xlNew = []; ylNew = [];
-        xl = numpy.arange(xi,xf,Lx/10)
-        yl = numpy.arange(yi,yf,Ly/10)
+        xl = numpy.arange(xi,xf,Lx/N)
+        yl = numpy.arange(yi,yf,Ly/N)
         
         for x in xl:
             xN,yN = self.image2physical(x,0)
@@ -105,35 +90,19 @@ class Kappamap(WLMap):
         for y in yl:
             xN,yN = self.image2physical(0,y)
             ylNew.append(yN)
-            
+        
+        # Format coordinates
         xlabels = ['%.3f' % a for a in xlNew]
         ylabels = ['%.3f' % a for a in ylNew]
-        xlocs = numpy.arange(0,Lx,Lx/10)
-        ylocs = numpy.arange(0,Ly,Ly/10)
+        xlocs = numpy.arange(0,Lx,Lx/N)
+        ylocs = numpy.arange(0,Ly,Ly/N)
         
+        # Label axes
         plt.xticks(xlocs,xlabels)
         plt.yticks(ylocs,ylabels)
         plt.xlabel('Physical Coordinate (rad)')
         plt.ylabel('Physical Coordinate (rad)')
-        
-        '''
-        plt.xlabel('Angle (Deg)')
-        xlocs = numpy.arange(0,self.NX,self.NX/10)
-        xlabs = self.PIXSCALE*numpy.arange(-self.NX/2,self.NX/2,self.NX/10)
-        nxlabs = ['%.1f' % a for a in xlabs]
-        plt.xticks(xlocs,nxlabs)
-        
-        plt.ylabel('Angle (Deg)')
-        ylocs = numpy.arange(0,self.NX,self.NX/10)
-        ylabs = self.PIXSCALE*numpy.arange(-self.NX/2,self.NX/2,self.NX/10)
-        nylabs = ['%.1f' % a for a in ylabs]
-        plt.yticks(ylocs,nylabs)
-        '''
-        
-        #xx, locs = plt.xticks()
-        #ll = ['%.1f' % a for a in xx]
-        #plt.xticks(xx, ll)
-        #plt.ticklabel_format(**kwargs)
+
         fig = plt.gcf()
         fig.set_size_inches(fig_size,fig_size)
         return None
