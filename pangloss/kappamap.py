@@ -67,7 +67,7 @@ class Kappamap(WLMap):
 
         # Default subplot is entire image
         if subplot is None:
-            subplot = [0,self.NX,0,self.NX]
+            subplot = [0,self.NX[0],0,self.NX[0]]
             
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
@@ -117,8 +117,8 @@ class Kappamap(WLMap):
         ylocs = numpy.arange(0,Ly,Ly/N)
         
         # Plot image        
-        plt.imshow(self.values[yi:yf,xi:xf],cmap = 'gray_r',origin = 'lower')
-        plt.title('Convergence map of '+self.input)
+        plt.imshow(self.values[0][yi:yf,xi:xf],cmap = 'gray_r',origin = 'lower')
+        plt.title('Convergence map of '+self.input[0])
         
         # Label axes
         plt.xticks(xlocs,xlabels)
