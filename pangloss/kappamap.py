@@ -74,7 +74,7 @@ class Kappamap(WLMap):
         Lx = xf-xi    # length of x-axis subplot
         Ly = yf-yi    # length of y-axis subplot
         # Number of axis ticks
-        if Lx/Ly < 0.6:
+        if Lx != Ly and Lx/Ly < 0.6:
             N = 5
         else:
             N = 8
@@ -126,7 +126,15 @@ class Kappamap(WLMap):
         plt.xlabel('Physical Coordinate (rad)')
         plt.ylabel('Physical Coordinate (rad)')
 
+        # Set figure size
         fig = plt.gcf()
-        fig.set_size_inches(fig_size,fig_size)
-        return None
+        if Lx == Ly:
+            fig.set_size_inches(fig_size,fig_size)
+        elif Lx > Ly:
+            fig.set_size_inches(fig_size,fig_size*(1.0*Ly/Lx))
+        else:
+            fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
+        
+        # Ensures the image is not distorted
+        plt.axis('equal')
         
