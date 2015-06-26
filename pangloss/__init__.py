@@ -1,5 +1,6 @@
 from lightcone import *
 from kappamap import *
+from shearmap import *
 from grid import *
 from pdf import *
 from shmr import *

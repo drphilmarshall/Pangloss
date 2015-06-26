@@ -2,7 +2,6 @@
 import numpy
 import matplotlib.pyplot as plt
 from wlmap import WLMap
-#from astropy.io.fits import fits as pyfits
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -64,7 +63,8 @@ class Kappamap(WLMap):
 # Plot the convergence as grayscale:
     
     def plot(self,fig_size=10,subplot=None,coords='pixel'): # fig_size in inches
-
+        """
+        """
         # Default subplot is entire image
         if subplot is None:
             subplot = [0,self.NX[0],0,self.NX[0]]
