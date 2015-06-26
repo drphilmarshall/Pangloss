@@ -69,9 +69,9 @@ class WLMap:
     """ 
     
     def __init__(self,mapfiles,FITS=True):
-        
+
         # mapfile should be inputted as list, but is automatically converted to
-        # a list if it is a single file 
+        # a list if it is a single file string
         if type(mapfiles) != list:
             mapfiles = [mapfiles]
         self.input = mapfiles
@@ -83,6 +83,7 @@ class WLMap:
         self.field = []
         self.wcs = []
         self.output = []
+        self.test = []
         
 
         # Read in data from file:
@@ -143,10 +144,14 @@ class WLMap:
               if vb: print "FITS version already exists: ",self.output
             else:  
               if vb: print "Writing map to "+self.output[i]
-              self.write_out_to_fits()
-            # This should probably not be in __init__ but hopefully it only gets run once.  
-            return None
-
+              self.write_out_to_fits(i)
+            # This should probably not be in __init__ but hopefully it only gets run once. 
+              
+            if i == 0:
+                self.test.append(0)
+            elif i == 1:
+                self.test.append(1)
+            
 # ----------------------------------------------------------------------------
 #  WCS parameters: to allow conversions between
 #  image coordinates i,j (pixels)
