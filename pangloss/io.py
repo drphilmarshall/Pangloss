@@ -2,7 +2,7 @@
 
 import pangloss
 import os,cPickle
-from astropy.table import Table, Column
+from astropy.table import Table
 
 # ======================================================================
 
@@ -53,6 +53,7 @@ def readPickle(filename):
 # ----------------------------------------------------------------------------
 
 def readCatalog(filename,config):
+    
     table = Table.read(filename, format = 'ascii')
 
     try: table.rename_column(config.parameters['nRAName'],'nRA')
@@ -74,7 +75,7 @@ def readCatalog(filename,config):
     try:
         table['mag'] = table[config.parameters['MagName']]
     except:
-        raise "Error in io.readCatalog: no mag column called "+config.parameters['MagName']
+        raise "Error in io.readCatalog: no mag column called %s\n" % config.parameters['MagName']
 
     return table
 
