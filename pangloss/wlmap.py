@@ -82,9 +82,7 @@ class WLMap:
         self.PIXSCALE = []
         self.field = []
         self.wcs = []
-        self.output = []
-        self.test = []
-        
+        self.output = []        
 
         # Read in data from file:
         if FITS:
@@ -146,11 +144,6 @@ class WLMap:
               if vb: print "Writing map to "+self.output[i]
               self.write_out_to_fits(i)
             # This should probably not be in __init__ but hopefully it only gets run once. 
-              
-            if i == 0:
-                self.test.append(0)
-            elif i == 1:
-                self.test.append(1)
             
 # ----------------------------------------------------------------------------
 #  WCS parameters: to allow conversions between

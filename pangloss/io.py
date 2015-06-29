@@ -53,49 +53,8 @@ def readPickle(filename):
 # ----------------------------------------------------------------------------
 
 def readCatalog(filename,config):
-
-# PJM: we need to switch to astropy tables...
-# Here's how Richard McMahon uses them, admittedly when reading in FITS:
-
-    '''
-    here is an example; I like to write out the version number to help with debugging.
-
-    import astropy
-    print('astropy: ', astropy.version)
-    from astropy.table import Table
-    from astropy.io import fits
-
-    infile_OM10="/home/rgm/soft/OM10/OM10/data/qso_mock.fits"
-    print 'Read in with Astropy FITS table reader'
-    table=Table.read(infile_OM10)
-    table.pprint()
-    print 'Numer of rows: ', len(table)
-    print 'columns: ', table.columns
-
-    print 'colnames: ', table.colnames
-    print 'meta: ', table.meta
-
-    # see http://astropy.readthedocs.org/en/latest/table/modify_table.html
-    # to see how to add a column, e.g.
-    # to insert before the first table column, do:
-
-    table.add_column(aa, index=0)
-
-    table.write('new.fits')
-
-    '''
-    table = Table.read(filename, format='ascii')
-
-    # BUG:
-
-    # PJM: When running Drill.py example.config in example dir, I get:
-
-    # > raise "Error in io.readCatalog: no mag column called %s\n" % config.parameters['MagName']
-    # > TypeError: exceptions must be old-style classes or derived from BaseException, not str
-
-    # Try: 1) printing table header to check that it was interpreted correctly
-    # 2) printing a row of data for same reason
-    # Also, fix raise statement so it outputs correctly. Raise()?
+    
+    table = Table.read(filename, format = 'ascii')
 
     try: table.rename_column(config.parameters['nRAName'],'nRA')
     except: pass
@@ -114,8 +73,7 @@ def readCatalog(filename,config):
     try: table.rename_column(config.parameters['ObsRedshiftName'],'z_obs')
     except: pass
     try:
-        mag = table[config.parameters['MagName']]
-        table.add_column('mag',mag)
+        table['mag'] = table[config.parameters['MagName']]
     except:
         raise "Error in io.readCatalog: no mag column called %s\n" % config.parameters['MagName']
 
