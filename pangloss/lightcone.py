@@ -26,7 +26,7 @@ class Lightcone(object):
         sample masses for each galaxy, from various specified relations.
 
     INITIALISATION
-        catalog       Filename of the parent galaxy catalog
+        catalog       Astropy table of the parent galaxy catalog
         flavor        Is the catalog 'real' or 'simulated'?
         position      The sky position (J2000 deg) of the cone centre
         radius        The radius of the lightcone field of view (arcmin)
