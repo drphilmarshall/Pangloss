@@ -12,3 +12,5 @@ doc/wiki
 attic
 calib/Millennium
 calib/SHMR
+*ipynb_checkpoints*
+data

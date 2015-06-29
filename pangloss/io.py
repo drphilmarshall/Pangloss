@@ -1,8 +1,7 @@
 # ===========================================================================
 
 import pangloss
-
-import os,cPickle,atpy
+import os,cPickle,astropy.io
 
 # ======================================================================
 
@@ -57,35 +56,34 @@ def readCatalog(filename,config):
 # PJM: we need to switch to astropy tables...
 # Here's how Richard McMahon uses them, admittedly when reading in FITS:
 
-"""
-here is an example; I like to write out the version number to help with debugging.
-
-import astropy
-print('astropy: ', astropy.version)
-from astropy.table import Table
-from astropy.io import fits
-
-infile_OM10="/home/rgm/soft/OM10/OM10/data/qso_mock.fits"
-print 'Read in with Astropy FITS table reader'
-table=Table.read(infile_OM10)
-table.pprint()
-print 'Numer of rows: ', len(table)
-print 'columns: ', table.columns
-
-print 'colnames: ', table.colnames
-print 'meta: ', table.meta
-
-# see http://astropy.readthedocs.org/en/latest/table/modify_table.html
-# to see how to add a column, e.g.
-# to insert before the first table column, do:
-
-table.add_column(aa, index=0)
-
-table.write('new.fits')
-
-"""
-
-    table = atpy.Table(filename, type='ascii')
+    '''
+    here is an example; I like to write out the version number to help with debugging.
+    
+    import astropy
+    print('astropy: ', astropy.version)
+    from astropy.table import Table
+    from astropy.io import fits
+    
+    infile_OM10="/home/rgm/soft/OM10/OM10/data/qso_mock.fits"
+    print 'Read in with Astropy FITS table reader'
+    table=Table.read(infile_OM10)
+    table.pprint()
+    print 'Numer of rows: ', len(table)
+    print 'columns: ', table.columns
+    
+    print 'colnames: ', table.colnames
+    print 'meta: ', table.meta
+    
+    # see http://astropy.readthedocs.org/en/latest/table/modify_table.html
+    # to see how to add a column, e.g.
+    # to insert before the first table column, do:
+    
+    table.add_column(aa, index=0)
+    
+    table.write('new.fits')
+    
+    '''
+    table = astropy.io.Table(filename, type='ascii')
 
     try: table.rename_column(config.parameters['nRAName'],'nRA')
     except: pass
