@@ -86,6 +86,17 @@ def readCatalog(filename,config):
     '''
     table = Table.read(filename, format='ascii')
 
+    # BUG:
+
+    # PJM: When running Drill.py example.config in example dir, I get:
+
+    # > raise "Error in io.readCatalog: no mag column called %s\n" % config.parameters['MagName']
+    # > TypeError: exceptions must be old-style classes or derived from BaseException, not str
+
+    # Try: 1) printing table header to check that it was interpreted correctly
+    # 2) printing a row of data for same reason
+    # Also, fix raise statement so it outputs correctly. Raise()?
+
     try: table.rename_column(config.parameters['nRAName'],'nRA')
     except: pass
     try: table.rename_column(config.parameters['DecName'],'Dec')
