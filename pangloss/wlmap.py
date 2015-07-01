@@ -1,12 +1,12 @@
 
-import numpy, os, string
+import numpy as np, os, string
 import struct
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 
-arcmin2rad = (1.0/60.0)*numpy.pi/180.0
+arcmin2rad = (1.0/60.0)*np.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
-deg2rad = numpy.pi/180.0
+deg2rad = np.pi/180.0
 rad2deg = 1.0/deg2rad
 
 vb = False
@@ -135,7 +135,7 @@ class WLMap:
             start = 0
             stop = struct.calcsize(fmt)
             values = struct.unpack(fmt,data[start:stop])
-            self.values.append(numpy.array(values,dtype=numpy.float32).reshape(self.NX[i],self.NX[i]))
+            self.values.append(np.array(values,dtype=np.float32).reshape(self.NX[i],self.NX[i]))
 
             # If it doesn't already exist, output the map to FITS file:
             # pieces = string.split(self.input,'.')
@@ -273,13 +273,14 @@ class WLMap:
         return i,j
            
     def physical2world(self,x,y,mapfile=0):
-        a = x - self.field_x[mapfile]*self.field[mapfile]
-        d = y + self.field_y[mapfile]*self.field[mapfile]
+        a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
+        if a < 0.0: a += 360.0
+        d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
         return a,d
     
     def world2physical(self,a,d,mapfile=0):
-        x = a + self.field_x[mapfile]*self.field[mapfile]
-        y = d - self.field_y[mapfile]*self.field[mapfile]
+        x = -np.deg2rad(a + self.field_x[mapfile]*self.field[mapfile])
+        y = np.deg2rad(d - self.field_y[mapfile]*self.field[mapfile])
         return x,y
 
 # ----------------------------------------------------------------------------
@@ -314,23 +315,22 @@ class WLMap:
             tickNum = 8
 
         # N-sampled axis values
-        xl = numpy.arange(xi,xf+Lx/tickNum*numpy.sign(xf),Lx/tickNum)
-        yl = numpy.arange(yi,yf+Ly/tickNum*numpy.sign(yf),Ly/tickNum)
-
+        xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
+        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
         if coords == 'pixel':
             # Convert axes to world coordinates, scale correctly with subplot
             xlNew = []; ylNew = [];
 
             for x in xl:
-                xN,yN = self.image2physical(x,0)
+                xN,yN = self.image2world(x,0)
                 xlNew.append(xN)
             for y in yl:
-                xN,yN = self.image2physical(0,y)
+                xN,yN = self.image2world(0,y)
                 ylNew.append(yN)
 
             # Format coordinates
-            xlabels = ['%.3f' % a for a in xlNew]
-            ylabels = ['%.3f' % a for a in ylNew]
+            xlabels = ['%.5f' % a for a in xlNew]
+            ylabels = ['%.5f' % a for a in ylNew]
 
         elif coords == 'physical':
             # Convert axes to world coordinates, scale correctly with subplot
@@ -344,8 +344,8 @@ class WLMap:
                 ylNew.append(yN)
 
             # Format coordinates
-            xlabels = ['%.3f' % a for a in xlNew]
-            ylabels = ['%.3f' % a for a in ylNew]
+            xlabels = ['%.5f' % a for a in xlNew]
+            ylabels = ['%.5f' % a for a in ylNew]
 
             # Convert subplot bounds to pixel values
             xi,yi = self.physical2image(xi,yi)
@@ -355,8 +355,8 @@ class WLMap:
             
         elif coords == 'world':
             # Label values are already in world coordinates
-            xlabels = ['%.3f' % a for a in xl]
-            ylabels = ['%.3f' % a for a in yl]
+            xlabels = ['%.5f' % a for a in xl]
+            ylabels = ['%.5f' % a for a in yl]
 
             # Convert subplot bounds to pixel values
             xi,yi = self.world2image(xi,yi)
@@ -368,8 +368,8 @@ class WLMap:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
 
         # Location of tick marks
-        xlocs = numpy.arange(0,Lx,Lx/tickNum)
-        ylocs = numpy.arange(0,Ly,Ly/tickNum)
+        xlocs = np.arange(0,Lx,Lx/tickNum)
+        ylocs = np.arange(0,Ly,Ly/tickNum)
         
         return xi,xf,yi,yf,Lx,Ly,xlocs,xlabels,ylocs,ylabels
 

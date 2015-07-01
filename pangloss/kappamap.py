@@ -82,8 +82,8 @@ class Kappamap(WLMap):
         # Label axes
         plt.xticks(xlocs,xlabels)
         plt.yticks(ylocs,ylabels)
-        plt.xlabel('RA (rad)')
-        plt.ylabel('DEC (rad)')
+        plt.xlabel('Right Ascension / deg')
+        plt.ylabel('Declination / deg')
 
         # Set figure size
         fig = plt.gcf()
