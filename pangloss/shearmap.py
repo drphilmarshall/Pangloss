@@ -99,8 +99,6 @@ class Shearmap(WLMap):
         # Calculate the modulus and angle of each shear
         mod_gamma = np.sqrt(gamma1*gamma1 + gamma2*gamma2)
         phi_gamma = np.arctan2(gamma2,gamma1)/2.0
-        #mod_gamma = cmath.
-        #phi_gamma = cmath.phase(gamma1+1j*gamma2)
 
         # Create the vector components of the shear sticks.
         # We *think* that this transpose is necessary because

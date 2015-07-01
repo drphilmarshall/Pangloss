@@ -271,8 +271,7 @@ class WLMap:
         i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
         j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
         return i,j
-        
-    # Are these transformations below also only approximations?    
+           
     def physical2world(self,x,y,mapfile=0):
         a = x - self.field_x[mapfile]*self.field[mapfile]
         d = y + self.field_y[mapfile]*self.field[mapfile]
@@ -334,7 +333,6 @@ class WLMap:
             ylabels = ['%.3f' % a for a in ylNew]
 
         elif coords == 'physical':
-            # FIX!!!
             # Convert axes to world coordinates, scale correctly with subplot
             xlNew = []; ylNew = [];
 
