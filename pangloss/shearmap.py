@@ -2,6 +2,7 @@
 import numpy
 import matplotlib.pyplot as plt
 from wlmap import WLMap
+import cmath
 
 arcmin2rad = (1.0/60.0)*numpy.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -34,9 +35,10 @@ class Shearmap(WLMap):
                                              coordinates
 
     BUGS
-        Subplots that have the y-axis significantly larger than the x-axis have
+        -Subplots that have the y-axis significantly larger than the x-axis have
         issues with the sticks scaling correctly. Need to look into numpy.quiver()
         for more options.
+        -Alignment of shear sticks is not correct!
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -117,10 +119,13 @@ class Shearmap(WLMap):
         # Location of tick marks
         xlocs = numpy.arange(0,Lx,Lx/tickNum)
         ylocs = numpy.arange(0,Ly,Ly/tickNum)
-
+        
+        '''
+        NEED TO TEST!! - Make sure that the shear sticks are being plotted correctly
+        '''
         # Retrieve gamma values in desired subplot
-        gamma1 = self.values[0][yi:yf,xi:xf]
-        gamma2 = self.values[1][yi:yf,xi:xf]
+        gamma1 = self.values[1][yi:yf,xi:xf]
+        gamma2 = self.values[0][yi:yf,xi:xf]
         
         # Pixel sampling rate for plotting of shear maps
 
@@ -137,7 +142,9 @@ class Shearmap(WLMap):
         # Calculate the modulus and angle of each shear
         mod_gamma = numpy.sqrt(numpy.square(gamma1)+numpy.square(gamma2))
         phi_gamma = numpy.arctan(numpy.divide(gamma2,gamma1))/2.0
-        
+        #mod_gamma = cmath.
+        #phi_gamma = cmath.phase(gamma1+1j*gamma2)
+                
         # Create the vector components of the shear sticks
         stick1 = numpy.multiply(mod_gamma,numpy.cos(phi_gamma))
         stick2 = numpy.multiply(mod_gamma,numpy.sin(phi_gamma))
