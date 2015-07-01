@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Jun 24 10:06:44 2015
-
-@author: spencer
-"""
 
 import numpy, os, string
 import struct
@@ -75,6 +69,15 @@ class WLMap:
         if type(mapfiles) != list:
             mapfiles = [mapfiles]
         self.input = mapfiles
+        
+        # Parsing the file name(s)
+        # 0 <= x,y <= 7, each (x,y) map covers 4x4 degrees
+        self.field_x = []
+        self.field_y = []
+        for i in range(0,len(self.input)):
+            input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
+            self.field_x.append(eval(input_parse[3])) # The x location of the map grid
+            self.field_y.append(eval(input_parse[4])) # The y location of the map grid
 
         # Declare needed attributes as lists
         self.values = []
@@ -157,8 +160,8 @@ class WLMap:
         # dec = CRVAL2 + CD2_2*(j-CRPIX2)
         self.wcs[i]['CRPIX1'] = 0.0
         self.wcs[i]['CRPIX2'] = 0.0
-        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i]
-        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i]
+        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.field_x[i]*self.field[i]
+        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.field_y[i]*self.field[i]
         self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
         self.wcs[i]['CD1_2'] = 0.0
         self.wcs[i]['CD2_1'] = 0.0
@@ -268,13 +271,109 @@ class WLMap:
         i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
         j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
         return i,j
+        
+    # Are these transformations below also only approximations?    
+    def physical2world(self,x,y,mapfile=0):
+        a = x - self.field_x[mapfile]*self.field[mapfile]
+        d = y + self.field_y[mapfile]*self.field[mapfile]
+        return a,d
+    
+    def world2physical(self,a,d,mapfile=0):
+        x = a + self.field_x[mapfile]*self.field[mapfile]
+        y = d - self.field_y[mapfile]*self.field[mapfile]
+        return x,y
 
 # ----------------------------------------------------------------------------
 # In general, we don't know how to plot this map...
 
-    def plot(self):
-        print "No plotting method defined for generic WLmap objects"
-        return
+    def plot(self,fig_size=10,subplot=None,coords='pixel'):
+        '''
+        Plot the convergence as a grayscale image.
+
+        Optional arguments:
+            fig_size        Figure size in inches
+            subplot         List of four plot limits [xmin,xmax,ymin,ymax]
+            coords          Type of coordinates inputted for the subplot:
+                            'pixel', 'physical', or 'world'
+            
+        *!NOTE!*: Not a complete plotting method. Ony calculates values common 
+        to both Kappamap and Shearmap plots
+        '''
+        # Default subplot is entire image
+        if subplot is None:
+            subplot = [0,self.NX[0],0,self.NX[0]]
+
+        xi, xf = subplot[0], subplot[1]    # x-limits for subplot
+        yi, yf = subplot[2], subplot[3]    # y-limits for subplot
+        Lx = xf-xi    # length of x-axis subplot
+        Ly = yf-yi    # length of y-axis subplot
+        
+        # Number of axis ticks
+        if Lx != Ly and Lx/Ly < 0.6:
+            tickNum = 5
+        else:
+            tickNum = 8
+
+        # N-sampled axis values
+        xl = numpy.arange(xi,xf+Lx/tickNum*numpy.sign(xf),Lx/tickNum)
+        yl = numpy.arange(yi,yf+Ly/tickNum*numpy.sign(yf),Ly/tickNum)
+
+        if coords == 'pixel':
+            # Convert axes to world coordinates, scale correctly with subplot
+            xlNew = []; ylNew = [];
+
+            for x in xl:
+                xN,yN = self.image2physical(x,0)
+                xlNew.append(xN)
+            for y in yl:
+                xN,yN = self.image2physical(0,y)
+                ylNew.append(yN)
+
+            # Format coordinates
+            xlabels = ['%.3f' % a for a in xlNew]
+            ylabels = ['%.3f' % a for a in ylNew]
+
+        elif coords == 'physical':
+            # FIX!!!
+            # Convert axes to world coordinates, scale correctly with subplot
+            xlNew = []; ylNew = [];
+
+            for x in xl:
+                xN,yN = self.physical2world(x,0)
+                xlNew.append(xN)
+            for y in yl:
+                xN,yN = self.physical2world(0,y)
+                ylNew.append(yN)
+
+            # Format coordinates
+            xlabels = ['%.3f' % a for a in xlNew]
+            ylabels = ['%.3f' % a for a in ylNew]
+
+            # Convert subplot bounds to pixel values
+            xi,yi = self.physical2image(xi,yi)
+            xf,yf = self.physical2image(xf,yf)
+            Lx = xf-xi
+            Ly = yf-yi
+            
+        elif coords == 'world':
+            # Label values are already in world coordinates
+            xlabels = ['%.3f' % a for a in xl]
+            ylabels = ['%.3f' % a for a in yl]
+
+            # Convert subplot bounds to pixel values
+            xi,yi = self.world2image(xi,yi)
+            xf,yf = self.world2image(xf,yf)
+            Lx = xf-xi
+            Ly = yf-yi
+
+        else:
+            raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
+
+        # Location of tick marks
+        xlocs = numpy.arange(0,Lx,Lx/tickNum)
+        ylocs = numpy.arange(0,Ly,Ly/tickNum)
+        
+        return xi,xf,yi,yf,Lx,Ly,xlocs,xlabels,ylocs,ylabels
 
 # ----------------------------------------------------------------------------
 
