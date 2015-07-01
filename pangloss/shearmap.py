@@ -124,8 +124,8 @@ class Shearmap(WLMap):
         NEED TO TEST!! - Make sure that the shear sticks are being plotted correctly
         '''
         # Retrieve gamma values in desired subplot
-        gamma1 = self.values[1][yi:yf,xi:xf]
-        gamma2 = self.values[0][yi:yf,xi:xf]
+        gamma1 = self.values[0][yi:yf,xi:xf]
+        gamma2 = self.values[1][yi:yf,xi:xf]
         
         # Pixel sampling rate for plotting of shear maps
 
@@ -141,9 +141,7 @@ class Shearmap(WLMap):
         
         # Calculate the modulus and angle of each shear
         mod_gamma = numpy.sqrt(numpy.square(gamma1)+numpy.square(gamma2))
-        phi_gamma = numpy.arctan(numpy.divide(gamma2,gamma1))/2.0
-        #mod_gamma = cmath.
-        #phi_gamma = cmath.phase(gamma1+1j*gamma2)
+        phi_gamma = numpy.arctan(numpy.divide(gamma2*1.0,gamma1*1.0))/2.0
                 
         # Create the vector components of the shear sticks
         stick1 = numpy.multiply(mod_gamma,numpy.cos(phi_gamma))
