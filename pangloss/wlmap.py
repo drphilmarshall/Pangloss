@@ -269,6 +269,10 @@ class WLMap:
 
     def world2image(self,a,d,mapfile=0):
         i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
+        # if a negative pixel is returned for i, reinput a as a negative degree
+        if i<0:
+            a-=360
+            i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
         j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
         return i,j
            
@@ -301,22 +305,58 @@ class WLMap:
         '''
         # Default subplot is entire image
         if subplot is None:
+            '''
+            # Switch these two versions to change default coords from 'pixel' to 'world'
+            # coords = 'world':
+            ai, di = self.image2world(0,0)
+            af, df = self.image2world(self.NX[0],self.NX[0])
+            subplot = [ai,af,di,df]
+            # coords = 'pixel':
+            '''
             subplot = [0,self.NX[0],0,self.NX[0]]
-
+            
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
-        Lx = xf-xi    # length of x-axis subplot
-        Ly = yf-yi    # length of y-axis subplot
         
-        # Number of axis ticks
-        if Lx != Ly and Lx/Ly < 0.6:
+        Lx = abs(xf-xi)    # length of x-axis subplot
+        Ly = abs(yf-yi)    # length of y-axis subplot
+        
+        #Number of axis ticks
+        if (Lx != Ly and Lx/Ly < 0.6) or fig_size < 8:
             tickNum = 5
         else:
             tickNum = 8
-
+            
         # N-sampled axis values
-        xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
-        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
+        xl = np.arange(xi,xf+Ly/tickNum*np.sign(yf),Lx/tickNum)     
+        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum) 
+        
+        '''
+        This can be used instead of the above code to set the axis values when 
+        the default value for coords is 'world'. However, it is becoming too 
+        cumbersome when the previous code was much more clear.
+        # N-sampled axis values
+        if coords == 'world' and xf > xi:
+            # This means that the plot includes the breaking point between 0 and
+            # 360, so the axis values must be adjusted
+            xf -= 360
+            Lx = abs(xf-xi)    # length of x-axis subplot
+            xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
+            xl_above0 = [n for n in xl if n <= 0]
+            xl_below0 = [n for n in xl if n > 0]
+            xl_below0 = [n+360 for n in xl_below0] 
+            print(xl_above0,xl_below0)
+            xl = xl_above0+xl_below0
+            
+        else:
+            # For all other cases
+            Lx = abs(xf-xi)
+            xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
+        
+        Ly = abs(yf-yi)    # length of y-axis subplot
+        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)        
+        '''
+        
         if coords == 'pixel':
             # Convert axes to world coordinates, scale correctly with subplot
             xlNew = []; ylNew = [];
@@ -361,6 +401,7 @@ class WLMap:
             # Convert subplot bounds to pixel values
             xi,yi = self.world2image(xi,yi)
             xf,yf = self.world2image(xf,yf)
+            
             Lx = xf-xi
             Ly = yf-yi
 

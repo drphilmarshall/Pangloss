@@ -1,5 +1,5 @@
 import numpy as np
-import scipi as sp
+import scipy as sp
 import matplotlib as plt
 import os
 from pangloss import io, config
@@ -21,7 +21,7 @@ class Catalog(object):
         ???
 
     INITIALISATION
-        ???
+        filename = file name, config = config object
             
     METHODS
         ???
@@ -37,10 +37,10 @@ class Catalog(object):
     HISTORY
       2015-06-29  Everett (SLAC)
     """
-    def __init__(self,filename,configfile):        
+    def __init__(self,filename,config):        
         self.filename = filename        
         # Structures catalog metadata from configfile and reads in the catalog data
-        self.config = config.Configuration(configfile)
+        self.config = config
         self.read(filename,config)
     
     def read(self,filename,config):    
