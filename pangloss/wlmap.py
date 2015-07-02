@@ -263,7 +263,7 @@ class WLMap:
      # Only approximate WCS transformations - assumes dec=0.0 and small field
     def image2world(self,i,j,mapfile=0):
         a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
-        if a < 0.0: a += 360.0
+        #if a < 0.0: a += 360.0 We are using nRA instead now
         d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
         return a,d
 
@@ -278,7 +278,7 @@ class WLMap:
            
     def physical2world(self,x,y,mapfile=0):
         a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
-        if a < 0.0: a += 360.0
+        #if a < 0.0: a += 360.0 we are using nRA instead now
         d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
         return a,d
     
