@@ -263,7 +263,7 @@ class WLMap:
      # Only approximate WCS transformations - assumes dec=0.0 and small field
     def image2world(self,i,j,mapfile=0):
         a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
-        #if a < 0.0: a += 360.0 We are using nRA instead now
+        #if a < 0.0: a += 360.0 :We are using nRA instead now
         d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
         return a,d
 
@@ -278,7 +278,7 @@ class WLMap:
            
     def physical2world(self,x,y,mapfile=0):
         a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
-        #if a < 0.0: a += 360.0 we are using nRA instead now
+        #if a < 0.0: a += 360.0 :we are using nRA instead now
         d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
         return a,d
     
@@ -290,7 +290,7 @@ class WLMap:
 # ----------------------------------------------------------------------------
 # In general, we don't know how to plot this map...
 
-    def plot(self,fig_size=10,subplot=None,coords='pixel'):
+    def plot(self,fig_size=10,subplot=None,coords='world'):
         '''
         Plot the convergence as a grayscale image.
 
@@ -303,116 +303,67 @@ class WLMap:
         *!NOTE!*: Not a complete plotting method. Ony calculates values common 
         to both Kappamap and Shearmap plots
         '''
-        # Default subplot is entire image
+        
         if subplot is None:
-            '''
-            # Switch these two versions to change default coords from 'pixel' to 'world'
-            # coords = 'world':
+            # Default subplot is entire image
             ai, di = self.image2world(0,0)
             af, df = self.image2world(self.NX[0],self.NX[0])
             subplot = [ai,af,di,df]
-            # coords = 'pixel':
-            '''
-            subplot = [0,self.NX[0],0,self.NX[0]]
+            # coords = 'pixel':            
+            #subplot = [0,self.NX[0],0,self.NX[0]]
             
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
         
-        Lx = abs(xf-xi)    # length of x-axis subplot
-        Ly = abs(yf-yi)    # length of y-axis subplot
+        if coords == 'world':
+            # Subplot is already in world coordinates
+            Lx = 1.0*abs(xf-xi)    # length of x-axis subplot
+            Ly = 1.0*abs(yf-yi)    # length of y-axis subplot
+            
+        elif coords == 'physical':
+            # Convert subplot bounds to world coordinates
+            xi,yi = self.physical2world(xi,yi)
+            xf,yf = self.physical2world(xf,yf)
+            Lx = 1.0*abs(xf-xi)
+            Ly = 1.0*abs(yf-yi)
+            
+        elif coords == 'pixel':
+            # Convert subplot bounds to world coordinates
+            xi,yi = self.image2world(xi,yi)
+            xf,yf = self.image2world(xf,yf)
+            Lx = 1.0*abs(xf-xi)
+            Ly = 1.0*abs(yf-yi)
+            
+        else:
+            raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
         
-        #Number of axis ticks
+        # Number of axis ticks
         if (Lx != Ly and Lx/Ly < 0.6) or fig_size < 8:
             tickNum = 5
         else:
             tickNum = 8
             
-        # N-sampled axis values
-        xl = np.arange(xi,xf+Ly/tickNum*np.sign(yf),Lx/tickNum)     
-        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum) 
+        # Axis tick labels. Note that x iterates negatively as RA is left-handed
+        xlabels = np.arange(xi,xf+Lx/tickNum*np.sign(xf),-Lx/tickNum)   
+        ylabels = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
         
-        '''
-        This can be used instead of the above code to set the axis values when 
-        the default value for coords is 'world'. However, it is becoming too 
-        cumbersome when the previous code was much more clear.
-        # N-sampled axis values
-        if coords == 'world' and xf > xi:
-            # This means that the plot includes the breaking point between 0 and
-            # 360, so the axis values must be adjusted
-            xf -= 360
-            Lx = abs(xf-xi)    # length of x-axis subplot
-            xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
-            xl_above0 = [n for n in xl if n <= 0]
-            xl_below0 = [n for n in xl if n > 0]
-            xl_below0 = [n+360 for n in xl_below0] 
-            print(xl_above0,xl_below0)
-            xl = xl_above0+xl_below0
-            
-        else:
-            # For all other cases
-            Lx = abs(xf-xi)
-            xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
+        # Format axis tick values
+        xlabels = ['%.5f' % a for a in xlabels]
+        ylabels = ['%.5f' % a for a in ylabels]
         
-        Ly = abs(yf-yi)    # length of y-axis subplot
-        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)        
-        '''
+        # Convert subplot bounds to pixel values
+        pix_xi,pix_yi = self.world2image(xi,yi)
+        pix_xf,pix_yf = self.world2image(xf,yf)
         
-        if coords == 'pixel':
-            # Convert axes to world coordinates, scale correctly with subplot
-            xlNew = []; ylNew = [];
-
-            for x in xl:
-                xN,yN = self.image2world(x,0)
-                xlNew.append(xN)
-            for y in yl:
-                xN,yN = self.image2world(0,y)
-                ylNew.append(yN)
-
-            # Format coordinates
-            xlabels = ['%.5f' % a for a in xlNew]
-            ylabels = ['%.5f' % a for a in ylNew]
-
-        elif coords == 'physical':
-            # Convert axes to world coordinates, scale correctly with subplot
-            xlNew = []; ylNew = [];
-
-            for x in xl:
-                xN,yN = self.physical2world(x,0)
-                xlNew.append(xN)
-            for y in yl:
-                xN,yN = self.physical2world(0,y)
-                ylNew.append(yN)
-
-            # Format coordinates
-            xlabels = ['%.5f' % a for a in xlNew]
-            ylabels = ['%.5f' % a for a in ylNew]
-
-            # Convert subplot bounds to pixel values
-            xi,yi = self.physical2image(xi,yi)
-            xf,yf = self.physical2image(xf,yf)
-            Lx = xf-xi
-            Ly = yf-yi
-            
-        elif coords == 'world':
-            # Label values are already in world coordinates
-            xlabels = ['%.5f' % a for a in xl]
-            ylabels = ['%.5f' % a for a in yl]
-
-            # Convert subplot bounds to pixel values
-            xi,yi = self.world2image(xi,yi)
-            xf,yf = self.world2image(xf,yf)
-            
-            Lx = xf-xi
-            Ly = yf-yi
-
-        else:
-            raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
-
+        # Pixel length of subplot
+        pix_Lx = pix_xf-pix_xi
+        pix_Ly = pix_yf-pix_yi        
+       
         # Location of tick marks
-        xlocs = np.arange(0,Lx,Lx/tickNum)
-        ylocs = np.arange(0,Ly,Ly/tickNum)
+        xlocs = np.arange(0,pix_Lx,pix_Lx/tickNum)
+        ylocs = np.arange(0,pix_Ly,pix_Ly/tickNum)
         
-        return xi,xf,yi,yf,Lx,Ly,xlocs,xlabels,ylocs,ylabels
+        return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels
 
 # ----------------------------------------------------------------------------
 
