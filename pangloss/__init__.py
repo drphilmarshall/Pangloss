@@ -5,6 +5,7 @@ from grid import *
 from pdf import *
 from shmr import *
 from catalog import *
+from foreground import *
 
 from config import *
 from io import *
