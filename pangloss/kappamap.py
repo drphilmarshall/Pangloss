@@ -61,7 +61,7 @@ class Kappamap(WLMap):
 
 # ----------------------------------------------------------------------------
 
-    def plot(self,fig_size=10,subplot=None,coords='pixel'):
+    def plot(self,fig_size=10,subplot=None,coords='world'):
         """
         Plot the convergence as a grayscale image.
 
@@ -73,10 +73,10 @@ class Kappamap(WLMap):
         """
         
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
-        xi,xf,yi,yf,Lx,Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
 
         # Plot image
-        plt.imshow(self.values[0][yi:yf,xi:xf],cmap = 'gray_r',origin = 'lower')
+        plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
         plt.title('Convergence map of '+self.input[0])
 
         # Label axes

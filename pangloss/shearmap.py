@@ -38,7 +38,6 @@ class Shearmap(WLMap):
         -Subplots that have the y-axis significantly larger than the x-axis have
         issues with the sticks scaling correctly. Need to look into np.quiver()
         for more options.
-        -Alignment of shear sticks is not correct!
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -66,7 +65,7 @@ class Shearmap(WLMap):
 # ----------------------------------------------------------------------------
 # Plot the convergence as grayscale:
 
-    def plot(self,fig_size=10,subplot=None,coords='pixel'): # fig_size in inches
+    def plot(self,fig_size=10,subplot=None,coords='world'): # fig_size in inches
         """
         Plot the convergence as a grayscale image.
 
@@ -78,21 +77,21 @@ class Shearmap(WLMap):
         """
         
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
-        xi,xf,yi,yf,Lx,Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
 
         # Retrieve gamma values in desired subplot
-        gamma1 = self.values[0][yi:yf,xi:xf]
-        gamma2 = self.values[1][yi:yf,xi:xf]
+        gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
+        gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
         
         # Pixel sampling rate for plotting of shear maps
 
-        if Lx >= 40:
-            N = np.floor(Lx/40.0)
+        if pix_Lx >= 40:
+            N = np.floor(pix_Lx/40.0)
         else:
             N = 1
 
         # Set limits and number of points in grid
-        X,Y = np.meshgrid(np.arange(0,Lx),np.arange(0,Ly))
+        X,Y = np.meshgrid(np.arange(0,pix_Lx),np.arange(0,pix_Ly))
         X = X[::N,::N]
         Y = Y[::N,::N]
 
