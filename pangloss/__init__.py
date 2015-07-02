@@ -4,6 +4,7 @@ from shearmap import *
 from grid import *
 from pdf import *
 from shmr import *
+from catalog import *
 
 from config import *
 from io import *
