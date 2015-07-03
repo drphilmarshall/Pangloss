@@ -120,7 +120,8 @@ class WLMap:
 
     def read_in_binary_data(self):
         for i in range(0,len(self.input)):
-            # Initialise some necessary WCS parameters:
+            # Initialise some necessary WCS parameters for Stefan
+            # Hilbert's binary data files:
             self.field.append(4.0) # degrees
             self.NX.append(4096) # pixels
             self.PIXSCALE.append(self.field[i]/(1.0*self.NX[i])) # degrees
