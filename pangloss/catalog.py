@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os
+import os, random, math
 from pangloss import io
 from astropy.table import Table, Column
 
@@ -77,12 +77,62 @@ class Catalog(object):
 
 # ----------------------------------------------------------------------------
     
-    def generate(self,fig_size=10,mag_cutoff=[24,0],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
+    def generate(self,domain=None,N=1000,mag_cut=[24.0,0.0],mass_cut=[10.0**5,10.0**12],z_cut=[0.0,1.3857],plot=False,fig_size=10):
         '''
-        Draw generated world-coordinate positions of galaxies in the sky in 
-        world coordinates The optional input fig_size is in inches and has a 
-        default value of 10. The other optional inputs are value cutoffs; any
-        generated galaxy will have attributes within these values.
-        '''
+        Draw N-generated world-coordinate positions of galaxies in the sky inside 
+        a given domain of the form domain=[ra_init,ra_final,dec_init,dec_final]. 
+        The other optional inputs are value cutoffs; any generated galaxy will 
+        have attributes within these values. Will make a scatter plot of the 
+        generated catalog only if plot = True
+        '''        
         
+        if domain == None:
+            # Make a default domain (shouldn't be used except for testing or demo purposes)
+            ra_init = 1    # initial value is larger as ra is left-handed
+            ra_final = -1
+            dec_init = -1
+            dec_final = 1
+        
+        else:
+            # Set ra and dec limits from domain. domain = [ra_init,ra_final,dec_init,dec_final]
+            ra_init = domain[0]
+            ra_final = domain[1]
+            dec_init = domain[2]
+            dec_final = domain[3]
+            
+        # Initialize generated variables
+        ra = []
+        dec = []
+        mag = []
+        mass = []
+        z = []
+        
+        # Populate the generated variables
+        for i in range(0,N):
+            ## NOTE: Not all distributions should be uniform!!!
+            ra.append(random.uniform(ra_init,ra_final))
+            dec.append(random.uniform(dec_init,dec_final))
+            mag.append(random.uniform(mag_cut[0],mag_cut[1]))
+            mass.append(random.uniform(mass_cut[0],mass_cut[1]))
+            z.append(random.uniform(z_cut[0],z_cut[1]))
+            
+        # Save generated catalog as an astropy table
+        self.gen_data = Table([ra,dec,mag,mass,z],names=['ra','dec','mag','mass','z'], \
+                              meta={'name':'generated catalog','size':N,'mag_cutoff':mag_cut, \
+                                    'mass_cutoff':mass_cut,'z_cutoff':z_cut})
+                                    
+        # Make scatter plot of generated galaxies  
+        if plot == True:
+            # Scale size of point by the galaxy mass
+            s = [math.log(mass[i]) for i in range(0,len(mass))]
+            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None)
+            
+            plt.xlabel('Right Ascension / deg')
+            plt.ylabel('Declination / deg')
+            plt.gca().set_xlim(min(ra),max(ra))
+            plt.gca().set_ylim(min(dec),max(dec))
+        
+            # Set figure size to fig_size
+            fig = plt.gcf()
+            fig.set_size_inches(fig_size,fig_size)  
     
