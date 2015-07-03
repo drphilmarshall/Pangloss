@@ -59,7 +59,7 @@ class WLMap:
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
-      2015-06-24  Everett (SLAC)
+      2015-06-24  Started Everett (SLAC)
     """
 
     def __init__(self,mapfiles,FITS=True):
@@ -69,7 +69,7 @@ class WLMap:
         if type(mapfiles) != list:
             mapfiles = [mapfiles]
         self.input = mapfiles
-        
+
         # Parsing the file name(s)
         # 0 <= x,y <= 7, each (x,y) map covers 4x4 degrees
         self.field_x = []
@@ -276,13 +276,13 @@ class WLMap:
             i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
         j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
         return i,j
-           
+
     def physical2world(self,x,y,mapfile=0):
         a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
         #if a < 0.0: a += 360.0 :we are using nRA instead now
         d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
         return a,d
-    
+
     def world2physical(self,a,d,mapfile=0):
         x = -np.deg2rad(a + self.field_x[mapfile]*self.field[mapfile])
         y = np.deg2rad(d - self.field_y[mapfile]*self.field[mapfile])
@@ -300,70 +300,70 @@ class WLMap:
             subplot         List of four plot limits [xmin,xmax,ymin,ymax]
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
-            
-        *!NOTE!*: Not a complete plotting method. Ony calculates values common 
+
+        *!NOTE!*: Not a complete plotting method. Ony calculates values common
         to both Kappamap and Shearmap plots
         '''
-        
+
         if subplot is None:
             # Default subplot is entire image
             ai, di = self.image2world(0,0)
             af, df = self.image2world(self.NX[0],self.NX[0])
             subplot = [ai,af,di,df]
-            # coords = 'pixel':            
+            # coords = 'pixel':
             #subplot = [0,self.NX[0],0,self.NX[0]]
-            
+
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
-        
+
         if coords == 'world':
             # Subplot is already in world coordinates
             Lx = 1.0*abs(xf-xi)    # length of x-axis subplot
             Ly = 1.0*abs(yf-yi)    # length of y-axis subplot
-            
+
         elif coords == 'physical':
             # Convert subplot bounds to world coordinates
             xi,yi = self.physical2world(xi,yi)
             xf,yf = self.physical2world(xf,yf)
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
-            
+
         elif coords == 'pixel':
             # Convert subplot bounds to world coordinates
             xi,yi = self.image2world(xi,yi)
             xf,yf = self.image2world(xf,yf)
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
-            
+
         else:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
-        
+
         # Number of axis ticks
         if (Lx != Ly and Lx/Ly < 0.6) or fig_size < 8:
             tickNum = 5
         else:
             tickNum = 8
-            
+
         # Axis tick labels. Note that x iterates negatively as RA is left-handed
-        xlabels = np.arange(xi,xf+Lx/tickNum*np.sign(xf),-Lx/tickNum)   
+        xlabels = np.arange(xi,xf+Lx/tickNum*np.sign(xf),-Lx/tickNum)
         ylabels = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
-        
+
         # Format axis tick values
         xlabels = ['%.5f' % a for a in xlabels]
         ylabels = ['%.5f' % a for a in ylabels]
-        
+
         # Convert subplot bounds to pixel values
         pix_xi,pix_yi = self.world2image(xi,yi)
         pix_xf,pix_yf = self.world2image(xf,yf)
-        
+
         # Pixel length of subplot
         pix_Lx = pix_xf-pix_xi
-        pix_Ly = pix_yf-pix_yi        
-       
+        pix_Ly = pix_yf-pix_yi
+
         # Location of tick marks
         xlocs = np.arange(0,pix_Lx,pix_Lx/tickNum)
         ylocs = np.arange(0,pix_Ly,pix_Ly/tickNum)
-        
+
         return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels
 
 # ----------------------------------------------------------------------------

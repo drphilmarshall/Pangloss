@@ -42,7 +42,7 @@ class Kappamap(WLMap):
 
     HISTORY
       2013-03-23  Marshall & Collett (Oxford)
-      2015-06-24  Everett (SLAC)
+      2015-06-24  Updated to use WLMap class, Everett (SLAC)
     """
 
 # ----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ class Kappamap(WLMap):
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
         """
-        
+
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
 
@@ -96,3 +96,5 @@ class Kappamap(WLMap):
 
         # Ensures the image is not distorted
         plt.axis('equal')
+
+        return

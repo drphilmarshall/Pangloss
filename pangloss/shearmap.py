@@ -26,7 +26,7 @@ class Shearmap(WLMap):
         and y = Dec (rad). This is the system favoured by Hilbert et al.
 
     INITIALISATION
-        shearfile      List of files containing a shear map
+        shearfiles     List of files containing a shear map
         FITS           Data file format (def=True)
 
     METHODS
@@ -45,16 +45,16 @@ class Shearmap(WLMap):
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
-      2015-06-25  Everett (SLAC)
+      2015-06-25  Started Everett (SLAC)
     """
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,shearfile,FITS=True):
+    def __init__(self,shearfiles,FITS=True):
 
         self.name = 'Shear map kappa from Millenium Simulation, zs = 1.6'
         # Calls the WLMap superclass
-        WLMap.__init__(self,shearfile,FITS)
+        WLMap.__init__(self,shearfiles,FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -75,14 +75,14 @@ class Shearmap(WLMap):
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
         """
-        
+
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
         gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
-        
+
         # Pixel sampling rate for plotting of shear maps
 
         if pix_Lx >= 40:
@@ -129,3 +129,5 @@ class Shearmap(WLMap):
 
         # Ensures the image is not distorted
         plt.axis('equal')
+
+        return
