@@ -38,7 +38,6 @@ class Shearmap(WLMap):
         -Subplots that have the y-axis significantly larger than the x-axis have
         issues with the sticks scaling correctly. Need to look into np.quiver()
         for more options.
-        -Alignment of shear sticks is not correct!
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -66,84 +65,39 @@ class Shearmap(WLMap):
 # ----------------------------------------------------------------------------
 # Plot the convergence as grayscale:
 
-    def plot(self,fig_size=10,subplot=None,coords='pixel'): # fig_size in inches
+    def plot(self,fig_size=10,subplot=None,coords='world'): # fig_size in inches
+        """
+        Plot the convergence as a grayscale image.
 
-        # Default subplot is entire image
-        if subplot is None:
-            subplot = [0,self.NX[0],0,self.NX[0]]
+        Optional arguments:
+            fig_size        Figure size in inches
+            subplot         List of four plot limits [xmin,xmax,ymin,ymax]
+            coords          Type of coordinates inputted for the subplot:
+                            'pixel', 'physical', or 'world'
+        """
+        
+        # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
 
-        xi, xf = subplot[0], subplot[1]    # x-limits for subplot
-        yi, yf = subplot[2], subplot[3]    # y-limits for subplot
-        Lx = xf-xi    # length of x-axis subplot
-        Ly = yf-yi    # length of y-axis subplot
-
-        # Number of axis ticks
-        if Lx != Ly and Lx/Ly < 0.6:
-            tickNum = 5
-        else:
-            tickNum = 8
-
-        # N-sampled axis values
-        xl = np.arange(xi,xf+Lx/tickNum*np.sign(xf),Lx/tickNum)
-        yl = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
-
-        if coords == 'pixel':
-            # Convert axes to physical coordinates, scale correctly with subplot
-            xlNew = []; ylNew = [];
-
-            for x in xl:
-                xN,yN = self.image2physical(x,0)
-                xlNew.append(xN)
-            for y in yl:
-                xN,yN = self.image2physical(0,y)
-                ylNew.append(yN)
-
-            # Format coordinates
-            xlabels = ['%.3f' % a for a in xlNew]
-            ylabels = ['%.3f' % a for a in ylNew]
-
-        elif coords == 'physical':
-            # Label values are already in physical coordinates
-            xlabels = ['%.3f' % a for a in xl]
-            ylabels = ['%.3f' % a for a in yl]
-
-            # Convert subplot bounds to pixel values
-            xi,yi = self.physical2image(xi,yi)
-            xf,yf = self.physical2image(xf,yf)
-            Lx = xf-xi
-            Ly = yf-yi
-
-        else:
-            raise IOError('Error: Subplot bounds can only be in pixel or physical coordinates.')
-
-        # Location of tick marks
-        xlocs = np.arange(0,Lx,Lx/tickNum)
-        ylocs = np.arange(0,Ly,Ly/tickNum)
-
-        '''
-        NEED TO TEST!! - Make sure that the shear sticks are being plotted correctly
-        '''
         # Retrieve gamma values in desired subplot
-        gamma1 = self.values[0][yi:yf,xi:xf]
-        gamma2 = self.values[1][yi:yf,xi:xf]
-
+        gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
+        gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
+        
         # Pixel sampling rate for plotting of shear maps
 
-        if Lx >= 40:
-            N = np.floor(Lx/40.0)
+        if pix_Lx >= 40:
+            N = np.floor(pix_Lx/40.0)
         else:
             N = 1
 
         # Set limits and number of points in grid
-        X,Y = np.meshgrid(np.arange(0,Lx),np.arange(0,Ly))
+        X,Y = np.meshgrid(np.arange(0,pix_Lx),np.arange(0,pix_Ly))
         X = X[::N,::N]
         Y = Y[::N,::N]
 
         # Calculate the modulus and angle of each shear
         mod_gamma = np.sqrt(gamma1*gamma1 + gamma2*gamma2)
         phi_gamma = np.arctan2(gamma2,gamma1)/2.0
-        #mod_gamma = cmath.
-        #phi_gamma = cmath.phase(gamma1+1j*gamma2)
 
         # Create the vector components of the shear sticks.
         # We *think* that this transpose is necessary because
@@ -161,8 +115,8 @@ class Shearmap(WLMap):
         # Label axes
         plt.xticks(xlocs,xlabels)
         plt.yticks(ylocs,ylabels)
-        plt.xlabel('Physical Coordinate (rad)')
-        plt.ylabel('Physical Coordinate (rad)')
+        plt.xlabel('Right Ascension / deg')
+        plt.ylabel('Declination / deg')
 
         # Set figure size
         fig = plt.gcf()

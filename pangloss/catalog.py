@@ -1,10 +1,9 @@
 import numpy as np
-import scipi as sp
-import matplotlib as plt
+import scipy as sp
+import matplotlib.pyplot as plt
 import os
-from pangloss import io, config
+from pangloss import io
 from astropy.table import Table, Column
-import astropy.wcs
 
 
 # ============================================================================
@@ -21,10 +20,11 @@ class Catalog(object):
         ???
 
     INITIALISATION
-        ???
+        filename:       A string of the catalog filename (likely .txt)
+        config:         A config object containing structure of catalog metadata
             
     METHODS
-        ???
+        generate(self):
 
     BUGS
         ???
@@ -37,31 +37,52 @@ class Catalog(object):
     HISTORY
       2015-06-29  Everett (SLAC)
     """
-    def __init__(self,filename,configfile):        
+    def __init__(self,filename,config):        
         self.filename = filename        
         # Structures catalog metadata from configfile and reads in the catalog data
-        self.config = config.Configuration(configfile)
-        self.read(filename,config)
+        self.config = config
+        self.read(filename,config)        
+        
+    def __str__(self):
+        # Add more!
+        return 'General catalog object'
     
-    def read(self,filename,config):    
+    def read(self,filename,config):   
         # Uses astropy.table to read catalog, but with a few specific changes
         self.data = io.readCatalog(filename,config)
     
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
         self.data.write(output,format = 'ascii')
+        
+# ----------------------------------------------------------------------------
+# Conversions -- This is also in wlmap. We should create a separate file and
+# import these functions into both catalog and wlmap.
+
+    # Only approximate WCS transformations - assumes dec=0.0 and small field
+    def image2world(self,i,j,mapfile=0):
+        a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
+        #if a < 0.0: a += 360.0 :We are using nRA instead now
+        d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
+        return a,d
+
+    def world2image(self,a,d,mapfile=0):
+        i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
+        # if a negative pixel is returned for i, reinput a as a negative degree
+        if i<0:
+            a-=360
+            i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
+        j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
+        return i,j
+
+# ----------------------------------------------------------------------------
     
-    def generate(self):
+    def generate(self,fig_size=10,mag_cutoff=[24,0],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
         '''
-        Draw world-coordinates in the sky in RA and DEC
+        Draw generated world-coordinate positions of galaxies in the sky in 
+        world coordinates The optional input fig_size is in inches and has a 
+        default value of 10. The other optional inputs are value cutoffs; any
+        generated galaxy will have attributes within these values.
         '''
-        # Will probably need to rewrite - I don't know how the catalog data is actually formatted yet
-        self.xmax = self.data['nRA'].max()
-        self.xmin = self.data['nRA'].min()
-        self.ymax = self.data['Dec'].max()
-        self.ymin = self.data['Dec'].min()
-        
-        # Use previous values to calculate necessary axes and plot in rads
-        
         
     
