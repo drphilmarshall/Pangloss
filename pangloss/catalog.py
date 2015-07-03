@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 from pangloss import io
 from astropy.table import Table, Column
-import astropy.wcs
 
 
 # ============================================================================
@@ -21,10 +20,11 @@ class Catalog(object):
         ???
 
     INITIALISATION
-        filename = file name, config = config object
+        filename:       A string of the catalog filename (likely .txt)
+        config:         A config object containing structure of catalog metadata
             
     METHODS
-        ???
+        generate(self):
 
     BUGS
         ???
@@ -41,13 +41,11 @@ class Catalog(object):
         self.filename = filename        
         # Structures catalog metadata from configfile and reads in the catalog data
         self.config = config
-        self.read(filename,config)
+        self.read(filename,config)        
         
-        # Find world coordinate limits, used for plotting
-        self.nra_max = np.rad2deg(self.data['nRA'].max())
-        self.nra_min = np.rad2deg(self.data['nRA'].min())
-        self.dec_max = np.rad2deg(self.data['Dec'].max())
-        self.dec_min = np.rad2deg(self.data['Dec'].min())
+    def __str__(self):
+        # Add more!
+        return 'General catalog object'
     
     def read(self,filename,config):   
         # Uses astropy.table to read catalog, but with a few specific changes
@@ -56,30 +54,35 @@ class Catalog(object):
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
         self.data.write(output,format = 'ascii')
+        
+# ----------------------------------------------------------------------------
+# Conversions -- This is also in wlmap. We should create a separate file and
+# import these functions into both catalog and wlmap.
+
+    # Only approximate WCS transformations - assumes dec=0.0 and small field
+    def image2world(self,i,j,mapfile=0):
+        a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
+        #if a < 0.0: a += 360.0 :We are using nRA instead now
+        d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
+        return a,d
+
+    def world2image(self,a,d,mapfile=0):
+        i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
+        # if a negative pixel is returned for i, reinput a as a negative degree
+        if i<0:
+            a-=360
+            i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
+        j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
+        return i,j
+
+# ----------------------------------------------------------------------------
     
-    def generate(self,fig_size=10,mag_cutoff=21.5):
+    def generate(self,fig_size=10,mag_cutoff=[24,0],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
         '''
-        Draw world-coordinates in the sky in nRA and DEC. The optional input
-        fig_size is in inches and has a default value of 10. The other optional
-        input is the magnitude cutoff, which is set to 21.5 by default.
+        Draw generated world-coordinate positions of galaxies in the sky in 
+        world coordinates The optional input fig_size is in inches and has a 
+        default value of 10. The other optional inputs are value cutoffs; any
+        generated galaxy will have attributes within these values.
         '''
         
-        # Retrieve list of galaxy world coordinates with magnitudes greater than cutoff
-        nra = np.rad2deg(self.data['nRA'][self.data['mag']<mag_cutoff])
-        dec = np.rad2deg(self.data['Dec'][self.data['mag']<mag_cutoff])
-        
-        # Scale size of plotted galaxy by the inverse of its magnitude
-        mags = self.data['mag'][self.data['mag']<mag_cutoff]
-        size = [500/i for i in mags]
-        
-        # Make a scatter plot of the galaxy locations
-        plt.scatter(nra,dec,s=size,color='b',alpha=0.5)
-        plt.xlabel('Right Ascension / deg')
-        plt.ylabel('Declination / deg')
-        plt.gca().set_xlim((self.nra_min,self.nra_max))
-        plt.gca().set_ylim((self.dec_min,self.dec_max))
-        
-        # Set figure size to fig_size
-        fig = plt.gcf()
-        fig.set_size_inches(fig_size,fig_size)        
     
