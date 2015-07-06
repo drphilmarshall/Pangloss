@@ -41,7 +41,7 @@ class Catalog(object):
         self.filename = filename        
         # Structures catalog metadata from configfile and reads in the catalog data
         self.config = config
-        self.read(filename,config)        
+        self.read(filename,config)    
         
     def __str__(self):
         # Add more!
@@ -89,8 +89,8 @@ class Catalog(object):
         if domain == None:
             # Make a default domain (shouldn't be used except for testing or demo purposes)
             ra_init = 1    # initial value is larger as ra is left-handed
-            ra_final = -1
             dec_init = -1
+            ra_final = -1
             dec_final = 1
         
         else:
@@ -123,7 +123,7 @@ class Catalog(object):
                                     
         # Make scatter plot of generated galaxies  
         if plot == True:
-            # Scale size of point by the galaxy mass
+            # Scale size of point by the galaxy mass            
             s = [math.log(mass[i]) for i in range(0,len(mass))]
             plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None)
             
