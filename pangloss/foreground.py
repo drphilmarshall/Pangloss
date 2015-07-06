@@ -17,20 +17,27 @@ class ForegroundCatalog(Catalog):
         methods to manipulate the data and plot the desired galaxies.
 
     COMMENTS
-        ???
+        
 
     INITIALISATION
         filename:       A string of the catalog filename (likely .txt)
         config:         A config object containing structure of catalog metadata
             
     METHODS
+        findGalaxies: Find all galaxies in the catalog that are within the inputted
+                      magnitude, mass, redhsift, and coordinate cutoff ranges, 
+                      and then return the locations and masses of each galaxy.
+        
+        returnGalaxies: Same as the findGalaxies() method, but returns all columns
+                        of the catalog for galaxies that satisfy the cutoffs.
+        
         plotForeground: Make a scatterplot of foreground galaxy positions at their
                         respective world coordinates. Only galaxies in the catalog
-                        whose attributes are within the optional cutoff arguments
-                        are displayed.
-
+                        whose attributes are within the optional magnitude, mass,
+                        redshift, and coordiante cutoff arguments are displayed.
+                        
     BUGS
-        ???
+        
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -81,6 +88,7 @@ class ForegroundCatalog(Catalog):
         '''
         Retrieve list of galaxy world coordinates and their masses with values within inputted cutoffs.
         '''        
+        
         # If no ra or dec cutoff are given, use all galaxies
         if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
         if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
@@ -113,7 +121,8 @@ class ForegroundCatalog(Catalog):
     def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
         '''
         Return catalog of galaxies that satisfy the inputted cutoffs.
-        '''        
+        '''      
+        
         # If no ra or dec cutoff are given, use all galaxies
         if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
         if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
@@ -121,14 +130,14 @@ class ForegroundCatalog(Catalog):
         # Convert world coordinate limits to radians
         ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
         
-        # Change slightly so that the conditions will return all columns with the desired rows; not just the 'mag' column
-        '''
-        galaxies = self.data['mag'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+        # Select only galaxies that meet the cutoff criteria
+        galaxies = self.data[(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
                                         & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
                                         & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
                                         & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
                                         & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])]
-        '''
+                                        
+        return galaxies
         
     def plotForeground(self,fig_size=10,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
         '''
