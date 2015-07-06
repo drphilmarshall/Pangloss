@@ -6,6 +6,7 @@ from pdf import *
 from shmr import *
 from catalog import *
 from foreground import *
+from plot import *
 
 from config import *
 from io import *
