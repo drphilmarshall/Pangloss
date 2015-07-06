@@ -45,6 +45,16 @@ class ForegroundCatalog(Catalog):
         # Calls the superclass init
         Catalog.__init__(self,filename,config)
         
+        # Parsing the file name
+        # 0 <= x,y <= 7, each (i,j) map covers 4x4 square degrees
+        input_parse = self.filename.split('_') # Creates list of filename elements separated by '_'
+        self.map_x = eval(input_parse[3]) # The x location of the map grid
+        self.map_y = eval(input_parse[4]) # The y location of the map grid
+        
+        # 0 <= i,j <= 3, each (i,j) field covers 1x1 square degree
+        self.field_i = eval(input_parse[5]) # The i location of the field grid in the (x,y) map
+        self.field_j = eval(input_parse[6]) # The j location of the field grid in the (x,y) map
+        
         # Catalog attributes
         self.galaxyCount = np.shape(self.data)[0]
         self.maxZ = max(self.data['z_obs'])
@@ -66,6 +76,45 @@ class ForegroundCatalog(Catalog):
         return 'Foreground catalog with {} galaxies, '+ \
                'with redshifts ranging from {} to {}'\
                 .format(self.galaxyCount,self.minZ,self.maxZ)
+                
+    def findGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
+        '''
+        Retrieve list of galaxy world coordinates and their masses with values within inputted cutoffs.
+        '''
+        
+        # If no ra or dec cutoff are given, use all galaxies
+        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
+            
+        # Convert world coordinate limits to radians
+        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
+        
+        
+        ra = -np.rad2deg(self.data['nRA'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
+                                        & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
+                                        & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])])
+                                         
+        dec = np.rad2deg(self.data['Dec'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
+                                        & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
+                                        & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])])       
+        
+        mass = self.data['mag'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
+                                        & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
+                                        & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])]
+                                        
+        return ra, dec, mass
+        
+    def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
+        '''
+        Return catalog of galaxies that satisfy the inputted cutoffs.
+        '''        
+        pass
         
     def plotForeground(self,fig_size=10,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
         '''
@@ -75,21 +124,11 @@ class ForegroundCatalog(Catalog):
         the number of galaxies that are to be plotted by the respective attribute.
         '''
         
-        # Retrieve list of galaxy world coordinates and magnitudes with values within cutoffs
-        ra = -np.rad2deg(self.data['nRA'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
-                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1])])
-                                         
-        dec = np.rad2deg(self.data['Dec'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
-                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1])])        
+        # Retrieve a list of galaxy world coordinates and masses for those that satisfy the cutoffs
+        ra, dec, mass = self.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff)
         
-        mags = self.data['mag'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
-                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1])]
-        print('ra:',np.shape(ra),'dec:',np.shape(dec),'mags:',np.shape(mags))
-        # Scale size of plotted galaxy by the inverse of its magnitude                                
-        size = [500/i for i in mags]
+        # Scale size of plotted galaxy by its mass                               
+        size = [500/i for i in mass]
         
         # Make a scatter plot of the galaxy locations
         plt.scatter(ra,dec,s=size,color='b',alpha=0.5,edgecolor='none')
