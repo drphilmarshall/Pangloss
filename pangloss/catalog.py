@@ -125,7 +125,7 @@ class Catalog(object):
         if plot == True:
             # Scale size of point by the galaxy mass            
             s = [math.log(mass[i]) for i in range(0,len(mass))]
-            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None)
+            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='r')
             
             plt.xlabel('Right Ascension / deg')
             plt.ylabel('Declination / deg')
