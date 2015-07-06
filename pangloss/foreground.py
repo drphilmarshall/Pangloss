@@ -73,7 +73,7 @@ class ForegroundCatalog(Catalog):
         
         # Find world coordinate limits, used for plotting
         self.ra_max = np.rad2deg((-self.data['nRA']).max())
-        self.ra_min = -np.rad2deg((-self.data['nRA']).min())
+        self.ra_min = np.rad2deg((-self.data['nRA']).min())
         self.dec_max = np.rad2deg(self.data['Dec'].max())
         self.dec_min = np.rad2deg(self.data['Dec'].min())      
         
