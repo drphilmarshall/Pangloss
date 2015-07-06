@@ -71,13 +71,13 @@ class WLMap:
         self.input = mapfiles
         
         # Parsing the file name(s)
-        # 0 <= x,y <= 7, each (x,y) map covers 4x4 degrees
-        self.field_x = []
-        self.field_y = []
+        # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
+        self.map_x = []
+        self.map_y = []
         for i in range(0,len(self.input)):
             input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
-            self.field_x.append(eval(input_parse[3])) # The x location of the map grid
-            self.field_y.append(eval(input_parse[4])) # The y location of the map grid
+            self.map_x.append(eval(input_parse[3])) # The x location of the map grid
+            self.map_y.append(eval(input_parse[4])) # The y location of the map grid
 
         # Declare needed attributes as lists
         self.values = []
@@ -160,8 +160,8 @@ class WLMap:
         # dec = CRVAL2 + CD2_2*(j-CRPIX2)
         self.wcs[i]['CRPIX1'] = 0.0
         self.wcs[i]['CRPIX2'] = 0.0
-        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.field_x[i]*self.field[i]
-        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.field_y[i]*self.field[i]
+        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.map_x[i]*self.field[i]
+        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.map_y[i]*self.field[i]
         self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
         self.wcs[i]['CD1_2'] = 0.0
         self.wcs[i]['CD2_1'] = 0.0
@@ -277,14 +277,14 @@ class WLMap:
         return i,j
            
     def physical2world(self,x,y,mapfile=0):
-        a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
+        a = -np.rad2deg(x) - self.map_x[mapfile]*self.field[mapfile]
         #if a < 0.0: a += 360.0 :we are using nRA instead now
-        d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
+        d = np.rad2deg(y) + self.map_y[mapfile]*self.field[mapfile]
         return a,d
     
     def world2physical(self,a,d,mapfile=0):
-        x = -np.deg2rad(a + self.field_x[mapfile]*self.field[mapfile])
-        y = np.deg2rad(d - self.field_y[mapfile]*self.field[mapfile])
+        x = -np.deg2rad(a + self.map_x[mapfile]*self.field[mapfile])
+        y = np.deg2rad(d - self.map_y[mapfile]*self.field[mapfile])
         return x,y
 
 # ----------------------------------------------------------------------------
