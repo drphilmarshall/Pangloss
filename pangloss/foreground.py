@@ -65,8 +65,8 @@ class ForegroundCatalog(Catalog):
         self.minMag = min(self.data['mag'])
         
         # Find world coordinate limits, used for plotting
-        self.ra_max = -np.rad2deg(self.data['nRA'].max())
-        self.ra_min = -np.rad2deg(self.data['nRA'].min())
+        self.ra_max = np.rad2deg((-self.data['nRA']).max())
+        self.ra_min = -np.rad2deg((-self.data['nRA']).min())
         self.dec_max = np.rad2deg(self.data['Dec'].max())
         self.dec_min = np.rad2deg(self.data['Dec'].min())      
         
@@ -80,8 +80,7 @@ class ForegroundCatalog(Catalog):
     def findGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
         '''
         Retrieve list of galaxy world coordinates and their masses with values within inputted cutoffs.
-        '''
-        
+        '''        
         # If no ra or dec cutoff are given, use all galaxies
         if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
         if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
@@ -90,6 +89,7 @@ class ForegroundCatalog(Catalog):
         ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
         
         
+        # Select only the ra, dec, and mass values from galaxies that satisfy all cutoffs
         ra = -np.rad2deg(self.data['nRA'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
                                         & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
                                         & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
@@ -110,11 +110,25 @@ class ForegroundCatalog(Catalog):
                                         
         return ra, dec, mass
         
-    def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
+    def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
         '''
         Return catalog of galaxies that satisfy the inputted cutoffs.
         '''        
-        pass
+        # If no ra or dec cutoff are given, use all galaxies
+        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
+            
+        # Convert world coordinate limits to radians
+        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
+        
+        # Change slightly so that the conditions will return all columns with the desired rows; not just the 'mag' column
+        '''
+        galaxies = self.data['mag'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+                                        & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
+                                        & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
+                                        & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])]
+        '''
         
     def plotForeground(self,fig_size=10,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
         '''
@@ -140,9 +154,3 @@ class ForegroundCatalog(Catalog):
         # Set figure size to fig_size
         fig = plt.gcf()
         fig.set_size_inches(fig_size,fig_size)  
-        
-        # The code below can be incorperated with a kappamap to plot an overlay with ForegroundCatalog
-        #pix_nra = [K.world2image(a,0)[0] for a in nra]
-        #pix_dec = [K.world2image(0,d)[1] for d in dec]
-        #plt.scatter(pix_nra,pix_dec)
-        

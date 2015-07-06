@@ -96,8 +96,8 @@ class plot():
 
         if subplot is None:
             # Default subplot is entire image
-            ai, di = F.ra_min, F.dec_min
-            af, df = F.ra_max, F.dec_max
+            ai, di = F.ra_max, F.dec_min
+            af, df = F.ra_min, F.dec_max
             subplot = [ai,af,di,df]
             
         ai, af = subplot[0], subplot[1]    # RA limits for subplot
@@ -115,10 +115,6 @@ class plot():
         # Find world coordinates and masses of galaxies that meet cutoff criteria
         ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
         ra, dec, mass = F.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
-        
-        # Limit the galaxies to those in the subplot
-        #ra = ra[(ra>subplot[0]) & (ra<subplot[1])]
-        #dec = dec[(dec>subplot[2]) & (dec<subplot[3])]
         
         # Convert the galaxies' wc positions to pixel bins in the (x,y) map
         pix_ra = [K.world2image(a,0)[0] for a in ra]
@@ -138,7 +134,4 @@ class plot():
         
         # Set figure size to fig_size
         fig = plt.gcf()
-        fig.set_size_inches(fig_size,fig_size)  
-        
-        
-        
+        fig.set_size_inches(fig_size,fig_size)        
