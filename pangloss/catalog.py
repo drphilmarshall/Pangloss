@@ -134,5 +134,4 @@ class Catalog(object):
         
             # Set figure size to fig_size
             fig = plt.gcf()
-            fig.set_size_inches(fig_size,fig_size)  
-    
+            fig.set_size_inches(fig_size,fig_size)

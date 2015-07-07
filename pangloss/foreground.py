@@ -110,7 +110,7 @@ class ForegroundCatalog(Catalog):
                                         & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
                                         & (self.data['Dec']>dec_cutoff[0]) & (self.data['Dec']<dec_cutoff[1])])       
         
-        mass = self.data['mag'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
+        mass = self.data['Mstar_obs'][(self.data['mag']>mag_cutoff[0]) & (self.data['mag']<mag_cutoff[1]) \
                                         & (self.data['Mstar_obs']>mass_cutoff[0]) & (self.data['Mstar_obs']<mass_cutoff[1]) \
                                         & (self.data['z_obs']>mag_cutoff[0]) & (self.data['z_obs']<mag_cutoff[1]) \
                                         & (-self.data['nRA']>ra_cutoff[1]) & (-self.data['nRA']<ra_cutoff[0]) \
