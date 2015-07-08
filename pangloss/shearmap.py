@@ -76,24 +76,35 @@ class Shearmap(pangloss.WLMap):
                             'pixel', 'physical', or 'world'
         """
 
+        # Use plot_setup method from the base WLMap class:
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
+
         # Get current figure and image axes (or make them if they don't exist)
         fig = plt.gcf()
         if fig._label == 'Convergence':
-            image = fig.axes[0]
-            world = fig.axes[1]
-
+            # Adopt axes from kappa map plot:
+            world = fig.axes[0]
+            image = fig.axes[1]
+            # Attention: if kappa map was also a subplot,
+            # the axis limits are already set... So do we have to
+            # first reset the image axis limits to be the full
+            # range? And then set them back to the sub image later?
         else:
-            image,world = pangloss.make_axes(fig)
+            # Start from scratch:
+            pangloss.set_figure_size(fig,fig_size,Lx,Ly)
+            image,world = pangloss.make_axes(fig,subplot)
+            image.set_xlim(pix_xi,pix_xf)
+            image.set_ylim(pix_yi,pix_yf)
 
-        # Use plot_setup method from the base WLMap class:
-        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
+        # Set the axes to image, since we'll be computing
+        # shear sticks in pixel coordinates:
+        fig.sca(image)
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
         gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
 
         # Pixel sampling rate for plotting of shear maps
-
         if pix_Lx >= 40:
             N = np.floor(pix_Lx/40.0)
         else:
@@ -117,19 +128,7 @@ class Shearmap(pangloss.WLMap):
         dx = mod_gamma * np.cos(phi_gamma)
         dy = mod_gamma * np.sin(phi_gamma)
 
-        # Set axes to image and set axis limits:
-        fig.sca(image)
-        image.set_xlim(pix_xi,pix_xf)
-        image.set_ylim(pix_yi,pix_yf)
-
-        # Plot downsampled 2D arrays of shear sticks
+        # Plot downsampled 2D arrays of shear sticks in current axes:
         plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
-
-        # Set figure size:
-        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
-
-        # Finally, set the limits for the world axis
-        world.set_xlim(subplot[0],subplot[1])
-        world.set_ylim(subplot[2],subplot[3])
 
         return

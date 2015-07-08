@@ -85,21 +85,24 @@ def world2physical(self,a,d,mapfile=0):
 # ----------------------------------------------------------------------------
 #
 
-def make_axes(fig):
+def make_axes(fig,subplot):
     '''
-    Creates axes for plotting maps and catalogs. Both sets of axes are contained in the inputted figure instance.
+    Creates axes for plotting maps and catalogs. Both sets of axes are
+    contained in the current figure instance, and also returned for
+    ease of use.
     '''
-
-    # Make image axes for plotting maps in:
-    image = fig.add_axes(viewport,label='image')
-    image.get_xaxis().set_visible(False)
-    image.get_yaxis().set_visible(False)
-
     # Make wcs axes for plotting catalogs in:
     world = fig.add_axes(viewport,label='world')
     world.set_xlabel('Right Ascension / deg')
     world.set_ylabel('Declination / deg')
     world.set_title('')
+    world.set_xlim(subplot[0],subplot[1])
+    world.set_ylim(subplot[2],subplot[3])
+
+    # Make image axes for plotting maps in:
+    image = fig.add_axes(viewport,label='image')
+    image.get_xaxis().set_visible(False)
+    image.get_yaxis().set_visible(False)
 
     return image,world
 

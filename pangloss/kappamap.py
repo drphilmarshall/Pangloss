@@ -78,19 +78,15 @@ class Kappamap(pangloss.WLMap):
 
         # Always start a figure when plotting kappa maps:
         fig = plt.figure("Convergence")
-        fig.clf()
-
-        image,world = pangloss.make_axes(fig)
-
-        # Plot image
-        fig.sca(image)
-        plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
 
         # Set figure size:
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-        # Finally, set the limits for the world axis
-        world.set_xlim(subplot[0],subplot[1])
-        world.set_ylim(subplot[2],subplot[3])
+        # Set up two sets of axes:
+        image,world = pangloss.make_axes(fig,subplot)
+
+        # Plot image
+        fig.sca(image)
+        plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
 
         return
