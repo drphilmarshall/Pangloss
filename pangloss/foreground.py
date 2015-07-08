@@ -149,24 +149,36 @@ class ForegroundCatalog(pangloss.Catalog):
         The other optional inputs are cutoffs with default values, which limit
         the number of galaxies that are to be plotted by the respective attribute.
         '''
-
-        # Get current figure and image axes (or make them if they don't exist)
+        
+        # Get current figure (or make one if it doesn't exist)
         fig = plt.gcf()
-        if fig._label == 'Convergence':
-            image = fig.axes[0]
+        
+        # If there is a Pangloss map open:
+        if fig._label == 'Pangloss Map':
+            # Adopt axes from the open Kappamap:
+            imshow = fig.axes[0]
             world = fig.axes[1]
+            
+            # If the Kappamap subplot was not passed to this Shearmap:
+            if subplot == None:
+                # Adopt subplot from the open Kappamap:
+                fig.sca(world)
+                subplot = plt.axis()
 
+        # Otherwise:
         else:
-            image, world = pangloss.make_axes(fig)
-
-        if subplot is None:
-            # Default subplot is entire image
-            ai, di = self.ra_max, self.dec_min
-            af, df = self.ra_min, self.dec_max
-            subplot = [ai,af,di,df]
+            if subplot is None:
+                # Default subplot is entire catalog
+                ai, di = self.ra_max, self.dec_min
+                af, df = self.ra_min, self.dec_max
+                subplot = [ai,af,di,df]
+                
+            # Create new imshow and world axes
+            imshow, world = pangloss.make_axes(fig,subplot)
 
         ai, af = subplot[0], subplot[1]    # RA limits for subplot
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
+        Lx, Ly = abs(ai-af), abs(di-df)    # Length of axes in wcs
 
         # Find world coordinates and masses of galaxies that meet cutoff criteria
         ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
@@ -186,5 +198,8 @@ class ForegroundCatalog(pangloss.Catalog):
         plt.scatter(ra,dec,s=size,color='orange',alpha=0.2,edgecolor=None)
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
+        
+        # Set the correct figure size
+        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return

@@ -85,7 +85,7 @@ def world2physical(self,a,d,mapfile=0):
 # ----------------------------------------------------------------------------
 #
 
-def make_axes(fig,subplot,imsubplot):
+def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     '''
     Creates axes for plotting maps and catalogs. Both sets of axes are
     contained in the current figure instance, and also returned for
