@@ -75,7 +75,8 @@ class Kappamap(pangloss.WLMap):
 
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
-
+        imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]        
+        
         # Always start a figure when plotting kappa maps:
         fig = plt.figure("Pangloss Map")
 
@@ -83,10 +84,10 @@ class Kappamap(pangloss.WLMap):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         # Set up two sets of axes:
-        image,world = pangloss.make_axes(fig,subplot)
+        imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
 
         # Plot image
-        fig.sca(image)
+        fig.sca(imshow)
         plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
 
         return

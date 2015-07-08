@@ -75,63 +75,68 @@ class Shearmap(pangloss.WLMap):
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
         """
+        
+        # Get current figure and image axes (or make them if they don't exist)
+        fig = plt.gcf()
+        
+# ----------------------------------------------------------------------------
+# Note: the following is slightly inelegant. It would be nice to have the following
+# be an if-else, but the default subplot is no longer 'None' after calling 
+# plot_setupt(), so the check must be done before calling the method. Try to
+# fix later.
+        
+        # If there is a Pangloss map open:
+        if fig._label == 'Pangloss Map':
+            # Adopt axes from the open Kappamap:
+            imshow = fig.axes[0]
+            world = fig.axes[1]
+            
+            # If the Kappamap subplot was not passed to this Shearmap:
+            if subplot == None:
+                # Adopt subplot from the open Kappamap:
+                fig.sca(world)
+                subplot = plt.axis()
 
         # Use plot_setup method from the base WLMap class:
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
-
-        # Get current figure and image axes (or make them if they don't exist)
-        fig = plt.gcf()
-        if fig._label == 'Pangloss Map':
-            # Adopt axes from kappa map plot:
-            world = fig.axes[0]
-            image = fig.axes[1]
-            # Attention: if kappa map was also a subplot,
-            # the axis limits are already set... So do we have to
-            # first reset the image axis limits to be the full
-            # range? And then set them back to the sub image later?
-        else:
-            # Start from scratch:
+        
+        # If there is not a Pangloss map open:
+        if fig._label != 'Pangloss Map':
+            # Create figure and axes from scratch:
             fig._label = "Pangloss Map"
-            pangloss.set_figure_size(fig,fig_size,Lx,Ly)
-            image,world = pangloss.make_axes(fig,subplot)
-            image.set_xlim(pix_xi,pix_xf)
-            image.set_ylim(pix_yi,pix_yf)
+            pangloss.set_figure_size(fig,fig_size,Lx,Ly)            
+            imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
+            imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
+
+# ----------------------------------------------------------------------------
 
         # Set the axes to image, since we'll be computing
-        # shear sticks in pixel coordinates:
-        fig.sca(image)
-
-        print "In Shearmap.plot(), image axes plt.axis() = ",plt.axis()
+        # shear stick positions in world coordinates:
+        fig.sca(world)
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
         gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
 
-        # Pixel sampling rate for plotting of shear maps
-        if pix_Lx >= 40:
-            N = np.floor(pix_Lx/40.0)
-        else:
-            N = 1
-
-        # Create arrays of shear stick positions, one per pixel
-        X,Y = np.meshgrid(np.arange(pix_xi,pix_xf+1),np.arange(pix_yi,pix_yf+1))
+        # Create arrays of shear stick positions, one per pixel in world coordinates
+        X,Y = np.meshgrid(np.arange(subplot[0],subplot[1],-self.PIXSCALE[0]),np.arange(subplot[2],subplot[3],self.PIXSCALE[0]))
 
         # Calculate the modulus and angle of each shear
         mod_gamma = np.sqrt(gamma1*gamma1 + gamma2*gamma2)
         phi_gamma = np.arctan2(gamma2,gamma1)/2.0
 
-        # Create the vector components of the shear sticks.
-        # We *think* that this transpose was necessary because
-        # we were working with maps read in from binary data that
-        # had not been transposed. The test is to overlay
-        # the foreground galaxy catalogs and see whether the clusters
-        # of galaxies line up with the overdensities in kappa/shear...
-        # dx = mod_gamma * np.sin(phi_gamma)
-        # dy = mod_gamma * np.cos(phi_gamma)
+        # Sticks in world coords need x reversed, to account for left-handed 
+        # system:
         dx = mod_gamma * np.cos(phi_gamma)
         dy = mod_gamma * np.sin(phi_gamma)
 
-        # Plot downsampled 2D arrays of shear sticks in current axes:
+        # Plot downsampled 2D arrays of shear sticks in current axes.
+        # Pixel sampling rate for plotting of shear maps:
+        if pix_Lx >= 40:
+            N = np.floor(pix_Lx/40.0)
+        else:
+            N = 1
+            
         plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
 
         return
