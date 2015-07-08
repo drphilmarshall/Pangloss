@@ -164,6 +164,9 @@ class ForegroundCatalog(pangloss.Catalog):
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
                 subplot = plt.axis()
+            
+            # Adopt figure size from open Kappamap:    
+            fig_size = plt.gcf().get_size_inches()[0]
 
         # Otherwise:
         else:
@@ -172,7 +175,10 @@ class ForegroundCatalog(pangloss.Catalog):
                 ai, di = self.ra_max, self.dec_min
                 af, df = self.ra_min, self.dec_max
                 subplot = [ai,af,di,df]
-                
+            
+            # Adjust the subplot in wcs by half a pixel
+            #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
+            
             # Create new imshow and world axes
             imshow, world = pangloss.make_axes(fig,subplot)
 

@@ -96,6 +96,9 @@ class Shearmap(pangloss.WLMap):
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
                 subplot = plt.axis()
+                
+            # Adopt figure size from open Kappamap:    
+            fig_size = plt.gcf().get_size_inches()[0]
 
         # Use plot_setup method from the base WLMap class:
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
@@ -104,8 +107,11 @@ class Shearmap(pangloss.WLMap):
         if fig._label != 'Pangloss Map':
             # Create figure and axes from scratch:
             fig._label = "Pangloss Map"
-            pangloss.set_figure_size(fig,fig_size,Lx,Ly)            
+            pangloss.set_figure_size(fig,fig_size,Lx,Ly)  
+            
+            # Adjust the subplot in image and wcs by half a pixel
             imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
+            #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
             imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
 
 # ----------------------------------------------------------------------------
