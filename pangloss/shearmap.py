@@ -81,7 +81,7 @@ class Shearmap(pangloss.WLMap):
 
         # Get current figure and image axes (or make them if they don't exist)
         fig = plt.gcf()
-        if fig._label == 'Convergence':
+        if fig._label == 'Pangloss Map':
             # Adopt axes from kappa map plot:
             world = fig.axes[0]
             image = fig.axes[1]
@@ -91,6 +91,7 @@ class Shearmap(pangloss.WLMap):
             # range? And then set them back to the sub image later?
         else:
             # Start from scratch:
+            fig._label = "Pangloss Map"
             pangloss.set_figure_size(fig,fig_size,Lx,Ly)
             image,world = pangloss.make_axes(fig,subplot)
             image.set_xlim(pix_xi,pix_xf)
@@ -99,6 +100,8 @@ class Shearmap(pangloss.WLMap):
         # Set the axes to image, since we'll be computing
         # shear sticks in pixel coordinates:
         fig.sca(image)
+
+        print "In Shearmap.plot(), image axes plt.axis() = ",plt.axis()
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]

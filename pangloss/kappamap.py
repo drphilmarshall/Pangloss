@@ -77,7 +77,7 @@ class Kappamap(pangloss.WLMap):
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
 
         # Always start a figure when plotting kappa maps:
-        fig = plt.figure("Convergence")
+        fig = plt.figure("Pangloss Map")
 
         # Set figure size:
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
