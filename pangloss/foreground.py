@@ -139,7 +139,7 @@ class ForegroundCatalog(Catalog):
                                         
         return galaxies
         
-    def plotForeground(self,fig_size=10,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
+    def plot(self,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],fig=None,fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
         The optional input fig_size is in inches and has a default value of 10.
@@ -147,19 +147,33 @@ class ForegroundCatalog(Catalog):
         the number of galaxies that are to be plotted by the respective attribute.
         '''
         
-        # Retrieve a list of galaxy world coordinates and masses for those that satisfy the cutoffs
-        ra, dec, mass = self.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff)
+        # Start a plot:        
+        if fig is None:
+            fig = plt.gcf()
+            fig.set_size_inches(fig_size,fig_size)         
+       
+        if subplot is None:
+            # Default subplot is entire image
+            ai, di = self.ra_max, self.dec_min
+            af, df = self.ra_min, self.dec_max
+            subplot = [ai,af,di,df]
+            
+        ai, af = subplot[0], subplot[1]    # RA limits for subplot
+        di, df = subplot[2], subplot[3]    # DEC limits for subplot        
         
-        # Scale size of plotted galaxy by its mass                               
-        size = [500/i for i in mass]
+        # Find world coordinates and masses of galaxies that meet cutoff criteria
+        ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
+        ra, dec, mass = self.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
+        
+        # Scale galaxy plot size by its mass
+        scale = ((np.log10(mass)-9.0)/(12.0-9.0))
+        floor = 0.01
+        size = 1000.0*(scale*(scale > 0) + floor)
         
         # Make a scatter plot of the galaxy locations
-        plt.scatter(ra,dec,s=size,color='b',alpha=0.5,edgecolor='none')
+        plt.scatter(ra,dec,s=size,color='orange',alpha=0.2,edgecolor=None)
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-        plt.gca().set_xlim((self.ra_min,self.ra_max))
-        plt.gca().set_ylim((self.dec_min,self.dec_max))
+        #plt.gca().set_xlim((self.ra_min,self.ra_max))
+        #plt.gca().set_ylim((self.dec_min,self.dec_max))
         
-        # Set figure size to fig_size
-        fig = plt.gcf()
-        fig.set_size_inches(fig_size,fig_size)  

@@ -112,8 +112,8 @@ class WLMap:
             hdr = hdu.header
             self.get_fits_wcs(hdr,i)
             self.values.append(hdu.data)
-            # This transpose is necessary so that ds9 displays the image correctly.
-            self.values[i] = self.values[i].transpose()
+            # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
+            #self.values[i] = self.values[i].transpose()
             self.NX.append(self.values[i].shape[0])
             self.PIXSCALE.append(self.wcs[i]['CD1_1'])
             self.field.append(self.NX[i]*self.PIXSCALE[i])
@@ -135,7 +135,7 @@ class WLMap:
             start = 0
             stop = struct.calcsize(fmt)
             values = struct.unpack(fmt,data[start:stop])
-            self.values.append(np.array(values,dtype=np.float32).reshape(self.NX[i],self.NX[i]))
+            self.values.append(np.array(values,dtype=np.float32).reshape(self.NX[i],self.NX[i]).transpose())
 
             # If it doesn't already exist, output the map to FITS file:
             # pieces = string.split(self.input,'.')
@@ -193,10 +193,11 @@ class WLMap:
         hdu = pyfits.PrimaryHDU()
         # Add WCS keywords to the FITS header (in apparently random order):
         for keyword in self.wcs[i].keys():
-          hdu.header.update(keyword,self.wcs[i][keyword])
-        # Make image array. The transpose is necessary so that ds9 displays
-        # the image correctly.
-        hdu.data = self.values[i].transpose()
+            hdu.header.update(keyword,self.wcs[i][keyword])
+        # Make image array. The transpose would be necessary so that ds9 displays
+        # the image correctly, if we hadn't already done it in read_in_fits_data()
+        #hdu.data = self.values[i].transpose()
+        hdu.data = self.values[i]
         # Verify and write to file:
         hdu.verify()
         hdu.writeto(self.output[i])
@@ -290,7 +291,7 @@ class WLMap:
 # ----------------------------------------------------------------------------
 # In general, we don't know how to plot this map...
 
-    def plot(self,fig_size=10,subplot=None,coords='world'):
+    def plot_setup(self,fig_size=10,subplot=None,coords='world'):
         '''
         Plot the convergence as a grayscale image.
 
@@ -309,8 +310,6 @@ class WLMap:
             ai, di = self.image2world(0,0)
             af, df = self.image2world(self.NX[0],self.NX[0])
             subplot = [ai,af,di,df]
-            # coords = 'pixel':            
-            #subplot = [0,self.NX[0],0,self.NX[0]]
             
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
@@ -337,33 +336,15 @@ class WLMap:
         else:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
         
-        # Number of axis ticks
-        if (Lx != Ly and Lx/Ly < 0.6) or fig_size < 8:
-            tickNum = 5
-        else:
-            tickNum = 8
-            
-        # Axis tick labels. Note that x iterates negatively as RA is left-handed
-        xlabels = np.arange(xi,xf+Lx/tickNum*np.sign(xf),-Lx/tickNum)   
-        ylabels = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
-        
-        # Format axis tick values
-        xlabels = ['%.5f' % a for a in xlabels]
-        ylabels = ['%.5f' % a for a in ylabels]
-        
         # Convert subplot bounds to pixel values
         pix_xi,pix_yi = self.world2image(xi,yi)
         pix_xf,pix_yf = self.world2image(xf,yf)
         
         # Pixel length of subplot
         pix_Lx = pix_xf-pix_xi
-        pix_Ly = pix_yf-pix_yi        
-       
-        # Location of tick marks
-        xlocs = np.arange(0,pix_Lx,pix_Lx/tickNum)
-        ylocs = np.arange(0,pix_Ly,pix_Ly/tickNum)
+        pix_Ly = pix_yf-pix_yi
         
-        return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels
+        return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot
 
 # ----------------------------------------------------------------------------
 
