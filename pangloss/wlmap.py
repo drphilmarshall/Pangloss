@@ -71,13 +71,13 @@ class WLMap:
         self.input = mapfiles
 
         # Parsing the file name(s)
-        # 0 <= x,y <= 7, each (x,y) map covers 4x4 degrees
-        self.field_x = []
-        self.field_y = []
+        # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
+        self.map_x = []
+        self.map_y = []
         for i in range(0,len(self.input)):
             input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
-            self.field_x.append(eval(input_parse[3])) # The x location of the map grid
-            self.field_y.append(eval(input_parse[4])) # The y location of the map grid
+            self.map_x.append(eval(input_parse[3])) # The x location of the map grid
+            self.map_y.append(eval(input_parse[4])) # The y location of the map grid
 
         # Declare needed attributes as lists
         self.values = []
@@ -112,8 +112,8 @@ class WLMap:
             hdr = hdu.header
             self.get_fits_wcs(hdr,i)
             self.values.append(hdu.data)
-            # This transpose is necessary so that ds9 displays the image correctly.
-            self.values[i] = self.values[i].transpose()
+            # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
+            # self.values[i] = self.values[i].transpose()
             self.NX.append(self.values[i].shape[0])
             self.PIXSCALE.append(self.wcs[i]['CD1_1'])
             self.field.append(self.NX[i]*self.PIXSCALE[i])
@@ -122,7 +122,9 @@ class WLMap:
 # ----------------------------------------------------------------------------
 
     def read_in_binary_data(self):
+
         for i in range(0,len(self.input)):
+
             # Initialise some necessary WCS parameters for Stefan
             # Hilbert's binary data files:
             self.field.append(4.0) # degrees
@@ -136,7 +138,7 @@ class WLMap:
             start = 0
             stop = struct.calcsize(fmt)
             values = struct.unpack(fmt,data[start:stop])
-            self.values.append(np.array(values,dtype=np.float32).reshape(self.NX[i],self.NX[i]))
+            self.values.append(np.array(values,dtype=np.float32).reshape(self.NX[i],self.NX[i]).transpose())
 
             # If it doesn't already exist, output the map to FITS file:
             # pieces = string.split(self.input,'.')
@@ -161,8 +163,8 @@ class WLMap:
         # dec = CRVAL2 + CD2_2*(j-CRPIX2)
         self.wcs[i]['CRPIX1'] = 0.0
         self.wcs[i]['CRPIX2'] = 0.0
-        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.field_x[i]*self.field[i]
-        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.field_y[i]*self.field[i]
+        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.map_x[i]*self.field[i]
+        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.map_y[i]*self.field[i]
         self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
         self.wcs[i]['CD1_2'] = 0.0
         self.wcs[i]['CD2_1'] = 0.0
@@ -194,10 +196,11 @@ class WLMap:
         hdu = pyfits.PrimaryHDU()
         # Add WCS keywords to the FITS header (in apparently random order):
         for keyword in self.wcs[i].keys():
-          hdu.header.update(keyword,self.wcs[i][keyword])
-        # Make image array. The transpose is necessary so that ds9 displays
-        # the image correctly.
-        hdu.data = self.values[i].transpose()
+            hdu.header.update(keyword,self.wcs[i][keyword])
+        # Make image array. The transpose would be necessary so that ds9 displays
+        # the image correctly, if we hadn't already done it in read_in_fits_data()
+        # hdu.data = self.values[i].transpose()
+        hdu.data = self.values[i]
         # Verify and write to file:
         hdu.verify()
         hdu.writeto(self.output[i])
@@ -264,7 +267,7 @@ class WLMap:
      # Only approximate WCS transformations - assumes dec=0.0 and small field
     def image2world(self,i,j,mapfile=0):
         a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
-        #if a < 0.0: a += 360.0 :We are using nRA instead now
+        #if a < 0.0: a += 360.0 : We are using WCS with negative RAs in degrees, now
         d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
         return a,d
 
@@ -278,25 +281,24 @@ class WLMap:
         return i,j
 
     def physical2world(self,x,y,mapfile=0):
-        a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
+        a = -np.rad2deg(x) - self.map_x[mapfile]*self.field[mapfile]
         #if a < 0.0: a += 360.0 :we are using nRA instead now
-        d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
+        d = np.rad2deg(y) + self.map_y[mapfile]*self.field[mapfile]
         return a,d
 
     def world2physical(self,a,d,mapfile=0):
-        x = -np.deg2rad(a + self.field_x[mapfile]*self.field[mapfile])
-        y = np.deg2rad(d - self.field_y[mapfile]*self.field[mapfile])
+        x = -np.deg2rad(a + self.map_x[mapfile]*self.field[mapfile])
+        y = np.deg2rad(d - self.map_y[mapfile]*self.field[mapfile])
         return x,y
 
 # ----------------------------------------------------------------------------
 # In general, we don't know how to plot this map...
 
-    def plot(self,fig_size=10,subplot=None,coords='world'):
+    def plot_setup(self,subplot=None,coords='world'):
         '''
         Plot the convergence as a grayscale image.
 
         Optional arguments:
-            fig_size        Figure size in inches
             subplot         List of four plot limits [xmin,xmax,ymin,ymax]
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
@@ -310,8 +312,6 @@ class WLMap:
             ai, di = self.image2world(0,0)
             af, df = self.image2world(self.NX[0],self.NX[0])
             subplot = [ai,af,di,df]
-            # coords = 'pixel':
-            #subplot = [0,self.NX[0],0,self.NX[0]]
 
         xi, xf = subplot[0], subplot[1]    # x-limits for subplot
         yi, yf = subplot[2], subplot[3]    # y-limits for subplot
@@ -338,20 +338,6 @@ class WLMap:
         else:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
 
-        # Number of axis ticks
-        if (Lx != Ly and Lx/Ly < 0.6) or fig_size < 8:
-            tickNum = 5
-        else:
-            tickNum = 8
-
-        # Axis tick labels. Note that x iterates negatively as RA is left-handed
-        xlabels = np.arange(xi,xf+Lx/tickNum*np.sign(xf),-Lx/tickNum)
-        ylabels = np.arange(yi,yf+Ly/tickNum*np.sign(yf),Ly/tickNum)
-
-        # Format axis tick values
-        xlabels = ['%.5f' % a for a in xlabels]
-        ylabels = ['%.5f' % a for a in ylabels]
-
         # Convert subplot bounds to pixel values
         pix_xi,pix_yi = self.world2image(xi,yi)
         pix_xf,pix_yf = self.world2image(xf,yf)
@@ -360,11 +346,7 @@ class WLMap:
         pix_Lx = pix_xf-pix_xi
         pix_Ly = pix_yf-pix_yi
 
-        # Location of tick marks
-        xlocs = np.arange(0,pix_Lx,pix_Lx/tickNum)
-        ylocs = np.arange(0,pix_Ly,pix_Ly/tickNum)
-
-        return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels
+        return pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot
 
 # ----------------------------------------------------------------------------
 

@@ -1,7 +1,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from wlmap import WLMap
+import pangloss
 import cmath
 
 arcmin2rad = (1.0/60.0)*np.pi/180.0
@@ -13,7 +13,7 @@ vb = False
 
 # ============================================================================
 
-class Shearmap(WLMap):
+class Shearmap(pangloss.WLMap):
     """
     NAME
         Shearmap
@@ -52,9 +52,9 @@ class Shearmap(WLMap):
 
     def __init__(self,shearfiles,FITS=True):
 
-        self.name = 'Shear map kappa from Millenium Simulation, zs = 1.6'
+        self.name = 'Shear map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        WLMap.__init__(self,shearfiles,FITS)
+        pangloss.WLMap.__init__(self,shearfiles,FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -67,7 +67,7 @@ class Shearmap(WLMap):
 
     def plot(self,fig_size=10,subplot=None,coords='world'): # fig_size in inches
         """
-        Plot the convergence as a grayscale image.
+        Plot the shear field with shear sticks.
 
         Optional arguments:
             fig_size        Figure size in inches
@@ -76,8 +76,17 @@ class Shearmap(WLMap):
                             'pixel', 'physical', or 'world'
         """
 
-        # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
-        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
+        # Get current figure and image axes (or make them if they don't exist)
+        fig = plt.gcf()
+        if fig._label == 'Convergence':
+            image = fig.axes[0]
+            world = fig.axes[1]
+
+        else:
+            image,world = pangloss.make_axes(fig)
+
+        # Use plot_setup method from the base WLMap class:
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
@@ -90,44 +99,37 @@ class Shearmap(WLMap):
         else:
             N = 1
 
-        # Set limits and number of points in grid
-        X,Y = np.meshgrid(np.arange(0,pix_Lx),np.arange(0,pix_Ly))
-        X = X[::N,::N]
-        Y = Y[::N,::N]
+        # Create arrays of shear stick positions, one per pixel
+        X,Y = np.meshgrid(np.arange(pix_xi,pix_xf+1),np.arange(pix_yi,pix_yf+1))
 
         # Calculate the modulus and angle of each shear
         mod_gamma = np.sqrt(gamma1*gamma1 + gamma2*gamma2)
         phi_gamma = np.arctan2(gamma2,gamma1)/2.0
 
         # Create the vector components of the shear sticks.
-        # We *think* that this transpose is necessary because
-        # we are working with maps read in from binary data that
-        # have not been transposed. The test is to overlay
+        # We *think* that this transpose was necessary because
+        # we were working with maps read in from binary data that
+        # had not been transposed. The test is to overlay
         # the foreground galaxy catalogs and see whether the clusters
         # of galaxies line up with the overdensities in kappa/shear...
-        dx = mod_gamma * np.sin(phi_gamma)
-        dy = mod_gamma * np.cos(phi_gamma)
+        # dx = mod_gamma * np.sin(phi_gamma)
+        # dy = mod_gamma * np.cos(phi_gamma)
+        dx = mod_gamma * np.cos(phi_gamma)
+        dy = mod_gamma * np.sin(phi_gamma)
 
-        # Plot image
-        plt.quiver(X,Y,dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
-        plt.title('Shear map of '+self.input[0])
+        # Set axes to image and set axis limits:
+        fig.sca(image)
+        image.set_xlim(pix_xi,pix_xf)
+        image.set_ylim(pix_yi,pix_yf)
 
-        # Label axes
-        plt.xticks(xlocs,xlabels)
-        plt.yticks(ylocs,ylabels)
-        plt.xlabel('Right Ascension / deg')
-        plt.ylabel('Declination / deg')
+        # Plot downsampled 2D arrays of shear sticks
+        plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
 
-        # Set figure size
-        fig = plt.gcf()
-        if Lx == Ly:
-            fig.set_size_inches(fig_size,fig_size)
-        elif Lx > Ly:
-            fig.set_size_inches(fig_size,fig_size*(1.0*Ly/Lx))
-        else:
-            fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
+        # Set figure size:
+        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-        # Ensures the image is not distorted
-        plt.axis('equal')
+        # Finally, set the limits for the world axis
+        world.set_xlim(subplot[0],subplot[1])
+        world.set_ylim(subplot[2],subplot[3])
 
         return

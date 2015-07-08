@@ -1,7 +1,8 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from wlmap import WLMap
+
+import pangloss
 
 arcmin2rad = (1.0/60.0)*np.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -12,7 +13,7 @@ vb = False
 
 # ============================================================================
 
-class Kappamap(WLMap):
+class Kappamap(pangloss.WLMap):
     """
     NAME
         Kappamap
@@ -49,9 +50,9 @@ class Kappamap(WLMap):
 
     def __init__(self,kappafile,FITS=True):
 
-        self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.6'
+        self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        WLMap.__init__(self,kappafile,FITS)
+        pangloss.WLMap.__init__(self,kappafile,FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -73,28 +74,23 @@ class Kappamap(WLMap):
         """
 
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
-        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,xlocs,xlabels,ylocs,ylabels = WLMap.plot(self,fig_size,subplot,coords)
+        pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
+
+        # Always start a figure when plotting kappa maps:
+        fig = plt.figure("Convergence")
+        fig.clf()
+
+        image,world = pangloss.make_axes(fig)
 
         # Plot image
+        fig.sca(image)
         plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
-        plt.title('Convergence map of '+self.input[0])
 
-        # Label axes
-        plt.xticks(xlocs,xlabels)
-        plt.yticks(ylocs,ylabels)
-        plt.xlabel('Right Ascension / deg')
-        plt.ylabel('Declination / deg')
+        # Set figure size:
+        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-        # Set figure size
-        fig = plt.gcf()
-        if Lx == Ly:
-            fig.set_size_inches(fig_size,fig_size)
-        elif Lx > Ly:
-            fig.set_size_inches(fig_size,fig_size*(1.0*Ly/Lx))
-        else:
-            fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
-
-        # Ensures the image is not distorted
-        plt.axis('equal')
+        # Finally, set the limits for the world axis
+        world.set_xlim(subplot[0],subplot[1])
+        world.set_ylim(subplot[2],subplot[3])
 
         return
