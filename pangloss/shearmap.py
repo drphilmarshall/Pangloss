@@ -112,8 +112,10 @@ class Shearmap(WLMap):
         # have not been transposed. The test is to overlay
         # the foreground galaxy catalogs and see whether the clusters
         # of galaxies line up with the overdensities in kappa/shear...
-        dx = mod_gamma * np.sin(phi_gamma)
-        dy = mod_gamma * np.cos(phi_gamma)
+        #dx = mod_gamma * np.sin(phi_gamma)
+        #dy = mod_gamma * np.cos(phi_gamma)
+        dx = mod_gamma * np.cos(phi_gamma)
+        dy = mod_gamma * np.sin(phi_gamma)
         
         # Set axes to image and set axis limits
         fig.sca(image)
@@ -131,7 +133,7 @@ class Shearmap(WLMap):
         else:
             fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
             
-        # Finally, set the limits for the world axis and display axis labels
+        # Finally, set the limits for the world axis
         world.set_xlim(subplot[0],subplot[1])
         world.set_ylim(subplot[2],subplot[3])
         

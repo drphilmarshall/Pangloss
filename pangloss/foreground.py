@@ -139,7 +139,7 @@ class ForegroundCatalog(Catalog):
                                         
         return galaxies
         
-    def plot(self,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],fig=None,fig_size=10):
+    def plot(self,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
         The optional input fig_size is in inches and has a default value of 10.
@@ -147,10 +147,14 @@ class ForegroundCatalog(Catalog):
         the number of galaxies that are to be plotted by the respective attribute.
         '''
         
-        # Start a plot:        
-        if fig is None:
-            fig = plt.gcf()
-            fig.set_size_inches(fig_size,fig_size)         
+        # Get current figure and image axes (or make them if they don't exist)
+        fig = plt.gcf()
+        if fig._label == 'Convergence':
+            image = fig.axes[0]
+            world = fig.axes[1]
+            
+        else:
+            image, world = make_map_axes(fig)         
        
         if subplot is None:
             # Default subplot is entire image
@@ -165,6 +169,11 @@ class ForegroundCatalog(Catalog):
         ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
         ra, dec, mass = self.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
         
+        # Set current axis to world coordinates and set the limits
+        fig.sca(world)
+        world.set_xlim(subplot[0],subplot[1])
+        world.set_ylim(subplot[2],subplot[3])
+        
         # Scale galaxy plot size by its mass
         scale = ((np.log10(mass)-9.0)/(12.0-9.0))
         floor = 0.01
@@ -174,6 +183,4 @@ class ForegroundCatalog(Catalog):
         plt.scatter(ra,dec,s=size,color='orange',alpha=0.2,edgecolor=None)
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-        #plt.gca().set_xlim((self.ra_min,self.ra_max))
-        #plt.gca().set_ylim((self.dec_min,self.dec_max))
         

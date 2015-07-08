@@ -93,7 +93,7 @@ class Kappamap(WLMap):
         else:
             fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
         
-        # Finally, set the limits for the world axis and display axis labels and title
+        # Finally, set the limits for the world axis
         world.set_xlim(subplot[0],subplot[1])
         world.set_ylim(subplot[2],subplot[3])
                 
