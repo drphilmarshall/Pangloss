@@ -7,6 +7,7 @@ from pdf import *
 from shmr import *
 from catalog import *
 from foreground import *
+from background import *
 from plotting import *
 
 from config import *
