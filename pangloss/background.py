@@ -37,9 +37,9 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self):
+    def __init__(self,domain=None,N=10,mag_cut=[24.0,0.0],mass_cut=[10.0**6,10.0**12],z_cut=[0.0,1.3857],e_mod_cut=[0,0.25]):
         self.type = 'background'
-        self.generate()
+        self.generate(domain,N,mag_cut,mass_cut,z_cut,e_mod_cut)
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -71,24 +71,24 @@ class BackgroundCatalog(pangloss.Catalog):
 
         if domain == None:
             # Make a default domain (shouldn't be used except for testing or demo purposes)
-            ra_init = 1    # initial value is larger as ra is left-handed
-            dec_init = -1
-            ra_final = -1
-            dec_final = 1
+            ra_init = np.deg2rad(2)    # initial value is larger as ra is left-handed
+            dec_init = np.deg2rad(-2)
+            ra_final = np.deg2rad(-2)
+            dec_final = np.deg2rad(2)
 
         else:
             # Set ra and dec limits from domain. domain = [ra_init,ra_final,dec_init,dec_final]
-            ra_init = domain[0]
-            ra_final = domain[1]
-            dec_init = domain[2]
-            dec_final = domain[3]
+            ra_init = np.deg2rad(domain[0])
+            ra_final = np.deg2rad(domain[1])
+            dec_init = np.deg2rad(domain[2])
+            dec_final = np.deg2rad(domain[3])
         
         # Determine area of domain and the number of generated galaxies contained in it
         # (expecting wcs in degrees)
-        Lx, Ly = abs(ra_final-ra_init), abs(dec_final-dec_init)
-        area = 3600*Lx*Ly # square arcminutes
-        self.galaxy_count = N*area # N galaxies per square arcminute
-        print(Lx,Ly,area,self.galaxy_count)
+        self.Lx, self.Ly = abs(np.rad2deg(ra_final)-np.rad2deg(ra_init)), abs(np.rad2deg(dec_final)-np.rad2deg(dec_init))
+        area = 3600*self.Lx*self.Ly # square arcminutes
+        self.galaxy_count = int(N*area) # N galaxies per square arcminute
+
         # Initialize generated variables
         ra = []
         dec = []
@@ -133,18 +133,61 @@ class BackgroundCatalog(pangloss.Catalog):
         Make scatter plot of generated galaxies.
         '''
         
-        # Assign useful variables
-        ra,dec,mass = pangloss.Catalog.findGalaxies(self,mag_cutoff,mass_cutoff,z_cutoff)
+        # Get current figure (or make one if it doesn't exist)
+        fig = plt.gcf()
+        
+        # If there is a Pangloss map open:
+        if fig._label == 'Pangloss Map':
+            # Adopt axes from the open Kappamap:
+            imshow = fig.axes[0]
+            world = fig.axes[1]
+            
+            # If the Kappamap subplot was not passed to this Shearmap:
+            if subplot == None:
+                # Adopt subplot from the open Kappamap:
+                fig.sca(world)
+                subplot = plt.axis()
+                
+            # Set RA and Dec cutoffs from subplot
+            ra_cutoff = [subplot[0], subplot[1]]
+            dec_cutoff = [subplot[2], subplot[3]]
+            
+            # Adopt figure size from open Kappamap:    
+            fig_size = plt.gcf().get_size_inches()[0]
+
+        # Otherwise:
+        else:
+            if subplot is None:
+                # Default subplot is entire catalog
+                ai, di = self.ra_max, self.dec_min
+                af, df = self.ra_min, self.dec_max
+                subplot = [ai,af,di,df]
+            
+            # Adjust the subplot in wcs by half a pixel
+            #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
+            
+            # Set RA and Dec cutoffs from subplot
+            ra_cutoff = [subplot[0], subplot[1]]
+            dec_cutoff = [subplot[2], subplot[3]]
+                
+            # Create new imshow and world axes
+            imshow, world = pangloss.make_axes(fig,subplot)
+
+        # Find the galaxies that are within the cutoffs
+        ra,dec,mass = pangloss.Catalog.findGalaxies(self,mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
+        
+        # Set current axis to world coordinates and set the limits
+        fig.sca(world)
+        world.set_xlim(subplot[0],subplot[1])
+        world.set_ylim(subplot[2],subplot[3])
         
         # Scale size of point by the galaxy mass
         s = [math.log(mass[i]) for i in range(0,len(mass))]
-        plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='r')
-
+        plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-        plt.gca().set_xlim(min(ra),max(ra))
-        plt.gca().set_ylim(min(dec),max(dec))
 
-        # Set figure size to fig_size
-        fig = plt.gcf()
-        fig.set_size_inches(fig_size,fig_size)
+        # Set the correct figure size
+        pangloss.set_figure_size(fig,fig_size,self.Lx,self.Ly)
+        
+        return

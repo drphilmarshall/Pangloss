@@ -94,7 +94,7 @@ class ForegroundCatalog(pangloss.Catalog):
             imshow = fig.axes[0]
             world = fig.axes[1]
             
-            # If the Kappamap subplot was not passed to this Shearmap:
+            # If the Kappamap subplot was not passed to this catalog:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
