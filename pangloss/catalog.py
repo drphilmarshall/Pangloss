@@ -22,13 +22,15 @@ class Catalog(object):
         weakly lensed source galaxies).
 
     INITIALISATION
-        filename:       A string of the catalog filename (likely .txt)
-        config:         A config object containing structure of catalog metadata
+        ??
 
     METHODS
-        read(filename,config)
-        generate()
-        write(output)
+        findGalaxies: Find all galaxies in the catalog that are within the inputted
+                      magnitude, mass, redhsift, and coordinate cutoff ranges,
+                      and then return the locations and masses of each galaxy.
+
+        returnGalaxies: Same as the findGalaxies() method, but returns all columns
+                        of the catalog for galaxies that satisfy the cutoffs.
 
     BUGS
 
@@ -40,47 +42,90 @@ class Catalog(object):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,filename,config):
-        self.filename = filename
-        # Structures catalog metadata from configfile and reads in the catalog data
-        self.config = config
-        self.read(filename,config)
-        return
+    def __init__(self):
+        # Common catalog attributes
+        self.galaxy_count = np.shape(self.galaxies)[0]
+        self.maxZ = max(self.galaxies['z_obs'])
+        self.minZ = min(self.galaxies['z_obs'])
+        self.maxM = max(self.galaxies['Mstar_obs'])
+        self.minM = min(self.galaxies['Mstar_obs'])
+        self.maxMag = max(self.galaxies['mag'])
+        self.minMag = min(self.galaxies['mag'])
 
+        # Find world coordinate limits, used for plotting
+        self.ra_max = np.rad2deg(self.galaxies['RA'].max())
+        self.ra_min = np.rad2deg(self.galaxies['RA'].min())
+        self.dec_max = np.rad2deg(self.galaxies['Dec'].max())
+        self.dec_min = np.rad2deg(self.galaxies['Dec'].min())
+        
+        return
+    
     def __str__(self):
         # Add more!
         return 'General catalog object'
 
-    def read(self,filename,config):
-        # Uses astropy.table to read catalog, but with a few specific changes
-        self.data = pangloss.readCatalog(filename,config)
-        return
-
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
-        self.data.write(output,format = 'ascii')
+        self.galaxies.write(output,format = 'ascii')
         return
+        
+    
+    def findGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
+        '''
+        Retrieve list of galaxy world coordinates and their masses with values within inputted cutoffs.
+        '''
 
-# ----------------------------------------------------------------------------
-# Conversions -- This is also in wlmap. We should create a separate file and
-# call these functions from both catalog and wlmap.
+        # If no ra or dec cutoff are given, use all galaxies
+        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
 
-    # Only approximate WCS transformations - assumes dec=0.0 and small field
-    def image2world(self,i,j,mapfile=0):
-        a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
-        #if a < 0.0: a += 360.0 :We are using nRA instead now
-        d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
-        return a,d
+        # Convert world coordinate limits to radians
+        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
 
-    def world2image(self,a,d,mapfile=0):
-        i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
-        # if a negative pixel is returned for i, reinput a as a negative degree
-        if i<0:
-            a-=360
-            i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
-        j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
-        return i,j
 
+        # Select only the ra, dec, and mass values from galaxies that satisfy all cutoffs
+        ra = np.rad2deg(self.galaxies['RA'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
+                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
+                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])])
+
+        dec = np.rad2deg(self.galaxies['Dec'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
+                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
+                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])])
+
+        mass = self.galaxies['Mstar_obs'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
+                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
+                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])]
+
+        return ra, dec, mass
+
+
+    def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
+        '''
+        Return catalog of galaxies that satisfy the inputted cutoffs.
+        '''
+
+        # If no ra or dec cutoff are given, use all galaxies
+        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
+
+        # Convert world coordinate limits to radians
+        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
+
+        # Select only galaxies that meet the cutoff criteria
+        galaxies = self.galaxies[(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
+                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
+                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
+                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])]
+
+        return galaxies
+        
 # ----------------------------------------------------------------------------
 
     def generate(self,domain=None,N=1000,mag_cut=[24.0,0.0],mass_cut=[10.0**5,10.0**12],z_cut=[0.0,1.3857],plot=False,fig_size=10):
@@ -91,7 +136,7 @@ class Catalog(object):
         have attributes within these values. Will make a scatter plot of the
         generated catalog only if plot = True
         '''
-
+        ## *!Note!* Should delete soon - only used in BackgroundCatalog. 
         if domain == None:
             # Make a default domain (shouldn't be used except for testing or demo purposes)
             ra_init = 1    # initial value is larger as ra is left-handed
@@ -123,7 +168,7 @@ class Catalog(object):
             z.append(random.uniform(z_cut[0],z_cut[1]))
 
         # Save generated catalog as an astropy table
-        self.gen_data = Table([ra,dec,mag,mass,z],names=['ra','dec','mag','mass','z'], \
+        self.gen_galaxies = Table([ra,dec,mag,mass,z],names=['ra','dec','mag','mass','z'], \
                               meta={'name':'generated catalog','size':N,'mag_cutoff':mag_cut, \
                                     'mass_cutoff':mass_cut,'z_cutoff':z_cut})
 
