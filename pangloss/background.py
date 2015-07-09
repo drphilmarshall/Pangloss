@@ -90,27 +90,31 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxy_count = int(N*area) # N galaxies per square arcminute
 
         # Initialize generated variables
-        ra = []
-        dec = []
-        mag = []
-        mass = []
-        z = []
-        e_mod = []
-        e_phi = []
+        ra = np.zeros(self.galaxy_count)
+        dec = np.zeros(self.galaxy_count)
+        mag = np.zeros(self.galaxy_count)
+        mass = np.zeros(self.galaxy_count)
+        z = np.zeros(self.galaxy_count)
+        e_mod = np.zeros(self.galaxy_count)
+        e_phi = np.zeros(self.galaxy_count)
 
         # Populate the generated variables
         for i in range(0,self.galaxy_count):
             ## NOTE: Not all distributions should be uniform!!!
-            ra.append(random.uniform(ra_init,ra_final))
-            dec.append(random.uniform(dec_init,dec_final))
-            mag.append(random.uniform(mag_cut[0],mag_cut[1]))
-            mass.append(random.uniform(mass_cut[0],mass_cut[1]))
-            z.append(random.uniform(z_cut[0],z_cut[1]))
-            e_mod.append(random.uniform(e_mod_cut[0],e_mod_cut[1]))
-            e_phi.append(random.uniform(0,180))
+            ra[i] = random.uniform(ra_init,ra_final)
+            dec[i] = random.uniform(dec_init,dec_final)
+            mag[i] = random.uniform(mag_cut[0],mag_cut[1])
+            mass[i] = random.uniform(mass_cut[0],mass_cut[1])
+            z[i] = random.uniform(z_cut[0],z_cut[1])
+            e_mod[i] = random.uniform(e_mod_cut[0],e_mod_cut[1])
+            e_phi[i] = random.uniform(0,180)
+            
+        # Calculate Cartesian components of complex ellipticity
+        e1 = e_mod*np.cos(2*e_phi)
+        e2 = e_mod*np.sin(2*e_phi)
 
         # Save generated catalog as an astropy table
-        self.galaxies = Table([ra,dec,mag,mass,z,e_mod,e_phi],names=['RA','Dec','mag','Mstar_obs','z_obs','e_mod','e_phi'], \
+        self.galaxies = Table([ra,dec,mag,mass,z,e_mod,e_phi,e1,e2],names=['RA','Dec','mag','Mstar_obs','z_obs','e_mod','e_phi','e1','e2'], \
                               meta={'name':'generated catalog','size':N,'mag_cutoff':mag_cut, \
                                     'mass_cutoff':mass_cut,'z_cutoff':z_cut,'e_mod_cutoff':e_mod_cut})
 
