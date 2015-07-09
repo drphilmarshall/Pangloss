@@ -62,6 +62,9 @@ def readCatalog(filename,config):
     except: pass
     try: table.rename_column(config.parameters['DecName'],'Dec')
     except: pass
+    # Add a RA column:
+    try: table['RA'] = -table['nRA']
+    except: pass
 
     # Calibration catalogs:
     try: table.rename_column(config.parameters['CalibMhaloName'],'Mhalo_obs')
