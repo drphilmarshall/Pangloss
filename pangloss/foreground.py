@@ -29,7 +29,7 @@ class ForegroundCatalog(pangloss.Catalog):
         plotForeground: Make a scatterplot of foreground galaxy positions at their
                         respective world coordinates. Only galaxies in the catalog
                         whose attributes are within the optional magnitude, mass,
-                        redshift, and coordiante cutoff arguments are displayed.
+                        redshift, and coordiante limit arguments are displayed.
 
     BUGS
 
@@ -77,11 +77,11 @@ class ForegroundCatalog(pangloss.Catalog):
         self.galaxies = pangloss.readCatalog(filename,config)
         return
 
-    def plot(self,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],fig_size=10):
+    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
         The optional input fig_size is in inches and has a default value of 10.
-        The other optional inputs are cutoffs with default values, which limit
+        The other optional inputs are limits with default values, which limit
         the number of galaxies that are to be plotted by the respective attribute.
         '''
         
@@ -121,9 +121,9 @@ class ForegroundCatalog(pangloss.Catalog):
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
         Lx, Ly = abs(ai-af), abs(di-df)    # Length of axes in wcs
 
-        # Find world coordinates and masses of galaxies that meet cutoff criteria
-        ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
-        ra, dec, mass = self.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
+        # Find world coordinates and masses of galaxies that meet limit criteria
+        ra_lim, dec_lim = [ai, af], [di, df]     # RA flipped because RA is left-handed
+        ra, dec, mass = self.find_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
 
         # Set current axis to world coordinates and set the limits
         fig.sca(world)

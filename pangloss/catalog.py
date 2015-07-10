@@ -26,11 +26,11 @@ class Catalog(object):
 
     METHODS
         findGalaxies: Find all galaxies in the catalog that are within the inputted
-                      magnitude, mass, redhsift, and coordinate cutoff ranges,
+                      magnitude, mass, redhsift, and coordinate limit ranges,
                       and then return the locations and masses of each galaxy.
 
         returnGalaxies: Same as the findGalaxies() method, but returns all columns
-                        of the catalog for galaxies that satisfy the cutoffs.
+                        of the catalog for galaxies that satisfy the limits.
 
     BUGS
 
@@ -70,57 +70,57 @@ class Catalog(object):
         return
         
     
-    def findGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
+    def find_galaxies(self,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],ra_lim=None,dec_lim=None):
         '''
-        Retrieve list of galaxy world coordinates and their masses with values within inputted cutoffs.
+        Retrieve list of galaxy world coordinates and their masses with values within inputted limits.
         '''
 
-        # If no ra or dec cutoff are given, use all galaxies
-        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
-        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
+        # If no ra or dec limits are given, use all galaxies
+        if ra_lim == None: ra_lim = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_lim == None: dec_lim = [self.dec_min, self.dec_max]
 
         # Convert world coordinate limits to radians
-        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
+        ra_lim, dec_lim = np.deg2rad(ra_lim), np.deg2rad(dec_lim)
 
-        # Select only the ra, dec, and mass values from galaxies that satisfy all cutoffs
-        ra = np.rad2deg(self.galaxies['RA'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
-                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
-                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
-                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])])
+        # Select only the ra, dec, and mass values from galaxies that satisfy all limits
+        ra = np.rad2deg(self.galaxies['RA'][(self.galaxies['mag']>mag_lim[0]) & (self.galaxies['mag']<mag_lim[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_lim[0]) & (self.galaxies['Mstar_obs']<mass_lim[1]) \
+                                        & (self.galaxies['z_obs']>mag_lim[0]) & (self.galaxies['z_obs']<mag_lim[1]) \
+                                        & (self.galaxies['RA']>ra_lim[1]) & (self.galaxies['RA']<ra_lim[0]) \
+                                        & (self.galaxies['Dec']>dec_lim[0]) & (self.galaxies['Dec']<dec_lim[1])])
 
-        dec = np.rad2deg(self.galaxies['Dec'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
-                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
-                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
-                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])])
+        dec = np.rad2deg(self.galaxies['Dec'][(self.galaxies['mag']>mag_lim[0]) & (self.galaxies['mag']<mag_lim[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_lim[0]) & (self.galaxies['Mstar_obs']<mass_lim[1]) \
+                                        & (self.galaxies['z_obs']>mag_lim[0]) & (self.galaxies['z_obs']<mag_lim[1]) \
+                                        & (self.galaxies['RA']>ra_lim[1]) & (self.galaxies['RA']<ra_lim[0]) \
+                                        & (self.galaxies['Dec']>dec_lim[0]) & (self.galaxies['Dec']<dec_lim[1])])
 
-        mass = self.galaxies['Mstar_obs'][(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
-                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
-                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
-                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])]
+        mass = self.galaxies['Mstar_obs'][(self.galaxies['mag']>mag_lim[0]) & (self.galaxies['mag']<mag_lim[1]) \
+                                        & (self.galaxies['Mstar_obs']>mass_lim[0]) & (self.galaxies['Mstar_obs']<mass_lim[1]) \
+                                        & (self.galaxies['z_obs']>mag_lim[0]) & (self.galaxies['z_obs']<mag_lim[1]) \
+                                        & (self.galaxies['RA']>ra_lim[1]) & (self.galaxies['RA']<ra_lim[0]) \
+                                        & (self.galaxies['Dec']>dec_lim[0]) & (self.galaxies['Dec']<dec_lim[1])]
 
         return ra, dec, mass
 
 
-    def returnGalaxies(self,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],ra_cutoff=None,dec_cutoff=None):
+    def return_galaxies(self,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],ra_lim=None,dec_lim=None):
         '''
-        Return catalog of galaxies that satisfy the inputted cutoffs.
+        Return catalog of galaxies that satisfy the inputted limits.
         '''
 
-        # If no ra or dec cutoff are given, use all galaxies
-        if ra_cutoff == None: ra_cutoff = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
-        if dec_cutoff == None: dec_cutoff = [self.dec_min, self.dec_max]
+        # If no ra or dec limits are given, use all galaxies
+        if ra_lim == None: ra_lim = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
+        if dec_lim == None: dec_lim = [self.dec_min, self.dec_max]
 
         # Convert world coordinate limits to radians
-        ra_cutoff, dec_cutoff = np.deg2rad(ra_cutoff), np.deg2rad(dec_cutoff)
+        ra_lim, dec_lim = np.deg2rad(ra_lim), np.deg2rad(dec_lim)
 
-        # Select only galaxies that meet the cutoff criteria
-        galaxies = self.galaxies[(self.galaxies['mag']>mag_cutoff[0]) & (self.galaxies['mag']<mag_cutoff[1]) \
-                                        & (self.galaxies['Mstar_obs']>mass_cutoff[0]) & (self.galaxies['Mstar_obs']<mass_cutoff[1]) \
-                                        & (self.galaxies['z_obs']>mag_cutoff[0]) & (self.galaxies['z_obs']<mag_cutoff[1]) \
-                                        & (self.galaxies['RA']>ra_cutoff[1]) & (self.galaxies['RA']<ra_cutoff[0]) \
-                                        & (self.galaxies['Dec']>dec_cutoff[0]) & (self.galaxies['Dec']<dec_cutoff[1])]
+        # Select only galaxies that meet the limit criteria
+        galaxies = self.galaxies[(self.galaxies['mag']>mag_lim[0]) & (self.galaxies['mag']<mag_lim[1]) \
+                               & (self.galaxies['Mstar_obs']>mass_lim[0]) & (self.galaxies['Mstar_obs']<mass_lim[1]) \
+                               & (self.galaxies['z_obs']>mag_lim[0]) & (self.galaxies['z_obs']<mag_lim[1]) \
+                               & (self.galaxies['RA']>ra_lim[1]) & (self.galaxies['RA']<ra_lim[0]) \
+                               & (self.galaxies['Dec']>dec_lim[0]) & (self.galaxies['Dec']<dec_lim[1])]
 
         return galaxies

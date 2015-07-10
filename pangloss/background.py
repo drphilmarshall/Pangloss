@@ -3,6 +3,7 @@ import scipy as sp
 import matplotlib.pyplot as plt
 import os, random, math
 from astropy.table import Table, Column
+from matplotlib.patches import Ellipse
 
 import pangloss
 
@@ -37,9 +38,9 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,N=10,mag_cut=[24.0,0.0],mass_cut=[10.0**6,10.0**12],z_cut=[0.0,1.3857],e_mod_cut=[0,0.25]):
+    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],e_mod_lim=[0,0.25]):
         self.type = 'background'
-        self.generate(domain,N,mag_cut,mass_cut,z_cut,e_mod_cut)
+        self.generate(domain,N,mag_lim,mass_lim,z_lim,e_mod_lim)
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -59,12 +60,12 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_cut=[24.0,0.0],mass_cut=[10.0**6,10.0**12],z_cut=[0.0,1.3857],e_mod_cut=[0,0.25]):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],e_mod_lim=[0,0.25]):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per 
         square arcminute inside a given domain of the form 
         domain=[ra_init,ra_final,dec_init,dec_final]. The other optional inputs
-        are value cutoffs; any generated galaxy will have attributes within these 
+        are value limits; any generated galaxy will have attributes within these 
         values. Will make a scatter plot of the generated catalog only if 
         plot = True.
         '''
@@ -103,10 +104,10 @@ class BackgroundCatalog(pangloss.Catalog):
             ## NOTE: Not all distributions should be uniform!!!
             ra[i] = random.uniform(ra_init,ra_final)
             dec[i] = random.uniform(dec_init,dec_final)
-            mag[i] = random.uniform(mag_cut[0],mag_cut[1])
-            mass[i] = random.uniform(mass_cut[0],mass_cut[1])
-            z[i] = random.uniform(z_cut[0],z_cut[1])
-            e_mod[i] = random.uniform(e_mod_cut[0],e_mod_cut[1])
+            mag[i] = random.uniform(mag_lim[0],mag_lim[1])
+            mass[i] = random.uniform(mass_lim[0],mass_lim[1])
+            z[i] = random.uniform(z_lim[0],z_lim[1])
+            e_mod[i] = random.uniform(e_mod_lim[0],e_mod_lim[1])
             e_phi[i] = random.uniform(0,180)
             
         # Calculate Cartesian components of complex ellipticity
@@ -115,8 +116,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Save generated catalog as an astropy table
         self.galaxies = Table([ra,dec,mag,mass,z,e_mod,e_phi,e1,e2],names=['RA','Dec','mag','Mstar_obs','z_obs','e_mod','e_phi','e1','e2'], \
-                              meta={'name':'generated catalog','size':N,'mag_cutoff':mag_cut, \
-                                    'mass_cutoff':mass_cut,'z_cutoff':z_cut,'e_mod_cutoff':e_mod_cut})
+                              meta={'name':'generated catalog','size':N,'mag_lim':mag_lim, \
+                                    'mass_lim':mass_lim,'z_lim':z_lim,'e_mod_lim':e_mod_lim})
 
         return
         
@@ -132,7 +133,7 @@ class BackgroundCatalog(pangloss.Catalog):
         '''
         pass
     
-    def plot(self,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857],fig_size=10):
+    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter'):
         '''
         Make scatter plot of generated galaxies.
         '''
@@ -152,9 +153,9 @@ class BackgroundCatalog(pangloss.Catalog):
                 fig.sca(world)
                 subplot = plt.axis()
                 
-            # Set RA and Dec cutoffs from subplot
-            ra_cutoff = [subplot[0], subplot[1]]
-            dec_cutoff = [subplot[2], subplot[3]]
+            # Set RA and Dec limits from subplot
+            ra_lim = [subplot[0], subplot[1]]
+            dec_lim = [subplot[2], subplot[3]]
             
             # Adopt figure size from open Kappamap:    
             fig_size = plt.gcf().get_size_inches()[0]
@@ -170,28 +171,48 @@ class BackgroundCatalog(pangloss.Catalog):
             # Adjust the subplot in wcs by half a pixel
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
             
-            # Set RA and Dec cutoffs from subplot
-            ra_cutoff = [subplot[0], subplot[1]]
-            dec_cutoff = [subplot[2], subplot[3]]
+            # Set RA and Dec limits from subplot
+            ra_lim = [subplot[0], subplot[1]]
+            dec_lim = [subplot[2], subplot[3]]
                 
             # Create new imshow and world axes
             imshow, world = pangloss.make_axes(fig,subplot)
 
-        # Find the galaxies that are within the cutoffs
-        ra,dec,mass = pangloss.Catalog.findGalaxies(self,mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
+        # Find the galaxies that are within the limits, and extract the useful data from them
+        galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
+        ra = np.rad2deg(galaxies['RA'])
+        dec = np.rad2deg(galaxies['Dec'])
+        mass = galaxies['Mstar_obs']
+        e_mod = galaxies['e_mod']
+        e_phi = galaxies['e_phi']
         
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
         world.set_xlim(subplot[0],subplot[1])
         world.set_ylim(subplot[2],subplot[3])
         
-        # Scale size of point by the galaxy mass
-        s = [math.log(mass[i]) for i in range(0,len(mass))]
-        plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
+        if graph == 'scatter':            
+            # Scale size of point by the galaxy mass
+            s = [math.log(mass[i]) for i in range(0,len(mass))]
+            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
+        
+        elif graph == 'ellipse':             
+            # Scale galaxy plot size by its mass
+            scale = ((np.log10(mass)-9.0)/(12.0-9.0))
+            floor = 0.01
+            size = 0.01*(scale*(scale > 0) + floor)
+        
+            # Plot each galaxy as an ellipse
+            for i in range(np.shape(galaxies)[0]):
+                ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-e_mod[i])*size[i],angle=e_phi[i])
+                world.add_artist(ellipse)      
+                ellipse.set_clip_box(world.bbox)
+                ellipse.set_alpha(.2)
+                ellipse.set_facecolor('blue')
+
+        # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-
-        # Set the correct figure size
         pangloss.set_figure_size(fig,fig_size,self.Lx,self.Ly)
         
         return
