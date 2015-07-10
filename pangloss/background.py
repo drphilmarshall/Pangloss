@@ -177,7 +177,7 @@ class BackgroundCatalog(pangloss.Catalog):
         e = ((e1_int + 1j*e2_int) + g)/(1+g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
         eMod = abs(e)
-        ePhi = [cmath.phase(val) for val in e] 
+        ePhi = [cmath.phase(val)/2.0 for val in e] 
         
         # Add convergence and shear values to catalog
         self.galaxies['kappa'] = kappa
@@ -317,7 +317,7 @@ class BackgroundCatalog(pangloss.Catalog):
                     ellipse1.set_clip_box(world.bbox)
                     ellipse2.set_clip_box(world.bbox)
                     ellipse1.set_alpha(.25)
-                    ellipse2.set_alpha(.35)
+                    ellipse2.set_alpha(.3)
                     # Intrinsic shapes in blue, lensed shapes in green
                     ellipse1.set_facecolor('blue')
                     ellipse2.set_facecolor('green')
