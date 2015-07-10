@@ -60,7 +60,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],e_mod_lim=[0,0.25]):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],eMod_lim=[0,0.25]):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per 
         square arcminute inside a given domain of the form 
@@ -96,8 +96,8 @@ class BackgroundCatalog(pangloss.Catalog):
         mag = np.zeros(self.galaxy_count)
         mass = np.zeros(self.galaxy_count)
         z = np.zeros(self.galaxy_count)
-        e_mod = np.zeros(self.galaxy_count)
-        e_phi = np.zeros(self.galaxy_count)
+        eMod_int = np.zeros(self.galaxy_count)
+        ePhi_int = np.zeros(self.galaxy_count)
 
         # Populate the generated variables
         for i in range(0,self.galaxy_count):
@@ -107,17 +107,17 @@ class BackgroundCatalog(pangloss.Catalog):
             mag[i] = random.uniform(mag_lim[0],mag_lim[1])
             mass[i] = random.uniform(mass_lim[0],mass_lim[1])
             z[i] = random.uniform(z_lim[0],z_lim[1])
-            e_mod[i] = random.uniform(e_mod_lim[0],e_mod_lim[1])
-            e_phi[i] = random.uniform(0,180)
+            eMod_int[i] = random.uniform(eMod_lim[0],eMod_lim[1])
+            ePhi_int[i] = random.uniform(0,180)
             
-        # Calculate Cartesian components of complex ellipticity
-        e1 = e_mod*np.cos(2*e_phi)
-        e2 = e_mod*np.sin(2*e_phi)
+        # Calculate Cartesian components of intrinsic complex ellipticity
+        e1_int = eMod_int*np.cos(2*ePhi_int)
+        e2_int = eMod_int*np.sin(2*ePhi_int)
 
         # Save generated catalog as an astropy table
-        self.galaxies = Table([ra,dec,mag,mass,z,e_mod,e_phi,e1,e2],names=['RA','Dec','mag','Mstar_obs','z_obs','e_mod','e_phi','e1','e2'], \
+        self.galaxies = Table([ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['RA','Dec','mag','Mstar_obs','z_obs','e_mod','e_phi','e1_int','e2_int'], \
                               meta={'name':'generated catalog','size':N,'mag_lim':mag_lim, \
-                                    'mass_lim':mass_lim,'z_lim':z_lim,'e_mod_lim':e_mod_lim})
+                                    'mass_lim':mass_lim,'z_lim':z_lim,'eMod_lim':eMod_lim})
 
         return
         
@@ -183,8 +183,8 @@ class BackgroundCatalog(pangloss.Catalog):
         ra = np.rad2deg(galaxies['RA'])
         dec = np.rad2deg(galaxies['Dec'])
         mass = galaxies['Mstar_obs']
-        e_mod = galaxies['e_mod']
-        e_phi = galaxies['e_phi']
+        eMod_int = galaxies['eMod_int']
+        ePhi_int = galaxies['ePhi_int']
         
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
@@ -204,7 +204,7 @@ class BackgroundCatalog(pangloss.Catalog):
         
             # Plot each galaxy as an ellipse
             for i in range(np.shape(galaxies)[0]):
-                ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-e_mod[i])*size[i],angle=e_phi[i])
+                ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod_int[i])*size[i],angle=ePhi_int[i])
                 world.add_artist(ellipse)      
                 ellipse.set_clip_box(world.bbox)
                 ellipse.set_alpha(.2)
