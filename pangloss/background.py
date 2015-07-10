@@ -126,26 +126,6 @@ class BackgroundCatalog(pangloss.Catalog):
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
         '''
         
-        '''
-        if subplot == None:
-            # Make the subplot the whole catalog region
-            ra_init = self.ra_min
-            dec_init = self.dec_min
-            ra_final = self.ra_max
-            dec_final = self.dec_min
-            
-        else:
-            # Set ra and dec limits from subplot. subplot = [ra_init,ra_final,dec_init,dec_final]
-            ra_init = np.deg2rad(subplot[0])
-            ra_final = np.deg2rad(subplot[1])
-            dec_init = np.deg2rad(subplot[2])
-            dec_final = np.deg2rad(subplot[3])
-            
-        # Set RA and Dec limits from subplot
-        ra_lim = [ra_init,ra_final]
-        dec_lim = [dec_init,dec_final]
-        '''
-        
         # Exctract needed data from catalog galaxies
         #galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
         ra = self.galaxies['RA']
@@ -188,14 +168,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e2'] = e2
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
-        
-        '''
-        # Method can optionally plot the lensed galaxies
-        if plot == True:
-            kappamap.plot(fig_size,subplot)
-            shearmap.plot()
-            self.plot(mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter')
-        '''
+
         return
         
     
