@@ -266,6 +266,13 @@ class BackgroundCatalog(pangloss.Catalog):
                 # Extract lensed ellipticity
                 eMod = galaxies['eMod']
                 ePhi = galaxies['ePhi']
+                
+            elif lensed == 'both':
+                # Extract both the intrinsic and lensed ellipticity
+                eMod_int = galaxies['eMod_int']
+                ePhi_int = galaxies['ePhi_int']
+                eMod = galaxies['eMod']
+                ePhi = galaxies['ePhi']
         
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
@@ -288,13 +295,33 @@ class BackgroundCatalog(pangloss.Catalog):
                 if lensed == False:
                     # Plot intrinsic ellipticities
                     ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod_int[i])*size[i],angle=ePhi_int[i])
+                    world.add_artist(ellipse)      
+                    ellipse.set_clip_box(world.bbox)
+                    ellipse.set_alpha(.2)
+                    ellipse.set_facecolor('blue')
+                
                 elif lensed == True:
                     # Plot lensed ellipticities
                     ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod[i])*size[i],angle=ePhi[i])
-                world.add_artist(ellipse)      
-                ellipse.set_clip_box(world.bbox)
-                ellipse.set_alpha(.2)
-                ellipse.set_facecolor('blue')
+                    world.add_artist(ellipse)      
+                    ellipse.set_clip_box(world.bbox)
+                    ellipse.set_alpha(.2)
+                    ellipse.set_facecolor('green')
+                    
+                elif lensed == 'both':
+                    # Plot both lensed and intrinsic ellipticities
+                    ellipse1 = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod_int[i])*size[i],angle=ePhi_int[i])
+                    ellipse2 = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod[i])*size[i],angle=ePhi[i])
+                    world.add_artist(ellipse1)
+                    world.add_artist(ellipse2)
+                    ellipse1.set_clip_box(world.bbox)
+                    ellipse2.set_clip_box(world.bbox)
+                    ellipse1.set_alpha(.25)
+                    ellipse2.set_alpha(.35)
+                    # Intrinsic shapes in blue, lensed shapes in green
+                    ellipse1.set_facecolor('blue')
+                    ellipse2.set_facecolor('green')
+                
 
         # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
