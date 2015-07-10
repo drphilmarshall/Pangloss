@@ -123,7 +123,10 @@ class ForegroundCatalog(pangloss.Catalog):
 
         # Find world coordinates and masses of galaxies that meet limit criteria
         ra_lim, dec_lim = [ai, af], [di, df]     # RA flipped because RA is left-handed
-        ra, dec, mass = self.find_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
+        galaxies = self.return_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
+        ra = np.rad2deg(galaxies['RA'])
+        dec = np.rad2deg(galaxies['Dec'])
+        mass = galaxies['Mstar_obs']
 
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
