@@ -217,7 +217,7 @@ class WLMap:
 # Interpolating the map to return a single value at a specified point - this
 # is the most important method of this class.
 
-    def at(self,x,y,mapfile=None,coordinate_system='physical'):
+    def at(self,x,y,mapfile=None,coordinate_system='world'):
         # mapfile is the index of the inputted maps that the at() method retrieves values from
 
         # Shearmaps have two components - which one to look-up *must*
@@ -236,7 +236,10 @@ class WLMap:
 
         # Get pixel indices of desired point,
         # and also work out other positions for completeness, if verbose:
-        if coordinate_system == 'physical':
+        if coordinate_system == 'world':
+            i,j = self.world2image(x,y,mapfile)
+            if vb: print "  - image coordinates of map "+mapfile+":",i,j
+        elif coordinate_system == 'physical':
            i,j = self.physical2image(x,y,mapfile)
            if vb: print "  - image coordinates of map "+mapfile+":",i,j
         elif coordinate_system == 'image':
