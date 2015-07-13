@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 from astropy.table import Table, Column
+from matplotlib.patches import Ellipse
 
 viewport = [0.1,0.1,0.8,0.8]
 
@@ -109,7 +110,6 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
 
     return imshow,world
 
-# ----------------------------------------------------------------------------
 
 def set_figure_size(fig,fig_size,Lx,Ly):
     if Lx == Ly:
@@ -120,8 +120,24 @@ def set_figure_size(fig,fig_size,Lx,Ly):
         fig.set_size_inches(fig_size*(1.0*Lx/Ly),fig_size)
     return
 
-
 # ----------------------------------------------------------------------------
+
+def plot_ellipse(ra,dec,size,q,phi,color,alpha,axis):
+    '''
+    Plot an ellipse centered at (ra,dec) with width 'size' and height<width dependent
+    on 'q'. The ellipse is rotated by angle 'phi' which must be in deg. The ellipse
+    has color set to the string 'color', and plots on the inputted axis.
+    '''
+    
+    ellipse = Ellipse(xy=[ra,dec],width=size,height=np.sqrt(q)*size,angle=phi)
+    axis.add_artist(ellipse)      
+    ellipse.set_clip_box(axis.bbox)
+    ellipse.set_alpha(alpha)
+    ellipse.set_facecolor(color)
+    
+    return
+
+
 '''
 def plotCatalogOnMap(F,fig_size=10,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
     ''

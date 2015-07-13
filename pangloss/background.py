@@ -157,7 +157,7 @@ class BackgroundCatalog(pangloss.Catalog):
         e = ((e1_int + 1j*e2_int) + g)/(1+g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
-        ePhi = [cmath.phase(val)/2.0 for val in e] 
+        ePhi = np.rad2deg([cmath.phase(val)/2.0 for val in e])
         
         # Add convergence and shear values to catalog
         self.galaxies['kappa'] = kappa
@@ -266,37 +266,23 @@ class BackgroundCatalog(pangloss.Catalog):
                 if lensed == False:
                     # Plot intrinsic ellipticities
                     q = (1-eMod_int[i])/(1+eMod_int[i])
-                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q)*size,angle=np.rad2deg(ePhi_int[i]))
-                    world.add_artist(ellipse)      
-                    ellipse.set_clip_box(world.bbox)
-                    ellipse.set_alpha(.2)
-                    ellipse.set_facecolor('blue')
+                    alpha = 0.25
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q,ePhi_int[i],'blue',alpha,world)
                 
                 elif lensed == True:
                     # Plot lensed ellipticities
                     q = (1-eMod[i])/(1+eMod[i])
-                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q)*size,angle=np.rad2deg(ePhi[i]))
-                    world.add_artist(ellipse)      
-                    ellipse.set_clip_box(world.bbox)
-                    ellipse.set_alpha(.2)
-                    ellipse.set_facecolor('green')
+                    alpha = 0.3
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q,ePhi[i],'green',alpha,world)
                     
                 elif lensed == 'both':
                     # Plot both lensed and intrinsic ellipticities
                     q1 = (1-eMod_int[i])/(1+eMod_int[i])
                     q2 = (1-eMod[i])/(1+eMod[i])
-                    ellipse1 = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q1)*size,angle=np.rad2deg(ePhi_int[i]))
-                    ellipse2 = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q2)*size,angle=np.rad2deg(ePhi[i]))
-                    world.add_artist(ellipse1)
-                    world.add_artist(ellipse2)
-                    ellipse1.set_clip_box(world.bbox)
-                    ellipse2.set_clip_box(world.bbox)
-                    ellipse1.set_alpha(.25)
-                    ellipse2.set_alpha(.3)
-                    # Intrinsic shapes in blue, lensed shapes in green
-                    ellipse1.set_facecolor('blue')
-                    ellipse2.set_facecolor('green')
-                
+                    alpha1 = 0.25
+                    alpha2 = 0.3
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q1,ePhi_int[i],'blue',alpha1,world)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q2,ePhi[i],'green',alpha2,world)                
 
         # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
