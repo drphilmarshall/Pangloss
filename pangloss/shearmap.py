@@ -143,6 +143,14 @@ class Shearmap(pangloss.WLMap):
         else:
             N = 1
             
+        print 'N = ',N
+        print 'pix_Lx = ',pix_Lx
+        print 'pix_ly = ',pix_Ly
+        print 'Lx = ',Lx
+        print 'Ly = ',Ly
+        
+        #N=1
+        #plt.quiver(X,Y,dx,dy,color='r',headwidth=0,pivot='middle')
         plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
-
+        
         return

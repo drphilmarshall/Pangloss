@@ -128,8 +128,8 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Exctract needed data from catalog galaxies
         #galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
-        ra = self.galaxies['RA']
-        dec = self.galaxies['Dec']
+        ra = np.rad2deg(self.galaxies['RA'])
+        dec = np.rad2deg(self.galaxies['Dec'])
         e1_int = self.galaxies['e1_int']
         e2_int = self.galaxies['e2_int']
         
@@ -156,7 +156,7 @@ class BackgroundCatalog(pangloss.Catalog):
         # Calculate the observed ellipticity
         e = ((e1_int + 1j*e2_int) + g)/(1+g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
-        eMod = abs(e)
+        eMod = np.abs(e)
         ePhi = [cmath.phase(val)/2.0 for val in e] 
         
         # Add convergence and shear values to catalog
@@ -197,10 +197,6 @@ class BackgroundCatalog(pangloss.Catalog):
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
                 subplot = plt.axis()
-                
-            # Set RA and Dec limits from subplot
-            ra_lim = [subplot[0], subplot[1]]
-            dec_lim = [subplot[2], subplot[3]]
             
             # Adopt figure size from open Kappamap:    
             fig_size = plt.gcf().get_size_inches()[0]
@@ -215,16 +211,17 @@ class BackgroundCatalog(pangloss.Catalog):
             
             # Adjust the subplot in wcs by half a pixel
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
-            
-            # Set RA and Dec limits from subplot
-            ra_lim = [subplot[0], subplot[1]]
-            dec_lim = [subplot[2], subplot[3]]
                 
             # Create new imshow and world axes
             imshow, world = pangloss.make_axes(fig,subplot)
+            
+        ai, af = subplot[0], subplot[1]    # RA limits for subplot
+        di, df = subplot[2], subplot[3]    # DEC limits for subplot
+        Lx, Ly = abs(ai-af), abs(di-df)    # Length of axes in wcs
 
         # Find the galaxies that are within the limits, and extract the useful data from them
-        galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
+        ra_lim, dec_lim = [ai, af], [di, df]
+        galaxies = self.return_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
         ra = np.rad2deg(galaxies['RA'])
         dec = np.rad2deg(galaxies['Dec'])
         mass = galaxies['Mstar_obs']
@@ -258,8 +255,9 @@ class BackgroundCatalog(pangloss.Catalog):
             plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
         
         elif graph == 'ellipse':             
-            # Scale galaxy plot size by its mass
-            scale = ((np.log10(mass)-9.0)/(12.0-9.0))
+            # Scale galaxy plot size by its mass?
+            # scale = ((np.log10(mass)-9.0)/(12.0-9.0))
+            scale = 0.5            
             floor = 0.01
             size = 0.01*(scale*(scale > 0) + floor)
         
@@ -267,7 +265,8 @@ class BackgroundCatalog(pangloss.Catalog):
             for i in range(np.shape(galaxies)[0]):
                 if lensed == False:
                     # Plot intrinsic ellipticities
-                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod_int[i])*size[i],angle=ePhi_int[i])
+                    q = (1-eMod_int[i])/(1+eMod_int[i])
+                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q)*size,angle=np.rad2deg(ePhi_int[i]))
                     world.add_artist(ellipse)      
                     ellipse.set_clip_box(world.bbox)
                     ellipse.set_alpha(.2)
@@ -275,7 +274,8 @@ class BackgroundCatalog(pangloss.Catalog):
                 
                 elif lensed == True:
                     # Plot lensed ellipticities
-                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod[i])*size[i],angle=ePhi[i])
+                    q = (1-eMod[i])/(1+eMod[i])
+                    ellipse = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q)*size,angle=np.rad2deg(ePhi[i]))
                     world.add_artist(ellipse)      
                     ellipse.set_clip_box(world.bbox)
                     ellipse.set_alpha(.2)
@@ -283,8 +283,10 @@ class BackgroundCatalog(pangloss.Catalog):
                     
                 elif lensed == 'both':
                     # Plot both lensed and intrinsic ellipticities
-                    ellipse1 = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod_int[i])*size[i],angle=ePhi_int[i])
-                    ellipse2 = Ellipse(xy=[ra[i],dec[i]],width=size[i],height=(1-eMod[i])*size[i],angle=ePhi[i])
+                    q1 = (1-eMod_int[i])/(1+eMod_int[i])
+                    q2 = (1-eMod[i])/(1+eMod[i])
+                    ellipse1 = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q1)*size,angle=np.rad2deg(ePhi_int[i]))
+                    ellipse2 = Ellipse(xy=[ra[i],dec[i]],width=size,height=np.sqrt(q2)*size,angle=np.rad2deg(ePhi[i]))
                     world.add_artist(ellipse1)
                     world.add_artist(ellipse2)
                     ellipse1.set_clip_box(world.bbox)
@@ -299,6 +301,6 @@ class BackgroundCatalog(pangloss.Catalog):
         # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-        pangloss.set_figure_size(fig,fig_size,self.Lx,self.Ly)
+        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
         
         return

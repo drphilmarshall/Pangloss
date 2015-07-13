@@ -121,8 +121,8 @@ class ForegroundCatalog(pangloss.Catalog):
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
         Lx, Ly = abs(ai-af), abs(di-df)    # Length of axes in wcs
 
-        # Find world coordinates and masses of galaxies that meet limit criteria
-        ra_lim, dec_lim = [ai, af], [di, df]     # RA flipped because RA is left-handed
+        # Find the galaxies that are within the limits, and extract the useful data from them
+        ra_lim, dec_lim = [ai, af], [di, df]
         galaxies = self.return_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
         ra = np.rad2deg(galaxies['RA'])
         dec = np.rad2deg(galaxies['Dec'])
