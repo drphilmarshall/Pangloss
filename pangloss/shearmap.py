@@ -142,12 +142,6 @@ class Shearmap(pangloss.WLMap):
             N = np.floor(pix_Lx/40.0)
         else:
             N = 1
-            
-        print 'N = ',N
-        print 'pix_Lx = ',pix_Lx
-        print 'pix_ly = ',pix_Ly
-        print 'Lx = ',Lx
-        print 'Ly = ',Ly
         
         #N=1
         #plt.quiver(X,Y,dx,dy,color='r',headwidth=0,pivot='middle')

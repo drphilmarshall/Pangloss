@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os, sys
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
+from matplotlib.collections import LineCollection
 
 viewport = [0.1,0.1,0.8,0.8]
 
@@ -122,13 +123,13 @@ def set_figure_size(fig,fig_size,Lx,Ly):
 
 # ----------------------------------------------------------------------------
 
-def plot_ellipse(ra,dec,size,q,phi,color,alpha,axis):
+def plot_ellipse(ra,dec,size,mod,phi,axis,color,alpha):
     '''
     Plot an ellipse centered at (ra,dec) with width 'size' and height<width dependent
     on 'q'. The ellipse is rotated by angle 'phi' which must be in deg. The ellipse
     has color set to the string 'color', and plots on the inputted axis.
     '''
-    
+    q = (1-mod)/(1+mod)
     ellipse = Ellipse(xy=[ra,dec],width=size,height=np.sqrt(q)*size,angle=phi)
     axis.add_artist(ellipse)      
     ellipse.set_clip_box(axis.bbox)
@@ -136,60 +137,58 @@ def plot_ellipse(ra,dec,size,q,phi,color,alpha,axis):
     ellipse.set_facecolor(color)
     
     return
+    
 
+def plot_sticks(ra,dec,mod,phi,axis,color):
+    '''
+    Write docstring
+    '''
+    
+    # Make sure that all of the columns are the same length
+    assert len(ra) == len(dec) and len(dec) == len(phi)
+    
+    # Convert the angles phi to rad
+    phi = np.deg2rad(phi)
 
-'''
-def plotCatalogOnMap(F,fig_size=10,subplot=None,mag_cutoff=[0,24],mass_cutoff=[0,10**20],z_cutoff=[0,1.3857]):
-    ''
-    Plot a foreground galaxy catalog field with filters over its corresponding convergence and shear map.
-    NOTE: Currently only supports plotting one catalog over one map. Should expand in future.
-    ''
+    # Preallocation
+    pt1 = np.zeros(len(ra),dtype=tuple)
+    pt2 = np.zeros(len(ra),dtype=tuple)
+    lines = np.zeros(len(ra),dtype=tuple)
+    
+    # Set scale size of sticks
+    
+    xi, xf = axis.get_xlim()
+    yi, yf = axis.get_ylim()
+    Lx, Ly = abs(xf-xi), abs(yf-yi)
+    L = np.mean([Lx,Ly]) 
+    
+    #scale = ((np.log10(mod)-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod)))
+    #scale = (mod-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod))
+    #floor = 0.01
+    #size = 10.0*L*(scale*(scale > 0) + floor)
+    
+    # Need this to see sticks (weak lensing)
+    scale = 1
+    size = scale*mod*L
+    #size=scale
+    
+    # Each stick has the same size
+    #s = .001
 
-    if subplot is None:
-        # Default subplot is entire image
-        ai, di = F.ra_max, F.dec_min
-        af, df = F.ra_min, F.dec_max
-        subplot = [ai,af,di,df]
-
-    ai, af = subplot[0], subplot[1]    # RA limits for subplot
-    di, df = subplot[2], subplot[3]    # DEC limits for subplot
-
-    # Include Pangloss directory in path
-    PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-    sys.path.append(PANGLOSS_DIR)
-
-    # Create the corresponding convergence and shear maps
-    K = Kappamap(PANGLOSS_DIR+'/data/GGL_los_8_'+str(F.map_x)+'_'+str(F.map_y)+'_N_4096_ang_4_rays_to_plane_37_f.kappa',FITS=False)
-    S = Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_'+str(F.map_x)+'_'+str(F.map_y)+'_N_4096_ang_4_rays_to_plane_37_f.gamma_1', \
-                  PANGLOSS_DIR+'/data/GGL_los_8_'+str(F.map_x)+'_'+str(F.map_y)+'_N_4096_ang_4_rays_to_plane_37_f.gamma_2'],FITS=False)
-
-    # Find world coordinates and masses of galaxies that meet cutoff criteria
-    ra_cutoff, dec_cutoff = [ai, af], [di, df]     # RA flipped because RA is left-handed
-    ra, dec, mass = F.findGalaxies(mag_cutoff,mass_cutoff,z_cutoff,ra_cutoff,dec_cutoff)
-    print('max ra: ',max(ra),'min ra: ',min(ra),'max dec: ',max(dec),'min dec: ',min(dec))
-
-    # Convert the galaxies' wc positions to pixel bins in the (x,y) map
-    pix_ra = [K.world2image(a,0)[0] for a in ra]
-    pix_dec = [K.world2image(0,d)[1] for d in dec]
-    print('min pix_ra: ',min(pix_ra),'max pix_ra: ',max(pix_ra),'min pix_dec: ',min(pix_dec),'max pix_dec: ',max(pix_dec))
-
-    # Scale galaxy plot size by its mass
-    scale = ((np.log10(mass)-9.0)/(12.0-9.0))
-    floor = 0.01
-    size = 1000.0*(scale*(scale > 0) + floor)
-
-    # Plot chosen galaxies over convergence and shear map
-    K.plot(fig_size,subplot)
-    S.plot(fig_size,subplot)
-    #plt.scatter(pix_ra,pix_dec,s=size,color='orange',edgecolor=None,alpha=0.2)
-    plt.xlabel('Right Ascension / deg')
-    plt.ylabel('Declination / deg')
-    #plt.gca().set_xlim((F.ra_min,F.ra_max))
-    #plt.gca().set_ylim((F.dec_min,F.dec_max))
-
-    # Set figure size to fig_size
-    fig = plt.gcf()
-    fig.set_size_inches(fig_size,fig_size)
-
+    # For every object, create a line centered at (ra[i],dec[i]) with appropriate size
+    # and orientation angle phi
+    for i in range(len(ra)):
+        pt1[i] = (ra[i]-size[i]*0.5*np.cos(phi[i]), dec[i]-size[i]*0.5*np.sin(phi[i]))
+        pt2[i] = (ra[i]+size[i]*0.5*np.cos(phi[i]), dec[i]+size[i]*0.5*np.sin(phi[i]))
+        #pt1[i] = (ra[i]-s*np.cos(phi[i]), dec[i]-s*np.sin(phi[i]))
+        #pt2[i] = (ra[i]+s*np.cos(phi[i]), dec[i]+s*np.sin(phi[i]))
+        lines[i] = tuple([pt1[i],pt2[i]])
+    
+    # Turn the array of lines into tuples
+    lines = tuple(lines)
+    
+    # Create the collection of sticks from these lines, and add them to the inputted axis
+    sticks = LineCollection(lines,linestyles='solid',color=color,lw=2)
+    axis.add_collection(sticks)
+    
     return
-'''

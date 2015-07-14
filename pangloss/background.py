@@ -108,7 +108,7 @@ class BackgroundCatalog(pangloss.Catalog):
             mass[i] = random.uniform(mass_lim[0],mass_lim[1])
             z[i] = random.uniform(z_lim[0],z_lim[1])
             eMod_int[i] = random.uniform(eMod_lim[0],eMod_lim[1])
-            ePhi_int[i] = random.uniform(0,180)
+            ePhi_int[i] = random.uniform(-90,90)
             
         # Calculate Cartesian components of intrinsic complex ellipticity
         e1_int = eMod_int*np.cos(2*ePhi_int)
@@ -121,7 +121,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
-    def lens_by_map(self,kappamap,shearmap,plot=False,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter'):
+    def lens_by_map(self,kappamap,shearmap,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
         '''
@@ -157,7 +157,8 @@ class BackgroundCatalog(pangloss.Catalog):
         e = ((e1_int + 1j*e2_int) + g)/(1+g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
-        ePhi = np.rad2deg([cmath.phase(val)/2.0 for val in e])
+        ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
+        #ePhi = np.rad2deg([(cmath.phase(val))/2.0 for val in e])
         
         # Add convergence and shear values to catalog
         self.galaxies['kappa'] = kappa
@@ -168,6 +169,11 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e2'] = e2
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
+        
+        print 'min phi_int: ',min(self.galaxies['ePhi_int'])
+        print 'min phi: ',min(self.galaxies['ePhi'])
+        print 'max phi_int: ',max(self.galaxies['ePhi_int'])
+        print 'max phi: ',max(self.galaxies['ePhi'])
 
         return
         
@@ -226,11 +232,11 @@ class BackgroundCatalog(pangloss.Catalog):
         dec = np.rad2deg(galaxies['Dec'])
         mass = galaxies['Mstar_obs']
         
-        if graph == 'ellipse':
+        if graph == 'ellipse' or graph == 'stick':
             if lensed == False:
                 # Extract intrinsic ellipticity
                 eMod_int = galaxies['eMod_int']
-                ePhi_int = galaxies['ePhi_int']
+                ePhi_int = galaxies['ePhi_int']               
                 
             elif lensed == True:
                 # Extract lensed ellipticity
@@ -265,24 +271,34 @@ class BackgroundCatalog(pangloss.Catalog):
             for i in range(np.shape(galaxies)[0]):
                 if lensed == False:
                     # Plot intrinsic ellipticities
-                    q = (1-eMod_int[i])/(1+eMod_int[i])
                     alpha = 0.25
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q,ePhi_int[i],'blue',alpha,world)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha)
                 
                 elif lensed == True:
                     # Plot lensed ellipticities
-                    q = (1-eMod[i])/(1+eMod[i])
                     alpha = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q,ePhi[i],'green',alpha,world)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha)
                     
                 elif lensed == 'both':
                     # Plot both lensed and intrinsic ellipticities
-                    q1 = (1-eMod_int[i])/(1+eMod_int[i])
-                    q2 = (1-eMod[i])/(1+eMod[i])
                     alpha1 = 0.25
                     alpha2 = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q1,ePhi_int[i],'blue',alpha1,world)
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,q2,ePhi[i],'green',alpha2,world)                
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
+                    
+        elif graph == 'stick':
+            if lensed == False:
+                # Plot intrinsic ellipticity sticks
+                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                
+            elif lensed == True:
+                # Plot lensed ellipticity sticks
+                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                    
+            elif lensed == 'both':
+                # Plot both lensed and intrinsic ellipticity sticks
+                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
 
         # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
