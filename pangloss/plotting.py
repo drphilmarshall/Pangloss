@@ -145,22 +145,31 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     '''
     
     # Make sure that all of the columns are the same length
-    assert len(ra) == len(dec) and len(dec) == len(phi)
+    assert np.size(ra) == np.size(dec) and np.size(dec) == np.size(phi)
+    N = np.size(ra)  
     
-    # Convert the angles phi to rad
+    # If N is 1, convert inputs into lists
+    if N == 1:
+        ra = np.array([ra])
+        dec = np.array([dec])
+        mod = np.array([mod])
+        phi = np.array([phi])
+    
+    # Convert the angles phi to rad, and reverses parity as we are using a left-handed
+    # coordinate system
     phi = np.deg2rad(phi)
+    phi = -phi    
 
     # Preallocation
-    pt1 = np.zeros(len(ra),dtype=tuple)
-    pt2 = np.zeros(len(ra),dtype=tuple)
-    lines = np.zeros(len(ra),dtype=tuple)
+    pt1 = np.zeros(N,dtype=tuple)
+    pt2 = np.zeros(N,dtype=tuple)
+    lines = np.zeros(N,dtype=tuple)
     
     # Set scale size of sticks
-    
     xi, xf = axis.get_xlim()
     yi, yf = axis.get_ylim()
     Lx, Ly = abs(xf-xi), abs(yf-yi)
-    L = np.mean([Lx,Ly]) 
+    L = np.mean([Lx,Ly])
     
     #scale = ((np.log10(mod)-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod)))
     #scale = (mod-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod))
@@ -168,8 +177,13 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     #size = 10.0*L*(scale*(scale > 0) + floor)
     
     # Need this to see sticks (weak lensing)
-    scale = 1
+    scale = 1.0
     size = scale*mod*L
+    
+    # If size is a scalar, turn it into a list
+    #if np.size(size) == 1:
+    #    size = [size]
+    
     #size=scale
     
     # Each stick has the same size
@@ -177,7 +191,7 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
 
     # For every object, create a line centered at (ra[i],dec[i]) with appropriate size
     # and orientation angle phi
-    for i in range(len(ra)):
+    for i in range(N):
         pt1[i] = (ra[i]-size[i]*0.5*np.cos(phi[i]), dec[i]-size[i]*0.5*np.sin(phi[i]))
         pt2[i] = (ra[i]+size[i]*0.5*np.cos(phi[i]), dec[i]+size[i]*0.5*np.sin(phi[i]))
         #pt1[i] = (ra[i]-s*np.cos(phi[i]), dec[i]-s*np.sin(phi[i]))
