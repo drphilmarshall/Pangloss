@@ -232,32 +232,32 @@ class WLMap:
 
         if vb:
             print " "
-            print "Looking up map"+mapfile+" value at position",x,",",y," in the "+coordinate_system+" coordinate system"
+            print "Looking up map",mapfile," value at position",x,",",y," in the ",coordinate_system," coordinate system"
 
         # Get pixel indices of desired point,
         # and also work out other positions for completeness, if verbose:
         if coordinate_system == 'world':
             i,j = self.world2image(x,y,mapfile)
-            if vb: print "  - image coordinates of map "+mapfile+":",i,j
+            if vb: print "  - image coordinates of map ",mapfile,":",i,j
         elif coordinate_system == 'physical':
            i,j = self.physical2image(x,y,mapfile)
-           if vb: print "  - image coordinates of map "+mapfile+":",i,j
+           if vb: print "  - image coordinates of map ",mapfile,":",i,j
         elif coordinate_system == 'image':
            i = x
            j = y
            if vb:
                x,y = self.image2physical(i,j,mapfile)
-               print "  - physical coordinates of map"+mapfile+":",x,y,"(radians)"
+               print "  - physical coordinates of map",mapfile,":",x,y,"(radians)"
 
         if vb:
             a,d = self.image2world(i,j,mapfile)
-            print "  - approximate world coordinates of map"+mapfile+":",a,d,"(degrees)"
+            print "  - approximate world coordinates of map",mapfile,":",a,d,"(degrees)"
             print "  - ds9 image coordinates:",i+1,j+1
 
         # Now look up correct value, doing some bilinear interpolation:
 
         value = self.lookup(i,j,mapfile)
-        if vb: print "  Value of map "+mapfile+" at ("+x+", "+y+")= ",value
+        if vb: print "  Value of map ",mapfile," at (",x,", ",y,")= ",value
 
         return value
 
@@ -362,10 +362,15 @@ class WLMap:
     def lookup(self,i,j,mapfile):
 
         # Weighted mean of 4 neighbouring pixels, as suggested by Stefan.
-        ix = int(i)
-        iy = int(j)
-        px = i - ix
-        py = j - iy
+        # Need to transpose x and y, since the maps are transposed...
+        # ix = int(i)
+        # iy = int(j)
+        # px = i - ix
+        # py = j - iy
+        ix = int(j)
+        iy = int(i)
+        px = j - ix
+        py = i - iy
 
         if ((0 <= ix) and (ix < self.NX[mapfile]-1) and (0 <= iy) and (iy < self.NX[mapfile]-1)):
             mean =  self.values[mapfile][ix,iy]    * (1.0-px) * (1.0-py) \

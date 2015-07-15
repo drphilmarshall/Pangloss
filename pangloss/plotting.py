@@ -155,10 +155,8 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
         mod = np.array([mod])
         phi = np.array([phi])
     
-    # Convert the angles phi to rad, and reverses parity as we are using a left-handed
-    # coordinate system
-    phi = np.deg2rad(phi)
-    phi = -phi    
+    # Convert the angles phi to rad
+    phi = np.deg2rad(phi)  
 
     # Preallocation
     pt1 = np.zeros(N,dtype=tuple)

@@ -154,7 +154,7 @@ class BackgroundCatalog(pangloss.Catalog):
         g_conj = np.array([val.conjugate() for val in g])
         
         # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) - g)/(1.0-g_conj * (e1_int + 1j*e2_int))
+        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
@@ -227,23 +227,24 @@ class BackgroundCatalog(pangloss.Catalog):
         dec = np.rad2deg(galaxies['Dec'])
         mass = galaxies['Mstar_obs']
         
+        # The angles are flipped as we are using a left-handed coordinate reference axis for plotting
         if graph == 'ellipse' or graph == 'stick':
             if lensed == False:
                 # Extract intrinsic ellipticity
                 eMod_int = galaxies['eMod_int']
-                ePhi_int = galaxies['ePhi_int']               
+                ePhi_int = -galaxies['ePhi_int']               
                 
             elif lensed == True:
                 # Extract lensed ellipticity
                 eMod = galaxies['eMod']
-                ePhi = galaxies['ePhi']
+                ePhi = -galaxies['ePhi']
                 
             elif lensed == 'both':
                 # Extract both the intrinsic and lensed ellipticity
                 eMod_int = galaxies['eMod_int']
-                ePhi_int = galaxies['ePhi_int']
+                ePhi_int = -galaxies['ePhi_int']
                 eMod = galaxies['eMod']
-                ePhi = galaxies['ePhi']
+                ePhi = -galaxies['ePhi']            
         
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
