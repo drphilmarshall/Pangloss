@@ -78,7 +78,7 @@ class Catalog(object):
         # If no ra or dec limits are given, use all galaxies
         if ra_lim == None: ra_lim = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
         if dec_lim == None: dec_lim = [self.dec_min, self.dec_max]
-
+            
         # Convert world coordinate limits to radians
         ra_lim, dec_lim = np.deg2rad(ra_lim), np.deg2rad(dec_lim)
 

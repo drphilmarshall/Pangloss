@@ -147,14 +147,14 @@ class BackgroundCatalog(pangloss.Catalog):
         for i in range(self.galaxy_count):
             kappa[i] = kappamap.at(ra[i],dec[i],mapfile=0)
             gamma1[i] = shearmap.at(ra[i],dec[i],mapfile=0)
-            gamma2[i] = shearmap.at(ra[i],dec[i],mapfile=0)
+            gamma2[i] = shearmap.at(ra[i],dec[i],mapfile=1)
             
         # Calculate the reduced shear g and its conjugate g_conj
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
         
         # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) + g)/(1+g_conj * (e1_int + 1j*e2_int))
+        e = ((e1_int + 1j*e2_int) - g)/(1.0-g_conj * (e1_int + 1j*e2_int))
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
@@ -169,11 +169,6 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e2'] = e2
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
-        
-        print 'min phi_int: ',min(self.galaxies['ePhi_int'])
-        print 'min phi: ',min(self.galaxies['ePhi'])
-        print 'max phi_int: ',max(self.galaxies['ePhi_int'])
-        print 'max phi: ',max(self.galaxies['ePhi'])
 
         return
         
