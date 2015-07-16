@@ -131,24 +131,6 @@ class BackgroundCatalog(pangloss.Catalog):
                                     
         return
         
-    def add_noise(self,M=1,sigma_obs=0.1):
-        '''
-        Add measurement and shape noise to the background galaxy intrinsic shapes.
-        '''
-        
-        # Multiplicatibe shear calibration error:        
-        # We tend to systematically underestimate the ellipticity of background galaxies.
-        # Multiplying by M < 1 accounts for this error.
-        self.galaxies['e1'] = M*self.galaxies['e1']
-        self.galaxies['e2'] = M*self.galaxies['e2']
-        self.galaxies['eMod'] = M*self.galaxies['eMod']
-        
-        # Measurement noise:
-        self.galaxies['e1'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)
-        self.galaxies['e2'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)        
-        
-        return
-        
     def lens_by_map(self,kappamap,shearmap,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
@@ -198,7 +180,25 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
 
-        return        
+        return
+        
+    def add_noise(self,M=1,sigma_obs=0.1):
+        '''
+        Add measurement and shape noise to the background galaxy intrinsic shapes.
+        '''
+        
+        # Multiplicatibe shear calibration error:        
+        # We tend to systematically underestimate the ellipticity of background galaxies.
+        # Multiplying by M < 1 accounts for this error.
+        self.galaxies['e1'] = M*self.galaxies['e1']
+        self.galaxies['e2'] = M*self.galaxies['e2']
+        self.galaxies['eMod'] = M*self.galaxies['eMod']
+        
+        # Measurement noise:
+        self.galaxies['e1'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)
+        self.galaxies['e2'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)        
+        
+        return
     
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=False):
         '''
