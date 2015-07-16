@@ -38,9 +38,9 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],e_mod_lim=[0,0.25]):
+    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
         self.type = 'background'
-        self.generate(domain,N,mag_lim,mass_lim,z_lim,e_mod_lim)
+        self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -60,7 +60,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],eMod_lim=[0,0.25]):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per 
         square arcminute inside a given domain of the form 
@@ -96,28 +96,44 @@ class BackgroundCatalog(pangloss.Catalog):
         mag = np.zeros(self.galaxy_count)
         mass = np.zeros(self.galaxy_count)
         z = np.zeros(self.galaxy_count)
+        e1_int = np.zeros(self.galaxy_count)
+        e2_int = np.zeros(self.galaxy_count)
         eMod_int = np.zeros(self.galaxy_count)
         ePhi_int = np.zeros(self.galaxy_count)
 
         # Populate the generated variables
-        for i in range(0,self.galaxy_count):
-            ## NOTE: Not all distributions should be uniform!!!
-            ra[i] = random.uniform(ra_init,ra_final)
-            dec[i] = random.uniform(dec_init,dec_final)
-            mag[i] = random.uniform(mag_lim[0],mag_lim[1])
-            mass[i] = random.uniform(mass_lim[0],mass_lim[1])
-            z[i] = random.uniform(z_lim[0],z_lim[1])
-            eMod_int[i] = random.uniform(eMod_lim[0],eMod_lim[1])
-            ePhi_int[i] = random.uniform(-90,90)
+        ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
+        dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
+        mag = np.random.uniform(mag_lim[0],mag_lim[1],self.galaxy_count)
+        mass = np.random.uniform(mass_lim[0],mass_lim[1],self.galaxy_count)
+        z = np.random.uniform(z_lim[0],z_lim[1],self.galaxy_count)
+        e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
+        e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
+
+        # Change any negative or |e|> 1 ellipticity components
+        while (e1_int<0.0).any() or (e1_int>1.0).any() or (e2_int<0.0).any() or (e2_int>1.0).any():
+
+            for i in [j for j in range(len(e1_int)) if e1_int[j]<0.0]:
+                e1_int[i] = np.random.normal(0.0,sigma_e)
+                
+            for i in [j for j in range(len(e1_int)) if e1_int[j]>1.0]:
+                e1_int[i] = np.random.normal(0.0,sigma_e)
             
+            for i in [j for j in range(len(e2_int)) if e2_int[j]<0.0]:
+                e2_int[i] = np.random.normal(0.0,sigma_e)
+                
+            for i in [j for j in range(len(e2_int)) if e2_int[j]>1.0]:
+                e2_int[i] = np.random.normal(0.0,sigma_e)
+
         # Calculate Cartesian components of intrinsic complex ellipticity
-        e1_int = eMod_int*np.cos(2*ePhi_int)
-        e2_int = eMod_int*np.sin(2*ePhi_int)
+        e_int = e1_int+1.0j*e2_int
+        eMod_int = abs(e_int)
+        ePhi_int = np.rad2deg(np.arctan2(e2_int,e1_int))/2.0
 
         # Save generated catalog as an astropy table
         self.galaxies = Table([ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
                               meta={'name':'generated catalog','size':N,'mag_lim':mag_lim, \
-                                    'mass_lim':mass_lim,'z_lim':z_lim,'eMod_lim':eMod_lim})
+                                    'mass_lim':mass_lim,'z_lim':z_lim,'sigma_e':sigma_e})
 
         return
         
@@ -175,7 +191,7 @@ class BackgroundCatalog(pangloss.Catalog):
     
     def add_noise(self):
         '''
-        Add shape noise to  
+        Add measurement and shape noise to the background galaxy intrinsic shapes.
         '''
         pass
     
