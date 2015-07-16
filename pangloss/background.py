@@ -41,7 +41,6 @@ class BackgroundCatalog(pangloss.Catalog):
     def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2,M=0.8):
         self.type = 'background'
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
-        self.add_noise(M)
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -132,20 +131,21 @@ class BackgroundCatalog(pangloss.Catalog):
                                     
         return
         
-    def add_noise(self,M=0.8):
+    def add_noise(self,M=1,sigma_obs=0.1):
         '''
         Add measurement and shape noise to the background galaxy intrinsic shapes.
         '''
         
-        # Measurement noise:
-        # What to do here? What should we add random noise to?
-        
-        # Shape noise:        
+        # Multiplicatibe shear calibration error:        
         # We tend to systematically underestimate the ellipticity of background galaxies.
         # Multiplying by M < 1 accounts for this error.
-        self.galaxies['e1_int'] = M*self.galaxies['e1_int']
-        self.galaxies['e2_int'] = M*self.galaxies['e2_int']
-        self.galaxies['eMod_int'] = M*self.galaxies['eMod_int']
+        self.galaxies['e1'] = M*self.galaxies['e1']
+        self.galaxies['e2'] = M*self.galaxies['e2']
+        self.galaxies['eMod'] = M*self.galaxies['eMod']
+        
+        # Measurement noise:
+        self.galaxies['e1'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)
+        self.galaxies['e2'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)        
         
         return
         
