@@ -110,18 +110,12 @@ class BackgroundCatalog(pangloss.Catalog):
         z = np.random.uniform(z_lim[0],z_lim[1],self.galaxy_count)
         e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
         e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
-
-        # Change any negative or |e|> 1 ellipticity components
-        while (e1_int<0.0).any() or (e1_int>1.0).any() or (e2_int<0.0).any() or (e2_int>1.0).any():
-
-            for i in [j for j in range(len(e1_int)) if e1_int[j]<0.0]:
-                e1_int[i] = np.random.normal(0.0,sigma_e)
+        
+        # Change any |e|> 1 ellipticity components
+        while (e1_int>1.0).any() or (e2_int>1.0).any():
                 
             for i in [j for j in range(len(e1_int)) if e1_int[j]>1.0]:
                 e1_int[i] = np.random.normal(0.0,sigma_e)
-            
-            for i in [j for j in range(len(e2_int)) if e2_int[j]<0.0]:
-                e2_int[i] = np.random.normal(0.0,sigma_e)
                 
             for i in [j for j in range(len(e2_int)) if e2_int[j]>1.0]:
                 e2_int[i] = np.random.normal(0.0,sigma_e)
@@ -135,7 +129,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies = Table([ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
                               meta={'name':'generated catalog','size':N,'mag_lim':mag_lim, \
                                     'mass_lim':mass_lim,'z_lim':z_lim,'sigma_e':sigma_e})
-
+                                    
         return
         
     def add_noise(self,M=0.8):
@@ -151,11 +145,7 @@ class BackgroundCatalog(pangloss.Catalog):
         # Multiplying by M < 1 accounts for this error.
         self.galaxies['e1_int'] = M*self.galaxies['e1_int']
         self.galaxies['e2_int'] = M*self.galaxies['e2_int']
-        
-        # Recalculate the polar ellipticity with the new values
-        e_int = self.galaxies['e1_int']+1.0j*self.galaxies['e2_int']
-        self.galaxies['eMod_int'] = abs(e_int)
-        self.galaxies['ePhi_int'] = np.rad2deg(np.arctan2(self.galaxies['e2_int'],self.galaxies['e1_int']))/2.0
+        self.galaxies['eMod_int'] = M*self.galaxies['eMod_int']
         
         return
         
