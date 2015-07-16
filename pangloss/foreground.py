@@ -74,7 +74,7 @@ class ForegroundCatalog(pangloss.Catalog):
                 
     def read(self,filename,config):
         # Uses astropy.table to read catalog, but with a few specific changes
-        self.galaxies = pangloss.readCatalog(filename,config)
+        self.galaxies = pangloss.read_hilbert_catalog(filename,config)
         return
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):

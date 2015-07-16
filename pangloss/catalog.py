@@ -63,6 +63,14 @@ class Catalog(object):
     def __str__(self):
         # Add more!
         return 'General catalog object'
+        
+    def read(filename,config):
+
+        try: table = Table.read(filename, format = 'ascii')
+        except:
+            raise IOError("Cannot open %s\n" % filename)
+            
+        return table
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified

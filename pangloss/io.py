@@ -52,7 +52,7 @@ def readPickle(filename):
 
 # ----------------------------------------------------------------------------
 
-def readCatalog(filename,config):
+def read_hilbert_catalog(filename,config):
 
     try: table = Table.read(filename, format = 'ascii')
     except:
