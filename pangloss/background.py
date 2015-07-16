@@ -38,9 +38,10 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
+    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2,M=0.8):
         self.type = 'background'
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
+        self.add_noise(M)
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -137,6 +138,27 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
+    def add_noise(self,M=0.8):
+        '''
+        Add measurement and shape noise to the background galaxy intrinsic shapes.
+        '''
+        
+        # Measurement noise:
+        # What to do here? What should we add random noise to?
+        
+        # Shape noise:        
+        # We tend to systematically underestimate the ellipticity of background galaxies.
+        # Multiplying by M < 1 accounts for this error.
+        self.galaxies['e1_int'] = M*self.galaxies['e1_int']
+        self.galaxies['e2_int'] = M*self.galaxies['e2_int']
+        
+        # Recalculate the polar ellipticity with the new values
+        e_int = self.galaxies['e1_int']+1.0j*self.galaxies['e2_int']
+        self.galaxies['eMod_int'] = abs(e_int)
+        self.galaxies['ePhi_int'] = np.rad2deg(np.arctan2(self.galaxies['e2_int'],self.galaxies['e1_int']))/2.0
+        
+        return
+        
     def lens_by_map(self,kappamap,shearmap,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
@@ -186,14 +208,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
 
-        return
-        
-    
-    def add_noise(self):
-        '''
-        Add measurement and shape noise to the background galaxy intrinsic shapes.
-        '''
-        pass
+        return        
     
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=False):
         '''
