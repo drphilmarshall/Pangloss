@@ -187,16 +187,36 @@ class BackgroundCatalog(pangloss.Catalog):
         Add measurement and shape noise to the background galaxy intrinsic shapes.
         '''
         
+        # Extract data that is to have noise added
+        e1 = self.galaxies['e1']
+        e2 = self.galaxies['e2']       
+        
         # Multiplicatibe shear calibration error:        
         # We tend to systematically underestimate the ellipticity of background galaxies.
         # Multiplying by M < 1 accounts for this error.
-        self.galaxies['e1'] = M*self.galaxies['e1']
-        self.galaxies['e2'] = M*self.galaxies['e2']
-        self.galaxies['eMod'] = M*self.galaxies['eMod']
+        e1 = M*e1
+        e2 = M*e2
         
         # Measurement noise:
-        self.galaxies['e1'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)
-        self.galaxies['e2'] += np.random.normal(0.0,sigma_obs,self.galaxy_count)        
+        e1 += np.random.normal(0.0,sigma_obs,self.galaxy_count)
+        e2 += np.random.normal(0.0,sigma_obs,self.galaxy_count)
+        
+        # Change any |e|> 1 ellipticity components
+        while (e1>1.0).any() or (e2>1.0).any():
+                
+            for i in [j for j in range(len(e1)) if e1[j]>1.0]:
+                e1[i] = np.random.normal(0.0,sigma_obs)
+                
+            for i in [j for j in range(len(e2)) if e2[j]>1.0]:
+                e2[i] = np.random.normal(0.0,sigma_obs)
+                
+        # Calculate noisy modulus
+        eMod = np.sqrt(e1**2+e2**2)
+                
+        # Save new noisy ellipticities
+        self.galaxies['e1'] = e1
+        self.galaxies['e2'] = e2
+        self.galaxies['eMod'] = eMod
         
         return
     
