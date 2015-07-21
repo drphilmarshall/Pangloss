@@ -38,7 +38,7 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2,M=0.8):
+    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
         self.type = 'background'
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
         
@@ -191,7 +191,7 @@ class BackgroundCatalog(pangloss.Catalog):
         e1 = self.galaxies['e1']
         e2 = self.galaxies['e2']       
         
-        # Multiplicatibe shear calibration error:        
+        # Multiplicative shear calibration error:        
         # We tend to systematically underestimate the ellipticity of background galaxies.
         # Multiplying by M < 1 accounts for this error.
         e1 = M*e1
