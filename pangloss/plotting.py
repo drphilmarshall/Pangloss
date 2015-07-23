@@ -404,30 +404,30 @@ def plot_corr_demo(corr,corr_type='plus',units='deg'):
     # Create sticks at dtheta = 0 deg:
     pangloss.plotting.plot_sticks(X[0,:]-dx,Y[0,:],mod,X[0,:],ax,'k')
     pangloss.plotting.plot_sticks(X[0,:]+dx,Y[0,:],mod,X[0,:]+Y[0,:],ax,'k')
-    plt.scatter(X[0,:]-dx,Y[0,:],c='k')
-    plt.scatter(X[0,:]+dx,Y[0,:],c='k')
-    plt.scatter(X[0,:],Y[0,:],marker='x',c='k')
+    #plt.scatter(X[0,:]-dx,Y[0,:],c='k')
+    #plt.scatter(X[0,:]+dx,Y[0,:],c='k')
+    plt.scatter(X[0,:],Y[0,:],marker='+',s=30,c='k')
 
     # Create sticks at dtheta = 45 deg:
     pangloss.plotting.plot_sticks(X[1,:]-dx,Y[1,:],mod,X[1,:],ax,'k')
     pangloss.plotting.plot_sticks(X[1,:]+dx,Y[1,:],mod,X[1,:]+Y[1,:],ax,'k')
-    plt.scatter(X[1,:]-dx,Y[1,:],c='k')
-    plt.scatter(X[1,:]+dx,Y[1,:],c='k')
-    plt.scatter(X[1,:],Y[1,:],marker='x',c='k')
+    #plt.scatter(X[1,:]-dx,Y[1,:],c='k')
+    #plt.scatter(X[1,:]+dx,Y[1,:],c='k')
+    plt.scatter(X[1,:],Y[1,:],marker='+',s=30,c='k')
 
     # Create sticks at dtheta = 90 deg:
     pangloss.plotting.plot_sticks(X[2,:]-dx,Y[2,:],mod,X[2,:],ax,'k')
     pangloss.plotting.plot_sticks(X[2,:]+dx,Y[2,:],mod,X[2,:]+Y[2,:],ax,'k')
-    plt.scatter(X[2,:]-dx,Y[2,:],c='k')
-    plt.scatter(X[2,:]+dx,Y[2,:],c='k')
-    plt.scatter(X[2,:],Y[2,:],marker='x',c='k')
+    #plt.scatter(X[2,:]-dx,Y[2,:],c='k')
+    #plt.scatter(X[2,:]+dx,Y[2,:],c='k')
+    plt.scatter(X[2,:],Y[2,:],marker='+',s=30,c='k')
 
     # Create sticks at dtheta = 135 deg:
     pangloss.plotting.plot_sticks(X[3,:]-dx,Y[3,:],mod,X[3,:],ax,'k')
     pangloss.plotting.plot_sticks(X[3,:]+dx,Y[3,:],mod,X[3,:]+Y[3,:],ax,'k')
-    plt.scatter(X[3,:]-dx,Y[3,:],c='k')
-    plt.scatter(X[3,:]+dx,Y[3,:],c='k')
-    plt.scatter(X[3,:],Y[3,:],marker='x',c='k')
+    #plt.scatter(X[3,:]-dx,Y[3,:],c='k')
+    #plt.scatter(X[3,:]+dx,Y[3,:],c='k')
+    plt.scatter(X[3,:],Y[3,:],marker='+',s=30,c='k')
 
     # Set axis limits
     plt.xlim([np.min(I),np.max(I)])
