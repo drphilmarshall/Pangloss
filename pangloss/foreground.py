@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import os
+import os, sys
 from astropy.table import Table, Column
+import treecorr
 
 import pangloss
 
@@ -76,6 +77,52 @@ class ForegroundCatalog(pangloss.Catalog):
         # Uses astropy.table to read catalog, but with a few specific changes
         self.galaxies = pangloss.read_hilbert_catalog(filename,config)
         return
+        
+    def calculate_corr(self,corr_type='ng',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,mass_lim=[0,10**20]):
+        '''
+        Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or 
+        number of bins (N) are inputted, the binsize is automatically calculated using 15 bins.
+        '''
+        
+        # Return galaxies that meet the inputted value limits
+        galaxies = self.return_galaxies(mass_lim=mass_lim)
+        
+        # If none is given, calculate (log) binsize based upon separation limit values
+        if binsize == None:
+            binsize = np.log10(1.0*max_sep/min_sep)/(1.0*N)
+            
+        # Calculate the galaxy-mass correlation function (foreground galaxies to shear)
+        if corr_type == 'ng':            
+            # Load in appropriate shear maps
+            PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
+            sys.path.append(PANGLOSS_DIR)
+            
+            x = str(self.map_x)
+            y = str(self.map_y)
+            S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_'+x+'_'+y+'_N_4096_ang_4_rays_to_plane_37_f.gamma_1',PANGLOSS_DIR+'/data/GGL_los_8_'+x+'_'+y+'_N_4096_ang_4_rays_to_plane_37_f.gamma_2'],FITS=False)
+            
+            # Calculate the shear at each foreground galaxy
+            gamma1 = np.zeros(np.size(galaxies))
+            gamma2 = np.zeros(np.size(galaxies))
+
+            for i in range(np.size(galaxies)):
+                gamma1[i] = S.at(np.rad2deg(galaxies['RA'][i]),np.rad2deg(galaxies['Dec'][i]),mapfile=0)
+                gamma2[i] = S.at(np.rad2deg(galaxies['RA'][i]),np.rad2deg(galaxies['Dec'][i]),mapfile=1)
+    
+            galaxies['gamma1'] = gamma1
+            galaxies['gamma2'] = gamma2            
+            
+            # Create catalog of the foreground galaxies and shear
+            corr_cat1 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], ra_units='rad', dec_units='rad')
+            corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['gamma1'], g2=galaxies['gamma2'], ra_units='rad', dec_units='rad')
+            
+            # Set n-g correlation parameters
+            ng = treecorr.NGCorrelation(bin_size=binsize, min_sep=min_sep, max_sep=max_sep, sep_units=sep_units, bin_slop=0.05/binsize)
+            
+            # Calculate n-g correlation function
+            ng.process(corr_cat1,corr_cat2)
+            
+            return ng
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
         '''
