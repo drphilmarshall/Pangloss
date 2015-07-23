@@ -286,8 +286,11 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
         # Can incorporate other correlation functions here if needed
         pass
     
-    #plt.legend([r'Lensed $\xi_+$',r'Lensed $\xi_\times$',r'Intrinsic $\xi_+$',r'Intrinsic $\xi_\times$'],fontsize=16)
-    plt.legend(fontsize=18)
+    # get legend handles
+    handles, labels = plt.gca().get_legend_handles_labels()
+    # remove the errorbars
+    handles = [h[0] for h in handles]
+    plt.legend(handles,labels,fontsize=18)
     
     return
 
