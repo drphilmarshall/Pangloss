@@ -122,6 +122,9 @@ class ForegroundCatalog(pangloss.Catalog):
             # Calculate n-g correlation function
             ng.process(corr_cat1,corr_cat2)
             
+            # Check to make sure none of the values are Nan's (Fix in fugure using 0 weights for galaxies not in K/S maps)
+            assert not np.isnan(ng.xi).any()   
+            
             return ng
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):

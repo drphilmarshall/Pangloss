@@ -248,6 +248,9 @@ class BackgroundCatalog(pangloss.Catalog):
             # Calculate g-g correlation function
             gg.process(corr_cat)
             
+            # Check to make sure none of the values are Nan's (Fix in fugure using 0 weights for galaxies not in K/S maps)
+            assert not np.isnan(gg.xip).any()           
+            
             return gg
             
         else:
