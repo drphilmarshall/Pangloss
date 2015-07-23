@@ -1,9 +1,10 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath
+import os, random, math, cmath, sys
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
+import treecorr
 
 import pangloss
 
@@ -219,6 +220,42 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
         
         return
+        
+    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed=True):
+        '''
+        Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or 
+        number of bins (N) are inputted, the binsize is automatically calculated using 15 bins. The 'lensed'
+        argument is only used for shear-shear correlation (gg).
+        '''
+        
+        galaxies = self.galaxies
+        
+        # If none is given, calculate (log) binsize based upon separation limit values
+        if binsize == None:
+            binsize = np.log10(1.0*max_sep/min_sep)/(1.0*N)
+        
+        # Calculate the shear-shear (or ellipticity-ellipticity) correlation function
+        if corr_type == 'gg':
+            # Create catalog of the pre or post-lensed background galaxies and their ellipticities
+            if lensed == True:
+                corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1'], g2=galaxies['e2'], ra_units='rad', dec_units='rad')
+            else:
+                corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
+            
+            # Set g-g correlation parameters
+            gg = treecorr.GGCorrelation(bin_size=binsize, min_sep=min_sep, max_sep=max_sep, sep_units=sep_units, bin_slop=0.05/binsize)
+            
+            # Calculate g-g correlation function
+            gg.process(corr_cat)
+            
+            return gg
+            
+        else:
+            # Add other correlation types later if necessary
+            pass
+            
+    def plot_corr():
+        pass
     
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=False):
         '''
