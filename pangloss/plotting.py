@@ -4,6 +4,7 @@ import os, sys
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
+import pangloss
 
 viewport = [0.1,0.1,0.8,0.8]
 
@@ -202,5 +203,148 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     # Create the collection of sticks from these lines, and add them to the inputted axis
     sticks = LineCollection(lines,linestyles='solid',color=color,lw=2)
     axis.add_collection(sticks)
+    
+    return
+    
+# ----------------------------------------------------------------------------
+
+def calc_corr_demo(units='deg'):
+    '''
+    Calculates the plus, minus, cross, and cross-prime components of the ellipticity-ellipticity
+    correlation function for ellipticity sticks with a range of orientations from 0 to 180 degrees.
+    This is only used for demonstrations to show the connection between the difference in galaxy
+    orientation and the different correlation function values.
+    '''
+    
+    if units == 'deg':
+        # Colormap locations
+        i = np.arange(-20,135+25,.1)
+        j = np.arange(-20,135+25,.1)
+        
+        # Create grid
+        I,J = np.meshgrid(i,j)
+        
+        # Calculate shear components
+        gt_i = -np.cos(np.deg2rad(2*I))
+        gt_j = -np.cos(np.deg2rad(2*(I+J)))
+        gx_i = -np.sin(np.deg2rad(2*I))
+        gx_j = -np.sin(np.deg2rad(2*(I+J)))
+        
+    elif units == 'rad':
+        # Colormap locations
+        i = np.arange(-0.35,np.pi+0.35,.01)
+        j = np.arange(-0.35,np.pi+0.35,.01)
+        
+        # Create grid
+        I,J = np.meshgrid(i,j)
+        
+        # Calculate shear components
+        gt_i = -np.cos(2*I)
+        gt_j = -np.cos(2*(I+J))
+        gx_i = -np.sin(2*I)
+        gx_j = -np.sin(2*(I+J))
+
+    # Calculate correlations
+    gtt = gt_i*gt_j
+    gxx = gx_i*gx_j
+    gtx = gt_i*gx_j
+    gxt = gx_i*gt_j
+
+    # Calculate xi_plus, xi_minus, xi_cross, and xi_cross'
+    xi_p = gtt+gxx
+    xi_m = gtt-gxx
+    xi_x = gtx
+    xi_xp = gtx-gxt
+    
+    return xi_p,xi_m,xi_x,xi_xp
+
+# ----------------------------------------------------------------------------
+
+def plot_corr_demo(corr,corr_type='plus',units='deg'):
+    '''
+    Plots the inputted correlation function type as a color map with the ellipticity sticks at their
+    corresponding orientations overlaid. This is only used for demonstrations to show the connection 
+    between the difference in galaxy orientation and the different correlation function values.
+    '''
+    
+    if units == 'deg':
+        # Colormap locations
+        i = np.arange(-20,135+25,.1)
+        j = np.arange(-20,135+25,.1)
+        # Stick locations
+        x = np.arange(0,180,45)
+        y = np.arange(0,180,45)
+        
+        # Create grid
+        I,J = np.meshgrid(i,j)
+        X,Y = np.meshgrid(x,y)
+        
+        # Stick offset
+        dx = 7
+        
+    elif units == 'rad':
+        # Colormap locations
+        i = np.arange(-0.35,np.pi+0.35,.01)
+        j = np.arange(-0.35,np.pi+0.35,.01)
+        # Stick locations
+        x = np.arange(0,np.pi,np.pi/4)
+        y = np.arange(0,np.pi,np.pi/4)
+        
+        # Create grid
+        I,J = np.meshgrid(i,j)
+        X,Y = np.meshgrid(x,y)
+        
+        # Stick offset
+        dx = 0.125
+        
+    # Create plot
+    plt.imshow(corr,origin='lower',cmap='bwr',extent=(np.min(I), np.max(I), np.min(J), np.max(J)))
+    plt.xlabel(r'$\theta_i\,(degree)$',fontsize=20)
+    plt.ylabel(r'$\Delta\theta\,(|\theta_i-\theta_j|)\,(degree)$',fontsize=20)
+    plt.gcf().set_size_inches(10,10)
+    plt.colorbar()
+    plt.grid()
+    
+    # Set title
+    if corr_type == 'plus': plt.title(r'$\xi_+$',fontsize=25)
+    elif corr_type == 'minus': plt.title(r'$\xi_-$',fontsize=25)
+    elif corr_type == 'cross': plt.title(r'$\xi_\times$',fontsize=25)
+    elif corr_type == 'crossp': plt.title(r'$\xi^\prime_\times$',fontsize=25)
+    
+    # Get axes and set stick modulus
+    ax = plt.gca()
+    mod = np.ones(len(I[0,:]))/20.0
+
+    # Create sticks at dtheta = 0 deg:
+    pangloss.plotting.plot_sticks(X[0,:]-dx,Y[0,:],mod,X[0,:],ax,'k')
+    pangloss.plotting.plot_sticks(X[0,:]+dx,Y[0,:],mod,X[0,:]+Y[0,:],ax,'k')
+    plt.scatter(X[0,:]-dx,Y[0,:],c='k')
+    plt.scatter(X[0,:]+dx,Y[0,:],c='k')
+    plt.scatter(X[0,:],Y[0,:],marker='x',c='k')
+
+    # Create sticks at dtheta = 45 deg:
+    pangloss.plotting.plot_sticks(X[1,:]-dx,Y[1,:],mod,X[1,:],ax,'k')
+    pangloss.plotting.plot_sticks(X[1,:]+dx,Y[1,:],mod,X[1,:]+Y[1,:],ax,'k')
+    plt.scatter(X[1,:]-dx,Y[1,:],c='k')
+    plt.scatter(X[1,:]+dx,Y[1,:],c='k')
+    plt.scatter(X[1,:],Y[1,:],marker='x',c='k')
+
+    # Create sticks at dtheta = 90 deg:
+    pangloss.plotting.plot_sticks(X[2,:]-dx,Y[2,:],mod,X[2,:],ax,'k')
+    pangloss.plotting.plot_sticks(X[2,:]+dx,Y[2,:],mod,X[2,:]+Y[2,:],ax,'k')
+    plt.scatter(X[2,:]-dx,Y[2,:],c='k')
+    plt.scatter(X[2,:]+dx,Y[2,:],c='k')
+    plt.scatter(X[2,:],Y[2,:],marker='x',c='k')
+
+    # Create sticks at dtheta = 135 deg:
+    pangloss.plotting.plot_sticks(X[3,:]-dx,Y[3,:],mod,X[3,:],ax,'k')
+    pangloss.plotting.plot_sticks(X[3,:]+dx,Y[3,:],mod,X[3,:]+Y[3,:],ax,'k')
+    plt.scatter(X[3,:]-dx,Y[3,:],c='k')
+    plt.scatter(X[3,:]+dx,Y[3,:],c='k')
+    plt.scatter(X[3,:],Y[3,:],marker='x',c='k')
+
+    # Set axis limits
+    plt.xlim([np.min(I),np.max(I)])
+    plt.ylim([np.min(J),np.max(J)])
     
     return
