@@ -256,9 +256,6 @@ class BackgroundCatalog(pangloss.Catalog):
         else:
             # Add other correlation types later if necessary
             pass
-            
-    def plot_corr():
-        pass
     
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=False):
         '''

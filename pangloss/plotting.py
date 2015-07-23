@@ -208,6 +208,79 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     
 # ----------------------------------------------------------------------------
 
+def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
+    '''
+    '''
+    
+    # Get current figure (or make one if it doesn't exist)
+    fig = plt.gcf()
+    
+    if fig._label != 'Correlation':
+    
+        # Set the figure name
+        fig._label = 'Correlation'
+    
+        # Set max and min dtheta
+        print 'sep_units: ',corr.sep_units
+        if sep_units == 'arcmin':
+            min_sep = np.rad2deg(corr.min_sep)*60
+            max_sep = np.rad2deg(corr.max_sep)*60
+            
+        elif sep_units == 'deg':
+            min_sep = np.rad2deg(corr.min_sep)
+            max_sep = np.rad2deg(corr.max_sep)
+        
+        elif sep_units == 'rad':
+            min_sep = corr.min_sep
+            max_sep = corr.max_sep
+            
+        # Set figure size
+        plt.gcf().set_size_inches(fig_size,fig_size)
+            
+        # Set plot settings
+        plt.xscale('log')
+        plt.gca().set_xlim(min_sep,max_sep)
+        
+        # Set axes labels
+        if corr_type == 'gg':
+            plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+            plt.ylabel(r'$\xi_+(\theta)\,\,$'+ '(blue), '+r'$\quad\xi_\times(\theta)\,\,$'+' (green)',fontsize=20)
+            
+        else:
+            # Can incorporate other correlation functions later if needed
+            pass
+        
+        # Plot xi=0 for reference
+        plt.plot([min(np.exp(corr.logr)),max(np.exp(corr.logr))],[0,0],c='k',linestyle='dashed')
+
+        # Make axis ticks larger
+        plt.gca().tick_params('both', length=5, width=1, which='major')
+        plt.gca().tick_params('both', length=5, width=1, which='minor')
+    
+    if lensed == True:
+        # Plot lensed correlations as solid lines
+        ls = 'solid'
+        lab = 'Lensed '
+        
+    else:
+        # Plot pre-lensed correlations as dashed lines
+        ls = 'dashed'
+        lab = 'Intrinsic '
+    
+    if corr_type == 'gg':
+        # Plot the shear-shear (or ellipticity-ellipticity) correlation function (xi_+ and xi_x)
+        plt.errorbar(np.exp(corr.logr),corr.xip, np.sqrt(corr.varxi),c='b',linestyle=ls,label=lab+r'$\xi_+$')
+        plt.errorbar(np.exp(corr.logr),0.5*(corr.xip_im+corr.xim_im),0.5*np.sqrt(corr.varxi+corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times$')
+    
+    else:
+        # Can incorporate other correlation functions here if needed
+        pass
+    
+    #plt.legend([r'Lensed $\xi_+$',r'Lensed $\xi_\times$',r'Intrinsic $\xi_+$',r'Intrinsic $\xi_\times$'],fontsize=16)
+    plt.legend(fontsize=16)
+    
+    return
+
 def calc_corr_demo(units='deg'):
     '''
     Calculates the plus, minus, cross, and cross-prime components of the ellipticity-ellipticity
