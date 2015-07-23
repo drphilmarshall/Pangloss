@@ -246,6 +246,10 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
             plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
             plt.ylabel(r'$\xi_+(\theta)\,\,$'+ '(blue), '+r'$\quad\xi_\times(\theta)\,\,$'+' (green)',fontsize=20)
             
+        elif corr_type == 'ng':
+            plt.ylabel(r'$\xi_{gm}(\theta)$',fontsize=20)
+            plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+            
         else:
             # Can incorporate other correlation functions later if needed
             pass
@@ -257,27 +261,33 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
         plt.gca().tick_params('both', length=5, width=1, which='major')
         plt.gca().tick_params('both', length=5, width=1, which='minor')
     
-    if lensed == True:
-        # Plot lensed correlations as solid lines
-        ls = 'solid'
-        lab = 'Lensed '
-        
-    else:
-        # Plot pre-lensed correlations as dashed lines
-        ls = 'dashed'
-        lab = 'Intrinsic '
-    
     if corr_type == 'gg':
+        # For shear-shear (or ellipticity-ellipticity) correlation
+        if lensed == True:
+            # Plot lensed correlations as solid lines
+            ls = 'solid'
+            lab = 'Lensed '
+        
+        else:
+            # Plot pre-lensed correlations as dashed lines
+            ls = 'dashed'
+            lab = 'Intrinsic '
+        
         # Plot the shear-shear (or ellipticity-ellipticity) correlation function (xi_+ and xi_x)
         plt.errorbar(np.exp(corr.logr),corr.xip, np.sqrt(corr.varxi),c='b',linestyle=ls,label=lab+r'$\xi_+$')
         plt.errorbar(np.exp(corr.logr),0.5*(corr.xip_im+corr.xim_im),0.5*np.sqrt(corr.varxi+corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times$')
+    
+    elif corr_type == 'ng':
+        # Plot the galaxi-mass correlation function (xi_gm)
+        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c='b',label=r'$\operatorname{Re}\left(\xi_{gm}\right)$')
+        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c='g',label=r'$\operatorname{Im}\left(\xi_{gm}\right)$')
     
     else:
         # Can incorporate other correlation functions here if needed
         pass
     
     #plt.legend([r'Lensed $\xi_+$',r'Lensed $\xi_\times$',r'Intrinsic $\xi_+$',r'Intrinsic $\xi_\times$'],fontsize=16)
-    plt.legend(fontsize=16)
+    plt.legend(fontsize=18)
     
     return
 
