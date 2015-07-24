@@ -336,6 +336,7 @@ class WLMap:
             xf,yf = self.physical2world(xf,yf)
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
+            subplot = [xi,xf,yi,yf]
 
         elif coords == 'pixel':
             # Convert subplot bounds to world coordinates
@@ -343,6 +344,7 @@ class WLMap:
             xf,yf = self.image2world(xf,yf)
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
+            subplot = [xi,xf,yi,yf]
 
         else:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
