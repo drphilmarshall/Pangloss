@@ -170,23 +170,9 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     Lx, Ly = abs(xf-xi), abs(yf-yi)
     L = np.mean([Lx,Ly])
     
-    #scale = ((np.log10(mod)-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod)))
-    #scale = (mod-0.5*np.mean(mod))/(max(mod)-0.5*np.mean(mod))
-    #floor = 0.01
-    #size = 10.0*L*(scale*(scale > 0) + floor)
-    
     # Need this to see sticks (weak lensing)
     scale = 1.0
     size = scale*mod*L
-    
-    # If size is a scalar, turn it into a list
-    #if np.size(size) == 1:
-    #    size = [size]
-    
-    #size=scale
-    
-    # Each stick has the same size
-    #s = .001
 
     # For every object, create a line centered at (ra[i],dec[i]) with appropriate size
     # and orientation angle phi

@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pangloss
 import cmath
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 arcmin2rad = (1.0/60.0)*np.pi/180.0
 rad2arcmin = 1.0/arcmin2rad
@@ -133,9 +134,11 @@ class Shearmap(pangloss.WLMap):
 
         # Sticks in world coords need x reversed, to account for left-handed 
         # system:
-        dx = mod_gamma * np.cos(phi_gamma)
-        dy = mod_gamma * np.sin(phi_gamma)
-
+        scale = 1.0
+        pix_L = np.mean([pix_Lx,pix_Ly])
+        L = np.mean([Lx,Ly])
+        dx = scale * mod_gamma * np.cos(phi_gamma) * pix_L
+        dy = scale * mod_gamma * np.sin(phi_gamma) * pix_L
         # Plot downsampled 2D arrays of shear sticks in current axes.
         # Pixel sampling rate for plotting of shear maps:
         if pix_Lx >= 40:
@@ -147,4 +150,10 @@ class Shearmap(pangloss.WLMap):
         #plt.quiver(X,Y,dx,dy,color='r',headwidth=0,pivot='middle')
         plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
         
+        # Add scale bar
+        bar = AnchoredSizeBar(world.transData,L/10.0,'10% Shear',pad=0.5,loc=3,sep=5,borderpad=0.25,frameon=True)
+        bar.size_bar._children[0]._linewidth = 2
+        bar.size_bar._children[0]._edgecolor = (1,0,0,1)
+        world.add_artist(bar)
+
         return

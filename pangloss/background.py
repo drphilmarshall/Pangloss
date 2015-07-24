@@ -5,6 +5,7 @@ import os, random, math, cmath, sys
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
 import treecorr
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 import pangloss
 
@@ -297,6 +298,7 @@ class BackgroundCatalog(pangloss.Catalog):
         ai, af = subplot[0], subplot[1]    # RA limits for subplot
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
         Lx, Ly = abs(ai-af), abs(di-df)    # Length of axes in wcs
+        L = np.mean([Lx,Ly])
 
         # Find the galaxies that are within the limits, and extract the useful data from them
         ra_lim, dec_lim = [ai, af], [di, df]
@@ -373,6 +375,12 @@ class BackgroundCatalog(pangloss.Catalog):
                 # Plot both lensed and intrinsic ellipticity sticks
                 pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
                 pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                
+            # Add scale bar
+            bar = AnchoredSizeBar(world.transData,L/10.0,'10% Ellipticity',pad=0.5,loc=4,sep=5,borderpad=0.25,frameon=True)
+            bar.size_bar._children[0]._linewidth = 2
+            bar.size_bar._children[0]._edgecolor = (0,0,1,1)
+            world.add_artist(bar)
 
         # Label axes and set the correct figure size
         plt.xlabel('Right Ascension / deg')
