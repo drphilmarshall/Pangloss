@@ -207,18 +207,22 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
         fig._label = 'Correlation'
     
         # Set max and min dtheta
-        print 'sep_units: ',corr.sep_units
+        # print 'sep_units: ',corr.sep_units
+        min_sep = corr.min_sep
+        max_sep = corr.max_sep
+        #min_sep = np.deg2rad(0.1/60.0)        
+        #max_sep = min_sep * 100.0 # 10 arcmin        
         if sep_units == 'arcmin':
-            min_sep = np.rad2deg(corr.min_sep)*60
-            max_sep = np.rad2deg(corr.max_sep)*60
+            min_sep = np.rad2deg(min_sep)*60
+            max_sep = np.rad2deg(max_sep)*60
             
         elif sep_units == 'deg':
-            min_sep = np.rad2deg(corr.min_sep)
-            max_sep = np.rad2deg(corr.max_sep)
+            min_sep = np.rad2deg(min_sep)
+            max_sep = np.rad2deg(max_sep)
         
         elif sep_units == 'rad':
-            min_sep = corr.min_sep
-            max_sep = corr.max_sep
+            min_sep = min_sep
+            max_sep = max_sep
             
         # Set figure size
         plt.gcf().set_size_inches(fig_size,fig_size)

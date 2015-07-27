@@ -377,9 +377,15 @@ class BackgroundCatalog(pangloss.Catalog):
                 pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
                 
             # Add scale bar
+            if lensed == True:
+                # Plot as green
+                color = (0,0.6,0,1)
+            else:
+                # Plot as blue
+                color = (0,0,1,1)
             bar = AnchoredSizeBar(world.transData,L/10.0,'10% Ellipticity',pad=0.5,loc=4,sep=5,borderpad=0.25,frameon=True)
             bar.size_bar._children[0]._linewidth = 2
-            bar.size_bar._children[0]._edgecolor = (0,0,1,1)
+            bar.size_bar._children[0]._edgecolor = color
             world.add_artist(bar)
 
         # Label axes and set the correct figure size
