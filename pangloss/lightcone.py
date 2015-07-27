@@ -391,6 +391,7 @@ class Lightcone(object):
 
         mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
+        # Is the following astropy compatible?
         self.writeColumn('kappa',kappa)
         self.writeColumn('gamma',gamma)
         self.writeColumn('gamma1',-gamma1)
