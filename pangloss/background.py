@@ -104,6 +104,7 @@ class BackgroundCatalog(pangloss.Catalog):
         ePhi_int = np.zeros(self.galaxy_count)
 
         # Populate the generated variables
+        ID = np.arange(self.galaxy_count)
         ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
         dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
         mag = np.random.uniform(mag_lim[0],mag_lim[1],self.galaxy_count)
@@ -127,8 +128,8 @@ class BackgroundCatalog(pangloss.Catalog):
         ePhi_int = np.rad2deg(np.arctan2(e2_int,e1_int))/2.0
 
         # Save generated catalog as an astropy table
-        self.galaxies = Table([ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
-                              meta={'name':'generated catalog','size':N,'mag_lim':mag_lim, \
+        self.galaxies = Table([ID,ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['ID','RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
+                              meta={'name':'background catalog','size':N,'mag_lim':mag_lim, \
                                     'mass_lim':mass_lim,'z_lim':z_lim,'sigma_e':sigma_e})
                                     
         return
@@ -192,6 +193,9 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
+    def lens_by_halos(self):
+        pass
+        
     def add_noise(self,M=1,sigma_obs=0.1):
         '''
         Add measurement and shape noise to the background galaxy intrinsic shapes.
@@ -229,6 +233,9 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
         
         return
+        
+    def drill_lightcones(self):
+        pass
         
     def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed=True):
         '''
