@@ -265,8 +265,9 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
         
         # Plot the shear-shear (or ellipticity-ellipticity) correlation function (xi_+ and xi_x)
         plt.errorbar(np.exp(corr.logr),corr.xip, np.sqrt(corr.varxi),c='b',linestyle=ls,label=lab+r'$\xi_+$')
-        plt.errorbar(np.exp(corr.logr),0.5*(corr.xip_im+corr.xim_im),0.5*np.sqrt(corr.varxi+corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times$')
-    
+        #plt.errorbar(np.exp(corr.logr),0.5*(corr.xip_im+corr.xim_im),0.5*np.sqrt(corr.varxi+corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times$')
+        plt.errorbar(np.exp(corr.logr),corr.xip_im,np.sqrt(corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times^\prime$')
+        
     elif corr_type == 'ng':
         # Plot the galaxi-mass correlation function (xi_gm)
         plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c='b',label=r'$\operatorname{Re}\left(\xi_{gm}\right)$')
