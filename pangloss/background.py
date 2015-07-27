@@ -138,6 +138,10 @@ class BackgroundCatalog(pangloss.Catalog):
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
         '''
         
+        # Keep track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
+        self.strong_lensed_removed = 0
+        self.galaxies['strong_flag'] = 0
+        
         # Exctract needed data from catalog galaxies
         #galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
         ra = np.rad2deg(self.galaxies['RA'])
@@ -164,6 +168,10 @@ class BackgroundCatalog(pangloss.Catalog):
         # Calculate the reduced shear g and its conjugate g_conj
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
+        
+        # Flag any galaxy that has been strongly lensed
+        self.galaxies['strong_flag'][abs(g)>1.0] = 1  
+        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
         
         # Calculate the observed ellipticity
         e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
@@ -258,7 +266,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
     
-    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=False):
+    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=True):
         '''
         Make scatter plot of generated galaxies.
         '''
