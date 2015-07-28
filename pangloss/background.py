@@ -7,6 +7,9 @@ from matplotlib.patches import Ellipse
 import treecorr
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
+# Import Pangloss:
+PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
+sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 # ============================================================================
@@ -40,8 +43,38 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
+    def __init__(self,subplot=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
         self.type = 'background'
+        
+        # Only a subplot OR a field is allowed, not both
+        assert not (subplot != None and field != None)
+        
+        # The catalog can be created over a field corresponding to a foreground catalog (1 deg^2) or over an inputted subplot
+        if subplot != None:
+            # Set the domain to the inputted subplot
+            domain = subplot
+            
+        elif field != None:
+            # Set domain based upon inputted field
+            x = field[0]
+            y = field[1]
+            i = field[2]
+            j = field[3]
+            
+            # Set ra and dec limits based upon field (x,y,i,j)
+            ra_i = np.deg2rad(2.0-x*4.0-i*1.0)
+            ra_f = np.deg2rad(1.0-x*4.0-i*1.0)
+            dec_i = np.deg2rad(-2.0+y*4.0+j*1.0)
+            dec_f = np.deg2rad(-1.0+y*4.0+j*1.0)
+            
+            # Set the domain to the inputted field
+            domain = [ra_i,ra_f,dec_i,dec_f]
+        
+        else:
+            # If neither are inputted, use the field x=y=i=j=0:
+            domain = [2,1,-2,-1]
+        
+        # Generate the background catalog
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
         
         # Calls the superclass initialization for useful catalog attributes
@@ -234,8 +267,30 @@ class BackgroundCatalog(pangloss.Catalog):
         
         return
         
-    def drill_lightcones(self):
-        pass
+    def drill_lightcones(self,radius=2):
+        '''
+        Drill a lightcone at each background source with radius in arcmin.
+        '''
+        
+        # Retrieve background galaxy data and initialize the lightcones
+        galaxies = self.galaxies
+        lc = np.zeros(self.galaxy_count)
+        
+        # Set lightcone parameters
+        flavor = 'simulated'
+        
+        # Load in the corresponding foreground catalog
+        config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
+        #F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+self.x+'_'+self.+'_'+0+'_'+0+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+        
+        #
+        for i in range(self.galaxy_count):
+            ra0 = galaxies['RA'][i]
+            dec0 = galaxies['Dec'][i]
+            position = [ra0,dec0]
+            
+            lc[i] = pangloss.lightcone(F,flavor,position,radius)
+            
         
     def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed=True):
         '''
