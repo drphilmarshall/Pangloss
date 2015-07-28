@@ -80,7 +80,7 @@ class Kappamap(pangloss.WLMap):
         fig = plt.figure("Pangloss Map")
 
         # Set figure size:
-        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
+        pangloss.plotting.set_figure_size(fig,fig_size,Lx,Ly)
 
         # Set up two sets of axes:
         # Adjust the subplot in image and wcs by half a pixel
@@ -88,7 +88,7 @@ class Kappamap(pangloss.WLMap):
         #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
         
         # Create the axes
-        imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
+        imshow,world = pangloss.plotting.make_axes(fig,subplot,imsubplot)
 
         # Plot image
         fig.sca(imshow)

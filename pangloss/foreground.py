@@ -75,7 +75,7 @@ class ForegroundCatalog(pangloss.Catalog):
                 
     def read(self,filename,config):
         # Uses astropy.table to read catalog, but with a few specific changes
-        self.galaxies = pangloss.read_hilbert_catalog(filename,config)
+        self.galaxies = pangloss.io.read_hilbert_catalog(filename,config)
         return
         
     def calculate_corr(self,corr_type='ng',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,mass_lim=[0,10**20]):
@@ -130,7 +130,7 @@ class ForegroundCatalog(pangloss.Catalog):
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
-        The optional input fig_size is in inches and has a default value of 10.
+            The optional input fig_size is in inches and has a default value of 10.
         The other optional inputs are limits with default values, which limit
         the number of galaxies that are to be plotted by the respective attribute.
         '''
