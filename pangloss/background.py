@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys
+import os, random, math, cmath, sys, pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
 import treecorr
@@ -271,31 +271,54 @@ class BackgroundCatalog(pangloss.Catalog):
         
         return
         
-    def drill_lightcones(self,radius=2):
+    def drill_lightcones(self,radius=2.0,write=False):
         '''
-        Drill a lightcone at each background source with radius in arcmin.
+        Drill a lightcone at each background source with radius in arcmin. Will
+        write the lightcones 
         '''
         
         # Retrieve background galaxy data and initialize the lightcones
         galaxies = self.galaxies
-        lc = np.zeros(self.galaxy_count)
+        lightcones = np.zeros(self.galaxy_count)
         
         # Set lightcone parameters
         flavor = 'simulated'
         
         # Load in the corresponding foreground catalog
         config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-        #F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+self.x+'_'+self.+'_'+0+'_'+0+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+        F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
         
-        #
+        # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
+            # Set galaxy positions
             ra0 = galaxies['RA'][i]
             dec0 = galaxies['Dec'][i]
             position = [ra0,dec0]
             
-            lc[i] = pangloss.lightcone(F,flavor,position,radius)
+            # Create the lightcone for galaxy i
+            lightcones[i] = pangloss.lightcone(F,flavor,position,radius,i)
             
+        if write == True:
+            # Write lightcones to data/lightcones directory
+            self.write_lightcones(lightcones)
+            
+        return
+            
+    def write_lightcones(self,lightcones):
+        '''
+        Save the collection of lightcones for the catalog's corresponding field
+        '''        
         
+        for lightcone in lightcones:
+            # Each lightcone filename contains its corresponding map (x,y), field (i,j), and ID #
+            filename = 'data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_'+str(lightcone.ID)+'.obj'
+            lc_file = open(filename, 'w') 
+            pickle.dump(lightcone,lc_file) 
+            
+        return       
+    
+# ----------------------------------------------------------------------------
+            
     def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed=True):
         '''
         Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or 
