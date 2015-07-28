@@ -56,23 +56,27 @@ class BackgroundCatalog(pangloss.Catalog):
             
         elif field != None:
             # Set domain based upon inputted field
-            x = field[0]
-            y = field[1]
-            i = field[2]
-            j = field[3]
+            self.map_x = field[0]
+            self.map_y = field[1]
+            self.field_i = field[2]
+            self.field_j = field[3]
             
             # Set ra and dec limits based upon field (x,y,i,j)
-            ra_i = np.deg2rad(2.0-x*4.0-i*1.0)
-            ra_f = np.deg2rad(1.0-x*4.0-i*1.0)
-            dec_i = np.deg2rad(-2.0+y*4.0+j*1.0)
-            dec_f = np.deg2rad(-1.0+y*4.0+j*1.0)
+            ra_i = np.deg2rad(2.0-self.map_x*4.0-self.field_i*1.0)
+            ra_f = np.deg2rad(1.0-self.map_x*4.0-self.field_i*1.0)
+            dec_i = np.deg2rad(-2.0+self.map_y*4.0+self.field_j*1.0)
+            dec_f = np.deg2rad(-1.0+self.map_y*4.0+self.field_j*1.0)
             
             # Set the domain to the inputted field
-            domain = [ra_i,ra_f,dec_i,dec_f]
+            domain = [ra_i,ra_f,dec_i,dec_f]       
         
         else:
             # If neither are inputted, use the field x=y=i=j=0:
-            domain = [2,1,-2,-1]
+            domain = [2.0,1.0,-2.0,-1.0]
+            self.map_x = 0
+            self.map_y = 0
+            self.field_i = 0
+            self.field_j = 0
         
         # Generate the background catalog
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
