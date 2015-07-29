@@ -4,6 +4,11 @@ import os, sys
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+
+# Import Pangloss:
+PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
+sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 viewport = [0.1,0.1,0.8,0.8]
@@ -284,7 +289,12 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
     plt.legend(handles,labels,fontsize=18)
     
     return
+    
+#---------------------------------------------------------------------------------------------------------------
+# This section is for code only used to create demo plots. None of these are currently used for actual pangloss.
 
+# ----------------------------------------------------------------------------
+# Create phase plots for correlation coefficients. Used in VisualizingCorrelationFunction.ipyn.
 def calc_corr_demo(units='deg'):
     '''
     Calculates the plus, minus, cross, and cross-prime components of the ellipticity-ellipticity
@@ -334,8 +344,7 @@ def calc_corr_demo(units='deg'):
     xi_xp = gtx-gxt
     
     return xi_p,xi_m,xi_x,xi_xp
-
-# ----------------------------------------------------------------------------
+    
 
 def plot_corr_demo(corr,corr_type='plus',units='deg'):
     '''
@@ -425,3 +434,251 @@ def plot_corr_demo(corr,corr_type='plus',units='deg'):
     plt.ylim([np.min(J),np.max(J)])
     
     return
+    
+# ----------------------------------------------------------------------------
+# Plot color-coded galaxies around a lens and a scatter plot of the correlation coefficients using
+# the same color scheme. Used in VisualizingCorrelationFunction.ipyn.
+    
+def plot_lensed_colors(B,subplot=[1.1175,1.0925,-1.54,-1.5175],center=[1.10425,-1.52875],fig_size=10):
+    '''
+    Plot the background galaxies in the catalog B contained in the inputted subplot in different colors
+    as a function of their distance from the inputted center.
+    '''
+    
+    # Create new figure with correct axes
+    fig = plt.gcf()
+    pangloss.plotting.make_axes(fig,subplot=[1.1175,1.0925,-1.54,-1.5175])
+    ax = plt.gca()
+    
+    # Extract data from galaxies contained in subplot 
+    galaxies = B.return_galaxies(ra_lim=[subplot[0],subplot[1]],dec_lim=[subplot[2],subplot[3]])
+    ra = np.rad2deg(galaxies['RA'])
+    dec = np.rad2deg(galaxies['Dec'])
+    mod = galaxies['eMod']
+    phi = galaxies['ePhi']
+
+    # Set center of lens by hand
+    ra_c = center[0]
+    dec_c = center[1]
+
+    # Distance bin cutoffs
+    c1 = 0.0025
+    c2 = 0.005
+    c3 = 0.0075
+    c4 = 0.01
+    c5 = 0.0125
+
+    for i in range(np.size(ra)):
+        # Don't plot if galaxy is strongly lensed
+        if galaxies['strong_flag'][i] == 1: continue
+            
+        # Calculate galaxy distance to center
+        dra_c = abs(ra[i]-ra_c)
+        ddec_c = abs(dec[i]-dec_c)
+        r_c = np.sqrt(dra_c**2+ddec_c**2)
+
+        # Set galaxy color based upon distance to center
+        if (r_c < c1):  color = 'red'
+        elif (r_c >= c1) and (r_c < c2): color = 'orange'
+        elif (r_c >= c2) and (r_c < c3): color = 'yellow'
+        elif (r_c >= c3) and (r_c < c4): color = 'green'
+        elif (r_c >= c4) and (r_c < c5): color = 'blue'
+        else: color = 'purple'
+
+        # Plot galaxy ellipticity
+        #plt.subplot(1,5,1)
+        pangloss.plot_sticks(ra[i],dec[i],mod[i],-phi[i],ax,color=color)
+        
+    # Plot lens center
+    #plt.subplot(1,5,1)
+    plt.scatter(1.10425,-1.52875,s=200)
+    
+    # Set figure size
+    fig.set_size_inches(fig_size,fig_size)
+    
+    # Add scale bar
+    Lx, Ly = abs(subplot[0]-subplot[1]), abs(subplot[2]-subplot[3])
+    L = np.mean([Lx,Ly])
+    bar = AnchoredSizeBar(ax.transData,L/10.0,'10% Ellipticity',pad=0.5,loc=3,sep=5,borderpad=0.25,frameon=True)
+    bar.size_bar._children[0]._linewidth = 2
+    #bar.size_bar._children[0]._edgecolor = (1,0,0,1)
+    ax.add_artist(bar)
+        
+    plt.show()
+    
+    return
+    
+    
+def calc_corr_components(points):
+    '''
+    Calculate the plus, minus, cross, and cross^prime components of the correlation between each galaxy pair.
+    '''
+    
+    del_xi_p = []
+    del_xi_m = []
+    del_xi_x = []
+    del_xi_xp = []
+
+    r = []
+    c = []
+
+    # Center of lens
+    ra_c = 1.10425
+    dec_c = -1.52875
+    
+    # Distance bin cutoffs
+    c1 = 0.0025
+    c2 = 0.005
+    c3 = 0.0075
+    c4 = 0.01
+    c5 = 0.0125
+
+    for point1 in points:
+        for point2 in points:
+            if point1 == point2:
+                # Don't calculate correlation for a point with itself
+                continue
+            else:
+                # Extract galaxy locations and ellipticities
+                ra1 = point1[0]
+                ra2 = point2[0]
+                dec1 = point1[1]
+                dec2 = point2[1]
+                el1 = point1[2]
+                el2 = point2[2]
+
+                # Calculate separation distance and angle
+                dra = ra2-ra1
+                ddec = dec2-dec1
+                r.append(np.sqrt(dra**2+ddec**2))
+                phi = np.arctan2(ddec,dra)
+
+                # Calculate separation distance of each object to center of lens
+                dra1_c = abs(ra1-ra_c)
+                dra2_c = abs(ra2-ra_c)
+                ddec1_c = abs(dec1-dec_c)
+                ddec2_c = abs(dec2-dec_c)
+
+                r1_c = np.sqrt(dra1_c**2+ddec1_c**2)
+                r2_c = np.sqrt(dra2_c**2+ddec2_c**2)
+
+                # Determine color of correlation scatter point based upon distance from lens
+                if (r1_c < c1) and (r2_c < c1): c.append((1,0,0,1))
+                elif (r1_c >= c1) and (r1_c < c2) and (r2_c >= c1) and (r2_c < c2): c.append((1,0.5,0,0.8))
+                elif (r1_c >= c2) and (r1_c < c3) and (r2_c >= c2) and (r2_c < c3): c.append((1,1,0,0.6))
+                elif (r1_c >= c3) and (r1_c < c4) and (r2_c >= c3) and (r2_c < c4): c.append((0,1,0,0.4))
+                elif (r1_c >= c4) and (r1_c < c5) and (r2_c >= c4) and (r2_c < c5): c.append((0,0,1,0.2))
+                else: c.append((0.5,0,0.5,0.01))           
+
+                # Calculate shear components
+                g1t = -(el1*np.e**(-2j*phi)).real
+                g1x = -(el1*np.e**(-2j*phi)).imag
+
+                g2t = -(el2*np.e**(-2j*phi)).real
+                g2x = -(el2*np.e**(-2j*phi)).imag
+
+                # Calculate correlation components
+                del_tt = g1t*g2t
+                del_xx = g1x*g2x
+                del_tx = g1t*g2x
+                del_xt = g1x*g2t
+
+                # Calculate correlation
+                del_xi_p.append(del_tt+del_xx)
+                del_xi_m.append(del_tt-del_xx)
+                del_xi_x.append(del_tx)
+                del_xi_xp.append(del_xt)
+                
+    return r,del_xi_p,del_xi_m,del_xi_x,del_xi_xp,c
+            
+    
+def plot_corr_component(r,corr,corr_type,c):
+    '''
+    Plot a single correlation component.
+    '''
+    
+    # Create another subplot
+    #plt.subplot(1,5,i)
+    
+    plt.scatter(np.array(r)*60.0,corr,color=c)
+    plt.plot([min(60.0*np.array(r)),max(60.0*np.array(r))],[0,0],'--k')
+    plt.gcf().set_size_inches(10,10)
+    plt.xlim([0.05,2.0])
+    plt.ylim([-0.05,0.05])
+    plt.xscale('log')
+
+    plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+    
+    if corr_type == 'plus':
+        plt.ylabel(r'$\delta\xi_+(\theta)$',fontsize=20)
+    elif corr_type == 'minus':
+        plt.ylabel(r'$\delta\xi_-(\theta)$',fontsize=20)
+    elif corr_type == 'cross':
+        plt.ylabel(r'$\delta\xi_\times(\theta)$',fontsize=20)
+    elif corr_type == 'cross_prime':
+        plt.ylabel(r'$\delta\xi_\times^\prime(\theta)$',fontsize=20)
+        
+        
+    # Make axis ticks larger
+    plt.gca().tick_params('both', length=5, width=1, which='major')
+    plt.gca().tick_params('both', length=5, width=1, which='minor')
+        
+    plt.show()
+    
+    return
+    
+    
+def plot_corr_color_demo(N=200):
+    '''
+    Runs the correlation color demo using the plot_lens_colors(), calc_corr_components(),
+    and plot_corr_component() methods.
+    '''
+    
+    # Load in the (0,0) Kappamap and Shearmap
+    K = pangloss.Kappamap(PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa',FITS=False)
+    S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1',PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2'],FITS=False)    
+    
+    # Create a background catalog and lens the galaxies
+    B = pangloss.BackgroundCatalog(N=N,sigma_e=0.01,subplot=[1.1175,1.0925,-1.54,-1.515]) # High ellipticity used to highlight the intrinsic shape of background sources
+    B.lens_by_map(K,S)
+    
+    # Plot background catalog with color scheme based upon galaxy distance from lens
+    plot_lensed_colors(B)
+
+    # Extract galaxy data
+    ra = np.rad2deg(B.galaxies['RA'])
+    dec = np.rad2deg(B.galaxies['Dec'])
+    e1 = B.galaxies['e1']
+    e2 = B.galaxies['e2']
+    el = e1+1.0j*e2
+
+    #
+    points = []
+    # Create set of galaxy points and ellipticities
+    for i in range(len(ra)):
+        # Don't calculate correlation for strongly-lensed sources
+        if B.galaxies['strong_flag'][i] == 1: continue
+            
+        r = ra[i]
+        d = dec[i]
+        e = el[i]
+        points.append((r,d,e))
+
+    # Calculate the correlation components between galaxies
+    r,del_xi_p,del_xi_m,del_xi_x,del_xi_xp,c = calc_corr_components(points)
+    
+    # Calculate the shear-shear correlation function
+    #gg=B.calculate_corr()
+    
+    # 
+    plot_corr_component(r,del_xi_p,'plus',c)  
+    plot_corr_component(r,del_xi_m,'minus',c)
+    plot_corr_component(r,del_xi_x,'cross',c)  
+    plot_corr_component(r,del_xi_xp,'cross_prime',c)  
+    
+    # Set figure size for figure containing all subplots
+    #plt.gcf().set_size_inches(50,10)
+   
+    return r,del_xi_p,del_xi_m,del_xi_x,del_xi_xp,c
+    
+#---------------------------------------------------------------------------------------------------------------
