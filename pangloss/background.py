@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys
+import os, random, math, cmath, sys, timeit
 import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
@@ -12,6 +12,9 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
 sys.path.append(PANGLOSS_DIR)
 import pangloss
+
+# Verbose
+vb = False
 
 # ============================================================================
 
@@ -44,7 +47,7 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,subplot=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
+    def __init__(self,subplot=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         self.type = 'background'
         
         # Only a subplot OR a field is allowed, not both!
@@ -100,7 +103,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per 
         square arcminute inside a given domain of the form 
@@ -217,7 +220,6 @@ class BackgroundCatalog(pangloss.Catalog):
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
-        #ePhi = np.rad2deg([(cmath.phase(val))/2.0 for val in e])
         
         # Add convergence and shear values to catalog
         self.galaxies['kappa'] = kappa
@@ -294,22 +296,16 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
-            if i%10 == 0:
-                print i
             # Set galaxy positions
             ra0 = galaxies['RA'][i]
             dec0 = galaxies['Dec'][i]
             position = [ra0,dec0]
             
-            # Create the lightcone for galaxy i
-            #x = np.zeros(1)
-            #y = pangloss.Lightcone(F,flavor,position,radius,i)
-            #x[0] = y
-            #print x
+            # Create the lightcone for background galaxy i
             lightcones[i] = pangloss.Lightcone(F,flavor,position,radius,i)
             
         if write == True:
-            # Write lightcones to data/lightcones directory
+            # Write lightcones to the 'data/lightcones/' directory
             self.write_lightcones(lightcones)
             
         return
@@ -318,7 +314,9 @@ class BackgroundCatalog(pangloss.Catalog):
         '''
         Save the collection of lightcones for the catalog's corresponding field
         '''       
-        print lightcones
+        if vb == True:
+            print 'Writing Lightcones'
+        
         filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
         lc_file = open(filename, 'wb') 
         pickle.dump(lightcones,lc_file)
