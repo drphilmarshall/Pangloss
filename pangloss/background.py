@@ -85,6 +85,10 @@ class BackgroundCatalog(pangloss.Catalog):
         # Generate the background catalog
         self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
         
+        # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
+        self.strong_lensed_removed = 0
+        self.galaxies['strong_flag'] = 0
+        
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
         
@@ -175,14 +179,10 @@ class BackgroundCatalog(pangloss.Catalog):
                                     
         return
         
-    def lens_by_map(self,kappamap,shearmap,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
+    def lens_by_map(self,kappamap,shearmap,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps. 
         '''
-        
-        # Keep track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
-        self.strong_lensed_removed = 0
-        self.galaxies['strong_flag'] = 0
         
         # Exctract needed data from catalog galaxies
         #galaxies = pangloss.Catalog.return_galaxies(self,mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
@@ -233,8 +233,118 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
-    def lens_by_halos(self):
-        pass
+    def lens_by_halos(self,planes=100,write=False):
+        '''
+        Lense background galaxies by the combined shear and convergence in their respective lightcones.
+        '''
+        
+        # Beginning stuff
+        
+        # Set source and strong-lens redshifts
+        zl = 0       # There is no strong-lens present
+        zs = 1.3857  # All source galaxies are at redshift 1.3857
+        
+        # Make redshift grid:    
+        grid = pangloss.Grid(zl,zs,nplanes=planes)
+        
+        # Read in lightcones from '/data/lightcones/'
+        filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+        lc_file = open(filename, 'rb') 
+        lightcones = pickle.load(lc_file)
+        lc_file.close()
+        
+        # Initialize new variables
+        assert self.galaxy_count == len(lightcones)
+        kappa = np.zeros(self.galaxy_count)
+        gamma1 = np.zeros(self.galaxy_count)
+        gamma2 = np.zeros(self.galaxy_count)
+        g = np.zeros(self.galaxy_count)
+        e1 = np.zeros(self.galaxy_count)
+        e2 = np.zeros(self.galaxy_count)
+        eMod = np.zeros(self.galaxy_count)
+        ePhi = np.zeros(self.galaxy_count)
+        
+        # Keep track of how long each lightcone takes to process
+        times = np.zeros(self.galaxy_count)      
+        
+        # Calculate lensing in each lightcone
+        for lightcone in lightcones:
+            start_time = timeit.default_timer()
+            if lightcone.ID%10 == 0:
+                print lightcone.ID
+            # Set the stellar mass - halo mass relation
+            shmr = pangloss.SHMR(method='Behroozi')
+            HMFfile = PANGLOSS_DIR+'/calib/SHMR/HaloMassRedshiftCatalog.pickle'
+            shmr.makeHaloMassFunction(HMFfile)
+            shmr.makeCDFs()
+        
+            # Create the redshift scaffolding:
+            lightcone.defineSystem(zl,zs)
+            lightcone.loadGrid(grid)
+            lightcone.snapToGrid(grid)
+            
+            # Simulated lightcones need mock observed Mstar_obs values 
+            # drawing from their Mhalos:
+            lightcone.drawMstars(shmr)
+            
+            # Draw Mhalo from Mstar, and then c from Mhalo:
+            lightcone.drawMhalos(shmr)
+            lightcone.drawConcentrations(errors=True)
+            
+            # Compute each halo's contribution to the convergence and shear:
+            lightcone.makeKappas(truncationscale=10)
+            
+            # Combine all contributions into a single kappa and gamma for the lightcone
+            lightcone.combineKappas()
+            
+            # Populate the kappa and gamma values
+            kappa[lightcone.ID] = lightcone.kappa_add_total
+            gamma1[lightcone.ID] = lightcone.gamma1_add_total
+            gamma2[lightcone.ID] = lightcone.gamma2_add_total
+            
+            elapsed = timeit.default_timer() - start_time
+            times[lightcone.ID] = elapsed
+        
+        print 'average lightcone time: ',np.mean(times)
+        print 'std lightcone time: ',np.std(times)
+        
+        # Save lightcones with lensing values to '/data/lightcones'
+        if write == True:
+            self.write_lightcones(lightcones,lensed=True)
+            
+        #-------------------------------------------------------------------------------------
+        # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
+            
+        # Extract background galaxy intrinsic ellipticites
+        e1_int = self.galaxies['e1_int']
+        e2_int = self.galaxies['e2_int']
+            
+        # Calculate the reduced shear g and its conjugate g_conj
+        g = (gamma1 + 1j*gamma2)/(1.0-kappa)
+        g_conj = np.array([val.conjugate() for val in g])
+        
+        # Flag any galaxy that has been strongly lensed
+        self.galaxies['strong_flag'][abs(g)>1.0] = 1  
+        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
+        
+        # Calculate the observed ellipticity
+        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
+        e1, e2 = e.real, e.imag
+        eMod = np.abs(e)
+        ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
+        
+        # Add convergence and shear values to catalog
+        self.galaxies['kappa_halo'] = kappa
+        self.galaxies['gamma1_halo'] = gamma1
+        self.galaxies['gamma2_halo'] = gamma2
+        self.galaxies['g_halo'] = g
+        self.galaxies['e1_halo'] = e1
+        self.galaxies['e2_halo'] = e2
+        self.galaxies['eMod_halo'] = eMod
+        self.galaxies['ePhi_halo'] = ePhi     
+        
+        return
+        
         
     def add_noise(self,M=1,sigma_obs=0.1):
         '''
@@ -310,14 +420,19 @@ class BackgroundCatalog(pangloss.Catalog):
             
         return
             
-    def write_lightcones(self,lightcones):
+    def write_lightcones(self,lightcones,lensed=False):
         '''
         Save the collection of lightcones for the catalog's corresponding field
         '''       
         if vb == True:
             print 'Writing Lightcones'
         
-        filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+        # Filename will have prefix 'lensed' if the lightcones have calculated the weak lensing values
+        if lensed == True:
+            filename = PANGLOSS_DIR+'/data/lightcones/lensed_lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+        else:
+            filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+
         lc_file = open(filename, 'wb') 
         pickle.dump(lightcones,lc_file)
         lc_file.close()
