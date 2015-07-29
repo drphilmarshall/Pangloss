@@ -46,7 +46,7 @@ class BackgroundCatalog(pangloss.Catalog):
     def __init__(self,subplot=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[0.0,1.3857],sigma_e=0.2):
         self.type = 'background'
         
-        # Only a subplot OR a field is allowed, not both
+        # Only a subplot OR a field is allowed, not both!
         assert not (subplot != None and field != None)
         
         # The catalog can be created over a field corresponding to a foreground catalog (1 deg^2) or over an inputted subplot
@@ -62,13 +62,13 @@ class BackgroundCatalog(pangloss.Catalog):
             self.field_j = field[3]
             
             # Set ra and dec limits based upon field (x,y,i,j)
-            ra_i = np.deg2rad(2.0-self.map_x*4.0-self.field_i*1.0)
-            ra_f = np.deg2rad(1.0-self.map_x*4.0-self.field_i*1.0)
-            dec_i = np.deg2rad(-2.0+self.map_y*4.0+self.field_j*1.0)
-            dec_f = np.deg2rad(-1.0+self.map_y*4.0+self.field_j*1.0)
+            ra_i = 2.0-self.map_x*4.0-self.field_i*1.0
+            ra_f = 1.0-self.map_x*4.0-self.field_i*1.0
+            dec_i = -2.0+self.map_y*4.0+self.field_j*1.0
+            dec_f = -1.0+self.map_y*4.0+self.field_j*1.0
             
             # Set the domain to the inputted field
-            domain = [ra_i,ra_f,dec_i,dec_f]       
+            domain = [ra_i,ra_f,dec_i,dec_f]
         
         else:
             # If neither are inputted, use the field x=y=i=j=0:
@@ -271,10 +271,11 @@ class BackgroundCatalog(pangloss.Catalog):
         
         return
         
-    def drill_lightcones(self,radius=2.0,write=False):
+    def drill_lightcones(self,radius=2.0,F=None,write=False):
         '''
         Drill a lightcone at each background source with radius in arcmin. Will
-        write the lightcones 
+        write the lightcones to pangloss/data/lightcones. The method can only be
+        used with BackgroundCatalogs that were created as a field, not a subplot.
         '''
         
         # Retrieve background galaxy data and initialize the lightcones
@@ -284,9 +285,11 @@ class BackgroundCatalog(pangloss.Catalog):
         # Set lightcone parameters
         flavor = 'simulated'
         
-        # Load in the corresponding foreground catalog
-        config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-        F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+        # If a foreground catalog is not passed, load in the appropriate catalog.
+        if F == None:
+            # Load in the corresponding foreground catalog
+            config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
+            F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
         
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
@@ -296,7 +299,7 @@ class BackgroundCatalog(pangloss.Catalog):
             position = [ra0,dec0]
             
             # Create the lightcone for galaxy i
-            lightcones[i] = pangloss.lightcone(F,flavor,position,radius,i)
+            lightcones[i] = pangloss.Lightcone(F,flavor,position,radius,i)
             
         if write == True:
             # Write lightcones to data/lightcones directory
@@ -377,7 +380,7 @@ class BackgroundCatalog(pangloss.Catalog):
             
             # Adopt figure size from open Kappamap:    
             fig_size = plt.gcf().get_size_inches()[0]
-
+            
         # Otherwise:
         else:
             if subplot is None:
