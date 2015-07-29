@@ -68,6 +68,7 @@ class Lightcone(object):
 
     HISTORY
       2013-03-23  Collett & Marshall (Cambridge)
+      2015-07-29  Everett (SLAC)
     """
 
 # ----------------------------------------------------------------------------
@@ -450,7 +451,7 @@ class Lightcone(object):
         self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
         self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
 
-        return self.kappa_add_total
+        return
 
 # ----------------------------------------------------------------------------
 # Calculate magnification along line of sight
