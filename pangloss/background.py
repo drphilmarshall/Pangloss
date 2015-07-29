@@ -263,7 +263,7 @@ class BackgroundCatalog(pangloss.Catalog):
         ePhi = np.zeros(self.galaxy_count)
         
         # Keep track of how long each lightcone takes to process
-        times = np.zeros(self.galaxy_count)      
+        runtimes = np.zeros(self.galaxy_count)      
         
         # Calculate lensing in each lightcone
         for lightcone in lightcones:
@@ -301,10 +301,10 @@ class BackgroundCatalog(pangloss.Catalog):
             gamma2[lightcone.ID] = lightcone.gamma2_add_total
             
             elapsed = timeit.default_timer() - start_time
-            times[lightcone.ID] = elapsed
+            runtimes[lightcone.ID] = elapsed
         
-        print 'average lightcone time: ',np.mean(times)
-        print 'std lightcone time: ',np.std(times)
+        print 'average lightcone time: ',np.mean(runtimes)
+        print 'std lightcone time: ',np.std(runtimes)
         
         # Save lightcones with lensing values to '/data/lightcones'
         if write == True:
