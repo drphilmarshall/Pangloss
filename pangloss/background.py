@@ -439,7 +439,7 @@ class BackgroundCatalog(pangloss.Catalog):
     
 # ----------------------------------------------------------------------------
             
-    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed=True):
+    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed='map'):
         '''
         Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or 
         number of bins (N) are inputted, the binsize is automatically calculated using 15 bins. The 'lensed'
@@ -455,9 +455,11 @@ class BackgroundCatalog(pangloss.Catalog):
         # Calculate the shear-shear (or ellipticity-ellipticity) correlation function
         if corr_type == 'gg':
             # Create catalog of the pre or post-lensed background galaxies and their ellipticities
-            if lensed == True:
+            if lensed == 'map':
                 corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1'], g2=galaxies['e2'], ra_units='rad', dec_units='rad')
-            else:
+            elif lensed == 'halo':
+                corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_halo'], g2=galaxies['e2_halo'], ra_units='rad', dec_units='rad')
+            elif lensed == 'none':
                 corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
             
             # Set g-g correlation parameters
@@ -475,7 +477,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
     
-    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed=True):
+    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
         '''
         Make scatter plot of generated galaxies.
         '''
@@ -526,22 +528,36 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # The angles are flipped as we are using a left-handed coordinate reference axis for plotting
         if graph == 'ellipse' or graph == 'stick':
-            if lensed == False:
+            if lensed == 'none':
                 # Extract intrinsic ellipticity
                 eMod_int = galaxies['eMod_int']
                 ePhi_int = -galaxies['ePhi_int']               
                 
-            elif lensed == True:
-                # Extract lensed ellipticity
+            elif lensed == 'map':
+                # Extract lensed-by-map ellipticity
                 eMod = galaxies['eMod']
                 ePhi = -galaxies['ePhi']
                 
+            elif lensed == 'halo':
+                # Extract lensed-by-halos ellipticity
+                eMod = galaxies['eMod_halo']
+                ePhi = -galaxies['ePhi_halo']
+                
             elif lensed == 'both':
-                # Extract both the intrinsic and lensed ellipticity
+                # Extract both the intrinsic and lensed-by-map ellipticity
                 eMod_int = galaxies['eMod_int']
                 ePhi_int = -galaxies['ePhi_int']
                 eMod = galaxies['eMod']
-                ePhi = -galaxies['ePhi']            
+                ePhi = -galaxies['ePhi']
+                
+            elif lensed == 'all':
+                # Extract both the intrinsic and both lensed ellipticities
+                eMod_int = galaxies['eMod_int']
+                ePhi_int = -galaxies['ePhi_int']
+                eMod = galaxies['eMod']
+                ePhi = -galaxies['ePhi']
+                eMod_halo = galaxies['eMod_halo']
+                ePhi_halo = -galaxies['ePhi_halo']
         
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
@@ -562,41 +578,68 @@ class BackgroundCatalog(pangloss.Catalog):
         
             # Plot each galaxy as an ellipse
             for i in range(np.shape(galaxies)[0]):
-                if lensed == False:
+                if lensed == 'none':
                     # Plot intrinsic ellipticities
                     alpha = 0.25
                     pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha)
                 
-                elif lensed == True:
-                    # Plot lensed ellipticities
+                elif lensed == 'map':
+                    # Plot lensed-by-map ellipticities
                     alpha = 0.3
                     pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha)
                     
+                elif lensed == 'halo':
+                    # Plot lensed-by-halo ellipticities
+                    alpha = 0.3
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha)
+                    
                 elif lensed == 'both':
-                    # Plot both lensed and intrinsic ellipticities
+                    # Plot both lensed-by-map and intrinsic ellipticities
                     alpha1 = 0.25
                     alpha2 = 0.3
                     pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
                     pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
                     
+                elif lensed == 'all':
+                    # Plot both types of lensed and intrinsic ellipticities
+                    alpha1 = 0.25
+                    alpha2 = 0.3
+                    alpha3 = 0.3
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha3)
+                    
         elif graph == 'stick':
-            if lensed == False:
+            if lensed == 'none':
                 # Plot intrinsic ellipticity sticks
                 pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
                 
-            elif lensed == True:
-                # Plot lensed ellipticity sticks
+            elif lensed == 'map':
+                # Plot lensed-by-map ellipticity sticks
                 pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                
+            elif lensed == 'halo':
+                # Plot lensed-by-halos ellipticity sticks
+                pangloss.plotting.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
                     
             elif lensed == 'both':
                 # Plot both lensed and intrinsic ellipticity sticks
                 pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
                 pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
                 
+            elif lensed == 'all':
+                # Plot both types of lensed and intrinsic ellipticity sticks
+                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                pangloss.plotting.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
+                
             # Add scale bar
-            if lensed == True:
+            if lensed == 'map':
                 # Plot as green
                 color = (0,0.6,0,1)
+            if lensed == 'halo':
+                # Plot as purple
+                color = (1,0,1,1)
             else:
                 # Plot as blue
                 color = (0,0,1,1)

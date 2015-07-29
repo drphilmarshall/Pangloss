@@ -199,7 +199,7 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
+def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
     '''
     '''
     
@@ -258,7 +258,7 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed=True,fig_size=10):
     
     if corr_type == 'gg':
         # For shear-shear (or ellipticity-ellipticity) correlation
-        if lensed == True:
+        if lensed == 'map':
             # Plot lensed correlations as solid lines
             ls = 'solid'
             lab = 'Lensed '
