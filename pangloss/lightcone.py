@@ -76,17 +76,17 @@ class Lightcone(object):
 
         self.name = 'Lightcone through the Universe'
         self.flavor = flavor   # 'real' or 'simulated'
-        self.catalog = catalog
+        self.catalog = catalog.galaxies
         self.ID = ID           # ID number from the cone's center background galaxy 
 
         # Simulated lightcones have "true" (ray-traced) convergence:
         self.kappa_hilbert = None # until set!
 
         # Catalog limits:
-        self.xmax = self.catalog['nRA'].max()
-        self.xmin = self.catalog['nRA'].min()
-        self.ymax = self.catalog['Dec'].max()
-        self.ymin = self.catalog['Dec'].min()
+        self.xmax = np.max(self.catalog['RA'])
+        self.xmin = np.min(self.catalog['RA'])
+        self.ymax = np.max(self.catalog['Dec'])
+        self.ymin = np.min(self.catalog['Dec'])
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -95,16 +95,17 @@ class Lightcone(object):
         self.xc = [position[0],position[1]]
 
         dx = self.rmax*pangloss.arcmin2rad
-        self.galaxies = self.catalog[np.where((self.catalog['nRA'] > (self.xc[0]-dx)) & \
-                                              (self.catalog['nRA'] < (self.xc[0]+dx)) & \
+        # Ra is flipped as it is left-handed
+        self.galaxies = self.catalog[np.where((self.catalog['RA'] > (self.xc[0]-dx)) & \
+                                              (self.catalog['RA'] < (self.xc[0]+dx)) & \
                                               (self.catalog['Dec'] > (self.xc[1]-dx)) & \
                                               (self.catalog['Dec'] < (self.xc[1]+dx))   )]
-
+                                              
         # Trim it to a circle:
-        x = (self.galaxies['nRA'] - self.xc[0])*pangloss.rad2arcmin
+        x = (self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin   # Does this line need to be changed as NRA -> RA ??
         y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
         r = np.sqrt(x*x + y*y)
-        phi = np.arctan(y/x)
+        phi = np.arctan2(y,x)
         self.galaxies.add_column(Column(name='x',data=x))
         self.galaxies.add_column(Column(name='y',data=y))
         self.galaxies.add_column(Column(name='r',data=r))
@@ -115,7 +116,11 @@ class Lightcone(object):
             self.galaxies = self.galaxies[np.where(self.galaxies['Type'] != 2)]
         except AttributeError: pass
 
+        # Why is this here? If we want to save all the galaxies, shouldn't it be placed above the galaxies[np.where()] line? - Spencer
         self.allgalaxies = self.galaxies
+        
+        # Keep track of the number of galaxies in each lightcone
+        self.galaxy_count = len(self.galaxies)
 
         # Now we have a small catalog, just for the requested lightcone.
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -144,7 +149,7 @@ class Lightcone(object):
         del self.catalog
         del catalog
 
-        return None
+        return
 
 # ----------------------------------------------------------------------------
 
