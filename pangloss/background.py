@@ -1,7 +1,8 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys, pickle
+import os, random, math, cmath, sys
+import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
 import treecorr
@@ -280,7 +281,7 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Retrieve background galaxy data and initialize the lightcones
         galaxies = self.galaxies
-        lightcones = np.zeros(self.galaxy_count)
+        lightcones = np.zeros(self.galaxy_count,dtype='object')
         
         # Set lightcone parameters
         flavor = 'simulated'
@@ -293,12 +294,18 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
+            if i%10 == 0:
+                print i
             # Set galaxy positions
             ra0 = galaxies['RA'][i]
             dec0 = galaxies['Dec'][i]
             position = [ra0,dec0]
             
             # Create the lightcone for galaxy i
+            #x = np.zeros(1)
+            #y = pangloss.Lightcone(F,flavor,position,radius,i)
+            #x[0] = y
+            #print x
             lightcones[i] = pangloss.Lightcone(F,flavor,position,radius,i)
             
         if write == True:
@@ -310,13 +317,12 @@ class BackgroundCatalog(pangloss.Catalog):
     def write_lightcones(self,lightcones):
         '''
         Save the collection of lightcones for the catalog's corresponding field
-        '''        
-        
-        for lightcone in lightcones:
-            # Each lightcone filename contains its corresponding map (x,y), field (i,j), and ID #
-            filename = 'data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_'+str(lightcone.ID)+'.obj'
-            lc_file = open(filename, 'w') 
-            pickle.dump(lightcone,lc_file) 
+        '''       
+        print lightcones
+        filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+        lc_file = open(filename, 'wb') 
+        pickle.dump(lightcones,lc_file)
+        lc_file.close()
             
         return       
     
