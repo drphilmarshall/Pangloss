@@ -237,9 +237,7 @@ class BackgroundCatalog(pangloss.Catalog):
         '''
         Lense background galaxies by the combined shear and convergence in their respective lightcones.
         '''
-        
-        # Beginning stuff
-        
+
         # Set source and strong-lens redshifts
         zl = 0       # There is no strong-lens present
         zs = 1.3857  # All source galaxies are at redshift 1.3857
