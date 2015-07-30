@@ -199,7 +199,7 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,fig_size=10,M=None):
+def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,fig_size=10,M=None,galaxy_count=None):
     '''
     Plot the correlation component 'corr_comp' of type 'corr_type' in separation units of 'sep_units'.
     By default the method will plot the lensed-by-map correlation, but can also plot without lensing
@@ -267,7 +267,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         # Create the correct component label and linestyle to be used in legend
         if corr_comp == 'plus': 
             # Plot xi_+ with a solid line
-            correlation = corr.xip  
+            correlation = corr.xip
             err = np.sqrt(corr.varxi)
             ls = '-'
             label2 = '+'           
@@ -318,6 +318,10 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     # remove the errorbars
     handles = [h[0] for h in handles]
     plt.legend(handles,labels,fontsize=18)
+    
+    if galaxy_count is not None:
+        # place a text box in upper left in axes coords
+        plt.gca().text(0.05,0.95,str(galaxy_count)+' background galaxies used',transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
     
     return
     
