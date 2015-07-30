@@ -670,7 +670,7 @@ def plot_corr_color_demo(N=200):
     S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1',PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2'],FITS=False)    
     
     # Create a background catalog and lens the galaxies
-    B = pangloss.BackgroundCatalog(N=N,sigma_e=0.01,subplot=[1.1175,1.0925,-1.54,-1.515]) # High ellipticity used to highlight the intrinsic shape of background sources
+    B = pangloss.BackgroundCatalog(N=N,sigma_e=0.01,domain=[1.1175,1.0925,-1.54,-1.515],field=[0,0,0,0]) # High ellipticity used to highlight the intrinsic shape of background sources
     B.lens_by_map(K,S)
     
     # Plot background catalog with color scheme based upon galaxy distance from lens
