@@ -47,18 +47,21 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,subplot=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
+    def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         self.type = 'background'
         
         # Only a subplot OR a field is allowed, not both!
-        assert not (subplot != None and field != None)
+        assert not (domain is not None and field is None)
         
         # The catalog can be created over a field corresponding to a foreground catalog (1 deg^2) or over an inputted subplot
-        if subplot != None:
-            # Set the domain to the inputted subplot
-            domain = subplot
+        if domain is not None and field is not None:
+            self.map_x = field[0]
+            self.map_y = field[1]
+            self.field_i = field[2]
+            self.field_j = field[3]
+            # NB: the domain and field may still be incompatible! Should really check for this.
             
-        elif field != None:
+        elif domain is None and field is not None:
             # Set domain based upon inputted field
             self.map_x = field[0]
             self.map_y = field[1]
@@ -74,7 +77,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Set the domain to the inputted field
             domain = [ra_i,ra_f,dec_i,dec_f]
         
-        else:
+        elif domain is None and field is None:
             # If neither are inputted, use the field x=y=i=j=0:
             domain = [2.0,1.0,-2.0,-1.0]
             self.map_x = 0
@@ -88,6 +91,15 @@ class BackgroundCatalog(pangloss.Catalog):
         # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
         self.strong_lensed_removed = 0
         self.galaxies['strong_flag'] = 0
+        
+        # Set source and strong-lens redshifts
+        self.zl = 0       # There is no strong-lens present
+        self.zs = 1.3857  # All source galaxies are at redshift 1.3857
+        
+        # Needed for lensing by halos
+        self.planes = 100
+        self.grid = None
+        self.lightcones = None
         
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
@@ -233,26 +245,19 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
-    def lens_by_halos(self,planes=100,write=False):
+    def lens_by_halos(self,save=False):
         '''
-        Lense background galaxies by the combined shear and convergence in their respective lightcones.
+        Lens background galaxies by the combined shear and convergence in their respective lightcones.
         '''
 
-        # Set source and strong-lens redshifts
-        zl = 0       # There is no strong-lens present
-        zs = 1.3857  # All source galaxies are at redshift 1.3857
+        if self.grid is None:
+            self.setup_grid()
         
-        # Make redshift grid:    
-        grid = pangloss.Grid(zl,zs,nplanes=planes)
-        
-        # Read in lightcones from '/data/lightcones/'
-        filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
-        lc_file = open(filename, 'rb') 
-        lightcones = pickle.load(lc_file)
-        lc_file.close()
-        
+        if self.lightcones is None:
+            self.drill_lightcones()
+                
         # Initialize new variables
-        assert self.galaxy_count == len(lightcones)
+        assert self.galaxy_count == len(self.lightcones)
         kappa = np.zeros(self.galaxy_count)
         gamma1 = np.zeros(self.galaxy_count)
         gamma2 = np.zeros(self.galaxy_count)
@@ -265,28 +270,34 @@ class BackgroundCatalog(pangloss.Catalog):
         # Keep track of how long each lightcone takes to process
         runtimes = np.zeros(self.galaxy_count)      
         
-        # Calculate lensing in each lightcone
-        for lightcone in lightcones:
+        # Calculate lensing in each lightcone:
+        for lightcone in self.lightcones:
             start_time = timeit.default_timer()
             if lightcone.ID%10 == 0:
                 print lightcone.ID
+            
+            '''
             # Set the stellar mass - halo mass relation
             shmr = pangloss.SHMR(method='Behroozi')
             HMFfile = PANGLOSS_DIR+'/calib/SHMR/HaloMassRedshiftCatalog.pickle'
             shmr.makeHaloMassFunction(HMFfile)
             shmr.makeCDFs()
-        
-            # Create the redshift scaffolding:
-            lightcone.defineSystem(zl,zs)
-            lightcone.loadGrid(grid)
-            lightcone.snapToGrid(grid)
+            '''
             
+            # Create the redshift scaffolding (because foreground redhsifts may have changed):
+            lightcone.defineSystem(self.zl,self.zs)
+            lightcone.loadGrid(self.grid)
+            lightcone.snapToGrid(self.grid)
+            
+            '''
             # Simulated lightcones need mock observed Mstar_obs values 
             # drawing from their Mhalos:
             lightcone.drawMstars(shmr)
             
             # Draw Mhalo from Mstar, and then c from Mhalo:
             lightcone.drawMhalos(shmr)
+            '''
+            
             lightcone.drawConcentrations(errors=True)
             
             # Compute each halo's contribution to the convergence and shear:
@@ -303,12 +314,7 @@ class BackgroundCatalog(pangloss.Catalog):
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
         
-        print 'average lightcone time: ',np.mean(runtimes)
-        print 'std lightcone time: ',np.std(runtimes)
-        
-        # Save lightcones with lensing values to '/data/lightcones'
-        if write == True:
-            self.write_lightcones(lightcones,lensed=True)
+        print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
             
         #-------------------------------------------------------------------------------------
         # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
@@ -339,7 +345,11 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e1_halo'] = e1
         self.galaxies['e2_halo'] = e2
         self.galaxies['eMod_halo'] = eMod
-        self.galaxies['ePhi_halo'] = ePhi     
+        self.galaxies['ePhi_halo'] = ePhi
+        
+        # Save catalog with new lensing values to enable a restart
+        if save == True:
+            self.save()
         
         return
         
@@ -382,7 +392,17 @@ class BackgroundCatalog(pangloss.Catalog):
         
         return
         
-    def drill_lightcones(self,radius=2.0,F=None,write=False):
+    def setup_grid(self):
+        '''
+        Create the distance grid to simplify calculatoins.
+        '''
+        
+        # Make redshift grid:    
+        self.grid = pangloss.Grid(self.zl,self.zs,nplanes=self.planes)
+        
+        return
+        
+    def drill_lightcones(self,radius=2.0,foreground=None,save=False):
         '''
         Drill a lightcone at each background source with radius in arcmin. Will
         write the lightcones to pangloss/data/lightcones. The method can only be
@@ -390,52 +410,70 @@ class BackgroundCatalog(pangloss.Catalog):
         '''
         
         # Retrieve background galaxy data and initialize the lightcones
-        galaxies = self.galaxies
-        lightcones = np.zeros(self.galaxy_count,dtype='object')
+        self.lightcones = np.zeros(self.galaxy_count,dtype='object')
         
         # Set lightcone parameters
         flavor = 'simulated'
         
-        # If a foreground catalog is not passed, load in the appropriate catalog.
-        if F == None:
+        # If a foreground catalog object is not passed, load in the appropriate catalog.
+        if foreground is None:
             # Load in the corresponding foreground catalog
             config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-            F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+            foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
         
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
             # Set galaxy positions
-            ra0 = galaxies['RA'][i]
-            dec0 = galaxies['Dec'][i]
+            ra0 = self.galaxies['RA'][i]
+            dec0 = self.galaxies['Dec'][i]
             position = [ra0,dec0]
             
             # Create the lightcone for background galaxy i
-            lightcones[i] = pangloss.Lightcone(F,flavor,position,radius,i)
+            self.lightcones[i] = pangloss.Lightcone(foreground.galaxies,flavor,position,radius,ID=i)
             
-        if write == True:
-            # Write lightcones to the 'data/lightcones/' directory
-            self.write_lightcones(lightcones)
-            
+        if save == True:
+            # Write out this entire catalog to the 'data' directory
+            self.save()
+        
+        del foreground
+        
         return
             
-    def write_lightcones(self,lightcones,lensed=False):
+    def save(self,filename=None):
         '''
-        Save the collection of lightcones for the catalog's corresponding field
+        Save the background galaxy catalog in '/data'.
         '''       
         if vb == True:
-            print 'Writing Lightcones'
+            print 'Pickling this background catalog to disk...'
         
         # Filename will have prefix 'lensed' if the lightcones have calculated the weak lensing values
-        if lensed == True:
-            filename = PANGLOSS_DIR+'/data/lightcones/lensed_lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
-        else:
-            filename = PANGLOSS_DIR+'/data/lightcones/lc_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.txt'
+        if filename is None:
+            filename = PANGLOSS_DIR+'/data/background_catalog_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
 
-        lc_file = open(filename, 'wb') 
-        pickle.dump(lightcones,lc_file)
-        lc_file.close()
+        self.filename = filename
+
+        pickle_file = open(self.filename, 'wb') 
+        pickle.dump(self.__dict__,self.filename,2)
+        pickle_file.close()
             
-        return       
+        return
+        
+    def load(self,filename=None):
+        '''
+        Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
+        '''
+        if filename is None:
+            try: filename = self.filename
+            except: 
+                raise Exception('No file to load from! Exiting.')
+        
+        pickle_file = open(self.filename,'rb')
+        tmp_dict = pickle.load(pickle_file)
+        pickle_file.close()          
+    
+        self.__dict__.update(tmp_dict) 
+        
+        return
     
 # ----------------------------------------------------------------------------
             
