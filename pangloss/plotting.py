@@ -199,9 +199,16 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
     
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
+def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,fig_size=10,M=None):
     '''
+    Plot the correlation component 'corr_comp' of type 'corr_type' in separation units of 'sep_units'.
+    By default the method will plot the lensed-by-map correlation, but can also plot without lensing
+    (lensed='none') or with the lensed-by-halo correlation (lensed='halo').
     '''
+    
+    # If no color is inputted, plot in black
+    if color is None:
+        color = 'black'
     
     # Get current figure (or make one if it doesn't exist)
     fig = plt.gcf()
@@ -212,7 +219,6 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
         fig._label = 'Correlation'
     
         # Set max and min dtheta
-        # print 'sep_units: ',corr.sep_units
         min_sep = corr.min_sep
         max_sep = corr.max_sep
         #min_sep = np.deg2rad(0.1/60.0)        
@@ -237,17 +243,11 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
         plt.gca().set_xlim(min_sep,max_sep)
         
         # Set axes labels
-        if corr_type == 'gg':
-            plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
-            plt.ylabel(r'$\xi_+(\theta)\,\,$'+ '(blue), '+r'$\quad\xi_\times(\theta)\,\,$'+' (green)',fontsize=20)
-            
-        elif corr_type == 'ng':
-            plt.ylabel(r'$\xi_{gm}(\theta)$',fontsize=20)
-            plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
-            
-        else:
-            # Can incorporate other correlation functions later if needed
-            pass
+        plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+        
+        if corr_type == 'gg': plt.ylabel(r'Ellipticity-Ellipticity Correlation $\xi(\Delta\theta)$',fontsize=20)            
+        elif corr_type == 'ng': plt.ylabel(r'Galaxy-Mass Correlation $\xi(\Delta\theta)$',fontsize=20)
+        else: pass # Can incorporate other correlation functions later if needed
         
         # Plot xi=0 for reference
         plt.plot([min(np.exp(corr.logr)),max(np.exp(corr.logr))],[0,0],c='k',linestyle='dashed')
@@ -258,25 +258,56 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
     
     if corr_type == 'gg':
         # For shear-shear (or ellipticity-ellipticity) correlation
-        if lensed == 'map':
-            # Plot lensed correlations as solid lines
-            ls = 'solid'
-            lab = 'Lensed '
+    
+        # Mark first label as intrinsic, observed, or predicted
+        if lensed == 'none': label1 = 'Intrinsic '            
+        if lensed == 'map': label1 = 'Observed '        
+        elif lensed == 'halo': label1 = 'Predicted '
+            
+        # Create the correct component label and linestyle to be used in legend
+        if corr_comp == 'plus': 
+            # Plot xi_+ with a solid line
+            correlation = corr.xip  
+            err = np.sqrt(corr.varxi)
+            ls = '-'
+            label2 = '+'           
+            
+        elif corr_comp == 'minus':
+            # Plot xi_- with a dotted line
+            correlation = corr.xim    
+            err = np.sqrt(corr.varxi)
+            ls = ':'
+            label2 = '-'
+            
+        elif corr_comp == 'cross':
+            # Plot xi_x with a dashed line
+            correlation = 0.5*(corr.xim_im-corr.xip_im)
+            err = 0.5*np.sqrt(2.0*corr.varxi**2)
+            ls = '--'
+            label2 = r'\times'         
+            
+        elif corr_comp == 'cross_prime':
+            # Plot xi_x prime with a dot-dash line
+            correlation = corr.xip_im
+            err = 0.5*np.sqrt(2.0*corr.varxi**2)
+            ls = '-.'
+            label2 = r'\times^\prime'       
+            
+        # If the multiplicative error M is not None, add it to the legend label
+        if M is not None:
+            label2 += r',\,M={}'.format(M)
         
-        else:
-            # Plot pre-lensed correlations as dashed lines
-            ls = 'dashed'
-            lab = 'Intrinsic '
-        
-        # Plot the shear-shear (or ellipticity-ellipticity) correlation function (xi_+ and xi_x)
-        plt.errorbar(np.exp(corr.logr),corr.xip, np.sqrt(corr.varxi),c='b',linestyle=ls,label=lab+r'$\xi_+$')
-        #plt.errorbar(np.exp(corr.logr),0.5*(corr.xip_im+corr.xim_im),0.5*np.sqrt(corr.varxi+corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times$')
-        plt.errorbar(np.exp(corr.logr),corr.xip_im,np.sqrt(corr.varxi),c='g',linestyle=ls,label=lab+r'$\xi_\times^\prime$')
+        # Plot the inputted shear-shear (or ellipticity-ellipticity) correlation function component
+        plt.errorbar(np.exp(corr.logr),correlation,err,c=color,linestyle=ls,label=label1+r'$\xi_'+label2+'$')
         
     elif corr_type == 'ng':
         # Plot the galaxi-mass correlation function (xi_gm)
-        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c='b',label=r'$\operatorname{Re}\left(\xi_{gm}\right)$')
-        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c='g',label=r'$\operatorname{Im}\left(\xi_{gm}\right)$')
+        '''
+        NOTE: This is old, needs to be updated similar to gg correlation above 
+        once the ng code has been rewritten.
+        '''
+        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Re}\left(\xi_{gm}\right)$')
+        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Im}\left(\xi_{gm}\right)$')
     
     else:
         # Can incorporate other correlation functions here if needed
@@ -290,8 +321,8 @@ def plot_corr(corr,corr_type='gg',sep_units='arcmin',lensed='map',fig_size=10):
     
     return
     
-#---------------------------------------------------------------------------------------------------------------
-# This section is for code only used to create demo plots. None of these are currently used for actual pangloss.
+#-------------------------------------------------------------------------------------------------------------------
+# This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.
 
 # ----------------------------------------------------------------------------
 # Create phase plots for correlation coefficients. Used in VisualizingCorrelationFunction.ipyn.
@@ -681,4 +712,4 @@ def plot_corr_color_demo(N=200):
    
     return r,del_xi_p,del_xi_m,del_xi_x,del_xi_xp,c
     
-#---------------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------

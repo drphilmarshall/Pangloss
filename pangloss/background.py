@@ -394,7 +394,7 @@ class BackgroundCatalog(pangloss.Catalog):
         
     def setup_grid(self):
         '''
-        Create the distance grid to simplify calculatoins.
+        Create the distance grid to simplify distance calculations.
         '''
         
         # Make redshift grid:    
@@ -442,11 +442,12 @@ class BackgroundCatalog(pangloss.Catalog):
     def save(self,filename=None):
         '''
         Save the background galaxy catalog in '/data'.
-        '''       
+        '''
+        
         if vb == True:
             print 'Pickling this background catalog to disk...'
         
-        # Filename will have prefix 'lensed' if the lightcones have calculated the weak lensing values
+        # If no filename is given, a default is set using the field numbers (x,y,i,j).
         if filename is None:
             filename = PANGLOSS_DIR+'/data/background_catalog_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
 
@@ -678,9 +679,13 @@ class BackgroundCatalog(pangloss.Catalog):
             if lensed == 'halo':
                 # Plot as purple
                 color = (1,0,1,1)
-            else:
+            if lensed == 'none':
                 # Plot as blue
                 color = (0,0,1,1)
+            else:
+                # Plot as black
+                color = (0,0,0,1)
+                
             bar = AnchoredSizeBar(world.transData,L/10.0,'10% Ellipticity',pad=0.5,loc=4,sep=5,borderpad=0.25,frameon=True)
             bar.size_bar._children[0]._linewidth = 2
             bar.size_bar._children[0]._edgecolor = color
