@@ -538,6 +538,29 @@ class BackgroundCatalog(pangloss.Catalog):
             assert not np.isnan(gg.xip).any()           
             
             return gg
+
+        elif corr_type == 'ng':
+            # Create catalog of the foreground galaxy locations
+            corr_cat1 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], ra_units='rad', dec_units='rad')
+
+            # Create catalog of the background galaxy ellipticities
+            if lensed == 'map':
+                corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1'], g2=galaxies['e2'], ra_units='rad', dec_units='rad')
+            elif lensed == 'halo':
+                corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_halo'], g2=galaxies['e2_halo'], ra_units='rad', dec_units='rad')
+            elif lensed == 'none':
+                corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
+                        
+            # Set n-g correlation parameters
+            ng = treecorr.NGCorrelation(bin_size=binsize, min_sep=min_sep, max_sep=max_sep, sep_units=sep_units, bin_slop=0.05/binsize)
+            
+            # Calculate n-g correlation function
+            ng.process(corr_cat1,corr_cat2)
+            
+            # Check to make sure none of the values are Nan's (Fix in fugure using 0 weights for galaxies not in K/S maps)
+            assert not np.isnan(ng.xi).any()   
+            
+            return ng
             
         else:
             # Add other correlation types later if necessary
