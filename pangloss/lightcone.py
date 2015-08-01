@@ -410,46 +410,67 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def combineKappas(self):
+    def combineKappas(self,methods=['add','keeton','tom']):
 
-        B=self.galaxies['beta']
-        K=self.galaxies['kappa']
-        G=self.galaxies['gamma']
-        G1=self.galaxies['gamma1']
-        G2=self.galaxies['gamma2']
-        D= K**2-G**2
+        # If a single string is passed for methods, place it in a list
+        if type(methods) != list:
+            methods = [methods]
 
-        kappa_keeton  = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
-        gamma1_keeton = (1.-B) * (G1) /  ( (1-B*K)**2   - (B*G)**2   )
-        gamma2_keeton = (1.-B) * (G2) /  ( (1-B*K)**2   - (B*G)**2   )
+        # Load in the convergence and shear from each galaxy in the lightcone
+        K = self.galaxies['kappa']
+        G1 = self.galaxies['gamma1']
+        G2 = self.galaxies['gamma2']
 
-        kappa_tom  = (1.-B) * K
-        gamma1_tom = (1.-B) * G1
-        gamma2_tom = (1.-B) * G2
+        if 'keeton' in methods or 'tom' in methods:
+                B = self.galaxies['beta']
+                G = self.galaxies['gamma']         
+                D = K**2-G**2
 
-        self.writeColumn('kappa_keeton',kappa_keeton)
-        self.writeColumn('gamma1_keeton',gamma1_keeton)
-        self.writeColumn('gamma2_keeton',gamma2_keeton)
+        for method in methods:
+            
+            if method == 'keeton':
+                # Calculate the 'keeton' convergence and shear for each galaxy in the lightcone
+                kappa_keeton  = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
+                gamma1_keeton = (1.-B) * (G1) /  ( (1-B*K)**2   - (B*G)**2   )
+                gamma2_keeton = (1.-B) * (G2) /  ( (1-B*K)**2   - (B*G)**2   )
+                
+                # Write the convergene and shear for each galaxy in the lightcone
+                self.writeColumn('kappa_keeton',kappa_keeton)
+                self.writeColumn('gamma1_keeton',gamma1_keeton)
+                self.writeColumn('gamma2_keeton',gamma2_keeton)
 
-        self.writeColumn('kappa_tom',kappa_tom)
-        self.writeColumn('gamma1_tom',gamma1_tom)
-        self.writeColumn('gamma2_tom',gamma2_tom)
+                # Add the total convergence and shear from all galaxies
+                self.kappa_keeton_total=np.sum(self.galaxies['kappa_keeton'])
+                self.gamma1_keeton_total=np.sum(self.galaxies['gamma1_keeton'])
+                self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
 
-        self.writeColumn('kappa_add',K)
-        self.writeColumn('gamma1_add',G1)
-        self.writeColumn('gamma2_add',G2)
+            if method == 'tom':
+                # Calculate the 'tom' convergence and shear for each galaxy in the lightcone
+                kappa_tom  = (1.-B) * K
+                gamma1_tom = (1.-B) * G1
+                gamma2_tom = (1.-B) * G2
 
-        self.kappa_add_total=np.sum(self.galaxies['kappa'])
-        self.kappa_keeton_total=np.sum(self.galaxies['kappa_keeton'])
-        self.kappa_tom_total=np.sum(self.galaxies['kappa_tom'])
+                # Write the convergene and shear for each galaxy in the lightcone
+                self.writeColumn('kappa_tom',kappa_tom)
+                self.writeColumn('gamma1_tom',gamma1_tom)
+                self.writeColumn('gamma2_tom',gamma2_tom)
 
-        self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
-        self.gamma1_keeton_total=np.sum(self.galaxies['gamma1_keeton'])
-        self.gamma1_tom_total=np.sum(self.galaxies['gamma1_tom'])
+                # Add the total convergence and shear from all galaxies
+                self.kappa_tom_total=np.sum(self.galaxies['kappa_tom'])
+                self.gamma1_tom_total=np.sum(self.galaxies['gamma1_tom'])
+                self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
 
-        self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
-        self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
-        self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
+
+            if method == 'add':
+                # Calculate the convergence and shear for each galaxy in the lightcone
+                self.writeColumn('kappa_add',K)
+                self.writeColumn('gamma1_add',G1)
+                self.writeColumn('gamma2_add',G2)
+
+                # Add the total convergence and shear from all galaxies
+                self.kappa_add_total=np.sum(self.galaxies['kappa'])
+                self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
+                self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
 
         return
 
