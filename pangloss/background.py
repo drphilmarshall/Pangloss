@@ -544,7 +544,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Load in foreground catalog if none is passed
             if foreground is None:
                 config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-                foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+self.map_x+'_'+self.map_y'_'+self.field_x+'_'+self.field_y+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+                foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+self.map_x+'_'+self.map_y+'_'+self.field_x+'_'+self.field_y+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
 
             # Create catalog of the foreground galaxy locations
             corr_cat1 = treecorr.Catalog(ra=foreground.galaxies['RA'], dec=foreground.galaxies['Dec'], ra_units='rad', dec_units='rad')
