@@ -249,10 +249,12 @@ class BackgroundCatalog(pangloss.Catalog):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones.
         '''
-
+        
+        # Grid should already be setup, but set if not
         if self.grid is None:
             self.setup_grid()
         
+        # Lightcones should already be drilled, but drill if not
         if self.lightcones is None:
             self.drill_lightcones()
                 
@@ -285,14 +287,7 @@ class BackgroundCatalog(pangloss.Catalog):
             HMFfile = PANGLOSS_DIR+'/calib/SHMR/HaloMassRedshiftCatalog.pickle'
             shmr.makeHaloMassFunction(HMFfile)
             shmr.makeCDFs()
-            '''
-            
-            # Create the redshift scaffolding (because foreground redhsifts may have changed):
-            lightcone.defineSystem(self.zl,self.zs)
-            lightcone.loadGrid(self.grid)
-            lightcone.snapToGrid(self.grid)
-            
-            '''
+
             # Simulated lightcones need mock observed Mstar_obs values 
             # drawing from their Mhalos:
             lightcone.drawMstars(shmr)
@@ -431,6 +426,9 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Set lightcone parameters
         flavor = 'simulated'
+
+        # Setup the grid
+        self.setup_grid()
         
         # If a foreground catalog object is not passed, load in the appropriate catalog.
         if foreground is None:
@@ -440,8 +438,6 @@ class BackgroundCatalog(pangloss.Catalog):
         
         # Only take the columns from foreground that are needed for a lightcone
         lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
-        print len(foreground.galaxies.colnames)
-        print len(lc_catalog.colnames)
         del foreground
 
         # Set the counter to be 10% 
@@ -458,6 +454,11 @@ class BackgroundCatalog(pangloss.Catalog):
             
             # Create the lightcone for background galaxy i
             self.lightcones[i] = pangloss.Lightcone(lc_catalog,flavor,position,radius,ID=i)
+
+            # Create the redshift scaffolding for lightcone i:
+            self.lightcones[i].defineSystem(self.zl,self.zs)
+            self.lightcones[i].loadGrid(self.grid)
+            self.lightcones[i].snapToGrid(self.grid)
             
         if save == True:
             # Write out this entire catalog to the 'data' directory
