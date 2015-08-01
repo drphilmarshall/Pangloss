@@ -118,7 +118,7 @@ class Lightcone(object):
         except AttributeError: pass
 
         # Why is this here? If we want to save all the galaxies, shouldn't it be placed above the galaxies[np.where()] line? - Spencer
-        self.allgalaxies = self.galaxies
+        # self.allgalaxies = self.galaxies
         
         # Keep track of the number of galaxies in each lightcone
         self.galaxy_count = len(self.galaxies)
