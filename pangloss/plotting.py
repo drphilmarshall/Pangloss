@@ -301,13 +301,34 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         plt.errorbar(np.exp(corr.logr),correlation,err,c=color,linestyle=ls,label=label1+r'$\xi_'+label2+'$',linewidth=2)
         
     elif corr_type == 'ng':
-        # Plot the galaxi-mass correlation function (xi_gm)
-        '''
-        NOTE: This is old, needs to be updated similar to gg correlation above 
-        once the ng code has been rewritten.
-        '''
-        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Re}\left(\xi_{gm}\right)$',linewidth=2)
-        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Im}\left(\xi_{gm}\right)$',linewidth=2)
+        # Plot the galaxy-mass correlation function (xi_gm)
+
+        # Mark first label as intrinsic, observed, or predicted
+        if lensed == 'none': label1 = 'Intrinsic '            
+        if lensed == 'map': label1 = 'Observed '        
+        elif lensed == 'halo': label1 = 'Predicted '
+        
+        if corr_comp == 'real':
+            # Plot real(xi) with a solid line
+            correlation = corr.xi
+            ls = '-'
+            label2 = r'$\operatorname{Re}$'
+
+        elif corr_comp == 'imag':
+            # Plot the imag(xi) with a dashed line
+            correlation = corr.xi_im
+            ls = '--'
+            label2 = r'$\operatorname{Im}$'
+
+        # Error is the same for either case
+        err = np.sqrt(corr.varxi)
+
+        # If the multiplicative error M is not None, add it to the legend label
+        if M is not None:
+            label2 += r',\,M={}'.format(M)
+
+        # Plot the inputted galaxy-galaxy correlation function component
+        plt.errorbar(np.exp(corr.logr),correlation,err,c=color,linestyle=ls,label=label1+label2+r'$\left(\xi\right)$',linewidth=2)
     
     else:
         # Can incorporate other correlation functions here if needed
