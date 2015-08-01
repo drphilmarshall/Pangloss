@@ -250,7 +250,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         else: pass # Can incorporate other correlation functions later if needed
         
         # Plot xi=0 for reference
-        plt.plot([min(np.exp(corr.logr)),max(np.exp(corr.logr))],[0,0],c='k',linestyle='dashed')
+        plt.plot([min(np.exp(corr.logr)),max(np.exp(corr.logr))],[0,0],c='k',linestyle='dashed',linewidth=2)
 
         # Make axis ticks larger
         plt.gca().tick_params('both', length=5, width=1, which='major')
@@ -298,7 +298,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
             label2 += r',\,M={}'.format(M)
         
         # Plot the inputted shear-shear (or ellipticity-ellipticity) correlation function component
-        plt.errorbar(np.exp(corr.logr),correlation,err,c=color,linestyle=ls,label=label1+r'$\xi_'+label2+'$')
+        plt.errorbar(np.exp(corr.logr),correlation,err,c=color,linestyle=ls,label=label1+r'$\xi_'+label2+'$',linewidth=2)
         
     elif corr_type == 'ng':
         # Plot the galaxi-mass correlation function (xi_gm)
@@ -306,8 +306,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         NOTE: This is old, needs to be updated similar to gg correlation above 
         once the ng code has been rewritten.
         '''
-        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Re}\left(\xi_{gm}\right)$')
-        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Im}\left(\xi_{gm}\right)$')
+        plt.errorbar(np.exp(corr.logr), corr.xi, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Re}\left(\xi_{gm}\right)$',linewidth=2)
+        plt.errorbar(np.exp(corr.logr), corr.xi_im, np.sqrt(corr.varxi), c=color,label=r'$\operatorname{Im}\left(\xi_{gm}\right)$',linewidth=2)
     
     else:
         # Can incorporate other correlation functions here if needed
@@ -321,7 +321,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     
     if galaxy_count is not None:
         # place a text box in upper left in axes coords
-        plt.gca().text(0.05,0.95,str(galaxy_count)+' background galaxies used',transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+        plt.gca().text(0.1,0.95,str(galaxy_count)+' background galaxies used',transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
     
     return
     
