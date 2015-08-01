@@ -245,7 +245,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
-    def lens_by_halos(self,save=False):
+    def lens_by_halos(self,save=False,methods=['add','keeton','tom'],use_method='add'):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones.
         '''
@@ -270,11 +270,14 @@ class BackgroundCatalog(pangloss.Catalog):
         # Keep track of how long each lightcone takes to process
         runtimes = np.zeros(self.galaxy_count)      
         
+        # Set the counter to be 10% 
+        counter = np.floor(len(self.lightcones)/10.0)
+        
         # Calculate lensing in each lightcone:
         for lightcone in self.lightcones:
             start_time = timeit.default_timer()
-            if lightcone.ID%10 == 0:
-                print lightcone.ID
+            if lightcone.ID%counter == 0:
+                print lightcone.ID,' ',100.0*lightcone.ID/self.galaxy_count,'%'
             
             '''
             # Set the stellar mass - halo mass relation
@@ -304,12 +307,26 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.makeKappas(truncationscale=10)
             
             # Combine all contributions into a single kappa and gamma for the lightcone
-            lightcone.combineKappas()
+            lightcone.combineKappas(methods=methods)
             
-            # Populate the kappa and gamma values
-            kappa[lightcone.ID] = lightcone.kappa_add_total
-            gamma1[lightcone.ID] = lightcone.gamma1_add_total
-            gamma2[lightcone.ID] = lightcone.gamma2_add_total
+            # Populate the kappa and gamma values using the 'use_method'
+            if use_method == 'add' :
+                # Use the add_total combination
+                kappa[lightcone.ID] = lightcone.kappa_add_total
+                gamma1[lightcone.ID] = lightcone.gamma1_add_total
+                gamma2[lightcone.ID] = lightcone.gamma2_add_total
+
+            elif use_method == 'keeton':
+                # Use the keeton_total combination
+                kappa[lightcone.ID] = lightcone.kappa_keeton_total
+                gamma1[lightcone.ID] = lightcone.gamma1_keeton_total
+                gamma2[lightcone.ID] = lightcone.gamma2_keeton_total
+
+            elif use_method == 'tom':
+                # Use the tom_total combination
+                kappa[lightcone.ID] = lightcone.kappa_tom_total
+                gamma1[lightcone.ID] = lightcone.gamma1_tom_total
+                gamma2[lightcone.ID] = lightcone.gamma2_tom_total
             
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
@@ -421,8 +438,13 @@ class BackgroundCatalog(pangloss.Catalog):
             config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
             foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
         
+        # Set the counter to be 10% 
+        counter = np.floor(self.galaxy_count/10.0)        
+        
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
+            if i%counter == 0:
+                print i,' ',100.0*i/self.galaxy_count,'%'
             # Set galaxy positions
             ra0 = self.galaxies['RA'][i]
             dec0 = self.galaxies['Dec'][i]
