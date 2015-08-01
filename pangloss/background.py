@@ -438,6 +438,12 @@ class BackgroundCatalog(pangloss.Catalog):
             config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
             foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
         
+        # Only take the columns from foreground that are needed for a lightcone
+        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
+        print len(foreground.galaxies.colnames)
+        print len(lc_catalog.colnames)
+        del foreground
+
         # Set the counter to be 10% 
         counter = np.floor(self.galaxy_count/10.0)        
         
@@ -451,13 +457,11 @@ class BackgroundCatalog(pangloss.Catalog):
             position = [ra0,dec0]
             
             # Create the lightcone for background galaxy i
-            self.lightcones[i] = pangloss.Lightcone(foreground.galaxies,flavor,position,radius,ID=i)
+            self.lightcones[i] = pangloss.Lightcone(lc_catalog,flavor,position,radius,ID=i)
             
         if save == True:
             # Write out this entire catalog to the 'data' directory
             self.save()
-        
-        del foreground
         
         return
             
