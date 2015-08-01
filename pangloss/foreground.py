@@ -4,6 +4,9 @@ import os, sys
 from astropy.table import Table, Column
 import treecorr
 
+# Pangloss:
+PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
+sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 # ============================================================================
