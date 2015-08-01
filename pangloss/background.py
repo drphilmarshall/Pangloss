@@ -245,7 +245,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
         
-    def lens_by_halos(self,save=False,methods=['add','keeton','tom'],use_method='add'):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add'):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones.
         '''
