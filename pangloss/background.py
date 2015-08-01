@@ -505,7 +505,7 @@ class BackgroundCatalog(pangloss.Catalog):
     
 # ----------------------------------------------------------------------------
             
-    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed='map'):
+    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed='map',foreground=None):
         '''
         Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or 
         number of bins (N) are inputted, the binsize is automatically calculated using 15 bins. The 'lensed'
@@ -539,9 +539,15 @@ class BackgroundCatalog(pangloss.Catalog):
             
             return gg
 
+        # Calculate the galaxy-galaxy correlation function
         elif corr_type == 'ng':
+            # Load in foreground catalog if none is passed
+            if foreground is None:
+                config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
+                foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+self.map_x+'_'+self.map_y'_'+self.field_x+'_'+self.field_y+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+
             # Create catalog of the foreground galaxy locations
-            corr_cat1 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], ra_units='rad', dec_units='rad')
+            corr_cat1 = treecorr.Catalog(ra=foreground.galaxies['RA'], dec=foreground.galaxies['Dec'], ra_units='rad', dec_units='rad')
 
             # Create catalog of the background galaxy ellipticities
             if lensed == 'map':
