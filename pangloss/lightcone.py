@@ -78,7 +78,7 @@ class Lightcone(object):
         self.name = 'Lightcone through the Universe'
         self.flavor = flavor   # 'real' or 'simulated'
         self.catalog = catalog # astropy table of galaxies
-        self.ID = ID           # ID number from the cone's center background galaxy 
+        self.ID = ID           # ID number from the cone's center background galaxy
 
         # Simulated lightcones have "true" (ray-traced) convergence:
         self.kappa_hilbert = None # until set!
@@ -101,7 +101,7 @@ class Lightcone(object):
                                               (self.catalog['RA'] < (self.xc[0]+dx)) & \
                                               (self.catalog['Dec'] > (self.xc[1]-dx)) & \
                                               (self.catalog['Dec'] < (self.xc[1]+dx))   )]
-                                              
+
         # Trim it to a circle:
         x = (self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin   # Does this line need to be changed as NRA -> RA ??
         y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
@@ -119,7 +119,7 @@ class Lightcone(object):
 
         # Why is this here? If we want to save all the galaxies, shouldn't it be placed above the galaxies[np.where()] line? - Spencer
         # self.allgalaxies = self.galaxies
-        
+
         # Keep track of the number of galaxies in each lightcone
         self.galaxy_count = len(self.galaxies)
 
@@ -398,7 +398,6 @@ class Lightcone(object):
 
         mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
-        # Is the following astropy compatible?
         self.writeColumn('kappa',kappa)
         self.writeColumn('gamma',gamma)
         self.writeColumn('gamma1',-gamma1)
@@ -423,17 +422,17 @@ class Lightcone(object):
 
         if 'keeton' in methods or 'tom' in methods:
                 B = self.galaxies['beta']
-                G = self.galaxies['gamma']         
+                G = self.galaxies['gamma']
                 D = K**2-G**2
 
         for method in methods:
-            
+
             if method == 'keeton':
                 # Calculate the 'keeton' convergence and shear for each galaxy in the lightcone
                 kappa_keeton  = (1.-B) * (K- B*(D)) /  ( (1-B*K)**2   - (B*G)**2   )
                 gamma1_keeton = (1.-B) * (G1) /  ( (1-B*K)**2   - (B*G)**2   )
                 gamma2_keeton = (1.-B) * (G2) /  ( (1-B*K)**2   - (B*G)**2   )
-                
+
                 # Write the convergene and shear for each galaxy in the lightcone
                 self.writeColumn('kappa_keeton',kappa_keeton)
                 self.writeColumn('gamma1_keeton',gamma1_keeton)
