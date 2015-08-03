@@ -584,6 +584,13 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
 
+    def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus'):
+        '''
+        Compares two correlation function components (with the same binning and separation values) using
+        a chi-squared approximation.
+        '''
+
+
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
         '''
         Make scatter plot of generated galaxies.
