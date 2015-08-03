@@ -246,7 +246,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
 
         if corr_type == 'gg': plt.ylabel(r'Ellipticity-Ellipticity Correlation $\xi(\Delta\theta)$',fontsize=20)
-        elif corr_type == 'ng': plt.ylabel(r'Galaxy-Mass Correlation $\xi(\Delta\theta)$',fontsize=20)
+        elif corr_type == 'ng': plt.ylabel(r'Galaxy-Mass Correlation $\left<\gamma_t\right>$',fontsize=20)
         else: pass # Can incorporate other correlation functions later if needed
 
         # Plot xi=0 for reference
