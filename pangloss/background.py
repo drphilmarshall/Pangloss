@@ -273,13 +273,13 @@ class BackgroundCatalog(pangloss.Catalog):
         runtimes = np.zeros(self.galaxy_count)
 
         # Set the counter to be 10%
-        counter = np.floor(len(self.lightcones)/10.0)
+        counter = np.ceil(len(self.lightcones)/10.0)
 
         # Calculate lensing in each lightcone:
         for lightcone in self.lightcones:
             start_time = timeit.default_timer()
             if lightcone.ID%counter == 0:
-                print lightcone.ID,' ',int(100*lightcone.ID/self.galaxy_count),'%'
+                print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             '''
             # Set the stellar mass - halo mass relation
@@ -441,12 +441,12 @@ class BackgroundCatalog(pangloss.Catalog):
         del foreground
 
         # Set the counter to be 10%
-        counter = np.floor(self.galaxy_count/10.0)
+        counter = np.ceil(self.galaxy_count/10.0)
 
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
             if i%counter == 0:
-                print i,' ',int(100*i/self.galaxy_count),'%'
+                print i,' ',np.ceil(100*i/self.galaxy_count),'%'
             # Set galaxy positions
             ra0 = self.galaxies['RA'][i]
             dec0 = self.galaxies['Dec'][i]
@@ -635,8 +635,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elif lensed == 'halo':
                 # Extract lensed-by-halos ellipticity
-                eMod = galaxies['eMod_halo']
-                ePhi = -galaxies['ePhi_halo']
+                eMod_halo = galaxies['eMod_halo']
+                ePhi_halo = -galaxies['ePhi_halo']
 
             elif lensed == 'both':
                 # Extract both the intrinsic and lensed-by-map ellipticity
