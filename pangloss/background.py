@@ -101,6 +101,16 @@ class BackgroundCatalog(pangloss.Catalog):
         self.grid = None
         self.lightcones = None
 
+        # Initialize ellipticity-ellipticity correlation attributes
+        self.gg_none = None
+        self.gg_map = None
+        self.gg_halo = None
+
+        # Initialize galaxy-galaxy correlation attributes
+        self.ng_none = None
+        self.ng_map = None
+        self.ng_halo = None
+
         # Calls the superclass initialization for useful catalog attributes
         pangloss.Catalog.__init__(self)
 
@@ -549,6 +559,11 @@ class BackgroundCatalog(pangloss.Catalog):
             # Check to make sure none of the values are Nan's (Fix in fugure using 0 weights for galaxies not in K/S maps)
             assert not np.isnan(gg.xip).any()
 
+            # Save correlation object to catalog
+            if lensed == 'none': self.gg_none = gg
+            elif lensed == 'map': self.gg_map = gg
+            elif lensed == 'halo': self.gg_halo = gg
+
             return gg
 
         # Calculate the galaxy-galaxy correlation function
@@ -577,6 +592,11 @@ class BackgroundCatalog(pangloss.Catalog):
 
             # Check to make sure none of the values are Nan's (Fix in fugure using 0 weights for galaxies not in K/S maps)
             assert not np.isnan(ng.xi).any()
+
+            # Save correlation object to catalog
+            if lensed == 'none': self.ng_none = ng
+            elif lensed == 'map': self.ng_map = ng
+            elif lensed == 'halo': self.ng_halo = ng
 
             return ng
 
