@@ -103,7 +103,7 @@ class Lightcone(object):
                                               (self.catalog['Dec'] < (self.xc[1]+dx))   )]
 
         # Trim it to a circle:
-        x = (self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin   # Does this line need to be changed as NRA -> RA ??
+        x = -np.cos(self.galaxies['Dec'])*(self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin
         y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
         r = np.sqrt(x*x + y*y)
         phi = np.arctan2(y,x)
