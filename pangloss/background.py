@@ -466,6 +466,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def save(self,filename=None):
         '''
         Save the background galaxy catalog in '/data'.
@@ -502,6 +504,16 @@ class BackgroundCatalog(pangloss.Catalog):
         self.__dict__.update(tmp_dict)
 
         return
+
+    def bin_to_map(self,data=['kappa','gamma1','gamma2'],binsize=1.0,bin_units='arcmin'):
+        '''
+        Bin the background galaxies into WLMaps with data set in the list 'data'. Binsize is in units of arcmin.
+        '''
+        # If a single string is passed for data, turn into list
+        if type(data) == str:
+            data = [data]
+
+        # Finish!!
 
 # ----------------------------------------------------------------------------
 
