@@ -643,10 +643,10 @@ class BackgroundCatalog(pangloss.Catalog):
         elif corr_type == 'ng':
             # Extract the correlation values
             if corr_comp == 'real':
-                y1, y2 = corr1.xi
+                y1, y2 = corr1.xi, corr2.xi
 
             elif corr_comp == 'imag':
-                y1, y2 = corr.xi_im
+                y1, y2 = corr.xi_im, corr2.xi_im
 
             # Extract the variance
             var1, var2 = corr1.varxi, corr2.varxi
