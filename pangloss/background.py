@@ -637,7 +637,7 @@ class BackgroundCatalog(pangloss.Catalog):
             chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
 
             # Determine the significance
-            n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
+            n_sigma = np.sqrt(2.0*chi2) - np.sqrt(2.0*N)
 
         # For galaxy-galaxy correlation functions:
         elif corr_type == 'ng':
