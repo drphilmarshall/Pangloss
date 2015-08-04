@@ -610,6 +610,65 @@ class BackgroundCatalog(pangloss.Catalog):
         a chi-squared approximation.
         '''
 
+        # For ellipticity-ellipticity correlation functions:
+        if corr_type == 'gg':
+            # Extract the correlation values
+            if corr_comp == 'plus':
+                y1, y2 = corr1.xip, corr2.xip
+                var1, var2 = corr1.varxi, corr2.varxi
+
+            elif corr_comop == 'minus':
+                y1, y2 = corr1.xim, corr2.xim
+                var1, var2 = corr1.varxi, corr2.varxi
+
+            elif corr_comp == 'cross':
+                y1, y2 = 0.5*(corr1.xim_im-corr1.xip_im), 0.5*(corr2.xim_im-corr2.xip_im)
+                var1, var2 = 0.5*np.sqrt(2*corr1.varxi), 0.5*np.sqrt(2*corr2.varxi)
+
+            elif corr_comp == 'cross_prime':
+                y1, y2 = corr1.xip_im, corr2.xip_im
+                var1, var2 = corr1.varxi, corr2,varxi
+
+            # Check that each correlation object is the same size, and set the degrees of freedom
+            assert np.size(y1) == np.size(y2)
+            N = np.size(y1)
+            print N
+
+            # Calculate the chi-squared value
+            chi2 = np.sum( (y1-y2)**2 / 1.0*(var1 + var2) )
+            print chi2
+
+            # Determine the significance
+            n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
+
+        # For galaxy-galaxy correlation functions:
+        elif corr_type == 'ng':
+            # Extract the correlation values
+            if corr_comp == 'real':
+                y1, y2 = corr1.xi
+
+            elif corr_comp == 'imag':
+                y1, y2 = corr.xi_im
+
+            # Extract the variance
+            var1, var2 = corr1.varxi, corr2.varxi
+
+            # Check that each correlation object is the same size, and set the degrees of freedom
+            assert np.size(y1) == np.size(y2)
+            N = np.size(y1)
+
+            # Calculate the chi-squared value
+            chi2 = np.sum( (y1-y2)**2 / 1.0*(var1 + var2) )
+
+            # Determine the significance
+            n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
+
+        else:
+            # Can add more correlation types here if needed
+            pass
+
+        return n_sigma
+
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
         '''
