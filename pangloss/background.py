@@ -617,7 +617,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 y1, y2 = corr1.xip, corr2.xip
                 var1, var2 = corr1.varxi, corr2.varxi
 
-            elif corr_comop == 'minus':
+            elif corr_comp == 'minus':
                 y1, y2 = corr1.xim, corr2.xim
                 var1, var2 = corr1.varxi, corr2.varxi
 
@@ -632,11 +632,9 @@ class BackgroundCatalog(pangloss.Catalog):
             # Check that each correlation object is the same size, and set the degrees of freedom
             assert np.size(y1) == np.size(y2)
             N = np.size(y1)
-            print N
 
             # Calculate the chi-squared value
-            chi2 = np.sum( (y1-y2)**2 / 1.0*(var1 + var2) )
-            print chi2
+            chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
 
             # Determine the significance
             n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
@@ -658,7 +656,7 @@ class BackgroundCatalog(pangloss.Catalog):
             N = np.size(y1)
 
             # Calculate the chi-squared value
-            chi2 = np.sum( (y1-y2)**2 / 1.0*(var1 + var2) )
+            chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
 
             # Determine the significance
             n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
@@ -667,7 +665,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Can add more correlation types here if needed
             pass
 
-        return n_sigma
+        return chi2, n_sigma
 
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
