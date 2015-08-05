@@ -425,6 +425,32 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+    def set_importance(self,lightcone,metric='linear'):
+        '''
+        Give each foreground galaxy in a lightcone an importance based upon the
+        inputted metric.
+        '''
+
+        galaxies = lightcone.galaxies
+
+        # Find the min and max physical distance and
+        r_min = np.min(lightcone.galaxies['rphys'])
+        r_max = np.max(lightcone.galaxies['rphys'])
+        Mh_min = np.min(lightcone.galaxies['Mh'])
+        Mh_max = np.max(lightcone.galaxies['Mh'])
+
+        if metric == 'linear':
+            # Compute the importance using a linear metric from 0 to 1
+            importance_r = (r_max - galaxies['rphys']) / r_max
+            importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
+            importance = importance_r*importance_m
+            lightcone.galaxies['importance'] = importance
+
+        # Make sure all importance values are positive
+        assert (importance >= 0).all()
+
+        return
+
     def drill_lightcones(self,radius=2.0,foreground=None,save=False):
         '''
         Drill a lightcone at each background source with radius in arcmin. Will
