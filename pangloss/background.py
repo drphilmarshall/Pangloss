@@ -497,6 +497,9 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].loadGrid(self.grid)
             self.lightcones[i].snapToGrid(self.grid)
 
+            # Set importance of each foreground object in the lightcone for lensing
+            self.set_importance(self.lightcones[i])
+
         if save == True:
             # Write out this entire catalog to the 'data' directory
             self.save()
