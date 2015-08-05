@@ -255,9 +255,11 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add'):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',importance_lim=0.0):
         '''
-        Lens background galaxies by the combined shear and convergence in their respective lightcones.
+        Lens background galaxies by the combined shear and convergence in their respective lightcones using
+        the method given by `use_method`. By default all foreground objects in a lightcone are used in the
+        calculation, but this can be changed by setting the 'importance_lim' higher.
         '''
 
         # Grid should already be setup, but set if not
@@ -290,6 +292,9 @@ class BackgroundCatalog(pangloss.Catalog):
             start_time = timeit.default_timer()
             if lightcone.ID%counter == 0 and vb is True:
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
+
+            # Remove galaxies in lightcone that do not meet the importance limit
+            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
