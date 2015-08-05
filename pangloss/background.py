@@ -711,7 +711,7 @@ class BackgroundCatalog(pangloss.Catalog):
             mean_err = np.average(percent_diff,weights=w)
 
         # Propagate the error in the mean percent error calculation
-        std_err = 1.0/np.sqrt(np.sum(w))
+        std_err = 1.0/np.sqrt(np.sum(w)) * 100.0
 
         return chi2, n_sigma, mean_err, std_err
 
