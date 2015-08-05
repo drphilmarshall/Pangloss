@@ -14,7 +14,7 @@ sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 # Verbose
-vb = False
+vb = True
 
 # ============================================================================
 
@@ -288,7 +288,7 @@ class BackgroundCatalog(pangloss.Catalog):
         # Calculate lensing in each lightcone:
         for lightcone in self.lightcones:
             start_time = timeit.default_timer()
-            if lightcone.ID%counter == 0:
+            if lightcone.ID%counter == 0 and vb is True:
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             '''
@@ -336,7 +336,8 @@ class BackgroundCatalog(pangloss.Catalog):
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
 
-        print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
+        if vb is True:
+            print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
 
         #-------------------------------------------------------------------------------------
         # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
@@ -455,7 +456,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
-            if i%counter == 0:
+            if i%counter == 0 and vb is True:
                 print i,' ',np.ceil(100*i/self.galaxy_count),'%'
             # Set galaxy positions
             ra0 = self.galaxies['RA'][i]
