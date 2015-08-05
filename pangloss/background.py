@@ -444,7 +444,9 @@ class BackgroundCatalog(pangloss.Catalog):
             importance_r = (r_max - galaxies['rphys']) / r_max
             importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
             importance = importance_r*importance_m
-            lightcone.galaxies['importance'] = importance
+
+            # Set the importance of each galaxy normalized by the maximum importance
+            lightcone.galaxies['importance'] = importance/np.max(importance)
 
         # Make sure all importance values are positive
         assert (importance >= 0).all()
