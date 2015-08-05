@@ -294,7 +294,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the importance limit
-            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -449,6 +449,7 @@ class BackgroundCatalog(pangloss.Catalog):
             importance_r = (r_max - galaxies['rphys']) / r_max
             importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
             importance = importance_r*importance_m
+            # importance = np.sqrt(importance_r**2+importance_m**2)
 
             # Set the importance of each galaxy normalized by the maximum importance
             lightcone.galaxies['importance'] = importance/np.max(importance)
@@ -505,7 +506,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].snapToGrid(self.grid)
 
             # Set importance of each foreground object in the lightcone for lensing
-            self.set_importance(self.lightcones[i])
+            #self.set_importance(self.lightcones[i])
 
         if save == True:
             # Write out this entire catalog to the 'data' directory
@@ -709,7 +710,10 @@ class BackgroundCatalog(pangloss.Catalog):
             percent_diff = abs( (y1-y2) / (0.5*y1+0.5*y2) ) * 100.0
             mean_err = np.average(percent_diff,weights=w)
 
-        return chi2, n_sigma, mean_err
+        # Propagate the error in the mean percent error calculation
+        std_err = 1.0/np.sqrt(np.sum(w))
+
+        return chi2, n_sigma, mean_err, std_err
 
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
