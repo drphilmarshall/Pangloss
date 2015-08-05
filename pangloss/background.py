@@ -604,10 +604,13 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
 
-    def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus'):
+    def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus',percent_type='error'):
         '''
         Compares two correlation function components (with the same binning and separation values) using
-        a chi-squared approximation.
+        a chi-squared approximation and a mean percent difference (if both correlations are predicted quantities)
+        or a mean percent error (if one of the correlations is an observed quantity). Note that by default the
+        method computes a percent error rather than a percent difference, and that the observed (which is our theoretical)
+        value must be inputted as corr2.
         '''
 
         # For ellipticity-ellipticity correlation functions:
@@ -629,16 +632,6 @@ class BackgroundCatalog(pangloss.Catalog):
                 y1, y2 = corr1.xip_im, corr2.xip_im
                 var1, var2 = corr1.varxi, corr2,varxi
 
-            # Check that each correlation object is the same size, and set the degrees of freedom
-            assert np.size(y1) == np.size(y2)
-            N = np.size(y1)
-
-            # Calculate the chi-squared value
-            chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
-
-            # Determine the significance
-            n_sigma = np.sqrt(2.0*chi2) - np.sqrt(2.0*N)
-
         # For galaxy-galaxy correlation functions:
         elif corr_type == 'ng':
             # Extract the correlation values
@@ -651,21 +644,35 @@ class BackgroundCatalog(pangloss.Catalog):
             # Extract the variance
             var1, var2 = corr1.varxi, corr2.varxi
 
-            # Check that each correlation object is the same size, and set the degrees of freedom
-            assert np.size(y1) == np.size(y2)
-            N = np.size(y1)
-
-            # Calculate the chi-squared value
-            chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
-
-            # Determine the significance
-            n_sigma = np.sqrt(2*chi2) - np.sqrt(2*N)
-
         else:
             # Can add more correlation types here if needed
             pass
 
-        return chi2, n_sigma
+        # Check that each correlation object is the same size, and set the degrees of freedom
+        assert np.size(y1) == np.size(y2)
+        N = np.size(y1)
+
+        # Calculate the chi-squared value
+        chi2 = np.sum( (y1-y2)**2 / (1.0*var1 + 1.0*var2) )
+
+        # Determine the significance
+        n_sigma = np.sqrt(2.0*chi2) - np.sqrt(2.0*N)
+
+        # Calculate the weight of each correlation value pair
+        w = 1.0/(np.sqrt( 1.0*var1 + 1.0*var2 ))
+
+        if percent_type == 'error':
+            # Calculate mean percent error between the predicted and observed correlation function
+            # values at different separations
+            percent_err = abs( (y1-y2) / (1.0*y2) ) * 100.0
+            mean_err = np.average(percent_err,weights=w)
+
+        elif percent_type == 'difference':
+            # Calculate mean percent difference between correlation function values at different separations
+            percent_diff = abs( (y1-y2) / (0.5*y1+0.5*y2) ) * 100.0
+            mean_err = np.average(percent_diff,weights=w)
+
+        return chi2, n_sigma, mean_err
 
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
