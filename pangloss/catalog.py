@@ -57,27 +57,27 @@ class Catalog(object):
         self.ra_min = np.rad2deg(self.galaxies['RA'].min())
         self.dec_max = np.rad2deg(self.galaxies['Dec'].max())
         self.dec_min = np.rad2deg(self.galaxies['Dec'].min())
-        
+
         return
-    
+
     def __str__(self):
         # Add more!
         return 'General catalog object'
-        
+
     def read(filename,config):
 
         try: table = Table.read(filename, format = 'ascii')
         except:
             raise IOError("Cannot open %s\n" % filename)
-            
+
         return table
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
         self.galaxies.write(output,format = 'ascii')
         return
-        
-    
+
+
     def find_galaxies(self,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],ra_lim=None,dec_lim=None):
         '''
         Retrieve list of galaxy world coordinates and their masses with values within inputted limits.
@@ -86,7 +86,7 @@ class Catalog(object):
         # If no ra or dec limits are given, use all galaxies
         if ra_lim == None: ra_lim = [self.ra_max, self.ra_min] # RA flipped because RA is left-handed
         if dec_lim == None: dec_lim = [self.dec_min, self.dec_max]
-            
+
         # Convert world coordinate limits to radians
         ra_lim, dec_lim = np.deg2rad(ra_lim), np.deg2rad(dec_lim)
 

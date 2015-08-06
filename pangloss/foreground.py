@@ -2,7 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 from astropy.table import Table, Column
-import treecorr
+
+# Fast correlation functions:
+try:
+    import treecorr
+except ImportError:
+    from pangloss import nocorr as treecorr
 
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -28,7 +33,7 @@ class ForegroundCatalog(pangloss.Catalog):
         config:         A config object containing structure of catalog metagalaxies
 
     METHODS
-        read(filename,config): 
+        read(filename,config):
 
         plotForeground: Make a scatterplot of foreground galaxy positions at their
                         respective world coordinates. Only galaxies in the catalog
@@ -50,7 +55,7 @@ class ForegroundCatalog(pangloss.Catalog):
     def __init__(self,filename,config):
         self.filename = filename
         self.type = 'foreground'
-        
+
         # Structures catalog metadata from configfile and reads in the catalog data
         self.config = config
         self.read(filename,config)
@@ -64,18 +69,16 @@ class ForegroundCatalog(pangloss.Catalog):
         # 0 <= i,j <= 3, each (i,j) field covers 1x1 square degree
         self.field_i = eval(input_parse[5]) # The i location of the field grid in the (x,y) map
         self.field_j = eval(input_parse[6]) # The j location of the field grid in the (x,y) map
-        
+
         # Initialize common catalog attributes:
         pangloss.Catalog.__init__(self)
-        
+
         return
 
     def __str(self):
         # Add more!
-        return 'Foreground catalog with {} galaxies, '+ \
-               'with redshifts ranging from {} to {}'\
-                .format(self.galaxyCount,self.minZ,self.maxZ)
-                
+        return 'Foreground catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxyCount,self.minZ,self.maxZ)
+
     def read(self,filename,config):
         # Uses astropy.table to read catalog, but with a few specific changes
         self.galaxies = pangloss.io.read_hilbert_catalog(filename,config)
@@ -88,23 +91,23 @@ class ForegroundCatalog(pangloss.Catalog):
         The other optional inputs are limits with default values, which limit
         the number of galaxies that are to be plotted by the respective attribute.
         '''
-        
+
         # Get current figure (or make one if it doesn't exist)
         fig = plt.gcf()
-        
+
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
             imshow = fig.axes[0]
             world = fig.axes[1]
-            
+
             # If the Kappamap subplot was not passed to this catalog:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
                 subplot = plt.axis()
-            
-            # Adopt figure size from open Kappamap:    
+
+            # Adopt figure size from open Kappamap:
             fig_size = plt.gcf().get_size_inches()[0]
 
         # Otherwise:
@@ -114,10 +117,10 @@ class ForegroundCatalog(pangloss.Catalog):
                 ai, di = self.ra_max, self.dec_min
                 af, df = self.ra_min, self.dec_max
                 subplot = [ai,af,di,df]
-            
+
             # Adjust the subplot in wcs by half a pixel
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
-            
+
             # Create new imshow and world axes
             imshow, world = pangloss.make_axes(fig,subplot)
 
@@ -146,7 +149,7 @@ class ForegroundCatalog(pangloss.Catalog):
         plt.scatter(ra,dec,s=size,color='orange',alpha=0.2,edgecolor=None)
         plt.xlabel('Right Ascension / deg')
         plt.ylabel('Declination / deg')
-        
+
         # Set the correct figure size
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 

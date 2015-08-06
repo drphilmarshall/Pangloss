@@ -14,7 +14,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
         Compute gravitational lensing quantities.
 
     COMMENTS
-            
+
     FUNCTIONS
         NFW profile:
             delta_c(c):
@@ -22,7 +22,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
             L(x,t):
             F2(x):
             Ffunc(x):
-            Gfunc(x): 
+            Gfunc(x):
         Baltz, Marshall & Oguri truncated NFW profile:
             BMO1Ffunc(x,t):
             BMO1Gfunc(x,t):
@@ -36,7 +36,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
@@ -67,7 +67,7 @@ def F2(x):
     return z
 
 # ------------------------------------------------------------------------
-# Function needed to calculate kappa for an NFW halo. 
+# Function needed to calculate kappa for an NFW halo.
 
 def Ffunc(x):
     z=numpy.zeros(len(x))
@@ -76,7 +76,7 @@ def Ffunc(x):
            z[i]=0.0
        elif x[i]>1:
           z[i]= (1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1.)/(x[i]+1))**.5))/(x[i]**2-1.)
-       else: 
+       else:
           if x[i]==1:
              z[i] =1./3
           else:
@@ -84,12 +84,12 @@ def Ffunc(x):
              z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctanh(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
        if z[i] < 0: print 'warning Ffunc' # BUG - non-informative alert
     return 2*z
-    
+
 # ------------------------------------------------------------------------
-# Function needed to calculate gamma for an NFW halo. 
+# Function needed to calculate gamma for an NFW halo.
 # Form is  long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
-def Gfunc(x): 
+def Gfunc(x):
     z=numpy.zeros(len(x))
     for i in range(len(x)):
         X=x[i]
@@ -99,7 +99,7 @@ def Gfunc(x):
                 (4/X**2)*numpy.log(X/2) - \
                 2/(X**2-1) +\
                 4*numpy.arctan(y)/(((X**2)-1)**(3./2))
-        else: 
+        else:
             if x[i]==1:
                 z[i] =(10./3+4*numpy.log(0.5))
             else:
@@ -174,7 +174,7 @@ def BMO2Gfunc(x,t):
     z=numpy.zeros(len(x))
     x[x==1]=1.+1e-5
     z=(t**4/(2*(t**2+1)**3))*(
-        (t**2+1+4*(x**2-1))*(2*F(x)) 
+        (t**2+1+4*(x**2-1))*(2*F(x))
         +
         (1/t)*(3.14159*(3*t**2-1)+2*t*(t**2-3)*numpy.log(t))
         +
@@ -204,4 +204,3 @@ def sersic(r,re,amp=1.,n=4.):
      return kappa,kbar-kappa
 
 # ========================================================================
-
