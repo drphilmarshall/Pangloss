@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys, timeit
+import os, random, math, cmath, sys, timeit, cProfile
 import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
@@ -294,7 +294,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the importance limit
-            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -441,21 +441,21 @@ class BackgroundCatalog(pangloss.Catalog):
         # Find the min and max physical distance and
         r_min = np.min(lightcone.galaxies['rphys'])
         r_max = np.max(lightcone.galaxies['rphys'])
-        Mh_min = np.min(lightcone.galaxies['Mh'])
-        Mh_max = np.max(lightcone.galaxies['Mh'])
+        Mh_min = np.min(10**lightcone.galaxies['Mh'])
+        Mh_max = np.max(10**lightcone.galaxies['Mh'])
 
         if metric == 'linear':
             # Compute the importance using a linear metric from 0 to 1
             importance_r = (r_max - galaxies['rphys']) / r_max
             importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
-            importance = importance_r*importance_m
-            # importance = np.sqrt(importance_r**2+importance_m**2)
+            #importance = importance_r*importance_m
+            importance = np.sqrt(importance_r**2+importance_m**2)
 
             # Set the importance of each galaxy normalized by the maximum importance
             lightcone.galaxies['importance'] = importance/np.max(importance)
 
         # Make sure all importance values are positive
-        assert (importance >= 0).all()
+        assert (importance >= 0).all() and (importance <= 1.0).all()
 
         return
 
@@ -506,7 +506,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].snapToGrid(self.grid)
 
             # Set importance of each foreground object in the lightcone for lensing
-            #self.set_importance(self.lightcones[i])
+            self.set_importance(self.lightcones[i])
 
         if save == True:
             # Write out this entire catalog to the 'data' directory
