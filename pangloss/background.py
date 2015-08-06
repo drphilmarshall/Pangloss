@@ -223,6 +223,7 @@ class BackgroundCatalog(pangloss.Catalog):
         g = np.zeros(self.galaxy_count)
         e1 = np.zeros(self.galaxy_count)
         e2 = np.zeros(self.galaxy_count)
+        e = np.zeros(self.galaxy_count)
         eMod = np.zeros(self.galaxy_count)
         ePhi = np.zeros(self.galaxy_count)
 
