@@ -42,10 +42,17 @@ Then "import pangloss" from python should just work, and the command
 line scripts should too. However, you will need to have the following packages
 installed as well:
 
-    import atpy,asciitable,pyfits
-    import numpy,scipy,getopt,matplotlib
+    import os,getopt,cPickle,timeit
+    import matplotlib,mpl_toolkits
+    import numpy,scipy,math,cmath,random
+    import astropy,treecorr
 
-Most (if not all) are available via pip and/or homebrew.
+Most (if not all) are available via pip and/or homebrew. In particular, you'll want to
+
+    pip install astropy
+    pip install TreeCorr
+
+and look up their installation documentation if that doesn't work.
 
 
 ## Example use
