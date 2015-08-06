@@ -631,7 +631,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
 
             # Return if treecorr is not installed:
-            if len(corr_cat.__dict__) == 0:
+            if len(corr_cat1.__dict__) == 0:
                 print "treecorr is not installed, skipping correlation function calculation."
                 return None
 
