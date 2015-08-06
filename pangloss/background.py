@@ -236,12 +236,18 @@ class BackgroundCatalog(pangloss.Catalog):
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
 
-        # Flag any galaxy that has been strongly lensed
-        self.galaxies['strong_flag'][abs(g)>1.0] = 1
-        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
+        # Flag any galaxy that has been strongly (or near-strongly) lensed
+        self.galaxies['strong_flag'][abs(g)>0.5] = 1
 
-        # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
+        # Calculate the observed ellipticity for weak lensing events
+        e[self.galaxies['strong_flag']!=1] = ( (e1_int + 1j*e2_int) + g) / (1.0+g_conj * (e1_int + 1j*e2_int) )
+
+        # Calculate the observed ellipticity for strong lensing events
+        e1_int_conj = np.array([val.conjugate() for val in e1_int])
+        e2_int_conj = np.array([val.conjugate() for val in e2_int])
+        e[self.galaxies['strong_flag']==1] = (1 + g*(e1_int_conj+1j*e2_int_conj) ) / ( (e1_int_conj+1j*e2_int_conj) + g_conj)
+
+        # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
@@ -255,6 +261,11 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e2'] = e2
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
+
+        # Note: For now, we are removing any background galaxy that is strongly lensed by a map.
+        self.galaxies = self.galaxies[self.galaxies['strong_flag']!=1]
+        self.strong_lensed_removed = np.sum(self.galaxies['strong_flag'])
+        self.galaxy_count -= self.strong_lensed_removed
 
         return
 
@@ -358,12 +369,18 @@ class BackgroundCatalog(pangloss.Catalog):
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
 
-        # Flag any galaxy that has been strongly lensed
-        self.galaxies['strong_flag'][abs(g)>1.0] = 1
-        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
+        # Flag any galaxy that has been strongly (or near-strongly) lensed
+        self.galaxies['strong_flag'][abs(g)>0.5] = 1
 
-        # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
+        # Calculate the observed ellipticity for weak lensing events
+        e[self.galaxies['strong_flag']!=1] = ( (e1_int + 1j*e2_int) + g) / (1.0+g_conj * (e1_int + 1j*e2_int) )
+
+        # Calculate the observed ellipticity for strong lensing events
+        e1_int_conj = np.array([val.conjugate() for val in e1_int])
+        e2_int_conj = np.array([val.conjugate() for val in e2_int])
+        e[self.galaxies['strong_flag']==1] = (1 + g*(e1_int_conj+1j*e2_int_conj) ) / ( (e1_int_conj+1j*e2_int_conj) + g_conj)
+
+        # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
