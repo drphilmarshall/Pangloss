@@ -5,8 +5,13 @@ import os, random, math, cmath, sys, timeit
 import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
-import treecorr
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+
+# Fast correlation functions:
+try:
+    import treecorr
+except ImportError:
+    import pangloss.nocorr as treecorr
 
 # Import Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -118,9 +123,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
     def __str__(self):
         # *!Need to fix with new attributes!*
-        return 'Background catalog with {} galaxies, '+ \
-               'with redshifts ranging from {} to {}'\
-                .format(self.galaxyCount,self.minZ,self.maxZ)
+        return 'Background catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxy_count,self.minZ,self.maxZ)
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
@@ -294,7 +297,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the importance limit
-            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            # lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -588,6 +591,11 @@ class BackgroundCatalog(pangloss.Catalog):
             elif lensed == 'none':
                 corr_cat = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
 
+            # Return if treecorr is not installed:
+            if len(corr_cat.__dict__) == 0:
+                print "treecorr is not installed, skipping correlation function calculation."
+                return None
+
             # Set g-g correlation parameters
             gg = treecorr.GGCorrelation(bin_size=binsize, min_sep=min_sep, max_sep=max_sep, sep_units=sep_units, bin_slop=0.05/binsize)
 
@@ -621,6 +629,11 @@ class BackgroundCatalog(pangloss.Catalog):
                 corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_halo'], g2=galaxies['e2_halo'], ra_units='rad', dec_units='rad')
             elif lensed == 'none':
                 corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
+
+            # Return if treecorr is not installed:
+            if len(corr_cat.__dict__) == 0:
+                print "treecorr is not installed, skipping correlation function calculation."
+                return None
 
             # Set n-g correlation parameters
             ng = treecorr.NGCorrelation(bin_size=binsize, min_sep=min_sep, max_sep=max_sep, sep_units=sep_units, bin_slop=0.05/binsize)
