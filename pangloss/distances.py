@@ -117,9 +117,9 @@ class Distance:
        H0 =self.h*3.241*10**-18
        Hsq=(H0**2.)*(self.OMEGA_M*(1.+z)**3.+(1.-self.OMEGA_M)) #Flat LambdaCDM only at this stage
        return Hsq
-    
+
 # ----------------------------------------------------------------------------
 
     def rho_crit_univ(self,z):   #critical density of the universe at z
        rho= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
-       return rho 
+       return rho

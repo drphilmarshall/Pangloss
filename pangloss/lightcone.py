@@ -378,7 +378,7 @@ class Lightcone(object):
         xtrunc = r_trunc/r_s
         kappaHalo = self.kappa_s*1.0
         gammaHalo = self.kappa_s*1.0
-
+        
         if profile=="BMO1":
             F=pangloss.BMO1Ffunc(x,xtrunc)
             G=pangloss.BMO1Gfunc(x,xtrunc)
