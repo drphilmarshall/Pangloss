@@ -367,34 +367,35 @@ class Lightcone(object):
 
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
 
-        c200 = self.galaxies['c200']
-        r200 = self.galaxies['r200']
-        x = self.galaxies['X']
-        r_s = self.galaxies['rs']
-        rho_s = pangloss.delta_c(c200)*self.galaxies['rho_crit']
-        self.kappa_s = rho_s * r_s /self.galaxies['sigma_crit']  #kappa slice for each lightcone
+        #c200 = self.galaxies['c200']
+        #r200 = self.galaxies['r200']
+        #x = self.galaxies['X']
+        #r_s = self.galaxies['rs']
+        rho_s = pangloss.delta_c(self.galaxies['c200'])*self.galaxies['rho_crit']
+        self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
+        r_trunc = truncationscale*self.galaxies['r200']
+        xtrunc = r_trunc/self.galaxies['rs']
+        #kappaHalo = self.kappa_s*1.0
+        #gammaHalo = self.kappa_s*1.0
 
-        r_trunc = truncationscale*r200
-        xtrunc = r_trunc/r_s
-        kappaHalo = self.kappa_s*1.0
-        gammaHalo = self.kappa_s*1.0
-        
         if profile=="BMO1":
-            F=pangloss.BMO1Ffunc(x,xtrunc)
-            G=pangloss.BMO1Gfunc(x,xtrunc)
+            F = pangloss.BMO1Ffunc(self.galaxies['X'],xtrunc)
+            G = pangloss.BMO1Gfunc(self.galaxies['X'],xtrunc)
+            #F = pangloss.BMO1FSpencerFunc(self.galaxies['X'],xtrunc)
+            #G = pangloss.BMO1GSpencerFunc(self.galaxies['X'],xtrunc)
 
         if profile=="BMO2":
-            F=pangloss.BMO2Ffunc(x,xtrunc)
-            G=pangloss.BMO2Gfunc(x,xtrunc)
+            F=pangloss.BMO2Ffunc(self.galaxies['X'],xtrunc)
+            G=pangloss.BMO2Gfunc(self.galaxies['X'],xtrunc)
 
-        kappaHalo *= F
-        gammaHalo *= (G-F)
+        #kappaHalo *= F
+        #gammaHalo *= (G-F)
 
-        phi = self.galaxies['phi']
-        kappa = kappaHalo
-        gamma = gammaHalo
-        gamma1 = gamma*np.cos(2*phi)
-        gamma2 = gamma*np.sin(2*phi)
+        #phi = self.galaxies['phi']
+        kappa = 1.0*self.kappa_s*F
+        gamma = 1.0*self.kappa_s*(G-F)
+        gamma1 = gamma*np.cos(2*self.galaxies['phi'])
+        gamma2 = gamma*np.sin(2*self.galaxies['phi'])
 
         mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
