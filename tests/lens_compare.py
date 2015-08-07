@@ -39,9 +39,10 @@ if vb is True: print('Generating background catalog...')
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
 #d = [1.65,1.35,-1.65,-1.35]
-d = [1.6,1.4,-1.6,-1.4]
-#d = [1.55,1.52,-1.61,-1.59]
-#d = [1.55,1.54,-1.61,-1.6]
+#d = [1.6,1.4,-1.6,-1.4]
+d = [1.55,1.45,-1.55,-1.45]
+#d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
+#d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
 
 # Lens the background catalog by map
