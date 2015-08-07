@@ -216,14 +216,14 @@ class BackgroundCatalog(pangloss.Catalog):
         e1_int = self.galaxies['e1_int']
         e2_int = self.galaxies['e2_int']
 
-        # Initialize new variables
+        # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         kappa = np.zeros(self.galaxy_count)
         gamma1 = np.zeros(self.galaxy_count)
         gamma2 = np.zeros(self.galaxy_count)
-        g = np.zeros(self.galaxy_count)
+        g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         e1 = np.zeros(self.galaxy_count)
         e2 = np.zeros(self.galaxy_count)
-        e = np.zeros(self.galaxy_count)
+        e = e1+1j*e2
         eMod = np.zeros(self.galaxy_count)
         ePhi = np.zeros(self.galaxy_count)
 
@@ -238,15 +238,17 @@ class BackgroundCatalog(pangloss.Catalog):
         g_conj = np.array([val.conjugate() for val in g])
 
         # Flag any galaxy that has been strongly (or near-strongly) lensed
-        self.galaxies['strong_flag'][abs(g)>0.5] = 1
+        self.galaxies['strong_flag'][np.abs(g)>0.5] = 1
 
         # Calculate the observed ellipticity for weak lensing events
-        e[self.galaxies['strong_flag']!=1] = ( (e1_int + 1j*e2_int) + g) / (1.0+g_conj * (e1_int + 1j*e2_int) )
+        index = np.abs(g) < 1.0
+        e[index] = ( (e1_int[index] + 1j*e2_int[index]) + g[index]) / (1.0+g_conj[index] * (e1_int[index] + 1j*e2_int[index]) )
 
         # Calculate the observed ellipticity for strong lensing events
+        index = ~index
         e1_int_conj = np.array([val.conjugate() for val in e1_int])
         e2_int_conj = np.array([val.conjugate() for val in e2_int])
-        e[self.galaxies['strong_flag']==1] = (1 + g*(e1_int_conj+1j*e2_int_conj) ) / ( (e1_int_conj+1j*e2_int_conj) + g_conj)
+        e[index] = (1.0 + g[index]*(e1_int_conj[index]+1j*e2_int_conj[index]) ) / ( (e1_int_conj[index]+1j*e2_int_conj[index]) + g_conj[index])
 
         # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
@@ -285,14 +287,15 @@ class BackgroundCatalog(pangloss.Catalog):
         if self.lightcones is None:
             self.drill_lightcones()
 
-        # Initialize new variables
+        # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         assert self.galaxy_count == len(self.lightcones)
         kappa = np.zeros(self.galaxy_count)
         gamma1 = np.zeros(self.galaxy_count)
         gamma2 = np.zeros(self.galaxy_count)
-        g = np.zeros(self.galaxy_count)
+        g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         e1 = np.zeros(self.galaxy_count)
         e2 = np.zeros(self.galaxy_count)
+        e = e1+1j*e2
         eMod = np.zeros(self.galaxy_count)
         ePhi = np.zeros(self.galaxy_count)
 
@@ -374,12 +377,14 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['strong_flag'][abs(g)>0.5] = 1
 
         # Calculate the observed ellipticity for weak lensing events
-        e[self.galaxies['strong_flag']!=1] = ( (e1_int + 1j*e2_int) + g) / (1.0+g_conj * (e1_int + 1j*e2_int) )
+        index = np.abs(g) < 1.0
+        e[index] = ( (e1_int[index] + 1j*e2_int[index]) + g[index]) / (1.0+g_conj[index] * (e1_int[index] + 1j*e2_int[index]) )
 
         # Calculate the observed ellipticity for strong lensing events
+        index = ~index
         e1_int_conj = np.array([val.conjugate() for val in e1_int])
         e2_int_conj = np.array([val.conjugate() for val in e2_int])
-        e[self.galaxies['strong_flag']==1] = (1 + g*(e1_int_conj+1j*e2_int_conj) ) / ( (e1_int_conj+1j*e2_int_conj) + g_conj)
+        e[index] = (1.0 + g[index]*(e1_int_conj[index]+1j*e2_int_conj[index]) ) / ( (e1_int_conj[index]+1j*e2_int_conj[index]) + g_conj[index])
 
         # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
