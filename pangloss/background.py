@@ -39,8 +39,20 @@ class BackgroundCatalog(pangloss.Catalog):
         ???
 
     METHODS
-        generate()
-        write(output)
+        generate
+        write
+        lens_by_map
+        lens_by_halos
+        add_noise
+        setup_grid
+        set_importance
+        drill_lightcones
+        save
+        load
+        bin_to_map
+        calculate_corr
+        compare_corr
+        plot
 
     BUGS
 
@@ -52,6 +64,9 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
+
+# ============================================================================
+
     def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         self.type = 'background'
 
@@ -121,9 +136,13 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def __str__(self):
         # *!Need to fix with new attributes!*
         return 'Background catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxy_count,self.minZ,self.maxZ)
+
+# ----------------------------------------------------------------------------
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
@@ -204,6 +223,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def lens_by_map(self,kappamap,shearmap,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps.
@@ -257,6 +278,8 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['ePhi'] = ePhi
 
         return
+
+# ----------------------------------------------------------------------------
 
     def lens_by_halos(self,save=False,methods=['add'],use_method='add',importance_lim=0.0):
         '''
@@ -384,6 +407,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
 
     def add_noise(self,M=1,sigma_obs=0.1):
         '''
@@ -423,6 +447,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def setup_grid(self):
         '''
         Create the distance grid to simplify distance calculations.
@@ -432,6 +458,8 @@ class BackgroundCatalog(pangloss.Catalog):
         self.grid = pangloss.Grid(self.zl,self.zs,nplanes=self.planes)
 
         return
+
+# ----------------------------------------------------------------------------
 
     def set_importance(self,lightcone,metric='linear'):
         '''
@@ -457,10 +485,15 @@ class BackgroundCatalog(pangloss.Catalog):
             # Set the importance of each galaxy normalized by the maximum importance
             lightcone.galaxies['importance'] = importance/np.max(importance)
 
+        else:
+            lightcone.galaxies['importance'] = np.ones(len(lightcone.galaxies))
+
         # Make sure all importance values are positive
         assert (importance >= 0).all()
 
         return
+
+# ----------------------------------------------------------------------------
 
     def drill_lightcones(self,radius=2.0,foreground=None,save=False):
         '''
@@ -509,7 +542,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].snapToGrid(self.grid)
 
             # Set importance of each foreground object in the lightcone for lensing
-            #self.set_importance(self.lightcones[i])
+            # self.set_importance(self.lightcones[i])
 
         if save == True:
             # Write out this entire catalog to the 'data' directory
@@ -539,6 +572,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def load(self,filename=None):
         '''
         Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
@@ -556,15 +591,36 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def bin_to_map(self,data=['kappa','gamma1','gamma2'],binsize=1.0,bin_units='arcmin'):
-        '''
-        Bin the background galaxies into WLMaps with data set in the list 'data'. Binsize is in units of arcmin.
-        '''
-        # If a single string is passed for data, turn into list
-        if type(data) == str:
-            data = [data]
+# ----------------------------------------------------------------------------
 
-        # Finish!!
+    def bin_to_map(self,maps=['kappa','gamma1','gamma2'],binsize=1.0,bin_units='arcmin',center=None):
+        '''
+        Bin the background galaxies into WLMaps. The list of maps to
+        make is in the 'maps' kwarg. Binsize is in units of arcmin
+        by default, the map centroid is passed in as the
+        'center' list [ra,dec] where these world coordinates are in
+        degrees.
+        '''
+        # If a single string is passed for data, turn into list.
+        if type(maps) == str:
+            maps = [maps]
+
+        count = 0
+        for map in maps:
+
+            pass
+
+            # Set up x and y bins
+
+            # Make 2D histograms, weighted and unweighted. The first
+            # gives the sum of the map contributions, the second the
+            # number of map contributions. We want the simple average,
+            # so we divide one by the other.
+
+            # Store this histogram in a WLMap object.
+            # WCS
+
+        return
 
 # ----------------------------------------------------------------------------
 
@@ -655,6 +711,8 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
 
+# ----------------------------------------------------------------------------
+
     def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus',percent_type='error'):
         '''
         Compares two correlation function components (with the same binning and separation values) using
@@ -728,6 +786,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return chi2, n_sigma, mean_err, std_err
 
+
+# ----------------------------------------------------------------------------
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
         '''
@@ -910,3 +970,5 @@ class BackgroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+# ============================================================================

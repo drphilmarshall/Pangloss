@@ -62,22 +62,36 @@ class WLMap:
       2015-06-24  Started Everett (SLAC)
     """
 
-    def __init__(self,mapfiles,FITS=True):
+    def __init__(self,mapfiles=None,data=None,FITS=True):
 
-        # mapfile should be inputted as list, but is automatically converted to
-        # a list if it is a single file string
-        if type(mapfiles) != list:
-            mapfiles = [mapfiles]
-        self.input = mapfiles
+        # Make a WLMap by reading in data from a file.
+        # mapfile should be inputted as list, but is automatically
+        # converted to a list if it is a single file string.
+        if mapfiles is not None:
+            if type(mapfiles) != list:
+                mapfiles = [mapfiles]
+            self.input = mapfiles
+            self.origin = 'file'
 
-        # Parsing the file name(s)
-        # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
-        self.map_x = []
-        self.map_y = []
-        for i in range(0,len(self.input)):
-            input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
-            self.map_x.append(eval(input_parse[3])) # The x location of the map grid
-            self.map_y.append(eval(input_parse[4])) # The y location of the map grid
+        # Make a WLMap from scratch, given 3 numpy arrays: d,x,y
+        # d must be a 3D array, to allow for shear as well as kappa.
+        # x and y must be meshgrids that specify the world coordinates
+        # of the pixel centers.
+        elif data is not None:
+            assert type(from) == list
+            assert len(from) == 3
+            d,x,y = data[0],data[1],data[2]
+            assert len(d.shape) == 3
+            assert d[0].shape == d[1].shape == d[2].shape == x.shape == y.shape
+            self.input = ['']
+            self.origin = 'scratch'
+
+        else:
+            print "Empty "+self.__str__()
+            return None
+
+
+        # To work!
 
         # Declare needed attributes as lists
         self.values = []
@@ -87,28 +101,50 @@ class WLMap:
         self.wcs = []
         self.output = []
 
-        # Read in data from file:
-        if FITS:
-            # Read in FITS image, extract wcs:
-            if vb: print "Reading in map from files "+mapfiles
-            self.read_in_fits_data()
+        if self.origin == 'file':
 
-        else:
-            # Read in binary data, to self.values:
-            if vb: print "Reading in map from file "+mapfiles
-            self.read_in_binary_data()
-            
-        # Check file consistency
+            # Parsing the input file name(s).
+            # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
+            self.map_x = []
+            self.map_y = []
+            for i in range(0,len(self.input)):
+                input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
+                self.map_x.append(eval(input_parse[3])) # The x location of the map grid
+                self.map_y.append(eval(input_parse[4])) # The y location of the map grid
+
+            # Read in data from file:
+            if FITS:
+                # Read in FITS image, extract wcs:
+                if vb: print "Reading in map from files "+mapfiles
+                self.read_in_fits_data()
+            else:
+                # Read in binary data, to self.values:
+                if vb: print "Reading in map from file "+mapfiles
+                self.read_in_binary_data()
+
+
+        elif self.origin == 'scratch':
+
+            # Reformat data into self.values:
+            if vb: print "Making map from data arrays"
+            self.reformat_data(d,x,y):
+
+            # Set up the WCS:
+            self.make_wcs(x,y)
+
+        # Done!
+
+        # Check consistency of the maps:
         assert self.PIXSCALE[1:] == self.PIXSCALE[:-1]
         assert self.field[1:] == self.field[:-1]
         assert self.NX[1:] == self.NX[:-1]
-        
+
         return None
 
 # ----------------------------------------------------------------------------
 
     def __str__(self):
-        return 'abstract map'
+        return 'Weak Lensing Map object'
 
 # ----------------------------------------------------------------------------
 
@@ -156,6 +192,9 @@ class WLMap:
               if vb: print "Writing map to "+self.output[i]
               self.write_out_to_fits(i)
             # This should probably not be in __init__ but hopefully it only gets run once.
+
+        return
+
 
 # ----------------------------------------------------------------------------
 #  WCS parameters: to allow conversions between
