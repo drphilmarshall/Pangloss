@@ -383,7 +383,12 @@ class BackgroundCatalog(pangloss.Catalog):
             runtimes[lightcone.ID] = elapsed
 
         if vb is True:
-            print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
+            print 'average CPU time per background galaxy: ', \
+                round(np.mean(runtimes),3),'+/-',round(np.std(runtimes),3),'ms (?)'
+
+        # PJM: I read with interest at https://docs.python.org/2/library/timeit.html
+        # that a) the unit of time may not be millisec and b) timeit may
+        # turn of garbage collection while it runs!
 
         #-------------------------------------------------------------------------------------
         # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
@@ -566,7 +571,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
             # Set importance of each foreground object in the lightcone for lensing
 
-            # self.set_importance(self.lightcones[i])
+            self.set_importance(self.lightcones[i])
 
         if save == True:
             # Write out this entire catalog to the 'data' directory
@@ -917,57 +922,57 @@ class BackgroundCatalog(pangloss.Catalog):
                 if lensed == 'none':
                     # Plot intrinsic ellipticities
                     alpha = 0.25
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha)
 
                 elif lensed == 'map':
                     # Plot lensed-by-map ellipticities
                     alpha = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha)
 
                 elif lensed == 'halo':
                     # Plot lensed-by-halo ellipticities
                     alpha = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha)
 
                 elif lensed == 'both':
                     # Plot both lensed-by-map and intrinsic ellipticities
                     alpha1 = 0.25
                     alpha2 = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
 
                 elif lensed == 'all':
                     # Plot both types of lensed and intrinsic ellipticities
                     alpha1 = 0.25
                     alpha2 = 0.3
                     alpha3 = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha3)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
+                    pangloss.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'purple',alpha3)
 
         elif graph == 'stick':
             if lensed == 'none':
                 # Plot intrinsic ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
 
             elif lensed == 'map':
                 # Plot lensed-by-map ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                pangloss.plot_sticks(ra,dec,eMod,ePhi,world,'green')
 
             elif lensed == 'halo':
                 # Plot lensed-by-halos ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
+                pangloss.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
 
             elif lensed == 'both':
                 # Plot both lensed and intrinsic ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
-                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                pangloss.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plot_sticks(ra,dec,eMod,ePhi,world,'green')
 
             elif lensed == 'all':
                 # Plot both types of lensed and intrinsic ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
-                pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
-                pangloss.plotting.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
+                pangloss.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plot_sticks(ra,dec,eMod,ePhi,world,'green')
+                pangloss.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
 
             # Add scale bar
             if lensed == 'map':

@@ -8,7 +8,6 @@ import pylab as plt
 from math import pi
 from astropy.table import Column
 
-
 # ======================================================================
 
 class Lightcone(object):
@@ -95,7 +94,7 @@ class Lightcone(object):
         self.rmax = radius
         self.xc = [position[0],position[1]]
 
-        dx = self.rmax*pangloss.arcmin2rad
+        dx = np.deg2rad(self.rmax/60.0)
         # Ra is flipped as it is left-handed
         self.galaxies = self.catalog[np.where((self.catalog['RA'] > (self.xc[0]-dx)) & \
                                               (self.catalog['RA'] < (self.xc[0]+dx)) & \
@@ -104,7 +103,7 @@ class Lightcone(object):
 
         # Trim it to a circle:
         x = -np.cos(self.galaxies['Dec'])*(self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin
-        y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
+        y = np.deg2rad((self.galaxies['Dec'] - self.xc[1])/60.0)
         r = np.sqrt(x*x + y*y)
         phi = np.arctan2(y,x)
         self.galaxies.add_column(Column(name='x',data=x))
@@ -311,8 +310,10 @@ class Lightcone(object):
         self.writeColumn('rho_crit',Grid.rho_crit[p])
         self.writeColumn('sigma_crit',Grid.sigma_crit[p])
         self.writeColumn('beta',Grid.beta[p])
-        rphys = self.galaxies['r']*pangloss.arcmin2rad*self.galaxies['Da_p']
+        rphys = np.deg2rad(self.galaxies['r']/60.0)*self.galaxies['Da_p']
         self.writeColumn('rphys',rphys)
+        return
+        
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
 

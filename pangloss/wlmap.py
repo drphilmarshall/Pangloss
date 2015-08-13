@@ -4,11 +4,6 @@ import struct
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 
-arcmin2rad = (1.0/60.0)*np.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-deg2rad = np.pi/180.0
-rad2deg = 1.0/deg2rad
-
 vb = False
 
 class WLMap:
@@ -78,8 +73,8 @@ class WLMap:
         # x and y must be meshgrids that specify the world coordinates
         # of the pixel centers.
         elif data is not None:
-            assert type(from) == list
-            assert len(from) == 3
+            assert type(data) == list
+            assert len(data) == 3
             d,x,y = data[0],data[1],data[2]
             assert len(d.shape) == 3
             assert d[0].shape == d[1].shape == d[2].shape == x.shape == y.shape
@@ -127,7 +122,7 @@ class WLMap:
 
             # Reformat data into self.values:
             if vb: print "Making map from data arrays"
-            self.reformat_data(d,x,y):
+            self.reformat_data(d,x,y)
 
             # Set up the WCS:
             self.make_wcs(x,y)
@@ -195,6 +190,18 @@ class WLMap:
 
         return
 
+# ----------------------------------------------------------------------------
+
+    def reformat_data(self,d,x,y):
+        pass
+        return
+
+# ----------------------------------------------------------------------------
+
+    def make_wcs(self,x,y):
+        pass
+        return
+
 
 # ----------------------------------------------------------------------------
 #  WCS parameters: to allow conversions between
@@ -221,8 +228,8 @@ class WLMap:
         # j = LTV2 + LTM2_2*(y/rad)
         self.wcs[i]['LTV1'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
         self.wcs[i]['LTV2'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
-        self.wcs[i]['LTM1_1'] = 1.0/(self.PIXSCALE[i]*deg2rad)
-        self.wcs[i]['LTM2_2'] = 1.0/(self.PIXSCALE[i]*deg2rad)
+        self.wcs[i]['LTM1_1'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        self.wcs[i]['LTM2_2'] = 1.0/np.deg2rad(self.PIXSCALE[i])
         return None
 
 # ----------------------------------------------------------------------------

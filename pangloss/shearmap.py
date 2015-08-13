@@ -5,11 +5,6 @@ import pangloss
 import cmath
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
-arcmin2rad = (1.0/60.0)*np.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-deg2rad = np.pi/180.0
-rad2deg = 1.0/deg2rad
-
 vb = False
 
 # ============================================================================
@@ -55,7 +50,7 @@ class Shearmap(pangloss.WLMap):
 
         self.name = 'Shear map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        pangloss.WLMap.__init__(self,shearfiles,FITS)
+        pangloss.WLMap.__init__(self,shearfiles,FITS=FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -76,40 +71,40 @@ class Shearmap(pangloss.WLMap):
             coords          Type of coordinates inputted for the subplot:
                             'pixel', 'physical', or 'world'
         """
-        
+
         # Get current figure and image axes (or make them if they don't exist)
         fig = plt.gcf()
-        
+
 # ----------------------------------------------------------------------------
 # Note: the following is slightly inelegant. It would be nice to have the following
-# be an if-else, but the default subplot is no longer 'None' after calling 
+# be an if-else, but the default subplot is no longer 'None' after calling
 # plot_setupt(), so the check must be done before calling the method. Try to
 # fix later.
-        
+
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
             imshow = fig.axes[0]
             world = fig.axes[1]
-            
+
             # If the Kappamap subplot was not passed to this Shearmap:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
                 fig.sca(world)
                 subplot = plt.axis()
-                
-            # Adopt figure size from open Kappamap:    
+
+            # Adopt figure size from open Kappamap:
             fig_size = plt.gcf().get_size_inches()[0]
 
         # Use plot_setup method from the base WLMap class:
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
-        
+
         # If there is not a Pangloss map open:
         if fig._label != 'Pangloss Map':
             # Create figure and axes from scratch:
             fig._label = "Pangloss Map"
-            pangloss.set_figure_size(fig,fig_size,Lx,Ly)  
-            
+            pangloss.set_figure_size(fig,fig_size,Lx,Ly)
+
             # Adjust the subplot in image and wcs by half a pixel
             imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
@@ -132,7 +127,7 @@ class Shearmap(pangloss.WLMap):
         mod_gamma = np.sqrt(gamma1*gamma1 + gamma2*gamma2)
         phi_gamma = np.arctan2(gamma2,gamma1)/2.0
 
-        # Sticks in world coords need x reversed, to account for left-handed 
+        # Sticks in world coords need x reversed, to account for left-handed
         # system:
         scale = 1.0
         pix_L = np.mean([pix_Lx,pix_Ly])
@@ -145,11 +140,11 @@ class Shearmap(pangloss.WLMap):
             N = np.floor(pix_Lx/40.0)
         else:
             N = 1
-        
+
         #N=1
         #plt.quiver(X,Y,dx,dy,color='r',headwidth=0,pivot='middle')
         plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
-        
+
         # Add scale bar
         bar = AnchoredSizeBar(world.transData,L/10.0,'10% Shear',pad=0.5,loc=3,sep=5,borderpad=0.25,frameon=True)
         bar.size_bar._children[0]._linewidth = 2
