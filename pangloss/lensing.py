@@ -14,7 +14,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
         Compute gravitational lensing quantities.
 
     COMMENTS
-            
+
     FUNCTIONS
         NFW profile:
             delta_c(c):
@@ -22,7 +22,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
             L(x,t):
             F2(x):
             Ffunc(x):
-            Gfunc(x): 
+            Gfunc(x):
         Baltz, Marshall & Oguri truncated NFW profile:
             BMO1Ffunc(x,t):
             BMO1Gfunc(x,t):
@@ -36,7 +36,7 @@ from scipy.special import gamma,gammainc # for Sersic profile.
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
@@ -53,7 +53,27 @@ def F(x):
     z=numpy.ones(len(x))
     z[x>1]=numpy.arccos(1/x[x>1])/((x[x>1]**2-1)**.5)
     z[x<1]=numpy.arccosh(1/x[x<1])/((1-x[x<1]**2)**.5)
-    z[x==1]=numpy.log(2)
+    z[x==1]=0.69314718 #numpy.log(2)
+    return z
+
+def FSpencer(x,xMask):
+
+    # Calculate z in one step using masks
+    z1 = numpy.arccos(1.0 / x*xMask) / (((x*xMask)**2-1.0)**.5 )
+    z2 = numpy.arccosh(1.0 / x*~xMask) / ((1.0 - (x*~xMask)**2)**.5)
+
+    # Convert any NaN's to zeros
+    #z1 = numpy.nan_to_num(z1)
+    z1[numpy.isnan(z1)] = 0.0
+    #assert not (numpy.isnan(z1).any())
+    #z2 = numpy.nan_to_num(z2)
+    z2[numpy.isnan(z2)] = 0.0
+    #assert not (numpy.isnan(z2).any())
+
+    z = z1 + z2
+
+    assert not (numpy.isnan(z).any())
+
     return z
 
 def L(x,t):
@@ -63,11 +83,11 @@ def F2(x):
     z=numpy.ones(len(x))
     z[x>1]=numpy.arctan((x[x>1])**2-1)/((x[x>1]**2-1)**.5)
     z[x<1]=numpy.arctanh(1-(x[x<1])**2)/((1-x[x<1]**2)**.5)
-    z[x==1]=numpy.log(2)
+    z[x==1]=0.69314718 #numpy.log(2)
     return z
 
 # ------------------------------------------------------------------------
-# Function needed to calculate kappa for an NFW halo. 
+# Function needed to calculate kappa for an NFW halo.
 
 def Ffunc(x):
     z=numpy.zeros(len(x))
@@ -76,7 +96,7 @@ def Ffunc(x):
            z[i]=0.0
        elif x[i]>1:
           z[i]= (1-(2./(x[i]**2-1)**.5)*numpy.arctan(((x[i]-1.)/(x[i]+1))**.5))/(x[i]**2-1.)
-       else: 
+       else:
           if x[i]==1:
              z[i] =1./3
           else:
@@ -84,12 +104,12 @@ def Ffunc(x):
              z[i] = (1.-(2./(1-x[i]**2)**.5)*numpy.arctanh(((1.-x[i])/(x[i]+1))**.5))/(x[i]**2-1)
        if z[i] < 0: print 'warning Ffunc' # BUG - non-informative alert
     return 2*z
-    
+
 # ------------------------------------------------------------------------
-# Function needed to calculate gamma for an NFW halo. 
+# Function needed to calculate gamma for an NFW halo.
 # Form is  long, but follows http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 
-def Gfunc(x): 
+def Gfunc(x):
     z=numpy.zeros(len(x))
     for i in range(len(x)):
         X=x[i]
@@ -99,7 +119,7 @@ def Gfunc(x):
                 (4/X**2)*numpy.log(X/2) - \
                 2/(X**2-1) +\
                 4*numpy.arctan(y)/(((X**2)-1)**(3./2))
-        else: 
+        else:
             if x[i]==1:
                 z[i] =(10./3+4*numpy.log(0.5))
             else:
@@ -114,19 +134,61 @@ def Gfunc(x):
 # ========================================================================
 # Baltz, Marshall & Oguri truncated profile functions.
 
+def BMO1FSpencerFunc(x,t):
+    '''
+    New BMO1Ffunc method that is more efficient.
+    '''
+
+    x[x==1]=1.+1e-5
+    xMask = x > 1
+    Fs = FSpencer(x,xMask)
+
+    z = t**2 / (2*(t**2+1)**2) * (
+        ((t**2+1) / ((x)**2-1)) * (1-Fs)
+        + 2 * Fs
+        - 3.14159 / (t**2+x*2)**.5
+        + (t**2-1) * L(x,t)
+        / (t * (t**2 + x**2)**.5)
+        )
+
+    assert not (numpy.isnan(z).any())
+
+    return 4.0*z
+
+def BMO1GSpencerFunc(x,t):
+    '''
+    New BMO1Gfunc method that is more efficient.
+    '''
+
+    z = numpy.zeros(len(x))
+    x[x==1] = 1.+1e-5
+    xMask = x > 1
+
+    z = t**2 / ((t**2+1)**2) * (
+        ((t**2+1)+2 * (x**2-1))*(FSpencer(x,xMask)) #possibly need -1 here!!
+        + t * 3.14159
+        + (t**2-1) * numpy.log(t)
+        + ((t**2 + x**2)**.5) * (-3.14159 + (t**2-1) * L(x,t) / t)
+        )
+
+    assert not (numpy.isnan(z).any())
+
+    return 4*z/(x**2)
+
+
 def BMO1Ffunc(x,t):
     x[x==1]=1.+1e-5
-    z=numpy.zeros(len(x))
-    z[x!=1]=t**2/(2*(t**2+1)**2)*(
-        ((t**2+1)/((x[x!=1])**2-1))*(1-F(x[x!=1]))
+    f = F(x)
+    z = t**2/(2*(t**2+1)**2)*(
+        ((t**2+1)/((x)**2-1))*(1-f)
         +
-        2*F(x[x!=1])
+        2*f
         -
-        3.14159/(t**2+x[x!=1]**2)**.5
+        3.14159/(t**2+x**2)**.5
         +
-        (t**2-1)*L(x[x!=1],t)
+        (t**2-1)*L(x,t)
         /
-        (t*(t**2+x[x!=1]**2)**.5)
+        (t*(t**2+x**2)**.5)
         )
     return 4*z
 
@@ -174,7 +236,7 @@ def BMO2Gfunc(x,t):
     z=numpy.zeros(len(x))
     x[x==1]=1.+1e-5
     z=(t**4/(2*(t**2+1)**3))*(
-        (t**2+1+4*(x**2-1))*(2*F(x)) 
+        (t**2+1+4*(x**2-1))*(2*F(x))
         +
         (1/t)*(3.14159*(3*t**2-1)+2*t*(t**2-3)*numpy.log(t))
         +
@@ -204,4 +266,3 @@ def sersic(r,re,amp=1.,n=4.):
      return kappa,kbar-kappa
 
 # ========================================================================
-

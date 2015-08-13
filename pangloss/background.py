@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys, timeit
+import os, random, math, cmath, sys, timeit, cProfile
 import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
@@ -237,13 +237,14 @@ class BackgroundCatalog(pangloss.Catalog):
         e1_int = self.galaxies['e1_int']
         e2_int = self.galaxies['e2_int']
 
-        # Initialize new variables
+        # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         kappa = np.zeros(self.galaxy_count)
         gamma1 = np.zeros(self.galaxy_count)
         gamma2 = np.zeros(self.galaxy_count)
-        g = np.zeros(self.galaxy_count)
+        g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         e1 = np.zeros(self.galaxy_count)
         e2 = np.zeros(self.galaxy_count)
+        e = e1+1j*e2
         eMod = np.zeros(self.galaxy_count)
         ePhi = np.zeros(self.galaxy_count)
 
@@ -257,12 +258,20 @@ class BackgroundCatalog(pangloss.Catalog):
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
 
-        # Flag any galaxy that has been strongly lensed
-        self.galaxies['strong_flag'][abs(g)>1.0] = 1
-        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
+        # Flag any galaxy that has been strongly (or near-strongly) lensed
+        self.galaxies['strong_flag'][np.abs(g)>0.5] = 1
 
-        # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
+        # Calculate the observed ellipticity for weak lensing events
+        index = np.abs(g) < 1.0
+        e[index] = ( (e1_int[index] + 1j*e2_int[index]) + g[index]) / (1.0+g_conj[index] * (e1_int[index] + 1j*e2_int[index]) )
+
+        # Calculate the observed ellipticity for strong lensing events
+        index = ~index
+        e1_int_conj = np.array([val.conjugate() for val in e1_int])
+        e2_int_conj = np.array([val.conjugate() for val in e2_int])
+        e[index] = (1.0 + g[index]*(e1_int_conj[index]+1j*e2_int_conj[index]) ) / ( (e1_int_conj[index]+1j*e2_int_conj[index]) + g_conj[index])
+
+        # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
@@ -276,6 +285,11 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['e2'] = e2
         self.galaxies['eMod'] = eMod
         self.galaxies['ePhi'] = ePhi
+
+        # Note: For now, we are removing any background galaxy that is strongly lensed by a map.
+        self.galaxies = self.galaxies[self.galaxies['strong_flag']!=1]
+        self.strong_lensed_removed = np.sum(self.galaxies['strong_flag'])
+        self.galaxy_count -= self.strong_lensed_removed
 
         return
 
@@ -296,14 +310,15 @@ class BackgroundCatalog(pangloss.Catalog):
         if self.lightcones is None:
             self.drill_lightcones()
 
-        # Initialize new variables
+        # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         assert self.galaxy_count == len(self.lightcones)
         kappa = np.zeros(self.galaxy_count)
         gamma1 = np.zeros(self.galaxy_count)
         gamma2 = np.zeros(self.galaxy_count)
-        g = np.zeros(self.galaxy_count)
+        g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         e1 = np.zeros(self.galaxy_count)
         e2 = np.zeros(self.galaxy_count)
+        e = e1+1j*e2
         eMod = np.zeros(self.galaxy_count)
         ePhi = np.zeros(self.galaxy_count)
 
@@ -320,7 +335,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the importance limit
-            # lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -381,12 +396,20 @@ class BackgroundCatalog(pangloss.Catalog):
         g = (gamma1 + 1j*gamma2)/(1.0-kappa)
         g_conj = np.array([val.conjugate() for val in g])
 
-        # Flag any galaxy that has been strongly lensed
-        self.galaxies['strong_flag'][abs(g)>1.0] = 1
-        #assert abs(g).all() < 1.0, 'error: strong lensing for {} galaxies. k = {}, gamma = {}, g = {}. Locations at ra={}, dec={}.'.format(len(g[abs(g)>1.0]),kappa[abs(g)>1.0],gamma1[abs(g)>1.0]+1j*gamma2[abs(g)>1.0],g[abs(g)>1.0],ra[abs(g)>1.0],dec[abs(g)>1.0])
+        # Flag any galaxy that has been strongly (or near-strongly) lensed
+        self.galaxies['strong_flag'][abs(g)>0.5] = 1
 
-        # Calculate the observed ellipticity
-        e = ((e1_int + 1j*e2_int) + g)/(1.0+g_conj * (e1_int + 1j*e2_int))
+        # Calculate the observed ellipticity for weak lensing events
+        index = np.abs(g) < 1.0
+        e[index] = ( (e1_int[index] + 1j*e2_int[index]) + g[index]) / (1.0+g_conj[index] * (e1_int[index] + 1j*e2_int[index]) )
+
+        # Calculate the observed ellipticity for strong lensing events
+        index = ~index
+        e1_int_conj = np.array([val.conjugate() for val in e1_int])
+        e2_int_conj = np.array([val.conjugate() for val in e2_int])
+        e[index] = (1.0 + g[index]*(e1_int_conj[index]+1j*e2_int_conj[index]) ) / ( (e1_int_conj[index]+1j*e2_int_conj[index]) + g_conj[index])
+
+        # Calculate Cartesian and polar components
         e1, e2 = e.real, e.imag
         eMod = np.abs(e)
         ePhi = np.rad2deg(np.arctan2(e2,e1))/2.0
@@ -472,15 +495,15 @@ class BackgroundCatalog(pangloss.Catalog):
         # Find the min and max physical distance and
         r_min = np.min(lightcone.galaxies['rphys'])
         r_max = np.max(lightcone.galaxies['rphys'])
-        Mh_min = np.min(lightcone.galaxies['Mh'])
-        Mh_max = np.max(lightcone.galaxies['Mh'])
+        Mh_min = np.min(10**lightcone.galaxies['Mh'])
+        Mh_max = np.max(10**lightcone.galaxies['Mh'])
 
         if metric == 'linear':
             # Compute the importance using a linear metric from 0 to 1
             importance_r = (r_max - galaxies['rphys']) / r_max
             importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
-            importance = importance_r*importance_m
-            # importance = np.sqrt(importance_r**2+importance_m**2)
+            #importance = importance_r*importance_m
+            importance = np.sqrt(importance_r**2+importance_m**2)
 
             # Set the importance of each galaxy normalized by the maximum importance
             lightcone.galaxies['importance'] = importance/np.max(importance)
@@ -489,7 +512,7 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.galaxies['importance'] = np.ones(len(lightcone.galaxies))
 
         # Make sure all importance values are positive
-        assert (importance >= 0).all()
+        assert (importance >= 0).all() and (importance <= 1.0).all()
 
         return
 
@@ -542,6 +565,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].snapToGrid(self.grid)
 
             # Set importance of each foreground object in the lightcone for lensing
+
             # self.set_importance(self.lightcones[i])
 
         if save == True:
@@ -687,7 +711,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 corr_cat2 = treecorr.Catalog(ra=galaxies['RA'], dec=galaxies['Dec'], g1=galaxies['e1_int'], g2=galaxies['e2_int'], ra_units='rad', dec_units='rad')
 
             # Return if treecorr is not installed:
-            if len(corr_cat.__dict__) == 0:
+            if len(corr_cat1.__dict__) == 0:
                 print "treecorr is not installed, skipping correlation function calculation."
                 return None
 
