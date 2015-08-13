@@ -43,11 +43,11 @@ class Kappamap(pangloss.WLMap):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,kappafile,FITS=True):
+    def __init__(self,kappafile=None,data=None,FITS=True):
 
         self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        pangloss.WLMap.__init__(self,kappafile,FITS=FITS)
+        pangloss.WLMap.__init__(self,mapfiles=kappafile,data=data,FITS=FITS)
 
 # ----------------------------------------------------------------------------
 

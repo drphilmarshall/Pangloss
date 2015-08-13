@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
+import pylab
 import os, random, math, cmath, sys, timeit, cProfile
 import cPickle as pickle
 from astropy.table import Table, Column
@@ -622,34 +623,88 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_map(self,maps=['kappa','gamma1','gamma2'],binsize=1.0,bin_units='arcmin',center=None):
+    def bin_to_maps(self,lensed='none',binsize=1.0,center=None):
         '''
-        Bin the background galaxies into WLMaps. The list of maps to
-        make is in the 'maps' kwarg. Binsize is in units of arcmin
-        by default, the map centroid is passed in as the
-        'center' list [ra,dec] where these world coordinates are in
-        degrees.
+        Bin the background galaxies into WLMaps. We always make both
+        a kappa map and a shear map - the 'lensed' kwarg tells us
+        which type of lensing, by 'halo's or 'map's, has been applied.
+        Binsize is in units of arcmin, and an optional map centroid is
+        passed in as the 'center' list [ra,dec] where these world
+        coordinates are in degrees.
         '''
-        # If a single string is passed for data, turn into list.
-        if type(maps) == str:
-            maps = [maps]
+
+        maps=['kappa','gamma1','gamma2']
 
         count = 0
         for map in maps:
 
-            pass
+            if count == 0:
+                # Set up x and y bins - only need to do this the first
+                # time through!
 
-            # Set up x and y bins
+                ra,dec = self.galaxies['RA'],self.galaxies['Dec']
+                decmin,decmax = np.min(dec),np.max(dec)
+                NY = (decmax-decmin)*60.0/binsize
+                ramin,ramax = np.min(ra),np.max(ra)
+                NX = (ramax-ramin)*60.0/(binsize*np.cos(np.deg2rad(np.mean(dec))))
+
+                rabins = np.linspace(ramin,ramax,NX)
+                # x = np.outer(np.ones(NY),rabins)
+                decbins = np.linspace(decmin,decmax,NY)
+                # y = np.outer(decbins,np.ones(NX))
+
+                # Set up some data arrays:
+                empty = np.outer(np.zeros(NY),np.zeros(NX))
+                kappadata = np.array([empty,empty])
+                gammadata = np.array([empty,empty])
+
+
+            if map == 'kappa':
+
+                if lensed == 'map':
+                    values = self.galaxies['kappa']
+                elif lensed == 'halo':
+                    values = self.galaxies['kappa_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
+
+            elif map == 'gamma1':
+
+                if lensed == 'map':
+                    values = self.galaxies['gamma1']
+                elif lensed == 'halo':
+                    values = self.galaxies['gamma1_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
+
+            elif map == 'gamma2':
+
+                if lensed == 'map':
+                    values = self.galaxies['gamma2']
+                elif lensed == 'halo':
+                    values = self.galaxies['gamma2_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
 
             # Make 2D histograms, weighted and unweighted. The first
             # gives the sum of the map contributions, the second the
             # number of map contributions. We want the simple average,
-            # so we divide one by the other.
+            # so we divide one by the other.# Make the histograms:
+            H,x,y = pylab.histogram2d(ra,dec,weights=values,bins=[rabins,decbins])
+            N,x,y = pylab.histogram2d(ra,dec,bins=[rabins,decbins])
 
-            # Store this histogram in a WLMap object.
-            # WCS
+            if map == 'kappa':
+                kappadata[:,0] = H/N
+            elif map == 'gamma1':
+                gammadata[:,0] = H/N
+            elif map == 'gamma2':
+                gammadata[:,1] = H/N
 
-        return
+        # Store these histograms in WLMap objects
+        kappamap = pangloss.Kappamap(data=[kappadata,x,y])
+        shearmap = pangloss.Shearmap(data=[gammadata,x,y])
+
+        return kappamap,shearmap
 
 # ----------------------------------------------------------------------------
 
