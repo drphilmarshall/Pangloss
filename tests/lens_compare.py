@@ -40,7 +40,8 @@ if vb is True: print('Generating background catalog...')
 #d = [1.75,1.25,-1.75,-1.25]
 #d = [1.65,1.35,-1.65,-1.35]
 #d = [1.6,1.4,-1.6,-1.4]
-d = [1.55,1.45,-1.55,-1.45]
+#d = [1.55,1.45,-1.55,-1.45]
+d = [1.55,1.48,-1.55,-1.48]
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
@@ -68,7 +69,7 @@ print 'Lightcones have',mean_galaxies,'+/-',std_galaxies,'galaxies'
 if vb is True: print('Lensing background by halos..')
 cProfile.run('B.lens_by_halos(importance_lim=0.0); print')
 #B.lens_by_halos(importance_lim=0.0)
-
+'''
 # Calculate the correlation function for each lensing type
 if vb is True: print('Calculating correlation...')
 gg_map = B.calculate_corr(corr_type='gg',lensed='map')
@@ -119,5 +120,5 @@ if pickle is True:
     pickle_file2 = open(filename2, 'wb')
     pickle.dump(gg2,pickle_file2)
     pickle_file2.close()
-
+'''
 if vb is True: print('Closing...')
