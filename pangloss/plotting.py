@@ -657,7 +657,8 @@ def plot_corr_component(r,corr,corr_type,c):
     #plt.subplot(1,5,i)
 
     plt.scatter(np.array(r)*60.0,corr,color=c)
-    plt.plot([min(60.0*np.array(r)),max(60.0*np.array(r))],[0,0],'--k')
+    #plt.plot([min(60.0*np.array(r)),max(60.0*np.array(r))],[0,0],'--k')
+    plt.plot([0.05,2.0],[0,0],'--k')
     plt.gcf().set_size_inches(10,10)
     plt.xlim([0.05,2.0])
     plt.ylim([-0.05,0.05])
