@@ -287,6 +287,9 @@ class BackgroundCatalog(pangloss.Catalog):
         if self.lightcones is None:
             self.drill_lightcones()
 
+        # Create lensing lookup table
+        lens_table = pangloss.LensingTable()
+
         # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         assert self.galaxy_count == len(self.lightcones)
         kappa = np.zeros(self.galaxy_count)
@@ -312,7 +315,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the importance limit
-            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -332,7 +335,8 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.drawConcentrations(errors=True)
 
             # Compute each halo's contribution to the convergence and shear:
-            lightcone.makeKappas(truncationscale=10)
+            lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
+            #lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
             lightcone.combineKappas(methods=methods)
@@ -358,6 +362,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
+
+        del lens_table
 
         if vb is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
@@ -847,7 +853,7 @@ class BackgroundCatalog(pangloss.Catalog):
         elif graph == 'ellipse':
             # Scale galaxy plot size by its mass?
             # scale = ((np.log10(mass)-9.0)/(12.0-9.0))
-            scale = 0.5
+            scale = 0.1
             floor = 0.01
             size = 0.01*(scale*(scale > 0) + floor)
 
