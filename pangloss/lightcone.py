@@ -2,7 +2,7 @@
 
 import pangloss
 
-import cPickle
+import cPickle, gc
 import numpy as np
 import pylab as plt
 from math import pi
@@ -360,12 +360,13 @@ class Lightcone(object):
         self.writeColumn('rs',r_s)
         x = self.galaxies['rphys']/r_s
         self.writeColumn('X',x)
+        #print 'X lims: ',np.min(self.galaxies['X']),np.max(self.galaxies['X'])
         return
 
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
 
-    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1"):
+    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None):
 
         #c200 = self.galaxies['c200']
         #r200 = self.galaxies['r200']
@@ -375,14 +376,21 @@ class Lightcone(object):
         self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
         r_trunc = truncationscale*self.galaxies['r200']
         xtrunc = r_trunc/self.galaxies['rs']
+        #print 'xtrunc lims: ',np.min(xtrunc),np.max(xtrunc)
         #kappaHalo = self.kappa_s*1.0
         #gammaHalo = self.kappa_s*1.0
 
         if profile=="BMO1":
-            F = pangloss.BMO1Ffunc(self.galaxies['X'],xtrunc)
-            G = pangloss.BMO1Gfunc(self.galaxies['X'],xtrunc)
-            #F = pangloss.BMO1FSpencerFunc(self.galaxies['X'],xtrunc)
-            #G = pangloss.BMO1GSpencerFunc(self.galaxies['X'],xtrunc)
+            if lensing_table is None:
+                # Compute the BMO truncated profile for each object
+                F = pangloss.BMO1Ffunc(self.galaxies['X'],xtrunc)
+                G = pangloss.BMO1Gfunc(self.galaxies['X'],xtrunc)
+                #F = pangloss.BMO1FSpencerFunc(self.galaxies['X'],xtrunc)
+                #G = pangloss.BMO1GSpencerFunc(self.galaxies['X'],xtrunc)
+            else:
+                # Use an interpolated lookup table for the profile for each object
+                F = lensing_table.lookup_BMO1F(self.galaxies['X'],xtrunc)
+                G = lensing_table.lookup_BMO1G(self.galaxies['X'],xtrunc)
 
         if profile=="BMO2":
             F=pangloss.BMO2Ffunc(self.galaxies['X'],xtrunc)
@@ -404,6 +412,12 @@ class Lightcone(object):
         self.writeColumn('gamma1',-gamma1)
         self.writeColumn('gamma2',-gamma2)
         self.writeColumn('mu',mu)
+
+        del F
+        del G
+        del lensing_table
+
+        #gc.collect()
 
         return
 
