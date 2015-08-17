@@ -14,7 +14,7 @@ sulireport:
 #	bibtex suli-report-swe
 # 	pdflatex suli-report-swe.tex
 #	pdflatex suli-report-swe.tex
-	-mv suli-report-swe.pdf DELIVERABLE-SULI-REPORT-EVERETT.pdf
+	-mv suli-report-swe.pdf FinalPaper_SEVerett.pdf
 
 # ----------------------------------------------------------------------------
 
