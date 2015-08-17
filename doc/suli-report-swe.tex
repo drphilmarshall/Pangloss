@@ -72,7 +72,7 @@
 \date{\today}
 
 \begin{abstract}
-As dark matter does not absorb or emit light, its distribution in the universe must be inferred through indirect effects such as the gravitational lensing of distant galaxies. While most sources are only weakly lensed, the systematic alignment of background galaxies around a foreground lens can constrain the mass of the lens which is largely in the form of dark matter. In this paper, a simple halo model is used to approximate the dark matter mass distribution of the Millennium Simulation on the galaxy and cluster scales. Background sources are generated at a redshift of ${z = 1.3857}$ and then weakly lensed by the foreground halos contained in a light cone centered along each line of sight, which is carried out by the \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss}. The model-predicted ellipticities of the background galaxies after lensing are compared to the ``true'' weakly-lensed ellipticities determined by the ray-traced convergence and shear calculated by Hilbert et al. (citation). Using the shear-shear and galaxy-galaxy correlation functions, I find that the \texttt{Pangloss} framework systematically under-predicts the shear power in both statistics and does not accurately capture the effect of dark matter structure at scales larger than 1 arcminute. Physical and computational shortcomings of the Pangloss framework are discussed, as well as potential improvements for upcoming work.
+As dark matter does not absorb or emit light, its distribution in the universe must be inferred through indirect effects such as the gravitational lensing of distant galaxies. While most sources are only weakly lensed, the systematic alignment of background galaxies around a foreground lens can constrain the mass of the lens which is largely in the form of dark matter. In this paper, a simple halo model is used to approximate the dark matter mass distribution of the Millennium Simulation on the galaxy and cluster scales. Background sources are generated at a redshift of ${z = 1.3857}$ and then weakly lensed by the foreground halos contained in a light cone centered along each line of sight, which is carried out by the \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss}. The model-predicted ellipticities of the background galaxies after lensing are compared to the ``true'' weakly-lensed ellipticities determined by the ray-traced convergence and shear calculated by Hilbert et al. (citation). Using the shear-shear and galaxy-galaxy correlation functions, I find that the \texttt{Pangloss} framework systematically under-predicts the shear power in both statistics and does not accurately capture the effect of dark matter structure at scales larger than 1 arcminute. Physical and computational shortcomings of the \texttt{Pangloss} framework are discussed, as well as potential improvements for upcoming work.
 \end{abstract}
 
 %\pacs{Valid PACS appear here}% PACS, the Physics and Astronomy
@@ -85,34 +85,13 @@ As dark matter does not absorb or emit light, its distribution in the universe m
 
 \section{Introduction}
 
-\begin{itemize}
-\item Broad intro into cosmology and dark matter, set problem in context
-    \begin{itemize}
-    \item (Very) short introduction to history of dark matter, Zwicky, rotation curves, etc.
-    \end{itemize}
-\begin{itemize}
-\item Introduction to gravitational lensing
-    \begin{itemize}
-    \item Convergence and Shear / Strong and Weak lensing
-        \begin{itemize}
-        \item Dramatic effect of strong lensing, how it is used for constraining cos. parameters
-        \item Only a few hundred known, not good for making mass maps
-        \item All galaxies are weakly lensed, good for our purposes
-        \end{itemize}
-    \end{itemize}
-\end{itemize}
-\item What this work does and aims for
-\begin{itemize}
-    \item We aim to implement a simple dark matter halo model to predict weak-lensing effects by foreground mass - and to make the prediction `quickly' and/or with large parallelization
-    \item Quick summary of what we do in paper
-        \begin{itemize}
-        \item Use halo model to make approximation of dark matter mass distribution in Millennium Simulation
-        \item Use shear-shear and galaxy-galaxy correlation functions as summary statistics
-        \item Compare statistics to ray-traced data
-        \item Discuss physial and computational shortcomings with current methodology
-        \end{itemize}
-    \end{itemize}
-\end{itemize}
+In a universe teeming with galaxies and light, it came as a shock to 20th century astronomers that most of the mass in the universe is in fact dark. The `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, only accounts for (20\%?) of the mass in the observable universe, and only (4.9\%?) of the mass-energy content of the universe (cite L-CDM). While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves (cite), the existence of baryonic acoustic oscillations (cite), and anisotropies in the cosmic microwave background (cite).
+
+One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. The process is described by Einstein's theory of general relativity, but simply put – the more mass, the more light bends. Light from different origins in a background galaxy are subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
+
+While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent (cite) and can only be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
+
+In this paper, I aim to do the former by applying a simple dark matter halo model to the Millennium Simulation and predicting the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of measuring galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on (x \# of galaxies on a field size of z deg$^2$) as well as a comparison of the predicted lensed ellipticities to the true ellipticities is given in Section IV.  Section V discusses limitations of the Pangloss framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
 
 \section{Theory}
 
@@ -125,6 +104,7 @@ As dark matter does not absorb or emit light, its distribution in the universe m
         \end{itemize}
     \item Galaxies are not always well approximated by ellipses (reference)
     \item Mathematical formalism
+    \item Plot of galaxy orientation given e1 and e2 from P.J. Marshall thesis
     \end{itemize}
 \item Shape noise and PSF issues in weak lensing (distorting already weak signal)
 \item Gravitational lensing
@@ -283,6 +263,12 @@ pass
 \item Jarvis \texttt{TreeCorr}
 \item NFW profile
 \item BMO truncation
+\item Planck
+\item galaxy curves
+\item BAOs
+\item LCDM
+\item GR
+\item wl distortion percent
 \end{itemize}
 
 \onecolumngrid
@@ -484,4 +470,38 @@ as desired.
 
 \begin{itemize}
 
+\end{itemize}
+
+
+
+% Outline:
+
+%% Intro:
+\begin{itemize}
+\item Broad intro into cosmology and dark matter, set problem in context
+    \begin{itemize}
+    \item (Very) short introduction to history of dark matter, Zwicky, rotation curves, etc.
+    \end{itemize}
+\begin{itemize}
+\item Introduction to gravitational lensing
+    \begin{itemize}
+    \item Convergence and Shear / Strong and Weak lensing
+        \begin{itemize}
+        \item Dramatic effect of strong lensing, how it is used for constraining cos. parameters
+        \item Only a few hundred known, not good for making mass maps
+        \item All galaxies are weakly lensed, good for our purposes
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\item What this work does and aims for
+\begin{itemize}
+    \item We aim to implement a simple dark matter halo model to predict weak-lensing effects by foreground mass - and to make the prediction `quickly' and/or with large parallelization
+    \item Quick summary of what we do in paper
+        \begin{itemize}
+        \item Use halo model to make approximation of dark matter mass distribution in Millennium Simulation
+        \item Use shear-shear and galaxy-galaxy correlation functions as summary statistics
+        \item Compare statistics to ray-traced data
+        \item Discuss physial and computational shortcomings with current methodology
+        \end{itemize}
+    \end{itemize}
 \end{itemize}
