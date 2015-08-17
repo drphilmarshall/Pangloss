@@ -1,39 +1,487 @@
-\documentclass{article}
+% ****** Start of file apssamp.tex ******
+%
+%   This file is part of the APS files in the REVTeX 4.1 distribution.
+%   Version 4.1r of REVTeX, August 2010
+%
+%   Copyright (c) 2009, 2010 The American Physical Society.
+%
+%   See the REVTeX 4 README file for restrictions and more information.
+%
+% TeX'ing this file requires that you have AMS-LaTeX 2.0 installed
+% as well as the rest of the prerequisites for REVTeX 4.1
+%
+% See the REVTeX 4 README file
+% It also requires running BibTeX. The commands are as follows:
+%
+%  1)  latex apssamp.tex
+%  2)  bibtex apssamp
+%  3)  latex apssamp.tex
+%  4)  latex apssamp.tex
+%
+\documentclass[%
+ reprint,
+%superscriptaddress,
+%groupedaddress,
+%unsortedaddress,
+%runinaddress,
+%frontmatterverbose, 
+%preprint,
+%showpacs,preprintnumbers,
+%nofootinbib,
+%nobibnotes,
+%bibnotes,
+ amsmath,amssymb,
+ aps,
+%pra,
+%prb,
+%rmp,
+%prstab,
+%prstper,
+%floatfix,
+]{revtex4-1}
 
-\usepackage{amsmath,amsthm,enumitem,graphicx,gensymb,color,booktabs,hyperref}
-\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}% Include figure files
+\usepackage{dcolumn}% Align table columns on decimal point
+\usepackage{bm}% bold math
+%\usepackage{multicol}
+%\usepackage{hyperref}% add hypertext capabilities
+%\usepackage[mathlines]{lineno}% Enable numbering of text and display math
+%\linenumbers\relax % Commence numbering lines
+
+%\usepackage[showframe,%Uncomment any one of the following lines to test 
+%%scale=0.7, marginratio={1:1, 2:3}, ignoreall,% default settings
+%%text={7in,10in},centering,
+%%margin=1.5in,
+%%total={6.5in,8.75in}, top=1.2in, left=0.9in, includefoot,
+%%height=10in,a5paper,hmargin={3cm,0.8in},
+%]{geometry}
 
 \begin{document}
 
-\section*{SULI Report!}
-\subsubsection*{Spencer Everett}
+\preprint{APS/123-QED}
 
-\newtheorem{problem}{Problem}
-\newtheorem*{problem*}{Problem}
+\title{SULI Report!}
+%\thanks{A footnote to the article title}%
 
-\setlength\parindent{0pt}
+\author{Spencer Everett}
+ \affiliation{Department of Physics, DePaul University.}%Lines break automatically or can be forced with \\
+ \email{spencerweverett@gmail.com}
 
-\vspace{0.25 in}
+%\collaboration{MUSO Collaboration}%\noaffiliation
 
-(Clearly some work still needs to be done)
+\date{\today}
 
-\section*{Abstract}
+\begin{abstract}
+As dark matter does not absorb or emit light, its distribution in the universe must be inferred through indirect effects such as the gravitational lensing of distant galaxies. While most sources are only weakly lensed, the systematic alignment of background galaxies around a foreground lens can constrain the mass of the lens which is largely in the form of dark matter. In this paper, a simple halo model is used to approximate the dark matter mass distribution of the Millennium Simulation on the galaxy and cluster scales. Background sources are generated at a redshift of ${z = 1.3857}$ and then weakly lensed by the foreground halos contained in a light cone centered along each line of sight, which is carried out by the \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss}. The model-predicted ellipticities of the background galaxies after lensing are compared to the ``true'' weakly-lensed ellipticities determined by the ray-traced convergence and shear calculated by Hilbert et al. (citation). Using the shear-shear and galaxy-galaxy correlation functions, I find that the \texttt{Pangloss} framework systematically under-predicts the shear power in both statistics and does not accurately capture the effect of dark matter structure at scales larger than 1 arcminute. Physical and computational shortcomings of the Pangloss framework are discussed, as well as potential improvements for upcoming work.
+\end{abstract}
 
-\section*{Introduction}
+%\pacs{Valid PACS appear here}% PACS, the Physics and Astronomy
+                             % Classification Scheme.
+%\keywords{Suggested keywords}%Use showkeys class option if keyword
+                              %display desired
+\maketitle
 
-\section*{Methods}
+%\tableofcontents
 
-\section*{Results}
+\section{Introduction}
 
-\section*{Discussion}
+\begin{itemize}
+\item Broad intro into cosmology and dark matter, set problem in context
+    \begin{itemize}
+    \item (Very) short introduction to history of dark matter, Zwicky, rotation curves, etc.
+    \end{itemize}
+\begin{itemize}
+\item Introduction to gravitational lensing
+    \begin{itemize}
+    \item Convergence and Shear / Strong and Weak lensing
+        \begin{itemize}
+        \item Dramatic effect of strong lensing, how it is used for constraining cos. parameters
+        \item Only a few hundred known, not good for making mass maps
+        \item All galaxies are weakly lensed, good for our purposes
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+\item What this work does and aims for
+\begin{itemize}
+    \item We aim to implement a simple dark matter halo model to predict weak-lensing effects by foreground mass - and to make the prediction `quickly' and/or with large parallelization
+    \item Quick summary of what we do in paper
+        \begin{itemize}
+        \item Use halo model to make approximation of dark matter mass distribution in Millennium Simulation
+        \item Use shear-shear and galaxy-galaxy correlation functions as summary statistics
+        \item Compare statistics to ray-traced data
+        \item Discuss physial and computational shortcomings with current methodology
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
 
-\section*{Conclusion}
+\section{Theory}
 
-\section*{Acknowledgements}
+\begin{itemize}
+\item Galaxy ellipticities
+    \begin{itemize}
+    \item (Most) galaxies are not circular - have intrinsic ellipticities
+        \begin{itemize}
+        \item If they were all circular, we could measure the change in shape exactly!
+        \end{itemize}
+    \item Galaxies are not always well approximated by ellipses (reference)
+    \item Mathematical formalism
+    \end{itemize}
+\item Shape noise and PSF issues in weak lensing (distorting already weak signal)
+\item Gravitational lensing
+    \begin{itemize}
+    \item Short introduction to problem setup for simple case (point mass maybe?)
+    \item Assumptions made in a typical solution (thin lens approximation?)
+    \item Show solution from Schneider
+    \item Shear and convergence 
+    \item Measuring shear in weak lensing - a statistical feature
+    \end{itemize}
+\item Dark matter halos
+    \begin{itemize}
+    \item NFW profile and equation (reference)
+    \item BMO truncation and equation (reference)
+    \end{itemize}
+\item SMHR? Or too distracting?
+\end{itemize}
 
-\section*{References}
+\section{Methods}
 
-\section*{Appendix}
+\begin{itemize}
+\item Assumptions
+    \begin{itemize}
+    \item A catalog with galaxy ellipticities
+    \item Currently use actual dark matter halo mass for an idea of best case scenario - can run same analysis with masses sampled from SMHR (reference)
+    \item PSF already accounted for in catalog and error low enough for weak lensing analysis
+    \item Use actual redshift for best case scenario (but can easily be replaced by photometric redshift sampling)
+    \end{itemize}
+\item Millennium Simulation
+    \begin{itemize}
+    \item Instead of blindly using \texttt{Pangloss} to make dark matter mass maps using sky survey data, we instead test how accurately and precisely we can predict weakly-lensed shear and convergence 
+    \item Mention which M.S. we used
+    \item S. Hilbert`s ray traced M.S. (reference)
+        \begin{itemize}
+        \item Can use the ray-traced convergence and shear to calculate the ``true'' lensed ellipticties and compare to \texttt{Pangloss}
+        \end{itemize}
+    \end{itemize}
+\item Background galaxies
+    \begin{itemize}
+    \item random orientation
+    \item ellipticity range (get numbers!)
+    \item Accounting for shape noise
+    \end{itemize}
+\item Lightcones
+    \begin{itemize}
+    \item Instead of using all foreground mass in a field to calculate the lensing of a single background object, we create a lightcone centered at the source with a chosen radius $R$
+    \item Drilling
+        \begin{itemize}
+        \item redshift grid to speed up calcuations
+        \item Use the physical distance to line of sight in lensing calculations
+            \begin{itemize}
+            \item Redshift-to-distance relation (equation and reference)
+            \end{itemize}
+        \item Ranking galaxy `relevance'
+            \begin{itemize}
+            \item Want to only include the most important galaxies for lensing to speed up computation, as most will have negligable mass or be too far away
+            \item Allows quicker lensing calculations, means we can make $R$ bigger
+            \item Show `relevance` metric ($M/R^3$ but unitless)
+            \item Include plot of predicted relevance vs kappa contribution??
+            \end{itemize}
+        \end{itemize}
+    \item Lensing by Halos
+        \begin{itemize}
+        \item Treat each foreground halo as a separate lensing event
+        \item Total lensing is the sum of each event
+        \item Lookup table??
+        \end{itemize}
+    \item Include cartoon
+    \end{itemize}
+\item Checking the halo model: Use of correlation functions as summary statistics for ellipticity predictions
+    \begin{itemize}
+        \item Introduce the concept of correlation functions in general
+            \begin{itemize}
+            \item Definition
+            \item Autocorrelation vs cross-correlation
+            \item Use of correlation functions in cosmology
+            \item Shear-shear and galaxy-galaxy correlation functions
+                \begin{itemize}
+                \item Reference appendix for Visualizing Correlation Functions
+                \end{itemize}
+            \end{itemize}
+        \item Use of Jarvis`s \texttt{TreeCorr} code to calculate cf`s
+        \begin{itemize}
+            \item Reference appendix for Jarvis proof
+        \end{itemize}
+    \end{itemize}
+\item Show one map with ray-traced features and lensed ellipticities vs another map with \texttt{Pangloss} features and predicted ellipticities?
+\end{itemize}
 
+\section{Results}
+
+\begin{itemize}
+\item Maps??
+\item Correlation Functions
+    \begin{itemize}
+    \item shear-shear
+    \item galaxy-galaxy
+    \item progression of each as $R$ increases??
+    \item cf`s without shape noise and with shape noise
+    \item cf`s with all galaxies vs with only `relevant' galaxies?
+    \end{itemize}
+\item The Need for Speed
+    \begin{itemize}
+    \item Table or graph of speedups and CPU time per lightcone progression (make sure to check \texttt{timeit} first!)
+    \end{itemize}
+\end{itemize}
+
+\section{Discussion}
+
+\begin{itemize}
+\item Issues with the \texttt{Pangloss} framework
+    \begin{itemize}
+    \item Systematic shear power under-prediction in cf`s
+    \item Missing large-scale dark matter structure
+    \end{itemize}
+    \item Possibly missing features in model
+        \begin{itemize}
+        \item voids
+        \item filaments
+        \item stellar mass
+        \end{itemize}
+    \item Speed
+\item Moving Foward
+    \begin{itemize}
+    \item Scaling up
+        \begin{itemize}
+        \item CPU and RAM numbers for lightcone parallelization from discussion with Debbie Bard
+        \end{itemize}
+    \item other stuff - too tired right now
+    \end{itemize}
+\end{itemize}
+
+\section{Conclusion}
+
+pass
+
+\section{Acknowledgements}
+
+\begin{itemize}
+\item DOE
+\item SULI
+\item Stanford University
+\item KIPAC
+\item Risa, Matt, Pat
+\item Phil!!
+\end{itemize}
+
+\section{References}
+
+\begin{itemize}
+\item P.J. Marshall Thesis?
+\item Collett et al.
+\item S. Hilbert (ray-traced)
+\item Millennium Simulation
+\item Schneider
+\item Jarvis \texttt{TreeCorr}
+\item NFW profile
+\item BMO truncation
+\end{itemize}
+
+\onecolumngrid
+\section{Appendix}
+
+\subsection{Visualizing Correlation Functions}
+
+\begin{itemize}
+\item Use as a brief introduction to the shear-shear and galaxy-galaxy correlation function as used in this work
+    \begin{itemize}
+    \item reference other (much more detailed) material for readers to find
+    \end{itemize}
+\item Include correlation value colormaps for $\xi_+$, $\xi_-$, and $\xi_\times$ along with discussion of correlation pattern
+\item Include color-coded correlation visuals along with setup
+    \begin{itemize}
+    \item Galaxies around lens before lensing - correlation values scatter plot with no signal
+    \item Galaxies around lens after lensing - correlation values scatter plot with signal
+    \end{itemize}
+\item B-modes and E-modes plot??
+\end{itemize}
+
+\subsection{Jarvis Proof}
+
+\begin{itemize}
+\item Introduction to difference between the common Schneider definition of lensing correlation functions and that used by Jarvis`s \texttt{TreeCorr} code
+\item Here we derive the connection between the two
+\item Definitions of each, along with references
+\end{itemize}
+
+From Jarvis \href{http://arxiv.org/pdf/astro-ph/0307393v2.pdf}{(Page 3)}:
+\begin{align}
+\xi_+&=\left<\gamma_i\gamma_j^*\right>=\texttt{xip}+i(\texttt{xip\_im})\label{s+}\\
+\xi_-&=\left<\gamma_i\gamma_je^{-4i\alpha}\right>=\texttt{xim}+i(\texttt{xim\_im})\label{s-}
+\end{align}
+
+where $\alpha$ is the angle between the two objects $i,j$ and each $\gamma$ is given by $\gamma_n=|\gamma_n|e^{2i\theta_n}$ in polar form.\\
+
+From Schneider \href{http://arxiv.org/pdf/astro-ph/0509252v1.pdf}{(Page 92)}:
+\begin{align}
+\xi_\pm&=\left<\gamma_{i_t}\gamma_{j_t}\right>\pm\left<\gamma_{i_\times}\gamma_{j_\times}\right>\label{s+-}\\
+\xi_\times&=\left<\gamma_{i_t}\gamma_{j_\times}\right>\label{sx}
+\end{align}
+
+where $\gamma_{n_t}=-\operatorname{Re}\left(\gamma_n e^{-2i\alpha}\right)$ and $\gamma_{n_\times}=-\operatorname{Im}\left(\gamma_n e^{-2i\alpha}\right)$.\\
+
+\section*{Schneider's $\xi_+$ to Jarvis's \texttt{xip}}
+
+Starting with Schneider's definition, observe that
+\begin{align*}
+\xi_+&=\left<\gamma_{i_t}\gamma_{j_t}\right>+\left<\gamma_{i_\times}\gamma_{j_\times}\right>\\
+&=\left<\operatorname{Re}\left(\gamma_ie^{-2i\alpha}\right)\cdot\operatorname{Re}\left(\gamma_je^{-2i\alpha}\right)\right>+\left<\operatorname{Im}\left(\gamma_ie^{-2i\alpha}\right)\cdot\operatorname{Im}\left(\gamma_je^{-2i\alpha}\right)\right>\\
+&=\left<\operatorname{Re}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Re}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>+\left<\operatorname{Im}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Im}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>\\
+&=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\cos\left(2(\theta_j-\alpha)\right)\right>+\left<|\gamma_i|\cdot|\gamma_j|\sin\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\right>.
+\end{align*}
+
+Using the trig identities
+\begin{align}
+\cos(u)\cos(v)&=\frac{1}{2}\left[\cos(u-v)+\cos(u+v)\right],\\
+\sin(u)\sin(v)&=\frac{1}{2}\left[\cos(u-v)-\cos(u+v)\right],
+\end{align}
+
+and the linearity of the expectation operator, it is straightforward to show that
+%\begin{align*}
+%\xi_+&=\left<|\gamma_i|\cdot|\gamma_j|\right>\cdot\left(\left<\frac{1}{2}\left[\cos\left(2(\theta_i-\theta_j)\right)+\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right]\right>+\left<\frac{1}{2}\left[\cos\left(2(\theta_i-\theta_j)\right)-\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right]\right>\right)\\
+%&=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\theta_j)\right)\right>.
+%\end{align*}
+$$\xi_+=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\theta_j)\right)\right>.$$
+
+Now using the identity
+\begin{equation}\label{trig2}
+\cos(u\pm v)=\cos\left(u\right)\cos\left(v\right)\mp\sin\left(u\right)\sin\left(v\right),
+\end{equation}
+
+the previous equation can be written as
+
+\begin{align*}
+\xi_+&=\left<|\gamma_i|\cdot|\gamma_j|\cdot\left[\cos\left(2\theta_i\right)\cos\left(2\theta_j\right)+\sin\left(2\theta_i\right)\sin\left(2\theta_j\right)\right]\right>\\
+&=\left<\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right>.
+\end{align*}
+
+Using the complex number identities
+
+\begin{align}
+\operatorname{Re}(z)&=\frac{1}{2}\left[z+z^*\right],\label{complex1}\\
+\operatorname{Im}(z)&=\frac{1}{2i}\left[z-z^*\right]\label{complex2},
+\end{align}
+
+it follows that
+
+\begin{align*}
+\xi_+&=\left<\frac{1}{4}\left[(\gamma_i+\gamma_i^*)(\gamma_j+\gamma_j^*)-(\gamma_i-\gamma_i^*)(\gamma_j-\gamma_j^*)\right]\right>\\
+&=\left<\frac{1}{2}\left[\gamma_i\gamma_j^*+(\gamma_i\gamma_j^*)^*\right]\right>\\
+&=\left<\operatorname{Re}(\gamma_i\gamma_j^*)\right>=\texttt{xip}.
+\end{align*}
+
+\section*{Schneider's $\xi_-$ to Jarvis's \texttt{xim}}
+
+The first few steps are identical to the previous section besides the negative in the definition of $\xi_-$, giving
+\begin{align*}
+\xi_-&=\left<\gamma_{i_t}\gamma_{j_t}\right>-\left<\gamma_{i_\times}\gamma_{j_\times}\right>\\
+&=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\cos\left(2(\theta_j-\alpha)\right)\right>-\left<|\gamma_i|\cdot|\gamma_j|\sin\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\right>\\
+&=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right>.
+\end{align*}
+
+Now using Equation \eqref{trig2} twice, first letting $u=2(\theta_i+\theta_j)$ and $v=-4\alpha$, and then letting $u=2\theta_i$ and $v=2\theta_j$, this equation becomes
+
+\begin{align*}
+\xi_-&=\left<|\gamma_i|\cdot|\gamma_j|\Big(\left[\cos(2\theta_i)\cos(2\theta_j)-\sin(2\theta_i)\sin(2\theta_j)\right]\cos(4\alpha)+\left[\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\right]\sin(4\alpha)\Big)\right>\\
+&=\Big<\big[\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)-\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\big]\cos(4\alpha)+\big[\operatorname{Im}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\big]\sin(4\alpha)\Big>.
+\end{align*}
+
+Using the identities \eqref{complex1} and \eqref{complex2}, and simplifying the leftover terms, this equation can be shown to equal
+\begin{align*}
+\xi_-=\big<\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha)\big>.
+\end{align*}
+
+Now observe that for two complex numbers $a$ and $b$, it is true that
+
+$$\operatorname{Re}(a\cdot b^*)=\operatorname{Re}(a)\cdot\operatorname{Re}(b)+\operatorname{Im}(a)\cdot\operatorname{Im}(b).$$
+
+Then setting $a=\gamma_i\gamma_j$ and $b=e^{4i\alpha}$, it must be true that
+
+$$\operatorname{Re}\left(\gamma_i\gamma_je^{-4i\alpha}\right)=\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha).$$
+
+Combining this with our previous result, this means that
+
+$$\xi_-=\big<\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha)\big>=\left<\operatorname{Re}\left(\gamma_i\gamma_je^{-4i\alpha}\right)\right>=\texttt{xim}.$$
+
+\section*{Schneider's $\xi_\times$ to Jarvis's $\frac{1}{2}\left(\texttt{xim\_im}-\texttt{xip\_im}\right)$}
+
+Starting from Schneider's definition of $\xi_\times$,
+
+\begin{align*}
+\xi_\times&=\left<\gamma_{i_t}\gamma_{j_\times}\right>\\
+&=\left<\operatorname{Re}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Im}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>\\
+&=\big<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\big>.\\
+\end{align*}
+
+Using the trig identity
+
+\begin{equation}\label{trig3}
+\cos(u)\sin(v)=\frac{1}{2}\left[\sin(u+v)-\sin(u-v)\right],
+\end{equation}
+
+the previous equation becomes
+
+\begin{align*}
+\xi_\times&=\left<|\gamma_i|\cdot|\gamma_j|\cdot\frac{1}{2}\big[\sin\left(2(\theta_i+\theta_j-2\alpha)\right)-\sin\left(2(\theta_i-\theta_j)\right)\big]\right>.
+\end{align*}
+
+Next, applying the identities
+
+\begin{equation}\label{trig4}
+\sin(u\pm v)=\sin(u)\cos(v)\pm\cos(u)\sin(v)
+\end{equation}
+
+along with \eqref{trig2} iteratively until each trig function only has a single term, the equation becomes
+
+\begin{align*}
+\xi_\times&=\Big<|\gamma_i|\cdot|\gamma_j|\cdot\frac{1}{2}\Big(\left[\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\right]\cos(4\alpha)\\
+&\qquad\qquad\qquad\quad-\left[\cos(2\theta_i)\cos(2\theta_j)-\sin(2\theta_i)\sin(2\theta_j)\right]\sin(4\alpha)\\
+&\qquad\qquad\qquad\quad-\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\Big)\Big>\\
+&=\Big<\frac{1}{2}\Big(\left[\operatorname{Im}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right]\cos(4\alpha)\\
+&\qquad-\left[\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)-\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right]\sin(4\alpha)\\
+&\qquad-\operatorname{Im}(\gamma_i)\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\Big)\Big>.\\
+\end{align*}
+
+Using the identities \eqref{complex1} and \eqref{complex2}, this can be simplified to
+
+\begin{align*}
+\xi_\times&=\left<\frac{1}{2}\big[\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>.
+\end{align*}
+
+Consider again two complex numbers $a$ and $b$. Observe that
+
+$$\operatorname{Im}(a\cdot b^*)=\operatorname{Im}(a)\cdot\operatorname{Re}(b)-\operatorname{Re}(a)\cdot\operatorname{Im}(b).$$
+
+Then setting $a=\gamma_i\gamma_j$ and $b=e^{4i\alpha}$, it must be true that
+
+$$\operatorname{Im}\left(\gamma_i\gamma_je^{-4i\alpha}\right)=\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha).$$
+
+Combing these results give
+
+\begin{align*}
+\xi_\times&=\left<\frac{1}{2}\big[\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>\\
+&=\left<\frac{1}{2}\big[\operatorname{Im}\left(\gamma_i\gamma_je^{-4i\alpha}\right)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>\\
+&=\frac{1}{2}\big[\texttt{xim\_im}-\texttt{xip\_im}\big].
+\end{align*}
+
+as desired.
+
+% Bibliography
 
 \end{document}
+%
+% ****** End of file apssamp.tex ******
+
+\end{document}
+
+\begin{itemize}
+
+\end{itemize}
