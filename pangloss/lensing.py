@@ -207,7 +207,7 @@ def Gfunc(x):
 
 def BMO1FSpencerFunc(x,t):
     '''
-    New BMO1Ffunc method that is more efficient.
+    New BMO1Ffunc method using masks. NOTE: Didn't end up being more efficient.
     '''
 
     x[x==1]=1.+1e-5
@@ -228,7 +228,7 @@ def BMO1FSpencerFunc(x,t):
 
 def BMO1GSpencerFunc(x,t):
     '''
-    New BMO1Gfunc method that is more efficient.
+    New BMO1Gfunc method using masks. NOTE: Didn't end up being more efficient.
     '''
 
     z = np.zeros(len(x))
