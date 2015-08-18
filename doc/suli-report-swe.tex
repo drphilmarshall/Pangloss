@@ -210,7 +210,7 @@ Instead of comparing the ray-traced and \texttt{Pangloss}-predicted lensed ellip
 
 \section{Results}
 
-Using the presented methodology, (x \# of background sources) background galaxies in a (y*y square deg) subset of the (0,0,0,0) Millennium Simulation foreground catalog (cite where to get data) were generated and lensed by both the ray-traced shear and convergence as well as the \texttt{Pangloss} framework. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
+Using the presented methodology, (x \# of background sources) background galaxies in a (y*y square deg) subset of the (0,0,0,0) Millennium Simulation foreground catalog (cite where to get data) were generated and lensed by both the ray-traced shear and convergence as well as the \texttt{Pangloss} framework. On average, the lightcones contained (950??)$\pm$(25??) foreground halos. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
 
 \subsection*{Ellipticity-Ellipticity Correlation Function}
 
@@ -248,35 +248,25 @@ A secondary goal of this research was to investigate how quickly the prediction 
 
 \section{Discussion}
 
-\begin{itemize}
-\item Issues with the \texttt{Pangloss} framework
-    \begin{itemize}
-    \item Systematic shear power under-prediction in cf`s
-    \item Missing large-scale dark matter structure
-    \end{itemize}
-    \item Possibly missing features in model
-        \begin{itemize}
-        \item voids
-        \item filaments
-        \item stellar mass
-        \end{itemize}
-    \item Speed
-\item Moving Foward
-    \begin{itemize}
-    \item Scaling up
-        \begin{itemize}
-        \item CPU and RAM numbers for lightcone parallelization from discussion with Debbie Bard
-        \end{itemize}
-    \item infer hyper-parameters from SMHR, physical distance, etc
-    \item other stuff - too tired right now
-    \end{itemize}
-\end{itemize}
+\subsection*{Issues with the \texttt{Pangloss} Framework}
+
+Both the ellipticity-ellipticity and galaxy-galaxy correlation functions show clear issues with using the halo model to predict the lensing of background sources with \texttt{Pangloss}, even in the best-case scenario of perfect knowledge of the halo masses and their spectroscopic redshifts. The systematic underprediction of shear power present in both correlaton functions is likely do to missing features in the model such as clusters, filaments, and voids. While individual galaxies currently recieve halos, a cluster of galaxies will sit in an larger halo whose presence is not being considered as its position, mass, and extent are difficult to determine. The absence of this mass undoubtedly effects shear predictions and ellipticity correlations on large scales. While some of the filament structure is captured in the framework, as the higher density of galaxies in filaments will lead to a higher density of halos, any additional dark matter structure between halos and clusters is not being accounted for. While difficult to do in practice, one can imagine connecting clusters of galaxies with dark matter `cylinders' to account for the extra filament mass. Voids are also not currently considered, as the framework assumes the field has constant mass density equal to that of the average mass density of the universe and then adds halo masses on top of this density. This would make the average matter density accross the field \textit{larger} than the mean density of the unvierse, and could be counteracted by subtracting mass from regions in between foreground halos. Stellar masses could also be incorperated into the \texttt{Pangloss} prediction, but any effect would likely be dominated by the missing features described above.
+
+The progression of model-predicted ellipticity-ellipticity correlation functions at larger radii (somewhat) converging to the ray-traced correlation supports the analysis given above, as the prediction was progressively better with larger number of foreground halos and thus more mass and structure. However, the number of foreground objects scales quadratically with the lightcone radius making it prohibitively expensive above $R=16$ arcminutes. With a radius this large, most foreground objects will be too far away from the line of sight and have insufficient mass to make a significant contribution to the lensing of the background source. This suggests the creation of a metric to predict the `relevance' of each halo to the lensing contribution. In this way, the framework could be restructured to only use the most relevant halos in the computationally expensive lensing prediction, while simultaneously allowing for larger lightcones with more relevant halos. This could aid in the aforementioned shear power prediction issues.  
+
+\subsection*{Scaling Up \texttt{Pangloss}}
+
+While the current \texttt{Pangloss} framework can handle the lensing predictions of (x \# of lightcones) in a (y*y square degree) field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing up to 1,000 foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all others. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the (??) MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.
 
 \section{Conclusion}
 
 pass
 
 \section{Acknowledgements}
+
+I would like to thank the Department of Energy's Science Undergraduate Laboratory Internship (SULI) program for funding this research and giving me the opportunity to conduct research at ?. asdf. Finally, I am incredibly grateful to Phil Marshall for his unending support, patience, and guidance throughout this research.
+
+This work was supported in part by the U.S. Department of Energy, Office of Science, Office of Workforce Development for Teachers and Scientists (WDTS) under the Science Undergraduate Laboratory Internships Program (SULI).
 
 \begin{itemize}
 \item DOE
@@ -307,6 +297,7 @@ pass
 \item GR
 \item corrFuns in cosmology
 \item wl distortion percent
+\item CFHT Lensing Survey
 \end{itemize}
 
 \onecolumngrid
@@ -671,6 +662,31 @@ as desired.
 \item The Need for Speed
     \begin{itemize}
     \item Table or graph of speedups and CPU time per lightcone progression (make sure to check \texttt{timeit} first!)
+    \end{itemize}
+\end{itemize}
+
+%% Conclusion
+\begin{itemize}
+\item Issues with the \texttt{Pangloss} framework
+    \begin{itemize}
+    \item Systematic shear power under-prediction in cf`s
+    \item Missing large-scale dark matter structure
+    \end{itemize}
+    \item Possibly missing features in model
+        \begin{itemize}
+        \item voids
+        \item filaments
+        \item stellar mass
+        \end{itemize}
+    \item Speed
+\item Moving Foward
+    \begin{itemize}
+    \item Scaling up
+        \begin{itemize}
+        \item CPU and RAM numbers for lightcone parallelization from discussion with Debbie Bard
+        \end{itemize}
+    \item infer hyper-parameters from SMHR, physical distance, etc
+    \item other stuff - too tired right now
     \end{itemize}
 \end{itemize}
 
