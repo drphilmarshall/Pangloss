@@ -360,7 +360,7 @@ class Lightcone(object):
         self.writeColumn('rs',r_s)
         x = self.galaxies['rphys']/r_s
         self.writeColumn('X',x)
-        #print 'X lims: ',np.min(self.galaxies['X']),np.max(self.galaxies['X'])
+
         return
 
 # ----------------------------------------------------------------------------
@@ -368,17 +368,10 @@ class Lightcone(object):
 
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None):
 
-        #c200 = self.galaxies['c200']
-        #r200 = self.galaxies['r200']
-        #x = self.galaxies['X']
-        #r_s = self.galaxies['rs']
         rho_s = pangloss.delta_c(self.galaxies['c200'])*self.galaxies['rho_crit']
         self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
         r_trunc = truncationscale*self.galaxies['r200']
         xtrunc = r_trunc/self.galaxies['rs']
-        #print 'xtrunc lims: ',np.min(xtrunc),np.max(xtrunc)
-        #kappaHalo = self.kappa_s*1.0
-        #gammaHalo = self.kappa_s*1.0
 
         if profile=="BMO1":
             if lensing_table is None:
@@ -395,9 +388,6 @@ class Lightcone(object):
         if profile=="BMO2":
             F=pangloss.BMO2Ffunc(self.galaxies['X'],xtrunc)
             G=pangloss.BMO2Gfunc(self.galaxies['X'],xtrunc)
-
-        #kappaHalo *= F
-        #gammaHalo *= (G-F)
 
         #phi = self.galaxies['phi']
         kappa = 1.0*self.kappa_s*F
