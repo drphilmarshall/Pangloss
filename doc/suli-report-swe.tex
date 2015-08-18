@@ -43,6 +43,7 @@
 \usepackage{graphicx}% Include figure files
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage{bm}% bold math
+\usepackage{mathtools}
 %\usepackage{multicol}
 %\usepackage{hyperref}% add hypertext capabilities
 %\usepackage[mathlines]{lineno}% Enable numbering of text and display math
@@ -91,37 +92,80 @@ One of the most successful probes of dark matter has been gravitational lensing.
 
 While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent (cite) and can only be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
 
-In this paper, I aim to do the former by applying a simple dark matter halo model to the Millennium Simulation and predicting the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of measuring galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on (x \# of galaxies on a field size of x \# deg$^2$) as well as a comparison of the predicted lensed ellipticities to the true ellipticities is given in Section IV.  Section V discusses limitations of the used Pangloss framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
+In this paper, I aim to do the former by applying a simple dark matter halo model to the Millennium Simulation and predicting the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on (x \# of galaxies on a field size of x \# deg$^2$) as well as a comparison of the predicted lensed ellipticities to the true ellipticities is given in Section IV.  Section V discusses limitations of the used Pangloss framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
 
 \section{Theoretical Background}
 
-\begin{itemize}
-\item Galaxy ellipticities
-    \begin{itemize}
-    \item (Most) galaxies are not circular - have intrinsic ellipticities
-        \begin{itemize}
-        \item If they were all circular, we could measure the change in shape exactly!
-        \end{itemize}
-    \item Galaxies are not always well approximated by ellipses (reference)
-    \item Mathematical formalism
-    \item Plot of galaxy orientation given e1 and e2 from P.J. Marshall thesis
-    \end{itemize}
-\item Shape noise and PSF issues in weak lensing (distorting already weak signal)
-\item Gravitational lensing
-    \begin{itemize}
-    \item Short introduction to problem setup for simple case (point mass maybe?)
-    \item Assumptions made in a typical solution (thin lens approximation?)
-    \item Show solution from Schneider
-    \item Shear and convergence 
-    \item Measuring shear in weak lensing - a statistical feature
-    \end{itemize}
-\item Dark matter halos
-    \begin{itemize}
-    \item NFW profile and equation (reference)
-    \item BMO truncation and equation (reference)
-    \end{itemize}
-\item SMHR? Or too distracting?
-\end{itemize}
+\subsection*{Galaxies as Ellipses}
+Consider a galaxy image that can be well approximated as an ellipse at an angle $\phi$ above an arbitrary reference line. The galaxy's complex ellipticity is defined to be 
+\begin{equation}
+\varepsilon=\varepsilon_1+i\varepsilon_2=|\varepsilon|\,e^{2i\phi}
+\end{equation}
+
+\noindent where the magnitude of the galaxy's ellipticity $|\varepsilon|$ is defined to be
+\begin{equation}
+|\varepsilon|=\frac{1-r}{1+r}
+\end{equation}
+
+\noindent and $r\leq1$ is the ratio of the semi-minor and semi-major axis of the ellipse. This compact notation combines the eccentricity and orientation of the ellipse into a single object. A plot from (Schneider et al.) showing the shape of elliptical galaxies for various values of $\varepsilon_1$ and $\varepsilon_2$ is shown in Figure (??).
+
+%************************
+(Galaxy Ellipticity Figure)
+%************************
+
+(Mention shape nosie and PSF here?)
+
+\subsection*{Gravitational Lensing}
+
+A full mathematical treatment of the gravitational lensing of galaxies due to the gravitational fields of massive objects requires general relativity (see (Beck cite) for details). However, the important results can be summarized as follows. Foreground mass distorts the image of a background galaxy in two distinct ways: The image is magnified and sheared tangentially about the foreground mass, making it more elliptical. The magnification of the image is determined by the convergence $\kappa$, a scalar which measures the projected mass density along each line of sight. The shearing of the source is most often described by the complex shear $\gamma$ defined to be
+\begin{equation}
+\gamma=\gamma_1+i\gamma_2=|\gamma|\,e^{2i\varphi}
+\end{equation}
+
+\noindent where $|\gamma|$ is the magnitude of the shear and $\varphi$ is the orientation of the shear. While the intrinsic ellipticity of the source may be in any orientation near the foreground mass, it will be more aligned with the shear field after lensing. Figure (??) demonstrates this process visually.
+
+However, usually the quantity of interest in lensing calculations is the \textit{reduced} shear, defined by
+\begin{equation}
+g=\frac{\gamma}{1-\kappa}.
+\end{equation}
+
+\noindent Then using the thin lens approximation for the lensing of a background source of intrinsic ellipticity $\varepsilon_i$ around a point foreground mass with reduced shear $g$, the lensed ellipticity $\varepsilon$ is given by
+\begin{equation}
+ \varepsilon = \begin{dcases} 
+      \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1; \\[0.75em]
+       \frac{1+g\varepsilon_i^*}{\varepsilon^*+g^*} & : |g|>1.
+   \end{dcases}
+\end{equation}
+
+\noindent where an asterisk denotes the complex conjugate (cite Schneider). The behavior of the distortion relies strongly on the magnitude of $g$; the
+effect is called \textit{strong} lensing if $|g|>1$ and \textit{weak} lensing if $|g|<1$. The effects of strong lensing can be quite dramatic, distorting sources into large arcs, multiple images, or even a complete Einstein ring shown in Figure (??). While strong lenses are rare as the alignment of the source and foreground mass must be nearly perfect, \textit{all} sources are weakly lensed. The effect is small, usually an ellipticity distortion of only a few percent (cite?), but can be detected locally by averaging the ellipticities of all sources in a small region. As the orientations of the sources should be random, it would be expected that
+$$\left<\varepsilon\right>=0.$$
+
+\noindent However as sources in the same small region are sheared in (approximately) the same way, this implies that
+\begin{equation}
+\left<\varepsilon\right>=g.
+\end{equation}
+
+ \noindent Finally as in the weak lensing regime ${\kappa\ll1}$ and ${|\gamma|\ll1}$, it follows that
+ \begin{equation}
+ \gamma\approx g=\left<\varepsilon\right>
+ \end{equation}
+
+ \noindent which provides a method of detecting the shear observationally.
+
+\subsection*{Dark Matter Halos}
+
+While the exact relation between the distribution of galaxies and dark matter is not known, simulations have shown that galaxies tend to form in overdense regions of dark matter. This means that galaxies \textit{should} trace out the larger underlying dark matter structures. The simplest way to model this relationship is by enveloping each galaxy in a spherically symmetric dark matter `halo' of mass $M_h$ sampled from the stellar-to-halo mass relation (cite SMHR). These halos extend far beyond the edge of the visible galaxy that they enclose. While the density profile of the halos may be complex, numerous simulations have shown that it can be well approximated by the Navarro-Frenk-White (NFW) profile of the form
+\begin{equation}
+\rho_{NFW}(r)=\frac{\rho_0}{\frac{r}{R_s}\left(1+\frac{r}{R_s}\right)^2}
+\end{equation}
+
+\noindent where the constant $\rho_0$ and the scale radius $R_s$ are parameters that vary from halo to halo (cite NFW). This work uses a truncated NFW profile called the Baltz-Marshall-Oguri (BMO) profile given by
+\begin{equation}
+\rho_{BMO}(r)=\rho_{NFW}\cdot\left(\frac{r_t^2}{r^2+r_t^2}\right)^2
+\end{equation}
+
+\noindent where $r_t$ is a free parameter, as it has been shown to be a better fit to simulated data (cite BMO).
 
 \section{The Pangloss Framework}
 
@@ -162,7 +206,7 @@ Using the physical separation distance and halo mass, the shear and convergence 
 
 \subsection*{Checking the Halo Model}
 
-Instead of comparing the ray-traced and \texttt{Pangloss}-predicted lensed ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-galaxy correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see Appendix A. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publically available \texttt{TreeCorr}\footnote{https://github.com/rmjarvis/TreeCorr} module written by Mike Jarvis. Note that the correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition (cite), see Appendix B.
+Instead of comparing the ray-traced and \texttt{Pangloss}-predicted lensed ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-galaxy correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see Appendix A. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publically available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition (cite), see Appendix B.
 
 \section{Results}
 
@@ -234,7 +278,8 @@ pass
 \item Jarvis \texttt{TreeCorr}
 \item lensing calculation http://arxiv.org/pdf/astro-ph/9908213v1.pdf
 \item NFW profile
-\item BMO truncation
+\item BMO truncation, BMO vs NFW http://arxiv.org/pdf/1301.1684v2.pdf
+\item SMHR http://arxiv.org/pdf/1401.7329v1.pdf
 \item Planck
 \item galaxy curves
 \item BAOs
@@ -479,6 +524,52 @@ as desired.
 \end{itemize}
 
 %% Theoretical Background:
+\begin{itemize}
+\item Galaxy ellipticities
+    \begin{itemize}
+    \item (Most) galaxies are not circular - have intrinsic ellipticities
+        \begin{itemize}
+        \item If they were all circular, we could measure the change in shape exactly!
+        \end{itemize}
+    \item Galaxies are not always well approximated by ellipses (reference)
+    \item Mathematical formalism
+    \item Plot of galaxy orientation given e1 and e2 from P.J. Marshall thesis
+    \end{itemize}
+\item Shape noise and PSF issues in weak lensing (distorting already weak signal)
+\item Gravitational lensing
+    \begin{itemize}
+    \item Short introduction to problem setup for simple case (point mass maybe?)
+    \item Assumptions made in a typical solution (thin lens approximation?)
+    \item Show solution from Schneider
+    \item Shear and convergence 
+    \item Measuring shear in weak lensing - a statistical feature
+    \end{itemize}
+\item Dark matter halos
+    \begin{itemize}
+    \item NFW profile and equation (reference)
+    \item BMO truncation and equation (reference)
+    \end{itemize}
+\item SMHR? Or too distracting?
+\end{itemize}
+
+% Old theory:
+%However, the important results for a point mass using the thin lens approximation can be summarized as follows: The distortion of a background galaxy image can be quantified by the linearized lens mapping Jacobi matrix $\mathcal{A}$ which can be written as
+
+%$$\mathcal{A}=(1-\kappa)\,
+%\begin{pmatrix}
+%1-g_1 & -g2\\
+%-g_2 & 1+g_1
+%\end{pmatrix}$$
+
+%\noindent where $\kappa$ and $g$ are the convergence and reduced shear respectively at the center of the background source. 
+%\begin{displaymath}
+%  \varepsilon = \left\{
+%    \begin{array}{lr}
+%      \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1; \\
+%      \frac{1+g\varepsilon_i^*}{\varepsilon^*+g^*} & : |g|>1.
+%    \end{array}
+%   \right.
+%\end{displaymath}
 
 
 %% The Pangloss Framework:
