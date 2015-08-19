@@ -11,9 +11,9 @@ clean:
 sulireport:
 	pdflatex suli-report-swe.tex
 	pdflatex suli-report-swe.tex
-#	bibtex suli-report-swe
-# 	pdflatex suli-report-swe.tex
-#	pdflatex suli-report-swe.tex
+	bibtex suli-report-swe
+	pdflatex suli-report-swe.tex
+	pdflatex suli-report-swe.tex
 	-mv suli-report-swe.pdf FinalPaper_SEverett.pdf
 
 # ----------------------------------------------------------------------------
