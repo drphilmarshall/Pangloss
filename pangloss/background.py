@@ -288,7 +288,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.drill_lightcones()
 
         # Create lensing lookup table
-        lens_table = pangloss.LensingTable()
+        #lens_table = pangloss.lensing.LensingTable()
 
         # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         assert self.galaxy_count == len(self.lightcones)
@@ -335,8 +335,8 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.drawConcentrations(errors=True)
 
             # Compute each halo's contribution to the convergence and shear:
-            lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
-            #lightcone.makeKappas(truncationscale=10)
+            #lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
+            lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
             lightcone.combineKappas(methods=methods)
@@ -363,7 +363,7 @@ class BackgroundCatalog(pangloss.Catalog):
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
 
-        del lens_table
+        #del lens_table
 
         if vb is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
