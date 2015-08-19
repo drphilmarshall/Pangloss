@@ -73,7 +73,7 @@
 \date{\today}
 
 \begin{abstract}
-As dark matter does not absorb or emit light, its distribution in the universe must be inferred through indirect effects such as the gravitational lensing of distant galaxies. While most sources are only weakly lensed, the systematic alignment of background galaxies around a foreground lens can constrain the mass of the lens which is largely in the form of dark matter. In this paper, a simple halo model is used to approximate the dark matter mass distribution of the Millennium Simulation on the galaxy and cluster scales. Background sources are generated at a redshift of ${z = 1.3857}$ and then weakly lensed by the foreground halos contained in a light cone centered along each line of sight, which is carried out by the \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss}. The model-predicted ellipticities of the background galaxies after lensing are compared to the ``true'' weakly-lensed ellipticities determined by the ray-traced convergence and shear calculated by Hilbert et al. (citation). Using the ellipticity-ellipticity and galaxy-galaxy correlation functions, I find that the \texttt{Pangloss} framework systematically under-predicts the shear power in both statistics and does not accurately capture the effect of dark matter structure at scales larger than 1 arcminute. Physical and computational shortcomings of the \texttt{Pangloss} framework are discussed, as well as potential improvements for upcoming work.
+As dark matter does not absorb or emit light, its distribution in the universe must be inferred through indirect effects such as the gravitational lensing of distant galaxies. While most sources are only weakly lensed, the systematic alignment of background galaxies around a foreground lens can constrain the mass of the lens which is largely in the form of dark matter. In this paper, a simple halo model is used to approximate the dark matter mass distribution of the Millennium Simulation on the galaxy and cluster scales. Background sources are generated at a redshift of ${z = 1.3857}$ and then weakly lensed by the foreground halos contained in a light cone centered along each line of sight, which is carried out by the \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss}. The model-predicted ellipticities of the background galaxies after lensing are compared to the ``true'' weakly-lensed ellipticities determined by ray-traced convergence and shear from the simulation. Using the ellipticity-ellipticity and galaxy-mass correlation functions, I find that the \texttt{Pangloss} framework systematically under-predicts the shear power in both statistics and does not accurately capture the effect of dark matter structure at scales larger than 1 arcminute. Physical and computational shortcomings of the \texttt{Pangloss} framework are discussed, as well as potential improvements for upcoming work.
 \end{abstract}
 
 %\pacs{Valid PACS appear here}% PACS, the Physics and Astronomy
@@ -86,19 +86,19 @@ As dark matter does not absorb or emit light, its distribution in the universe m
 
 \section{Introduction}
 
-In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers unexpectedly discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, only accounts for (20\%?) of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves (cite), the existence of baryonic acoustic oscillations (cite), and anisotropies in the cosmic microwave background (cite).
+In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers unexpectedly discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, only accounts for (20\%?) of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves\cite{rotation_curve}, (something else) (cite), and acoustic peaks in the cosmic microwave background\cite{planck_2015}.
 
 One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. The process is described by Einstein's general theory of relativity, but simply put -- the more mass, the more light bends. Light from different origins in a background galaxy are subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
 
-While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent (cite) and can only be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
+While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent (cite) and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
 
-In this paper, I aim to do the former by applying a simple dark matter halo model to the Millennium Simulation and predicting the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on (x \# of galaxies on a field size of x \# deg$^2$) as well as a comparison of the predicted lensed ellipticities to the true ellipticities is given in Section IV.  Section V discusses limitations of the used Pangloss framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
+In this paper, I attempt to do the former by applying a simple dark matter halo model to reconstruct mass along lines of sight in the Millennium Simulation and predict the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation and ellipticity predictions is described in Section III, and the results of the model on (x \# of galaxies on a field size of x \# deg$^2$) as well as a comparison of the predicted lensed ellipticities to the true ellipticities is given in Section IV.  Section V discusses limitations of the used \texttt{Pangloss} framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
 
 \section{Theoretical Background}
 
 \subsection*{Galaxies as Ellipses}
 Consider a galaxy image that can be well approximated as an ellipse at an angle $\phi$ above an arbitrary reference line. The galaxy's complex ellipticity is defined to be 
-\begin{equation}
+\begin{equation}\label{complex_ellipticity}
 \varepsilon=\varepsilon_1+i\varepsilon_2=|\varepsilon|\,e^{2i\phi}
 \end{equation}
 
@@ -113,63 +113,66 @@ Consider a galaxy image that can be well approximated as an ellipse at an angle 
 (Galaxy Ellipticity Figure)
 %************************
 
-(Mention shape nosie and PSF here?)
+There are many complications to using this scheme in practice, most notably the multiplicative bias resulting from the smearing of galaxy images by the observational point spread function (PSF)\cite{multiplicative_bias}. While the effects of a PSF can be complex, in general it causes galaxy images to appear less elliptical than they truly are. To account for this in generated galaxy images, a multiplicative bias parameter $M$ is often used to lessen the intrinsic ellipticity using
+$$\varepsilon_{obs}=M\cdot\varepsilon_{int}.$$
+
+\noindent where $\varepsilon_{int}$ is the generated intrinsic ellipticity of the image and $\varepsilon_{obs}$ is the ellipticity that would be recorded by a detector.
 
 \subsection*{Gravitational Lensing}
 
-A full mathematical treatment of the gravitational lensing of galaxies due to the gravitational fields of massive objects requires general relativity (see (Beck cite) for details). However, the important results can be summarized as follows. Foreground mass distorts the image of a background galaxy in two distinct ways: The image is magnified and sheared tangentially about the foreground mass, making it more elliptical. The magnification of the image is determined by the convergence $\kappa$, a scalar which measures the projected mass density along each line of sight. The shearing of the source is most often described by the complex shear $\gamma$ defined to be
-\begin{equation}
+A full mathematical treatment of the gravitational lensing of galaxies due to the gravitational fields of massive objects requires general relativity (see \cite{modern_cosmology} for details). However, the important results can be summarized as follows. Foreground mass distorts the image of a background galaxy in two distinct ways: The image is magnified and sheared tangentially about the foreground mass, making it more elliptical. The magnification of the image is determined by the convergence $\kappa$, a scalar which measures the projected mass density along each line of sight. The shearing of the source is most often described by the complex shear $\gamma$ defined to be
+\begin{equation}\label{complex_shear}
 \gamma=\gamma_1+i\gamma_2=|\gamma|\,e^{2i\varphi}
 \end{equation}
 
-\noindent where $|\gamma|$ is the magnitude of the shear and $\varphi$ is the orientation of the shear. While the intrinsic ellipticity of the source may be in any orientation near the foreground mass, it will be more aligned with the shear field after lensing. Figure (??) demonstrates this process visually.
+\noindent where $|\gamma|$ is the magnitude of the shear and $\varphi$ is the orientation of the shear. While the intrinsic ellipticities of source galaxies are randomly oriented near the foreground mass before lensing, they will be systematically more aligned with the shear field after lensing. Figure (??) demonstrates this process visually.
 
 However, usually the quantity of interest in lensing calculations is the \textit{reduced} shear, defined by
-\begin{equation}
+\begin{equation}\label{reduced_shear}
 g=\frac{\gamma}{1-\kappa}.
 \end{equation}
 
 \noindent Then using the thin lens approximation for the lensing of a background source of intrinsic ellipticity $\varepsilon_i$ around a point foreground mass with reduced shear $g$, the lensed ellipticity $\varepsilon$ is given by
-\begin{equation}
+\begin{equation}\label{lensing}
  \varepsilon = \begin{dcases} 
-      \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1; \\[0.75em]
-       \frac{1+g\varepsilon_i^*}{\varepsilon^*+g^*} & : |g|>1.
+      \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1 \\[0.75em]
+       \frac{1+g\varepsilon_i^*}{\varepsilon^*+g^*} & : |g|>1
    \end{dcases}
 \end{equation}
 
-\noindent where an asterisk denotes the complex conjugate (cite Schneider). The behavior of the distortion relies strongly on the magnitude of $g$; the
-effect is called \textit{strong} lensing if $|g|>1$ and \textit{weak} lensing if $|g|<1$. The effects of strong lensing can be quite dramatic, distorting sources into large arcs, multiple images, or even a complete Einstein ring shown in Figure (??). While strong lenses are rare as the alignment of the source and foreground mass must be nearly perfect, \textit{all} sources are weakly lensed. The effect is small, usually an ellipticity distortion of only a few percent (cite?), but can be detected locally by averaging the ellipticities of all sources in a small region. As the orientations of the sources should be random, it would be expected that
+\noindent where an asterisk denotes the complex conjugate\cite{schneider}. The behavior of the distortion relies strongly on the magnitude of $g$; the
+effect is called \textit{strong} lensing if $|g|>1$ and \textit{weak} lensing if $|g|<1$. The effects of strong lensing can be quite dramatic, distorting sources into large arcs, multiple images, or even an Einstein ring as shown in Figure (??). While strong lenses are rare as the alignment of the source and foreground mass must be nearly perfect, \textit{all} sources are weakly lensed. The effect is small, usually an ellipticity distortion of only a few percent (cite?), but can be detected locally by averaging the ellipticities of all sources in a small region. As the orientations of the sources should be random, it would be expected that
 $$\left<\varepsilon\right>=0.$$
 
-\noindent However as sources in the same small region are sheared in (approximately) the same way, this implies that
+\noindent However, as sources in the same small region are sheared in (approximately) the same way, this implies that
 \begin{equation}
-\left<\varepsilon\right>=g.
+\left<\varepsilon\right>\approx g.
 \end{equation}
 
  \noindent Finally as in the weak lensing regime ${\kappa\ll1}$ and ${|\gamma|\ll1}$, it follows that
  \begin{equation}
- \gamma\approx g=\left<\varepsilon\right>
+ \gamma\approx g\approx\left<\varepsilon\right>
  \end{equation}
 
  \noindent which provides a method of detecting the shear observationally.
 
 \subsection*{Dark Matter Halos}
 
-While the exact relation between the distribution of galaxies and dark matter is not known, simulations have shown that galaxies tend to form in overdense regions of dark matter. This means that galaxies \textit{should} trace out the larger underlying dark matter structures. The simplest way to model this relationship is by enveloping each galaxy in a spherically symmetric dark matter `halo' of mass $M_h$ sampled from the stellar-to-halo mass relation (cite SMHR). These halos extend far beyond the edge of the visible galaxy that they enclose. While the density profile of the halos may be complex, numerous simulations have shown that it can be well approximated by the Navarro-Frenk-White (NFW) profile of the form
-\begin{equation}
+While the exact relation between the distribution of galaxies and dark matter is not known, simulations have shown that galaxies tend to form in overdense regions of dark matter. This means that galaxies \textit{should} trace out the larger underlying dark matter structures. The simplest way to model this relationship is by enveloping each galaxy in a spherically symmetric dark matter `halo' of mass $M_h$ sampled from the stellar-to-halo mass relation\cite{smhr}. These halos extend far beyond the edge of the visible galaxy that they enclose. While the density profile of the halos may be complex, numerous simulations have shown that it can be well approximated by the Navarro-Frenk-White (NFW) profile which has the form
+\begin{equation}\label{nfw_profile}
 \rho_{NFW}(r)=\frac{\rho_0}{\frac{r}{R_s}\left(1+\frac{r}{R_s}\right)^2}
 \end{equation}
 
-\noindent where the constant $\rho_0$ and the scale radius $R_s$ are parameters that vary from halo to halo (cite NFW). This work uses a truncated NFW profile called the Baltz-Marshall-Oguri (BMO) profile given by
-\begin{equation}
+\noindent where the constant $\rho_0$ and the scale radius $R_s$ are parameters that vary from halo to halo\cite{nfw}. This work uses a truncated NFW profile called the Baltz-Marshall-Oguri (BMO) profile given by
+\begin{equation}\label{bmo_profile}
 \rho_{BMO}(r)=\rho_{NFW}\cdot\left(\frac{r_t^2}{r^2+r_t^2}\right)^2
 \end{equation}
 
-\noindent where $r_t$ is a free parameter, as it has been shown to be a better fit to simulated data (cite BMO).
+\noindent where $r_t$ is a free parameter, as it has been shown to be a better fit to simulated data\cite{nfw_bmo}.
 
 \section{The Pangloss Framework}
 
-To constrain the mass of foreground dark matter using weak gravitational lensing, first a model of the relationship between foreground galaxies and the foreground dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true undering dark matter structure. To do this, I built upon the publically available \texttt{Pangloss} framework used in Collett et al. (cite) to reconstruct all the mass along the line of sight of each background galaxy using dark matter halos. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. This process is detailed in the following sections.
+To constrain the mass of foreground dark matter using weak gravitational lensing, first a model of the relationship between foreground galaxies and the foreground dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true undering dark matter structure. To do this, I built upon the publically available \texttt{Pangloss} framework used in Collett et al.\cite{collett_marshall} to reconstruct all the mass along the line of sight of each background galaxy using dark matter halos. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. This process is detailed in the following sections.
 
 \subsection*{Assumptions}
 While \texttt{Pangloss} may be used more generally, the present analysis makes some additional strong assumptions to simplify the problem for a first attempt at making weak lensing predictions.
@@ -181,40 +184,36 @@ While \texttt{Pangloss} may be used more generally, the present analysis makes s
 \item A spectroscopic redshift of each foreground galaxy is known.
 \end{enumerate}
 
-Testing the first assumption is the main goal of this paper. The second assumption is reasonable as it is estimated that dark matter halos are 1-2 orders of magnitude more massive than the host galaxy (cite). Clearly the third assumption will never be true for any observational data. However, this allows for a best-case scenario estimate of how well the \texttt{Pangloss} framework \textit{could} predict weak lensing effects given all possible information. This assumption can be relaxed by sampling a dark matter halo mass from an assumed stellar mass - halo mass relation (cite). The fourth assumpition is also unrealistic as most galaxies in sky surveys only have a less-reliable photometric redshift due to time constraints, but this again allows for a best-case estimate. This assumption could be relaxed by adding random photometric redshift noise and repeating the upcoming analysis on many realizations of the photometric redshifts.
+Testing the first assumption is the main goal of this paper. The second assumption is reasonable as it is estimated that dark matter halos are 1-2 orders of magnitude more massive than the host galaxy\cite{smhr}. Clearly the third assumption will never be true for any observational data. However, this allows for a best-case scenario estimate of how well the \texttt{Pangloss} framework \textit{could} predict weak lensing effects given all possible information. This assumption can be relaxed by sampling a dark matter halo mass from an assumed stellar mass - halo mass relation. The fourth assumpition is also unrealistic as most galaxies in sky surveys only have a less-reliable photometric redshift due to time constraints, but this again allows for a best-case estimate. This assumption could be relaxed by instead using photometric redshifts, adding random noise, and repeating the upcoming analysis on many realizations of the photometric redshifts.
 
 \subsection*{The Millennium Simulation}
-\texttt{Pangloss} cannot be used to make dark matter mass maps using existing galaxy catalogs until it is tested on a simulated universe with known dark matter structure to determine how accurately and precisely it predicts the lensing of background sources. For this purpose, \texttt{Pangloss} was tested on galaxy catalogs from the Millennium Simulation, an N-body simulation consisting of over 10 billion dark matter `particles' each representing a billion solar masses and populated with about 20 million galaxies (cite 2005). The simulation uses cosmological parameters from WMAP 1\textsuperscript{st}-year data analysis and contains baryonic and dark matter structure believed to be consistent with our own universe. From the work of Hilbert et al. (cite), high resolution maps of the shear and convergence from the perspective of a single reference point calculated by ray-tracing are publically available. From these maps, the actual lensing of background galaxies when traveling through the foreground mass of the Millennium Simulation towards the reference point can be calculated using Equation (??).
+\texttt{Pangloss} cannot be used to make dark matter mass maps using existing galaxy catalogs until it is tested on a simulated universe with known dark matter structure to determine how accurately and precisely it predicts the lensing of background sources. For this purpose, \texttt{Pangloss} was tested on galaxy catalogs from the Millennium Simulation, an N-body simulation consisting of over 10 billion dark matter `particles' each representing a billion solar masses and populated with about 20 million galaxies\cite{millennium_simulation}. The simulation uses cosmological parameters from WMAP 1\textsuperscript{st}-year data analysis and contains baryonic and dark matter structure believed to be consistent with our own universe. From the work of Hilbert et al.\cite{ray_tracing}, high resolution maps of the shear and convergence from the perspective of a single reference point calculated by ray-tracing are publically available. From these maps, the actual lensing of background galaxies when traveling through the foreground mass of the Millennium Simulation towards the reference point can be calculated using Equation \eqref{lensing}.
 
 \subsection*{Generating Background Galaxies}
-With a catalog of foreground galaxies chosen, a set of background galaxies with density 10 per square arcminute was generated. The intrinsic orientation of each galaxy was sampled from a uniform distribution as, without lensing, there should be no preferred orientation due to the assumption of an isotropic universe. The magnitude of the galaxy ellipticities was sampled from a normal distribution with a standard deviation of 0.2, but any ellipticities with magnitude greater than one were re-sampled. Random ellipticity noise was sampled from a normal distribution with a standard deviation of 0.1 and added to the intrinsic ellipticities. Finally, each ellipticity was multiplied by 0.9 to account for systematic shape noise of 10\%.
+With a catalog of foreground galaxies chosen, a set of background galaxies with density 10 per arcminute$^2$ was generated. The intrinsic orientation of each galaxy was sampled from a uniform distribution as, without lensing, there should be no preferred orientation due to the assumption of an isotropic universe. The magnitude of the galaxy ellipticities was sampled from a normal distribution with a standard deviation of 0.2, but any ellipticities with magnitude greater than one were re-sampled. Random ellipticity noise was sampled from a normal distribution with a standard deviation of 0.1 and added to the intrinsic ellipticities. Finally, each ellipticity was multiplied by $M=0.9$ to account for a multiplicative bias of 10\%.
 
 \subsection*{Creating Lightcones}
-While ideally all foreground mass in a field would be considered when predicting the weak lensing of a background galaxy, it is computationally prohibitive to do so. Instead, all foreground halos contained within a `lightcone' centered along the line of sight to the source and extending out to a chosen lightcone radius $R$ were considered when calculating lensing contributions for the background source. A cartoon model of this process is shown in Figure (???). Unless otherwise specified, experiments in this paper used a radius of 2 arcminutes.
+While ideally all foreground mass in a field would be considered when predicting the weak lensing of a background galaxy, it is computationally prohibitive to do so. Instead, all foreground halos contained within a `lightcone' centered along the line of sight to the source and extending out to a chosen lightcone radius $R$ were considered when calculating the lensing contributions for the background source. A cartoon model of this process is shown in Figure (???). Unless otherwise specified, experiments in this paper used a radius of 2 arcminutes.
 
 %************************
 (Pangloss Cartoon Figure)
 %************************
 
-To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first snapped to a grid of 100 equally-sized redshift bins and then converted to physical distance using (still trying to decipher the grid.py/distance.py code. Ask Phil!).
+To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first snapped to a grid of 100 equally-sized redshift bins and then converted to physical distance.
 
-%************************
-(Redshift-to-distance relation equation?)
-%************************
-
-Using the physical separation distance and halo mass, the shear and convergence of a single foreground halo is calculated using methods described in Wright and Brainerd (cite). The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss}-predicted lensed background ellipticity is then calculated using Equation (??).
+Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd\cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss}-predicted lensed background ellipticity is then calculated using Equation \eqref{lensing}.
 
 \subsection*{Checking the Halo Model}
 
-Instead of comparing the ray-traced and \texttt{Pangloss}-predicted lensed ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-galaxy correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance (cite corrFuns). For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see Appendix A. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publically available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition (cite), see Appendix B.
+Instead of comparing the ray-traced and \texttt{Pangloss}-predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see Appendix A. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publically available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition\cite{schneider}, see Appendix B.
 
 \section{Results}
 
-Using the presented methodology, (x \# of background sources) background galaxies in a (y*y square deg) subset of the (0,0,0,0) Millennium Simulation foreground catalog (cite where to get data) were generated and lensed by both the ray-traced shear and convergence as well as the \texttt{Pangloss} framework. On average, the lightcones contained (950??)$\pm$(25??) foreground halos. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
+Using the presented methodology, (x \# of background sources) background galaxies in a (y*y square deg) subset of the (0,0,0,0) Millennium Simulation foreground catalog (cite where to get data) were generated and lensed by both the ray-traced shear and convergence maps as well as the \texttt{Pangloss} framework. On average, the lightcones contained (950??)$\pm$(25??) foreground halos. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
 
 \subsection*{Ellipticity-Ellipticity Correlation Function}
 
-The first test of the halo model was with the ellipticity-ellipticity correlation function with a lightcone radius of 2 arcminutes which is given in Figure (??). The statistic measured the average correlation between pairs of ellipticities at separation distances between (0.1??) arcminutes and 2 arcminutes. The correlation function of the intrinsic ellipticities plotted in blue shows no significant deviation from zero as expected, as before lensing the galaxies had random orientations. Both the ray-traced, plotted in green, and \texttt{Pangloss}, plotted in purple, ellipticities show positive correlation on smaller scales up to a separation of 0.8 arcminutes. However, the ray-traced correlation is positive on all calculated scales while the halo model does not predict any significant corrlelation at separations above 0.8 arcminutes. Additionally, while the shapes of the correlation functions for both sets of lensed ellipticities aggree well until 0.8 arcminutes, there is a clear systematic underprediction of shear power by the halo model on all scales. On average, the shear power is underpredicted by (??) percent.
+The first test of the halo model was with the ellipticity-ellipticity correlation function with a lightcone radius of 2 arcminutes which is given in Figure (??). The statistic measured the average correlation between pairs of ellipticities at separation distances between (0.1??) arcminutes and 2 arcminutes. The correlation function of the intrinsic ellipticities plotted in blue shows no significant deviation from zero as expected, as before lensing the galaxies had random orientations. Both the ray-traced, plotted in green, and halo model, plotted in purple, ellipticities show positive correlation on small scales up to a separation of 0.8 arcminutes. However, the ray-traced correlation is positive on all calculated scales while the halo model does not predict any significant corrlelation at separations above 0.8 arcminutes. Additionally, while the shapes of the correlation functions for both sets of lensed ellipticities aggree well until 0.8 arcminutes, there is a clear systematic underprediction of shear power by the halo model on all scales. On average, the shear power is underpredicted by (??) percent.
 
 %************************
 (e-e Correlation Function Plot)
@@ -228,18 +227,18 @@ Using the same catalog of background sources, this statistic was recalculated fo
 
 (Analysis of plot)
 
-\subsection*{Galaxy-Galaxy Correlation Function}
+\subsection*{Galaxy-mass Correlation Function}
 
-The catalog of lensed ellipticities was also analyzed using the galaxy-galaxy correlation function with separation distances from (0.1??) arcminutes to 2 arcminutes and a lightcone radius of 2 arcminutes. The result is shown in Figure (??). As with the ellipticity-ellipticity correlation function, there is no significant correlation for the intrinsic ellipticities at any scale as expected. The lensed ellipticities from the ray-tracing and halo model both have positive correlation on all calculated scales and are in excellent agreement on scales from (??) arcminutes to (??) arcminutes. However, the halo model is still systematically underpredicting the shear power on scales above (??) arcminutes, although now only by an average of (??) percent. A new feature is the large overprediction of shear power on separation scales smaller than (??) arcminutes. However, background sources this close to foreground halos are often in the strong lensing regime which is not currently accounted for by the \texttt{Pangloss} framework.
+The catalog of lensed ellipticities was also analyzed using the galaxy-mass correlation function with separation distances from (0.1??) arcminutes to 2 arcminutes and a lightcone radius of 2 arcminutes. The result is shown in Figure (??). As with the ellipticity-ellipticity correlation function, there is no significant correlation for the intrinsic ellipticities at any scale as expected. The lensed ellipticities from the ray-tracing and halo model both have positive correlation on all calculated scales and are in agreement on scales from (??) arcminutes to (??) arcminutes. However, the halo model is still systematically underpredicting the shear power on scales above (??) arcminutes, although now only by an average of (??) percent. A new feature is the large overprediction of shear power on separation scales smaller than (??) arcminutes. However, background sources this close to foreground halos are often in the strong lensing regime which is not currently accounted for by the \texttt{Pangloss} framework.
 
 %************************
 (n-g Correlation Function Plot)\\
 %************************
-(Make a plot of n-g correlation function with multiple R's??)
+(Make a plot of n-g correlation function with multiple R's?? - No, mention that it was made but does not contain any interesting results)
 
 \subsection*{Computational Performance}
 
-A secondary goal of this research was to investigate how quickly the prediction for the shear and convergence for a single background source could be made. The average CPU time required for the prediction per lightcone was (?? $\pm$ ??) for the first run. However, many small improvements to the coding infastructure of \texttt{Pangloss} were made to speed up the prediction. The average CPU time for a lensing prediction per lightcone after various changes is plotted in Figure (??).
+A secondary goal of this research was to investigate how quickly the prediction for the shear and convergence for a single background source could be made. The average CPU time required for the prediction per lightcone was (80? $\pm$ 10?) ms for the first run. However, many small improvements to the coding infastructure of \texttt{Pangloss} were made to speed up the prediction. The average CPU time for a lensing prediction per lightcone after various changes is plotted in Figure (??).
 
 %************************
 (CPU time per lightcone plot)\\
@@ -250,17 +249,19 @@ A secondary goal of this research was to investigate how quickly the prediction 
 
 \subsection*{Issues with the \texttt{Pangloss} Framework}
 
-Both the ellipticity-ellipticity and galaxy-galaxy correlation functions show clear issues with using the halo model to predict the lensing of background sources with \texttt{Pangloss}, even in the best-case scenario of perfect knowledge of the halo masses and their spectroscopic redshifts. The systematic underprediction of shear power present in both correlaton functions is likely do to missing features in the model such as clusters, filaments, and voids. While individual galaxies currently recieve halos, a cluster of galaxies will sit in an larger halo whose presence is not being considered as its position, mass, and extent are difficult to determine. The absence of this mass undoubtedly effects shear predictions and ellipticity correlations on large scales. While some of the filament structure is captured in the framework, as the higher density of galaxies in filaments will lead to a higher density of halos, any additional dark matter structure between halos and clusters is not being accounted for. While difficult to do in practice, one can imagine connecting clusters of galaxies with dark matter `cylinders' to account for the extra filament mass. Voids are also not currently considered, as the framework assumes the field has constant mass density equal to that of the average mass density of the universe and then adds halo masses on top of this density. This would make the average matter density accross the field \textit{larger} than the mean density of the unvierse, and could be counteracted by subtracting mass from regions in between foreground halos. Stellar masses could also be incorperated into the \texttt{Pangloss} prediction, but any effect would likely be dominated by the missing features described above.
+Both the ellipticity-ellipticity and galaxy-mass correlation functions show clear issues with using the halo model to predict the lensing of background sources with \texttt{Pangloss}, even in the best-case scenario of perfect knowledge of the halo masses and their spectroscopic redshifts. The systematic underprediction of shear power present in both correlaton functions is likely do to missing features in the model such as clusters, filaments, and voids. 
 
-The progression of model-predicted ellipticity-ellipticity correlation functions at larger radii (somewhat) converging to the ray-traced correlation supports the analysis given above, as the prediction was progressively better with larger number of foreground halos and thus more mass and structure. However, the number of foreground objects scales quadratically with the lightcone radius making it prohibitively expensive above $R=16$ arcminutes. With a radius this large, most foreground objects will be too far away from the line of sight and have insufficient mass to make a significant contribution to the lensing of the background source. This suggests the creation of a metric to predict the `relevance' of each halo to the lensing contribution. In this way, the framework could be restructured to only use the most relevant halos in the computationally expensive lensing prediction, while simultaneously allowing for larger lightcones with more relevant halos. This could aid in the aforementioned shear power prediction issues.  
+While individual galaxies currently recieve halos, a cluster of galaxies will sit in an larger halo whose presence is not being considered as its position, mass, and extent are difficult to determine. The absence of this mass undoubtedly effects shear predictions and ellipticity correlations on large scales. While some of the filament structure is captured in the framework, as the higher density of galaxies in filaments will lead to a higher density of halos, any additional dark matter structure between halos and clusters is not being accounted for. While difficult to do in practice, one can imagine connecting clusters of galaxies with dark matter `cylinders' to account for the extra filament mass. Voids are also not currently considered, as the framework assumes the field has constant mass density equal to that of the average mass density of the universe and then adds halo masses on top of this density. This would make the average matter density accross the field \textit{larger} than the mean density of the unvierse, and could be counteracted by subtracting mass from regions in between foreground halos. Stellar masses could also be incorperated into the \texttt{Pangloss} prediction, but any effect would likely be dominated by the missing features described above.
+
+The progression of model-predicted ellipticity-ellipticity correlation functions at larger radii converging to the ray-traced correlation supports the analysis given above, as the prediction was progressively better with larger number of foreground halos and thus more mass and structure. However, the number of foreground objects scales quadratically with the lightcone radius making it prohibitively expensive above $R=8$ arcminutes. With a radius this large, most foreground objects will be too far away from the line of sight and have insufficient mass to make a significant contribution to the lensing of the background source. This suggests the creation of a metric to predict the `relevance' of each halo to the lensing contribution. In this way, the framework could be restructured to only use the most relevant halos in the computationally expensive lensing prediction, while simultaneously allowing for larger lightcones with more relevant halos. This could aid in the aforementioned shear power prediction issues.  
 
 \subsection*{Scaling Up \texttt{Pangloss}}
 
-While the current \texttt{Pangloss} framework can handle the lensing predictions of (x \# of lightcones) in a (y*y square degree) field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing up to 1,000 foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all others. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the (??) MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.
+While the current \texttt{Pangloss} framework can handle the lensing predictions of (x \# of lightcones) in a (y*y square degree) field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing up to 1,000 foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all other lightcones. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the (??) MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.
 
 \section{Conclusion}
 
-pass
+%A simple halo model was used to reconstruct the mass along a line of sight asfd in the Millennium Simulation to make predictions of how the foreground mass weakly lensed the ellipticities of (x \# of bg) of generated backgrond sources. The lensed ellipticities were characterized globally using the ellipticity-ellipticity and galaxy-mass correlation functions and compared to the ray-traced correlations.
 
 \section{Acknowledgements}
 
@@ -279,26 +280,8 @@ This work was supported in part by the U.S. Department of Energy, Office of Scie
 
 \section{References}
 
-\begin{itemize}
-\item P.J. Marshall Thesis?
-\item Collett et al.
-\item S. Hilbert (ray-traced) http://arxiv.org/abs/0809.5035
-\item Millennium Simulation
-\item Schneider
-\item Jarvis \texttt{TreeCorr}
-\item lensing calculation http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-\item NFW profile
-\item BMO truncation, BMO vs NFW http://arxiv.org/pdf/1301.1684v2.pdf
-\item SMHR http://arxiv.org/pdf/1401.7329v1.pdf
-\item Planck
-\item galaxy curves
-\item BAOs
-\item LCDM
-\item GR
-\item corrFuns in cosmology
-\item wl distortion percent
-\item CFHT Lensing Survey
-\end{itemize}
+%\bibliographystyle{plain}
+%\bibliography{suli-report-swe}
 
 \onecolumngrid
 \section{Appendix}
@@ -306,7 +289,7 @@ This work was supported in part by the U.S. Department of Energy, Office of Scie
 \subsection{Visualizing Correlation Functions}
 
 \begin{itemize}
-\item Use as a brief introduction to the shear-shear and galaxy-galaxy correlation function as used in this work
+\item Use as a brief introduction to the shear-shear and galaxy-mass correlation function as used in this work
     \begin{itemize}
     \item reference other (much more detailed) material for readers to find
     \end{itemize}
@@ -522,7 +505,7 @@ as desired.
     \item Quick summary of what we do in paper
         \begin{itemize}
         \item Use halo model to make approximation of dark matter mass distribution in Millennium Simulation
-        \item Use shear-shear and galaxy-galaxy correlation functions as summary statistics
+        \item Use shear-shear and galaxy-mass correlation functions as summary statistics
         \item Compare statistics to ray-traced data
         \item Discuss physial and computational shortcomings with current methodology
         \end{itemize}
@@ -635,7 +618,7 @@ as desired.
             \item Definition
             \item Autocorrelation vs cross-correlation
             \item Use of correlation functions in cosmology
-            \item Shear-shear and galaxy-galaxy correlation functions
+            \item Shear-shear and galaxy-mass correlation functions
                 \begin{itemize}
                 \item Reference appendix for Visualizing Correlation Functions
                 \end{itemize}
@@ -654,7 +637,7 @@ as desired.
 \item Correlation Functions
     \begin{itemize}
     \item shear-shear
-    \item galaxy-galaxy
+    \item galaxy-mass
     \item progression of each as $R$ increases??
     \item cf`s without shape noise and with shape noise
     \item cf`s with all galaxies vs with only `relevant' galaxies?
@@ -688,6 +671,28 @@ as desired.
     \item infer hyper-parameters from SMHR, physical distance, etc
     \item other stuff - too tired right now
     \end{itemize}
+\end{itemize}
+
+%% References
+\begin{itemize}
+\item P.J. Marshall Thesis?
+\item Collett et al.
+\item S. Hilbert (ray-traced) http://arxiv.org/abs/0809.5035
+\item Millennium Simulation
+\item Schneider
+\item Jarvis \texttt{TreeCorr}
+\item lensing calculation http://arxiv.org/pdf/astro-ph/9908213v1.pdf
+\item NFW profile
+\item BMO truncation, BMO vs NFW http://arxiv.org/pdf/1301.1684v2.pdf
+\item SMHR http://arxiv.org/pdf/1401.7329v1.pdf
+\item Planck
+\item galaxy curves
+\item BAOs
+\item LCDM
+\item GR
+\item corrFuns in cosmology
+\item wl distortion percent
+\item CFHT Lensing Survey
 \end{itemize}
 
 
