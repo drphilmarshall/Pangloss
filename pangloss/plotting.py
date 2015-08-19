@@ -199,7 +199,7 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
 
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,fig_size=10,M=None,galaxy_count=None):
+def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,line_style=None,fig_size=10,M=None,galaxy_count=None):
     '''
     Plot the correlation component 'corr_comp' of type 'corr_type' in separation units of 'sep_units'.
     By default the method will plot the lensed-by-map correlation, but can also plot without lensing
@@ -261,8 +261,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
         # Mark first label as intrinsic, observed, or predicted
         if lensed == 'none': label1 = 'Intrinsic '
-        if lensed == 'map': label1 = 'Observed '
-        elif lensed == 'halo': label1 = 'Predicted '
+        if lensed == 'map': label1 = 'Ray-Traced '
+        elif lensed == 'halo': label1 = 'Halo Model '
 
         # Create the correct component label and linestyle to be used in legend
         if corr_comp == 'plus':
@@ -293,6 +293,10 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
             ls = '-.'
             label2 = r'\times^\prime'
 
+        # If a linestyle is passed, overwrite default
+        if not (line_style is None):
+            ls = line_style
+
         # If the multiplicative error M is not None, add it to the legend label
         if M is not None:
             label2 += r',\,M={}'.format(M)
@@ -305,8 +309,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
         # Mark first label as intrinsic, observed, or predicted
         if lensed == 'none': label1 = 'Intrinsic '
-        if lensed == 'map': label1 = 'Observed '
-        elif lensed == 'halo': label1 = 'Predicted '
+        if lensed == 'map': label1 = 'Ray-Traced '
+        elif lensed == 'halo': label1 = 'Halo Model '
 
         if corr_comp == 'real':
             # Plot real(xi) with a solid line
@@ -322,6 +326,10 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
         # Error is the same for either case
         err = np.sqrt(corr.varxi)
+
+        # If a linestyle is passed, overwrite default
+        if not (line_style is None):
+            ls = line_style
 
         # If the multiplicative error M is not None, add it to the legend label
         if M is not None:
