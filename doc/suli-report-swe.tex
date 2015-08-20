@@ -44,7 +44,7 @@
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage{bm}% bold math
 \usepackage{mathtools}
-\usepackage{caption}
+\usepackage[format=plain]{caption}
 \usepackage{subcaption}
 %\usepackage{multicol}
 %\usepackage{hyperref}% add hypertext capabilities
@@ -72,7 +72,8 @@
 %\thanks{A footnote to the article title}%
 
 \author{Spencer Everett}
- \affiliation{Department of Physics, DePaul University.}%Lines break automatically or can be forced with \\
+ \affiliation{Department of Physics, DePaul University,\\SLAC National Laboratory}
+ %\affiliation{SLAC National Laboratory}
  \email{spencerweverett@gmail.com}
 
 %\collaboration{MUSO Collaboration}%\noaffiliation
@@ -96,7 +97,7 @@ As dark matter does not absorb or emit light, its distribution in the universe m
 
 In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers unexpectedly discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, accounts for less than 20\% of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves \cite{rotation_curve}, velocity dispersions of galaxies \cite{zwicky} and acoustic peaks in the cosmic microwave background \cite{planck_2015}.
 
-One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. The process is described by Einstein's general theory of relativity, but simply put -- the more mass, the more light bends. Light from different origins in a background galaxy are subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
+One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. Light from different origins in a background galaxy are subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
 
 While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
 
@@ -231,12 +232,11 @@ While ideally all foreground mass in a field would be considered when predicting
 
 To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first snapped to a grid of 100 equally-sized redshift bins and then converted to physical distance.
 
-Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed background ellipticity is then calculated using Equation \eqref{lensing}.
+Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
 
 \subsection*{Checking the Halo Model}
 
-Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, see the appendix.
-%For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see Appendix A.
+Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see appendix A. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, see appendix B.
 
 \section{Results}
 
@@ -244,7 +244,7 @@ Using the presented methodology, 3,240 background galaxies in a 0.09 deg$^2$ sub
 
 \subsection*{Ellipticity-Ellipticity Correlation Function}
 
-The first test of the halo model was with the ellipticity-ellipticity correlation function with a lightcone radius of 2 arcminutes which is given in Figure \ref{gg_corr}. The statistic measured the average correlation between pairs of ellipticities at separation distances between 0.1 and 2 arcminutes. The correlation function of the intrinsic ellipticities plotted in blue shows no significant deviation from zero as expected, as before lensing the galaxies had random orientations. Both the ray-traced, plotted in green, and halo model, plotted in purple, ellipticities show positive correlation on small scales up to a separation of 1 arcminute. However, the ray-traced correlation is positive on all calculated scales while the halo model does not predict any significant corrlelation at separations above 1arcminute. Additionally, while the shapes of the correlation functions for both sets of lensed ellipticities aggree well until 1 arcminute, there is a clear systematic underprediction of shear power by the halo model on all scales. On average, the shear power is underpredicted by 117.0 percent.
+The first test of the halo model was with the ellipticity-ellipticity correlation function with a lightcone radius of 2 arcminutes which is given in Figure \ref{gg_corr}. The statistic measured the average correlation between pairs of ellipticities at separation distances between 0.1 and 2 arcminutes. The correlation function of the intrinsic ellipticities plotted in blue shows no significant deviation from zero as expected, as before lensing the galaxies had random orientations. Both the ray-traced, plotted in green, and halo model, plotted in purple, ellipticities show positive correlation on small scales up to a separation of 1 arcminute. However, the ray-traced correlation is positive on all calculated scales while the halo model does not predict any significant corrlelation at separations above 1arcminute. Additionally, while the shapes of the correlation functions for both sets of lensed ellipticities aggree well until 1 arcminute, there is a clear systematic underprediction of shear power by the halo model on all scales. On average, the shear power is underpredicted by 117.0\%.
 
 %% Ellipticity-Ellipticity Correlation
 \begin{figure}
@@ -268,7 +268,7 @@ The first test of the halo model was with the ellipticity-ellipticity correlatio
 
 Using the same catalog of background sources, this statistic was recalculated for the ray-traced and halo model lensed ellipticities for various lightcone radii ranging from $R=1$ arcminute to $R=8$ arcminutes. The result is shown in Figure \ref{gg_corr_series}, where the series of model predicted correlation functions is compared to the ray-traced correlation function. As $R$ increases, the mean number of foreground galaxies contained in each lightcone grows quadratically from ${240\pm25}$ galaxies when $R=1$ arcminute to ${15,000\pm300}$ galaxies when $R=8$ arcminutes. Increasing the number of foreground objects, and thus increasing the mass and structure considered for shear and convergence predictions, systematically increased the predicted shear power on all scales. While the series of predicted correlation functions appear to be converging towards the ray-traced correlation function, there is clearly diminishing shear power gains as $R$ increases.
 
-\subsection*{Galaxy-mass Correlation Function}
+\subsection*{Galaxy-Mass Correlation Function}
 
 The catalog of lensed ellipticities was also analyzed using the galaxy-mass correlation function with separation distances from 0.1 arcminutes to 2 arcminutes and a lightcone radius of 2 arcminutes. The result is shown in Figure \ref{ng_corr}. As with the ellipticity-ellipticity correlation function, there is no significant correlation for the intrinsic ellipticities at any scale as expected. The lensed ellipticities from the ray-tracing and halo model both have positive correlation on all calculated scales and are in agreement on scales from 0.2 arcminutes to 0.7 arcminutes. However, the halo model is still systematically underpredicting the shear power on scales above 0.7 arcminutes, although now only by an average of 23.2 \%. A new feature is the large overprediction of shear power on separation scales smaller than 0.2 arcminutes. However, background sources this close to foreground halos are often in the strong lensing regime which is not currently accounted for by the \texttt{Pangloss} framework.
 
@@ -296,7 +296,7 @@ A secondary goal of this research was to investigate how quickly the prediction 
 
 \section{Discussion}
 
-\subsection*{Issues with the \texttt{Pangloss} Framework}
+\subsection*{Issues with the Pangloss Framework}
 
 Both the ellipticity-ellipticity and galaxy-mass correlation functions show clear issues with using the halo model to predict the lensing of background sources with \texttt{Pangloss}, even in the best-case scenario of perfect knowledge of the halo masses and their spectroscopic redshifts. The systematic underprediction of shear power present in both correlaton functions is likely do to missing features in the model such as clusters, filaments, and voids. 
 
@@ -304,7 +304,7 @@ While individual galaxies currently recieve halos, a cluster of galaxies will si
 
 The progression of model predicted ellipticity-ellipticity correlation functions at larger radii converging to the ray-traced correlation supports the analysis given above, as the prediction was progressively better with larger number of foreground halos and thus more mass and structure. However, the number of foreground objects scales quadratically with the lightcone radius making it prohibitively expensive above $R=8$ arcminutes. With a radius this large, most foreground objects will be too far away from the line of sight and have insufficient mass to make a significant contribution to the lensing of the background source. This suggests the creation of a metric to predict the `relevance' of each halo to the lensing contribution. In this way, the framework could be restructured to only use the most relevant halos in the computationally expensive lensing prediction, while simultaneously allowing for larger lightcones with more relevant halos. This could aid in the aforementioned shear power prediction issues.  
 
-\subsection*{Scaling Up \texttt{Pangloss}}
+\subsection*{Scaling Up Pangloss}
 
 While the current \texttt{Pangloss} framework can handle the lensing predictions of 3,240 in a 0.09 deg$^2$ field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing up to 1,000 foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all other lightcones. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the (??) MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.
 
@@ -333,21 +333,68 @@ This work was supported in part by the U.S. Department of Energy, Office of Scie
 
 At first encounter, the use of correlation functions to analyze data can be difficult to comprehend, let alone visualize. While by no means a thorough or mathematical analysis (see (cite) for a general introduction to correlation functions, and (cite) for their many applications in cosmology), I have created some explanatory plots to aid in visualizing how weakly lensed ellipticities can be measured with correlation functions and put the main results of this paper in more context.
 
-The first statistic used in this work is the ellipticity-ellipticity ($\varepsilon-\varepsilon$) correlation function, which has two tangential components $\xi_\pm$ and a cross component $\xi_\times$. The components most interesting for gravitational lensing are the positive tangential component $\xi_+$, expected to be positive for lensed galaxies, and the cross component $\xi_\times$, which is expected to be zero. To get an intuition for what these quantities measure, first consider the correlation values for individual pairs of galaxies as shown in Figure \ref{corr_colormaps}. In each plot, the value of the correlation between two galaxy orientations is plotted as a colormap with a few sampled orientations plotted on top of the graph.
+The main statistic used in this work is the ellipticity-ellipticity ($\varepsilon-\varepsilon$) correlation function, which has two tangential components $\xi_\pm$ and a cross component $\xi_\times$. The components most interesting for gravitational lensing are the positive tangential component $\xi_+$, expected to be positive for lensed galaxies, and the cross component $\xi_\times$, which is expected to be zero. To get an intuition for what these quantities measure, first consider the correlation values for individual pairs of galaxies as shown in Figure \ref{corr_colormaps}. In each plot, the value of the correlation between two galaxies as a function of their orientation is plotted as a colormap with a few sampled galaxy orientations superimposed. For $\xi_+$, the correlation is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$. In contrast, $\xi_\times$ is zero for all parallel and perpendicular orientations while nonzero for most 45$^\circ$ offsets. 
 
-\begin{itemize}
-\item Use as a brief introduction to the shear-shear and galaxy-mass correlation function as used in this work
-    \begin{itemize}
-    \item reference other (much more detailed) material for readers to find
-    \end{itemize}
-\item Include correlation value colormaps for $\xi_+$, $\xi_-$, and $\xi_\times$ along with discussion of correlation pattern
-\item Include color-coded correlation visuals along with setup
-    \begin{itemize}
-    \item Galaxies around lens before lensing - correlation values scatter plot with no signal
-    \item Galaxies around lens after lensing - correlation values scatter plot with signal
-    \end{itemize}
-\item B-modes and E-modes plot??
-\end{itemize}
+%% Correlation Colormaps
+\begin{figure*}
+    \centering
+    \begin{subfigure}[H]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/xip_colormap.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The positive tangential component of the $\varepsilon-\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. The correlation component is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$.}
+        \label{xip_colormap}
+    \end{subfigure}
+    ~
+    %% Einstein Ring Figure
+    \begin{subfigure}[H]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/xix_colormap.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The cross component of the $\varepsilon-\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. While the pattern is more complicated than that of the tangential component, note that the correlation value is zero for all preferred orientations after lensing.}
+        \label{xix_colormap}
+    \end{subfigure}
+    \caption{Correlation pair colormaps for $\xi_+$ and $\xi_\times$.}
+    \label{corr_colormaps}
+\end{figure*}
+
+Now consider
+
+%% Correlation Colormaps
+\begin{figure}[b!]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/corr_visualization_unlensed.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{A set of background sources around a foreground lens (blue dot). The size and orientation of each stick represents the intrinsic source ellipticity and is colored by the distance away from the lens.}
+        \label{color_corr_unlensed}
+    \end{subfigure}
+    ~
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/corr_dist_unlensed.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_unlensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme. Otherwise, the correlation is not plotted.}
+        \label{corr_dist_unlensed}
+    \end{subfigure}
+
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/corr_visualization_lensed.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The same set of background sources in Figure \ref{color_corr_unlensed} after (magnified for effect) lensing by the foreground mass. Regardless of initial orientation, the source galaxies have all at least partially aligned tangentially around the center lensing mass.}
+        \label{color_corr_lensed}
+    \end{subfigure}
+    ~
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/corr_dist_lensed.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_lensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme. Otherwise, the correlation is not plotted.}
+        \label{corr_dist_lensed}
+    \end{subfigure}
+    \caption{Correlation visualizaiton for unlensed galaxies.}
+    \label{corr_colormaps}
+\end{figure}
+
+The $\varepsilon-\varepsilon$ correlation function is simply the average of all the correlations of each possible galaxy pair. Before lensing, galaxies should have uniformly distributed orientations as the universe is isotropic. Thus when averaged, both $\left<\xi_+\right>$ and $\left<\xi_\times\right>$ should be zero. However, as gravitational lensing tends to shear source images tangentially around a foreground mass,
+
+
 
 \subsection{Deriving the Standard Correlation Function Definition from \texttt{TreeCorr}'s Definition}
 
@@ -747,5 +794,17 @@ as desired.
 \item CFHT Lensing Survey
 \end{itemize}
 
-
-Maybe do importance and/or lookup table after paper is submitted? Talk about in discussion?
+%% Appendix A
+\begin{itemize}
+\item Use as a brief introduction to the shear-shear and galaxy-mass correlation function as used in this work
+    \begin{itemize}
+    \item reference other (much more detailed) material for readers to find
+    \end{itemize}
+\item Include correlation value colormaps for $\xi_+$, $\xi_-$, and $\xi_\times$ along with discussion of correlation pattern
+\item Include color-coded correlation visuals along with setup
+    \begin{itemize}
+    \item Galaxies around lens before lensing - correlation values scatter plot with no signal
+    \item Galaxies around lens after lensing - correlation values scatter plot with signal
+    \end{itemize}
+\item B-modes and E-modes plot??
+\end{itemize}
