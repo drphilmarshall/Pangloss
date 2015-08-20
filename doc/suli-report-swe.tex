@@ -71,7 +71,7 @@
 
 \preprint{APS/123-QED}
 
-\title{SULI Report! (Working title)}
+\title{Predicting Weak Lensing Statistics from Halo Mass Reconstructions}
 %\thanks{A footnote to the article title}%
 
 \author{Spencer Everett}
@@ -239,7 +239,7 @@ Using the physical separation distance and halo mass, the shear and convergence 
 
 \subsection*{Checking the Halo Model}
 
-Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see the appendix. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, see (???).
+Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see the appendix. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, visit the \texttt{Pangloss} repository.
 
 \section{Results}
 
@@ -377,14 +377,14 @@ The same plots for the source galaxies \textit{after lensing} are shown in Figur
 %% Color-Coded Correlation Lensed
 \begin{figure}
     \centering
-    \begin{subfigure}{0.45\textwidth}
+    \begin{subfigure}{0.44\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/corr_visualization_lensed.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
         \caption{The same set of background sources in Figure \ref{color_corr_unlensed} after (magnified for effect) lensing by the foreground mass. Regardless of initial orientation, the source galaxies have all at least partially aligned tangentially around the center lensing mass.}
         \label{color_corr_lensed}
     \end{subfigure}
     ~
-    \begin{subfigure}{0.45\textwidth}
+    \begin{subfigure}{0.44\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/corr_dist_lensed.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
         \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_lensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme. Otherwise, the correlation is not plotted.}
@@ -395,7 +395,7 @@ The same plots for the source galaxies \textit{after lensing} are shown in Figur
 \end{figure}
 
 \section{References}
-
+\vspace{-.35in}
 \bibliographystyle{unsrt}
 \bibliography{suli-report-swe}
 
