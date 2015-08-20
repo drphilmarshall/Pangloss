@@ -65,6 +65,11 @@
 \newcommand{\aap}{A\&A}
 \newcommand{\apjl}{ApJ}
 
+% Used for footnotes
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
 \raggedbottom
 
 \begin{document}
@@ -209,7 +214,7 @@ While the exact relation between the distribution of galaxies and dark matter is
     \label{pangloss_cartoon}
 \end{figure*}
 
-To constrain the mass of foreground dark matter using weak gravitational lensing, first a model of the relationship between foreground galaxies and the foreground dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true underlying dark matter structure. To do this, I built upon the publicly available \texttt{Pangloss} framework\footnote{https://github.com/drphilmarshall/Pangloss} used in Collett et al. \cite{collett_marshall} to reconstruct all the mass along the line of sight of each background galaxy using dark matter halos. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. This process is detailed in the following sections.
+To constrain the mass of foreground dark matter using weak gravitational lensing, first a model of the relationship between foreground galaxies and the foreground dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true underlying dark matter structure. To do this, I built upon the publicly available \texttt{Pangloss} framework\footnote{\label{note1}https://github.com/drphilmarshall/Pangloss} used in Collett et al. \cite{collett_marshall} to reconstruct all the mass along the line of sight of each background galaxy using dark matter halos. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. This process is detailed in the following sections.
 
 \subsection*{Assumptions}
 While \texttt{Pangloss} may be used more generally, the present analysis makes some additional strong assumptions to simplify the problem for a first attempt at making weak lensing predictions.
@@ -239,7 +244,7 @@ Using the physical separation distance and halo mass, the shear and convergence 
 
 \subsection*{Checking the Halo Model}
 
-Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see the appendix. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, visit the \texttt{Pangloss} repository.
+Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. The ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see the appendix. Both correlation functions are used in this work to measure how well the \texttt{Pangloss} framework models weak lensing by dark matter structures using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, visit the \texttt{Pangloss} repository\footnotemark[\ref{note1}].
 
 \section{Results}
 
