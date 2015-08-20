@@ -283,13 +283,14 @@ The catalog of lensed ellipticities was also analyzed using the galaxy-mass corr
 
 \subsection*{Computational Performance}
 
-A secondary goal of this research was to investigate how quickly the prediction for the shear and convergence for a single background source could be made. The mean CPU time required for the prediction per lightcone was ${80\pm10}$ ms for the first run. However, many small improvements to the coding infastructure of \texttt{Pangloss} were made to speed up the prediction. The average CPU time for a lensing prediction per lightcone after various changes is plotted in Figure \ref{cpu_plot}.
+A secondary goal of this research was to investigate how quickly the prediction for the shear and convergence for a single background source could be made. The mean CPU time required for the prediction per lightcone was ${80\pm10}$ ms for the first run. However, many small improvements to the coding infastructure of \texttt{Pangloss} were made to speed up the prediction. The average CPU time for a lensing prediction per lightcone for four separate runs after various (and cumulative) changes is plotted in Figure \ref{cpu_plot}. Run 1 corresponds to the original \texttt{Pangloss} framework code, run 2 only wrote the needed quantities for this analysis to the catalog \texttt{astropy} tables, run 3 changed the redshift grid binning to be done once for all halos in the drilling rather than for every individual halo in lensing, and run 4 optimized various lensing calculations with matrices whenever possible. Cumulatively, these changes alone accounted for a 70\% decrease in mean CPU time per lightcone and halved the initial variation.
 
+%% Mean lightcone CPU time
 \begin{figure}
     \centering
     \includegraphics[width=0.475\textwidth]{figs-swe/profile_bar.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{Caption}
+    \caption{The mean CPU runtime per lightcone for various runs with different (and cumulative) code optimizations described in the text. The cumulative changes account for a 70\% decrease in the mean CPU time and a halving of the variation.}
     \label{cpu_plot}
 \end{figure}
 
