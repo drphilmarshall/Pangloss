@@ -103,13 +103,13 @@ As dark matter does not absorb or emit light, its distribution in the universe m
 
 \section{Introduction}
 
-In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers unexpectedly discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, accounts for less than 20\% of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves \cite{rotation_curve}, velocity dispersions of galaxies \cite{zwicky}, and acoustic peaks in the cosmic microwave background \cite{planck_2015}.
+In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, accounts for less than 20\% of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves \cite{rotation_curve}, velocity dispersions of galaxies \cite{zwicky}, and acoustic peaks in the cosmic microwave background \cite{planck_2015}.
 
 One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. Light from different origins in a source galaxy is subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
 
-While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background galaxies, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
+While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background sources, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
 
-In this paper, I attempt to do the former by applying a simple dark matter halo model to reconstruct mass along lines of sight in the Millennium Simulation and predict the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on 3,240 galaxies on a field size of 324 arcmin$^2$ as well as a comparison of the predicted lensed ellipticities to ray-traced ellipticities is given in Section IV.  Section V discusses limitations of the used \texttt{Pangloss} framework along with potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
+In this paper, I attempt to do the former by applying a simple dark matter halo model to reconstruct mass along lines of sight in the Millennium Simulation and predict the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on 3,240 galaxies on a field size of 324 arcmin$^2$, along with a comparison of the predicted lensed ellipticities to ray-traced ellipticities, is given in Section IV.  Section V discusses limitations of the used framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
 
 \section{Theoretical Background}
 
@@ -119,15 +119,15 @@ Consider a galaxy image that can be well approximated as an ellipse at an angle 
 \varepsilon=\varepsilon_1+i\varepsilon_2=|\varepsilon|\,e^{2i\phi}
 \end{equation}
 
-\noindent where the magnitude of the galaxy's ellipticity $|\varepsilon|$ is defined to be
+\noindent where the magnitude of the galaxy's ellipticity $|\varepsilon|$ is defined as
 \begin{equation}
 |\varepsilon|=\frac{1-r}{1+r}
 \end{equation}
 
-\noindent and $r\leq1$ is the ratio of the semi-minor and semi-major axis of the ellipse. This compact notation combines the eccentricity and orientation of the ellipse into a single object. A plot from Schneider et al. \cite{schneider} showing the shape of elliptical galaxies for various values of $\varepsilon_1$ and $\varepsilon_2$ is shown in Figure \ref{ellipses}.
+\noindent and $r\leq1$ is the ratio of the semi-minor and semi-major axes of the ellipse. This compact notation combines the eccentricity and orientation of the ellipse into a single object. A plot from Schneider et al. \cite{schneider} showing the shape of elliptical galaxies for various values of $\varepsilon_1$ and $\varepsilon_2$ is shown in Figure \ref{ellipses}.
 
 There are many complications to using this scheme in practice, most notably the multiplicative bias resulting from the smearing of galaxy images by the observational point spread function (PSF) \cite{multiplicative_bias}. While the effects of a PSF can be complex, in general it causes galaxy images to appear less elliptical than they truly are. To account for this in generated galaxy images, a multiplicative bias parameter $M$ is often used to lessen the intrinsic ellipticity using
-$$\varepsilon_{obs}=M\cdot\varepsilon_{int}.$$
+$$\varepsilon_{obs}=M\cdot\varepsilon_{int}$$
 
 \noindent where $\varepsilon_{int}$ is the generated intrinsic ellipticity of the image and $\varepsilon_{obs}$ is the ellipticity that would be recorded by a detector.
 
@@ -139,7 +139,7 @@ $$\varepsilon_{obs}=M\cdot\varepsilon_{int}.$$
     \begin{subfigure}[H]{0.415\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/ellipse_orientations.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{The shape of a galaxy image for various ellipticity components $\varepsilon_1$ and $\varepsilon_2$ on the $x$ and $y-$axes respectively. Taken from \cite{schneider}.}
+        \caption{The shape of a galaxy image for various ellipticity components $\varepsilon_1$ and $\varepsilon_2$ on the $x$ and $y$-axes respectively. Taken from \cite{schneider}.}
         \label{ellipses}
     \end{subfigure}
     ~
@@ -165,7 +165,7 @@ However, usually the quantity of interest in lensing calculations is the \textit
 g=\frac{\gamma}{1-\kappa}.
 \end{equation}
 
-\noindent Then using the thin lens approximation for the lensing of a background source of intrinsic ellipticity $\varepsilon_i$ around a point foreground mass with reduced shear $g$, the lensed ellipticity $\varepsilon$ is given by
+\noindent Then using the thin lens approximation for the lensing of a background source of intrinsic ellipticity $\varepsilon_i$ by foreground mass at a point with reduced shear $g$, the lensed ellipticity $\varepsilon$ is given by
 \begin{equation}\label{lensing}
  \varepsilon = \begin{dcases} 
       \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1 \\[0.75em]
@@ -174,7 +174,7 @@ g=\frac{\gamma}{1-\kappa}.
 \end{equation}
 
 \noindent where an asterisk denotes the complex conjugate \cite{schneider}. The behavior of the distortion relies strongly on the magnitude of $g$; the
-effect is called \textit{strong} lensing if $|g|>1$ and \textit{weak} lensing if $|g|<1$. The effects of strong lensing can be quite dramatic, distorting sources into large arcs, multiple images, or even an Einstein ring as shown in Figure \ref{einstein_ring}. While strong lenses are rare as the alignment of the source and foreground mass must be nearly perfect, \textit{all} sources are weakly lensed. The effect is small, usually an ellipticity distortion of only a few percent, but can be detected locally by averaging the ellipticities of all sources in a small region. As the orientations of the sources should be random, it would be expected that
+effect is called \textit{strong} lensing if $|g|>1$ and \textit{weak} lensing if $|g|\leq1$. The effects of strong lensing can be quite dramatic, distorting sources into large arcs, multiple images, or even an Einstein ring as shown in Figure \ref{einstein_ring}. While strong lenses are rare as the alignment of the source and foreground mass must be nearly perfect, \textit{all} sources are weakly lensed. The effect is small, usually an ellipticity distortion of only a few percent, but can be detected locally by averaging the ellipticities of all sources in a small region. As the orientations of the sources should be random, it would be expected that
 $$\left<\varepsilon\right>=0.$$
 
 \noindent However, as sources in the same small region are sheared in (approximately) the same way, this implies that
