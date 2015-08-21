@@ -337,14 +337,14 @@ This work was supported in part by the U.S. Department of Energy, Office of Scie
     \begin{subfigure}{0.425\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/xip_colormap.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{The positive tangential component of the $\varepsilon-\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. The correlation component is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$.}
+        \caption{The positive tangential component of the $\varepsilon$-$\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. The correlation component is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$.}
         \label{xip_colormap}
     \end{subfigure}
     ~
     \begin{subfigure}{0.425\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/xix_colormap.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{The cross component of the $\varepsilon-\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. While the pattern is more complicated than that of the tangential component, note that the correlation value is zero for all preferred orientations after lensing.}
+        \caption{The cross component of the $\varepsilon$-$\varepsilon$ correlation as a function of galaxy orientation plotted as a colormap. While the pattern is more complicated than that of the tangential component, note that the correlation is zero for all preferred orientations after lensing.}
         \label{xix_colormap}
     \end{subfigure}
     \caption{Correlation pair colormaps for $\xi_+$ and $\xi_\times$.}
@@ -353,7 +353,7 @@ This work was supported in part by the U.S. Department of Energy, Office of Scie
 
 At first encounter, the use of correlation functions to analyze data can be difficult to comprehend, let alone visualize. While by no means a thorough or mathematical analysis (see \cite{correlation_functions} for a more formal introduction), I have created some explanatory plots to aid in visualizing how weakly lensed ellipticities can be measured with correlation functions and place the main results of this paper in more context.
 
-The main statistic used in this work is the ellipticity-ellipticity ($\varepsilon-\varepsilon$) correlation function, which has two tangential components $\xi_\pm$ and a cross component $\xi_\times$. The components most interesting for gravitational lensing are the positive tangential component $\xi_+$, expected to be positive for lensed galaxies, and the cross component $\xi_\times$, which is expected to be zero. To get an intuition for what these quantities measure, first consider the correlation values for individual pairs of galaxies as shown in Figure \ref{corr_colormaps}. In each plot, the value of the correlation between two galaxies as a function of their relative orientation is plotted as a colormap with a few sampled galaxy orientations superimposed. For $\xi_+$, the correlation is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$. In contrast, $\xi_\times$ is zero for all parallel and perpendicular orientations while nonzero for most 45$^\circ$ offsets. As gravitational lensing shears source images tangentially around a foreground mass, the tangential component is a measure of how similarly two galaxies are lensed, while the cross component is an estimate of the bias (as it should be zero).
+The main statistic used in this work is the ellipticity-ellipticity ($\varepsilon-\varepsilon$) correlation function, which has two tangential components $\xi_\pm$ and a cross component $\xi_\times$. The components most interesting for gravitational lensing are the positive tangential component $\xi_+$, expected to be positive for lensed galaxies, and the cross component $\xi_\times$, which is expected to be zero. To get an intuition for what these quantities measure, first consider the correlation values for individual pairs of galaxies as shown in Figure \ref{corr_colormaps}. In each plot, the value of the correlation between two galaxies as a function of their relative orientation is plotted as a colormap with a few sampled galaxy orientations superimposed. For $\xi_+$ the correlation is positive for parallel galaxies, negative for perpendicular galaxies, and zero for galaxies offset by 45$^\circ$. In contrast, $\xi_\times$ is zero for all parallel and perpendicular orientations while nonzero for most 45$^\circ$ offsets. As gravitational lensing shears source images tangentially around a foreground mass, the tangential component is a measure of how similarly two galaxies are lensed, while the cross component is an estimate of the bias (as it should be zero).
 
 Now consider a region of space around a foreground lens populated with many background sources \textit{before lensing}, as in Figure \ref{color_corr_unlensed}. In this plot, source ellipticities are plotted as sticks and colored by their distance from the lens. Calculating the $\xi_+$ component correlation pairs for all galaxies in the same color bin and making a scatter plot as a function of the separation distance between the source pairs, we find the distribution in Figure \ref{corr_dist_unlensed}. The $\xi_+$ component of the $\varepsilon-\varepsilon$ correlation function is simply the average of this scatter plot binned in separation distances along the $x$-axis. As the scatter is randomly distributed around zero, the $\varepsilon-\varepsilon$ correlation function for un-lensed sources should be zero on all scales.
 
@@ -370,14 +370,14 @@ Now consider a region of space around a foreground lens populated with many back
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/corr_dist_unlensed.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_unlensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme. Otherwise, the correlation is not plotted.}
+        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_unlensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme.}
         \label{corr_dist_unlensed}
     \end{subfigure}
     \caption{Correlation visualization for un-lensed galaxies.}
     \label{colored_corr}
 \end{figure}
 
-The same plots for the source galaxies \textit{after lensing} are shown in Figure \ref{colored_corr_lensed}. The source ellipticities have clearly aligned tangentially around the foreground lens in Figure \ref{color_corr_lensed}, and distinct patterns have appeared in the correlation pair distribution for each color bin in Figure \ref{corr_dist_lensed}. First consider a single color bin, such as the yellow. Galaxies next to one another are lensed in approximately the same way and thus nearly parallel, leading to a positive correlation at small separation distances in Figure \ref{corr_dist_lensed}. Moving a quarter of the way around the yellow circle of galaxies, the lensed ellipticities become perpendicular and have negative correlation. This can be seen as the dip in correlation at `middle' separation distances in \ref{corr_dist_lensed}. Finally for galaxies on opposite sides of the lens, their relative orientation is again parallel and the correlation has returned to positive values. This spike in correlation is clearly visible in the distribution and is shifted to the right for colors further from the lens as the radius of the color bin increases. Averaging all scatter points in discrete separation distance bins, the $\varepsilon-\varepsilon$ correlation function will no longer be zero and a detectable signal will remain.
+The same plots for the source galaxies \textit{after lensing} are shown in Figure \ref{colored_corr_lensed}. The source ellipticities have clearly aligned tangentially around the foreground lens in Figure \ref{color_corr_lensed}, and distinct patterns have appeared in the correlation pair distribution for each color bin in Figure \ref{corr_dist_lensed}. First consider a single color bin, such as the blue. Galaxies next to one another are lensed in approximately the same way and thus nearly parallel, leading to a positive correlation at small separation distances in Figure \ref{corr_dist_lensed}. Moving a quarter of the way around the blue circle of galaxies, the lensed ellipticities become perpendicular and have negative correlation. This can be seen as the dip in correlation at `middle' separation distances in \ref{corr_dist_lensed}. Finally for galaxies on opposite sides of the lens, their relative orientation is again parallel and the correlation has returned to positive values. This spike in correlation is clearly visible in the distribution and is shifted to the right for colors further from the lens as the radius of the color bin increases. Averaging all scatter points in discrete separation distance bins, the $\varepsilon-\varepsilon$ correlation function will no longer be zero and a detectable signal will remain.
 
 %% Color-Coded Correlation Lensed
 \begin{figure}
@@ -392,15 +392,16 @@ The same plots for the source galaxies \textit{after lensing} are shown in Figur
     \begin{subfigure}{0.44\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/corr_dist_lensed.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_lensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme. Otherwise, the correlation is not plotted.}
+        \caption{The distribution of correlation pairs from the source ellipticities in Figure \ref{color_corr_lensed}. If the pair of galaxies are in the same color bin, then the correlation scatter point is colored in the same scheme.}
         \label{corr_dist_lensed}
     \end{subfigure}
+    \vspace{-.05in}
     \caption{Correlation visualization for lensed galaxies.}
     \label{colored_corr_lensed}
 \end{figure}
 
 \section{References}
-\vspace{-.35in}
+\vspace{-.2825in}
 \bibliographystyle{unsrt}
 \bibliography{suli-report-swe}
 
