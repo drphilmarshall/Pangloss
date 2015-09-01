@@ -97,12 +97,12 @@ class WLMap:
             # Read in binary data, to self.values:
             if vb: print "Reading in map from file "+mapfiles
             self.read_in_binary_data()
-            
+
         # Check file consistency
         assert self.PIXSCALE[1:] == self.PIXSCALE[:-1]
         assert self.field[1:] == self.field[:-1]
         assert self.NX[1:] == self.NX[:-1]
-        
+
         return None
 
 # ----------------------------------------------------------------------------
@@ -332,8 +332,8 @@ class WLMap:
 
         elif coords == 'physical':
             # Convert subplot bounds to world coordinates
-            xi,yi = self.physical2world(xi,yi)
-            xf,yf = self.physical2world(xf,yf)
+            xi,yi = np.deg2rad(self.physical2world(xi,yi))
+            xf,yf = np.deg2rad(self.physical2world(xf,yf))
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
             subplot = [xi,xf,yi,yf]
