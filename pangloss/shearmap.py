@@ -125,8 +125,6 @@ class Shearmap(pangloss.WLMap):
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
         gamma2 = self.values[1][pix_yi:pix_yf,pix_xi:pix_xf]
 
-        print subplot
-
         # Create arrays of shear stick positions, one per pixel in world coordinates
         X,Y = np.meshgrid(np.arange(subplot[0],subplot[1],-self.PIXSCALE[0]),np.arange(subplot[2],subplot[3],self.PIXSCALE[0]))
 

@@ -332,8 +332,8 @@ class WLMap:
 
         elif coords == 'physical':
             # Convert subplot bounds to world coordinates
-            xi,yi = np.deg2rad(self.physical2world(xi,yi))
-            xf,yf = np.deg2rad(self.physical2world(xf,yf))
+            xi,yi = self.physical2world(xi,yi)
+            xf,yf = self.physical2world(xf,yf)
             Lx = 1.0*abs(xf-xi)
             Ly = 1.0*abs(yf-yi)
             subplot = [xi,xf,yi,yf]
