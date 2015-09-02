@@ -204,7 +204,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_map(self,kappamap,shearmap,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857]):
+    def lens_by_map(self,kappamap,shearmap):
         '''
         Lense background galaxies by the shear and convergence in their respective Kappamaps and Shearmaps.
         '''
