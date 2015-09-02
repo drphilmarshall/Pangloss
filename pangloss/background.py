@@ -758,7 +758,7 @@ class BackgroundCatalog(pangloss.Catalog):
         return chi2, n_sigma, mean_err, std_err
 
 
-    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='map'):
+    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='none'):
         '''
         Make scatter plot of generated galaxies.
         '''
