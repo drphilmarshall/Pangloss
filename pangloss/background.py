@@ -597,7 +597,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=30.0,sep_units='arcmin',binsize=None,N=15.0,lensed='map',foreground=None):
+    def calculate_corr(self,corr_type='gg',min_sep=0.1,max_sep=2.0,sep_units='arcmin',binsize=None,N=15.0,lensed='map',foreground=None):
         '''
         Calculate the inputted correlation function type from min_sep<dtheta<max_sep. If no binsize or
         number of bins (N) are inputted, the binsize is automatically calculated using 15 bins. The 'lensed'
@@ -905,7 +905,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elif lensed == 'both':
                 # Plot both lensed and intrinsic ellipticity sticks
-                pangloss.plotting.plot_sticks(ra,dec,eMod_int,ePhi_int,world,'blue')
+                pangloss.plotting.plot_sticks(ra,dec,eMod_halo,ePhi_halo,world,'purple')
                 pangloss.plotting.plot_sticks(ra,dec,eMod,ePhi,world,'green')
 
             elif lensed == 'all':
