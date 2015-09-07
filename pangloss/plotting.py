@@ -17,7 +17,7 @@ viewport = [0.1,0.1,0.8,0.8]
 
 """
 NAME
-    plot
+    plotting
 
 PURPOSE
     A collection of functions related to coordinate conversions and plotting,
@@ -26,15 +26,31 @@ PURPOSE
 COMMENTS
 
 FUNCTIONS
-    image2physical(self,i,j,mapfile=0):
-    physical2image(self,x,y,mapfile=0):
-    image2world(self,i,j,mapfile=0):
-    world2image(self,a,d,mapfile=0):
-    physical2world(self,x,y,mapfile=0):
-    world2physical(self,a,d,mapfile=0):
+    make_axes(fig,subplot,imsubplot):    Creates axes for plotting maps and catalogs.
+
+    set_figure_size(fig,fig_size,Lx,Ly):    Changes figure size.
+
+    plot_ellipse(ra,dec,size,mod,phi,axis,color,alpha):    Plot an ellipse at (ra,dec) with
+                                                           given modulus and angle phi.
+
+    plot_sticks(ra,dec,mod,phi,axis,color):    Plot ellipticity stick at (ra,dec) with given
+                                               modulus, angle, and color.
+
+    plot_corr(corr,corr_type,corr_comp,sep_units,lensed,color,
+                            line_style,fig_size,M,galaxy_count):    Plot the correlation function component of
+                                                                    the given correlation type.
+
+    The following are used to create a demonstrative plot of how correlation functions describe
+    the lensing of galaxies:
+    calc_corr_demo(units):
+    plot_corr_demo(corr,corr_type,units):
+    plot_lensed_colors(B,subplot,center,fig_size):
+    calc_corr_components(points):
+    plot_corr_component(r,corr,corr_type,c):
+    plot_corr_color_demo(N):
 
 BUGS
-    ???
+    None
 
 AUTHORS
   This file is part of the Pangloss project, distributed under the
@@ -45,53 +61,6 @@ HISTORY
   2015-07-5  Collected and extended by Everett (SLAC)
 """
 
-# ----------------------------------------------------------------------------
-# Conversions between image, physical, and world coordinate systems (world conversions are approximate)
-
-'''
-NOTE: these have been taken from WLMap and have not been modified to work more generally. This should be done
-once its scope has been understood.
-'''
-'''
-def image2physical(self,i,j,mapfile=0):
-    x = (i - self.wcs[mapfile]['LTV1'])/self.wcs[mapfile]['LTM1_1'] # x in rad
-    y = (j - self.wcs[mapfile]['LTV2'])/self.wcs[mapfile]['LTM2_2'] # y in rad
-    return x,y
-
-def physical2image(self,x,y,mapfile=0):
-    i = self.wcs[mapfile]['LTV1'] + self.wcs[mapfile]['LTM1_1']*x # x in rad
-    j = self.wcs[mapfile]['LTV2'] + self.wcs[mapfile]['LTM2_2']*y # y in rad
-    return i,j
-
- # Only approximate WCS transformations - assumes dec=0.0 and small field
-def image2world(self,i,j,mapfile=0):
-    a = self.wcs[mapfile]['CRVAL1'] + self.wcs[mapfile]['CD1_1']*(i - self.wcs[mapfile]['CRPIX1'])
-    #if a < 0.0: a += 360.0 :We are using nRA instead now
-    d = self.wcs[mapfile]['CRVAL2'] + self.wcs[mapfile]['CD2_2']*(j - self.wcs[mapfile]['CRPIX2'])
-    return a,d
-
-def world2image(self,a,d,mapfile=0):
-    i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
-    # if a negative pixel is returned for i, reinput a as a negative degree
-    if i<0:
-        a-=360
-        i = (a - self.wcs[mapfile]['CRVAL1'])/self.wcs[mapfile]['CD1_1'] + self.wcs[mapfile]['CRPIX1']
-    j = (d - self.wcs[mapfile]['CRVAL2'])/self.wcs[mapfile]['CD2_2'] + self.wcs[mapfile]['CRPIX2']
-    return i,j
-
-def physical2world(self,x,y,mapfile=0):
-    a = -np.rad2deg(x) - self.field_x[mapfile]*self.field[mapfile]
-    #if a < 0.0: a += 360.0 :we are using nRA instead now
-    d = np.rad2deg(y) + self.field_y[mapfile]*self.field[mapfile]
-    return a,d
-
-def world2physical(self,a,d,mapfile=0):
-    x = -np.deg2rad(a + self.field_x[mapfile]*self.field[mapfile])
-    y = np.deg2rad(d - self.field_y[mapfile]*self.field[mapfile])
-    return x,y
-'''
-# ----------------------------------------------------------------------------
-#
 
 def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     '''
@@ -119,6 +88,11 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
 
 
 def set_figure_size(fig,fig_size,Lx,Ly):
+    '''
+    Takes inputted figure and changes its size according to Lx and Ly given in
+    inches.
+    '''
+
     if Lx == Ly:
         fig.set_size_inches(fig_size,fig_size)
     elif Lx > Ly:
@@ -147,7 +121,8 @@ def plot_ellipse(ra,dec,size,mod,phi,axis,color,alpha):
 
 def plot_sticks(ra,dec,mod,phi,axis,color):
     '''
-    Write docstring
+    Plot an ellipticity stick at (ra,dec) with modulus 'mod' and orientation angle 'phi'.
+    The stick is plotted on the inputted axis and with given 'color'.
     '''
 
     # Make sure that all of the columns are the same length
