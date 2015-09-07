@@ -4,12 +4,14 @@
 *.bbl
 *.blg
 *.dvi
+*Notes.bib
 *.pdf
 *.pickle
 *.fits
 *.png
 doc/wiki
 attic
+talks
 calib/Millennium
 calib/SHMR
 *ipynb_checkpoints*
