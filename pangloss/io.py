@@ -20,8 +20,8 @@ from astropy.table import Table
 
         readPickle(filename): returns contents of pickle
 
-        readCatalog(filename,config): returns table, given column names
-                                      in configuration config
+        read_hilbert_catalog(filename,config): returns table, given column names
+                                      in configuration config for a Hilbert catalog
 
         rm(filename): silent file removal
 
