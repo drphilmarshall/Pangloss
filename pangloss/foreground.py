@@ -23,7 +23,7 @@ class ForegroundCatalog(pangloss.Catalog):
 
     PURPOSE
         Store, interrogate and plot a collection of foreground galaxy
-        data for a given patch of skys.
+        data for a given patch of sky.
 
     COMMENTS
         Inherits from the base class Catalog in catalog.py
@@ -33,7 +33,7 @@ class ForegroundCatalog(pangloss.Catalog):
         config:         A config object containing structure of catalog metagalaxies
 
     METHODS
-        read(filename,config):
+        read(filename,config): Read in a Hilbert foreground catalog.
 
         plotForeground: Make a scatterplot of foreground galaxy positions at their
                         respective world coordinates. Only galaxies in the catalog
@@ -41,7 +41,7 @@ class ForegroundCatalog(pangloss.Catalog):
                         redshift, and coordiante limit arguments are displayed.
 
     BUGS
-
+        None
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
@@ -53,6 +53,7 @@ class ForegroundCatalog(pangloss.Catalog):
     """
 
     def __init__(self,filename,config):
+
         self.filename = filename
         self.type = 'foreground'
 
@@ -80,8 +81,13 @@ class ForegroundCatalog(pangloss.Catalog):
         return 'Foreground catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxyCount,self.minZ,self.maxZ)
 
     def read(self,filename,config):
-        # Uses astropy.table to read catalog, but with a few specific changes
+        '''
+        Uses astropy.table to read catalog, but with a few specific changes only for
+        Hilbert foreground catalogs.
+        '''
+
         self.galaxies = pangloss.io.read_hilbert_catalog(filename,config)
+
         return
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
