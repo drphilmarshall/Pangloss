@@ -825,9 +825,9 @@ class BackgroundCatalog(pangloss.Catalog):
                 ePhi_halo = -galaxies['ePhi_halo']
 
             elif lensed == 'both':
-                # Extract both the intrinsic and lensed-by-map ellipticity
-                eMod_int = galaxies['eMod_int']
-                ePhi_int = -galaxies['ePhi_int']
+                # Extract both the lensed-by-map and lensed-by-halo ellipticities
+                eMod_halo = galaxies['eMod_halo']
+                ePhi_halo = -galaxies['ePhi_halo']
                 eMod = galaxies['eMod']
                 ePhi = -galaxies['ePhi']
 
@@ -878,7 +878,7 @@ class BackgroundCatalog(pangloss.Catalog):
                     # Plot both lensed-by-map and intrinsic ellipticities
                     alpha1 = 0.25
                     alpha2 = 0.3
-                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_int[i],ePhi_int[i],world,'blue',alpha1)
+                    pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod_halo[i],ePhi_halo[i],world,'blue',alpha1)
                     pangloss.plotting.plot_ellipse(ra[i],dec[i],size,eMod[i],ePhi[i],world,'green',alpha2)
 
                 elif lensed == 'all':
