@@ -29,6 +29,10 @@ from scipy.special import gamma,gammainc # for Sersic profile.
             BMO2Gfunc(x,t):
         Sersic profile:
             sersic(r,re,amp=1.,n=4.):
+        Unused Spencer functions:
+            FSpencer(x,xMask):
+            BMO1FSpencerFunc(x,t):
+            BMO1GSpencerFunc(x,t):
 
     BUGS
         - Some redundancy between F() and Ffunc() etc?
