@@ -19,7 +19,7 @@ sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 # Verbose
-vb = True
+vb = False
 
 # ============================================================================
 
