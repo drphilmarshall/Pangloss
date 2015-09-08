@@ -199,7 +199,7 @@ def Drill(argv):
 
             flavor = 'real'
 
-            table = pangloss.readCatalog(obscat,experiment)
+            table = pangloss.read_hilbert_catalog(obscat,experiment)
 
             xc = [x0,y0]
             lc = pangloss.Lightcone(table,'real',xc,Rc)
