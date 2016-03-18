@@ -57,7 +57,7 @@ class LensingTable():
 
         # Create lookup table
         self.generate_lookup_table(x_lim,t_lim,N)
-        pass
+        return
 
     def generate_lookup_table(self,x_lim=[0.0,500.0],t_lim=[50.0,200.0],N=1000):
 
