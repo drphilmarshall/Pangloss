@@ -31,6 +31,7 @@ class Lightcone(object):
         flavor        Is the catalog 'real' or 'simulated'?
         position      The sky position (J2000 deg) of the cone centre
         radius        The radius of the lightcone field of view (arcmin)
+        ID            Lightcone ID number in a given background catalog
         maglimit      The depth of the galaxy selection (magnitudes)
         band          The band in which the selection is made
 
@@ -386,8 +387,16 @@ class Lightcone(object):
                 G = lensing_table.lookup_BMO1G(self.galaxies['X'],xtrunc)
 
         if profile=="BMO2":
-            F=pangloss.BMO2Ffunc(self.galaxies['X'],xtrunc)
-            G=pangloss.BMO2Gfunc(self.galaxies['X'],xtrunc)
+            if lensing_table is None:
+                # Compute the BMO truncated profile for each object
+                F=pangloss.BMO2Ffunc(self.galaxies['X'],xtrunc)
+                G=pangloss.BMO2Gfunc(self.galaxies['X'],xtrunc)
+                #F = pangloss.BMO2FSpencerFunc(self.galaxies['X'],xtrunc)
+                #G = pangloss.BMO2GSpencerFunc(self.galaxies['X'],xtrunc)
+            else:
+                # Use an interpolated lookup table for the profile for each object
+                F = lensing_table.lookup_BMO2F(self.galaxies['X'],xtrunc)
+                G = lensing_table.lookup_BMO2G(self.galaxies['X'],xtrunc)
 
         #phi = self.galaxies['phi']
         kappa = 1.0*self.kappa_s*F
@@ -402,12 +411,6 @@ class Lightcone(object):
         self.writeColumn('gamma1',-gamma1)
         self.writeColumn('gamma2',-gamma2)
         self.writeColumn('mu',mu)
-
-        del F
-        del G
-        del lensing_table
-
-        #gc.collect()
 
         return
 
