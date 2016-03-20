@@ -272,7 +272,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',importance_lim=0.0):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',importance_lim=0.0,lookup_table=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -288,7 +288,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.drill_lightcones()
 
         # Create lensing lookup table
-        #lens_table = pangloss.lensing.LensingTable()
+        if lookup_table is True: lens_table = pangloss.lensing.LensingTable()
 
         # Initialize new variables (note: e and g have to be initialized as complex for memory allocation)
         assert self.galaxy_count == len(self.lightcones)
@@ -335,8 +335,12 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.drawConcentrations(errors=True)
 
             # Compute each halo's contribution to the convergence and shear:
-            #lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
-            lightcone.makeKappas(truncationscale=10)
+            if lookup_table is True:
+                # Use lookup table to speed up kappa calculations
+                lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
+            else:
+                # Calculate kappa values explicitly
+                lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
             lightcone.combineKappas(methods=methods)
@@ -362,8 +366,6 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
-
-        #del lens_table
 
         if vb is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
