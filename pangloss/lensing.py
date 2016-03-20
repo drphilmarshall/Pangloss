@@ -97,22 +97,18 @@ class LensingTable():
 
         # Found problem! Can use numpy arrays, but must be of form
         # input = ([x1,x2,x3,...],[y1,y2,y3,...])
-        F = np.array([self.BMO1F_spline(x[i],t[i]) for i in range(np.size(x))])
+        F = self.BMO1F_spline.ev(x,t)
         assert not np.isnan(F).any()
-        del x
-        del t
-        #gc.collect()
+
         return F
 
     def lookup_BMO1G(self,x,t):
         assert (x > self.x_min).all() and (x < self.x_max).all()
         assert (t > self.t_min).all() and (t < self.t_max).all()
 
-        G = np.array([self.BMO1G_spline(x[i],t[i]) for i in range(np.size(x))])
+        G = self.BMO1G_spline.ev(x,t)
         assert not np.isnan(G).any()
-        del x
-        del t
-        #gc.collect()
+
         return G
 
 
