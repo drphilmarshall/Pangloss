@@ -53,13 +53,13 @@ class LensingTable():
     for lensing caluclations.
     '''
 
-    def __init__(self,x_lim=[1e-5,500.0],t_lim=[50.0,200.0],N=1000):
+    def __init__(self,x_lim=[1e-7,1000.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
 
         # Create lookup table
-        self.generate_lookup_table(x_lim,t_lim,N)
+        self.generate_lookup_table(x_lim,t_lim,Nx,Nt,kx,ky)
         return
 
-    def generate_lookup_table(self,x_lim=[0.0,500.0],t_lim=[50.0,200.0],N=1000):
+    def generate_lookup_table(self,x_lim=[1e-7,1000.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
 
         # Set x and t limits
         self.x_min = x_lim[0]
@@ -67,24 +67,32 @@ class LensingTable():
         self.t_min = t_lim[0]
         self.t_max = t_lim[1]
 
-        # Create stepsize based on N
-        self.x_stepsize = abs(self.x_max-self.x_min)/(1.0*N)
-        self.t_stepsize = abs(self.t_max-self.t_min)/(1.0*N)
+        # Set the x axis
+        xcrit = 5 # x cutoff for adaptive stepsize
+        if self.x_max > xcrit: # Make stepsize adaptive (small x far more important)
+                self.x_stepsize1 = abs(xcrit-self.x_min)/(0.8*Nx)
+                self.x_stepsize2 = abs(self.x_max-xcrit)/(0.2*Nx)
+                x = np.concatenate((np.arange(self.x_min,xcrit,self.x_stepsize1),np.arange(xcrit,self.x_max,self.x_stepsize2)))
+        else:
+            self.x_stepsize = abs(self.x_max-self.x_min)/(1.0*Nx)
+            x = np.arange(self.x_min,self.x_max,self.x_stepsize)
 
-        # Set the x and t axis
-        x = np.arange(self.x_min,self.x_max,self.x_stepsize)
+        # Set the t axis
+        self.t_stepsize = abs(self.t_max-self.t_min)/(1.0*Nt)
         t = np.arange(self.t_min,self.t_max,self.t_stepsize)
 
         # Create the lookup grid domain
-        self.x_grid, self.t_grid = np.meshgrid(x,t)
+        x_grid, t_grid = np.meshgrid(x,t)
+        self.x_grid = np.transpose(x_grid) # RectBivariateSpline expects shape = (len(x),len(y))
+        self.t_grid = np.transpose(t_grid) # RectBivariateSpline expects shape = (len(x),len(y))
 
         # Create the lookup grids
         self.BMO1F_grid = BMO1Ffunc(self.x_grid,self.t_grid)
         self.BMO1G_grid = BMO1Gfunc(self.x_grid,self.t_grid)
 
         # Create the spline interpolater
-        self.BMO1F_spline = RectBivariateSpline(x,t,self.BMO1F_grid)
-        self.BMO1G_spline = RectBivariateSpline(x,t,self.BMO1G_grid)
+        self.BMO1F_spline = RectBivariateSpline(x,t,self.BMO1F_grid,kx=kx,ky=ky)
+        self.BMO1G_spline = RectBivariateSpline(x,t,self.BMO1G_grid,kx=kx,ky=ky)
 
         return
 
@@ -92,11 +100,9 @@ class LensingTable():
 # Lookup functions for BMO1 tables
 
     def lookup_BMO1F(self,x,t):
-        assert (x > self.x_min).all() and (x < self.x_max).all()
-        assert (t > self.t_min).all() and (t < self.t_max).all()
+        assert (x > self.x_min).all() and (x < self.x_max).all(), 'min(x) = '+str(min(x))+', max(x) = '+str(max(x))
+        assert (t > self.t_min).all() and (t < self.t_max).all(), 'min(t) = '+str(min(t))+', max(t) = '+str(max(t))
 
-        # Found problem! Can use numpy arrays, but must be of form
-        # input = ([x1,x2,x3,...],[y1,y2,y3,...])
         F = self.BMO1F_spline.ev(x,t)
         assert not np.isnan(F).any()
 
