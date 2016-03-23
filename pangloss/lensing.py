@@ -59,7 +59,7 @@ class LensingTable():
         self.generate_lookup_table(x_lim,t_lim,Nx,Nt,kx,ky)
         return
 
-    def generate_lookup_table(self,x_lim=[1e-7,1000.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
+    def generate_lookup_table(self,x_lim=[1e-7,200.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
 
         # Set x and t limits
         self.x_min = x_lim[0]
@@ -100,7 +100,7 @@ class LensingTable():
 # Lookup functions for BMO1 tables
 
     def lookup_BMO1F(self,x,t):
-        assert (x > self.x_min).all() and (x < self.x_max).all(), 'min(x) = '+str(min(x))+', max(x) = '+str(max(x))
+        assert (x > self.x_min).all(), 'min(x) = '+str(min(x))+', max(x) = '+str(max(x))
         assert (t > self.t_min).all() and (t < self.t_max).all(), 'min(t) = '+str(min(t))+', max(t) = '+str(max(t))
 
         F = self.BMO1F_spline.ev(x,t)
@@ -109,8 +109,8 @@ class LensingTable():
         return F
 
     def lookup_BMO1G(self,x,t):
-        assert (x > self.x_min).all() and (x < self.x_max).all()
-        assert (t > self.t_min).all() and (t < self.t_max).all()
+        assert (x > self.x_min).all(), 'min(x) = '+str(min(x))+', max(x) = '+str(max(x))
+        assert (t > self.t_min).all() and (t < self.t_max).all(), 'min(t) = '+str(min(t))+', max(t) = '+str(max(t))
 
         G = self.BMO1G_spline.ev(x,t)
         assert not np.isnan(G).any()
