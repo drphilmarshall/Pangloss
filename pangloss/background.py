@@ -19,7 +19,7 @@ sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 # Verbose
-vb = False
+vb = True
 
 # ============================================================================
 
@@ -272,11 +272,11 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',importance_lim=0.0,lookup_table=False):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
-        calculation, but this can be changed by setting the 'importance_lim' higher.
+        calculation, but this can be changed by setting the 'relevance_lim' higher.
         '''
 
         # Grid should already be setup, but set if not
@@ -314,8 +314,8 @@ class BackgroundCatalog(pangloss.Catalog):
             if lightcone.ID%counter == 0 and vb is True:
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
-            # Remove galaxies in lightcone that do not meet the importance limit
-            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['importance'] > importance_lim]
+            # Remove galaxies in lightcone that do not meet the relevance limit
+            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['relevance'] >= relevance_lim]
 
             '''
             # Set the stellar mass - halo mass relation
@@ -366,6 +366,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elapsed = timeit.default_timer() - start_time
             runtimes[lightcone.ID] = elapsed
+
+            assert lightcone.galaxy_count == len(lightcone.galaxies)
 
         if vb is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
@@ -464,32 +466,38 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def set_importance(self,lightcone,metric='linear'):
+    def set_relevance(self,lightcone,metric='curtis'):
         '''
-        Give each foreground galaxy in a lightcone an importance based upon the
+        Give each foreground galaxy in a lightcone an relevance based upon the
         inputted metric.
         '''
 
-        galaxies = lightcone.galaxies
+        if metric == 'curtis':
+            # Set mass and radius thresholds
+            M = 10.0**12 # Solar masses
+            R = 0.01 # Mpc
 
-        # Find the min and max physical distance and
-        r_min = np.min(lightcone.galaxies['rphys'])
-        r_max = np.max(lightcone.galaxies['rphys'])
-        Mh_min = np.min(10**lightcone.galaxies['Mh'])
-        Mh_max = np.max(10**lightcone.galaxies['Mh'])
+            # Calculate relevance according to scheme given by McCully et al. in http://arxiv.org/abs/1601.05417
+            lightcone.galaxies['relevance'] = (10**lightcone.galaxies['Mh']/M)*(R/lightcone.galaxies['rphys'])**3
 
-        if metric == 'linear':
-            # Compute the importance using a linear metric from 0 to 1
-            importance_r = (r_max - galaxies['rphys']) / r_max
-            importance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
-            #importance = importance_r*importance_m
-            importance = np.sqrt(importance_r**2+importance_m**2)
+        elif metric == 'linear':
+            # Find the min and max physical distance and
+            r_min = np.min(lightcone.galaxies['rphys'])
+            r_max = np.max(lightcone.galaxies['rphys'])
+            Mh_min = np.min(10**lightcone.galaxies['Mh'])
+            Mh_max = np.max(10**lightcone.galaxies['Mh'])
 
-            # Set the importance of each galaxy normalized by the maximum importance
-            lightcone.galaxies['importance'] = importance/np.max(importance)
+            # Compute the relevance using a linear metric from 0 to 1
+            relevance_r = (r_max - galaxies['rphys']) / r_max
+            relevance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
+            #relevance = relevance_r*relevance_m
+            relevance = np.sqrt(relevance_r**2+relevance_m**2)
 
-        # Make sure all importance values are positive
-        assert (importance >= 0).all() and (importance <= 1.0).all()
+            # Set the relevance of each galaxy normalized by the maximum relevance
+            lightcone.galaxies['relevance'] = relevance/np.max(relevance)
+
+        # Make sure all relevance values are positive
+        assert (lightcone.galaxies['relevance'] > 0).all()
 
         return
 
@@ -539,8 +547,8 @@ class BackgroundCatalog(pangloss.Catalog):
             self.lightcones[i].loadGrid(self.grid)
             self.lightcones[i].snapToGrid(self.grid)
 
-            # Set importance of each foreground object in the lightcone for lensing
-            self.set_importance(self.lightcones[i])
+            # Set relevance of each foreground object in the lightcone for lensing
+            self.set_relevance(self.lightcones[i])
 
         if save == True:
             # Write out this entire catalog to the 'data' directory
