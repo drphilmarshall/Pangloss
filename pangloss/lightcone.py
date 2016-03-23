@@ -108,10 +108,10 @@ class Lightcone(object):
         y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
         r = np.sqrt(x*x + y*y)
         phi = np.arctan2(y,x)
-        self.galaxies.add_column(Column(name='x',data=x))
-        self.galaxies.add_column(Column(name='y',data=y))
-        self.galaxies.add_column(Column(name='r',data=r))
-        self.galaxies.add_column(Column(name='phi',data=phi))
+        self.writeColumn('x',x)
+        self.writeColumn('y',y)
+        self.writeColumn('r',r)
+        self.writeColumn('phi',phi)
         self.galaxies = self.galaxies[np.where(self.galaxies['r'] < self.rmax)]
 
         try:
@@ -128,18 +128,18 @@ class Lightcone(object):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Halo parameters, to be varied during sampling analysis:
-        self.galaxies.add_column(Column(name='z',data=self.galaxies['z_obs']*1.0))
+        self.writeColumn('z',self.galaxies['z_obs']*1.0)
 
         if self.flavor == 'simulated':
             # Take the log of the halo mass, and set up the parameter array:
-            self.galaxies.add_column(Column(name='Mh_obs',data=np.log10(self.galaxies['Mhalo_obs'])))
-            self.galaxies.add_column(Column(name='Mh',data=self.galaxies['Mh_obs']*1.0))
+            self.writeColumn('Mh_obs',np.log10(self.galaxies['Mhalo_obs']))
+            self.writeColumn('Mh',self.galaxies['Mh_obs']*1.0)
             # Stellar masses will be added by drawMstars
             # Halo masses will be replaced by drawMhalos
 
         elif self.flavor == 'real':
             # Mstar is already given as log M...
-            self.galaxies.add_column(Column(name='Mstar',data=self.galaxies['Mstar_obs']*1.0))
+            self.writeColumn('Mstar',self.galaxies['Mstar_obs']*1.0)
             # Halo masses will be added by drawMhalos
 
         if len(self.galaxies) == 0:
@@ -199,6 +199,7 @@ class Lightcone(object):
         self.zs = zs
         self.cosmo = cosmo
         self.galaxies = self.galaxies[np.where(self.galaxies['z_obs'] < zs+0.2)]
+        self.galaxy_count = len(self.galaxies)
         return
 
 # ----------------------------------------------------------------------------
