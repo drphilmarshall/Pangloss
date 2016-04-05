@@ -3,7 +3,7 @@
 all: thesis
 
 clean:
-	-rm -f *.aux *.log *.dvi *.blg *.out *Notes.bib *.bbl paper-lcr.ps paper-lcr.pdf suli-report-swe.pdf
+	-rm -f *.aux *.log *.dvi *.blg *.out *Notes.bib *.bbl paper-lcr.p* suli-report-swe.pdf thesis_swe.pdf
 
 
 # ----------------------------------------------------------------------------
