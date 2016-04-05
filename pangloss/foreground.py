@@ -71,6 +71,9 @@ class ForegroundCatalog(pangloss.Catalog):
         self.field_i = eval(input_parse[5]) # The i location of the field grid in the (x,y) map
         self.field_j = eval(input_parse[6]) # The j location of the field grid in the (x,y) map
 
+        # Calculate mean kappas on the redshift grid
+        self.find_mean_kappas()
+
         # Initialize common catalog attributes:
         pangloss.Catalog.__init__(self)
 

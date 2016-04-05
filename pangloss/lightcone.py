@@ -306,15 +306,26 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Snap the parameters z onto the grid, to speed up calculations:
 
-    def snapToGrid(self, Grid):
+    def snapToGrid(self, Grid,foreground_kappas=None):
         z = self.galaxies['z']
         sz,p = Grid.snap(z)
+        self.writeColumn('z_sz',sz)
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
         self.writeColumn('sigma_crit',Grid.sigma_crit[p])
         self.writeColumn('beta',Grid.beta[p])
         rphys = self.galaxies['r']*pangloss.arcmin2rad*self.galaxies['Da_p']
         self.writeColumn('rphys',rphys)
+
+        # Write foreground mean kappas for void correction (0 if foreground kappas not inputed)
+        if foreground_kappas is None:
+            f_kappa = np.zeros(np.size(z))
+        else:
+            self.foreground_kappas = foreground_kappas
+            f_kappa = foreground_kappas[p]
+            #print('p = {}'.format(p))
+            #print('f_kappa = {}'.format(f_kappa))
+        self.writeColumn('f_kappa',f_kappa)
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
 
@@ -368,7 +379,7 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
 
-    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None):
+    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None,void_corr=False):
 
         rho_s = pangloss.delta_c(self.galaxies['c200'])*self.galaxies['rho_crit']
         self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
@@ -401,6 +412,14 @@ class Lightcone(object):
 
         #phi = self.galaxies['phi']
         kappa = 1.0*self.kappa_s*F
+
+        '''Don't think this works - kills off all kappa
+        # Subtract mean foreground kappas per redshift slice for void correction
+        print('mean kappa = {}'.format(np.mean(kappa)))
+        if void_corr is True: kappa -= self.galaxies['f_kappa']
+        print('mean corrected kappa = {}'.format(np.mean(kappa)))
+        '''
+
         gamma = 1.0*self.kappa_s*(G-F)
         gamma1 = gamma*np.cos(2*self.galaxies['phi'])
         gamma2 = gamma*np.sin(2*self.galaxies['phi'])
@@ -418,7 +437,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def combineKappas(self,methods=['add','keeton','tom']):
+    def combineKappas(self,methods=['add','keeton','tom'],foreground_kappas=None,void_corr=None):
 
         # If a single string is passed for methods, place it in a list
         if type(methods) != list:
@@ -471,14 +490,22 @@ class Lightcone(object):
 
             if method == 'add':
                 # Calculate the convergence and shear for each galaxy in the lightcone
+                ## Why are these necessary ?? Should check if we can delete
                 self.writeColumn('kappa_add',K)
                 self.writeColumn('gamma1_add',G1)
                 self.writeColumn('gamma2_add',G2)
 
                 # Add the total convergence and shear from all galaxies
-                self.kappa_add_total=np.sum(self.galaxies['kappa'])
+                #self.kappa_add_total=np.sum(self.galaxies['kappa'])
                 self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
                 self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
+
+                if foreground_kappas is None: self.kappa_add_total=np.sum(self.galaxies['kappa'])
+                else:
+                    self.kappa_add_total = 0.0
+                    for i in range(len(self.redshifts)):
+                        #
+                        self.kappa_add_total += np.sum(self.galaxies[lightcone.galaxies['z_sz']==redshifts[i]]['kappa']) - self.foreground_kappas[i]
 
         return
 

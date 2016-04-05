@@ -272,7 +272,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,void_corr=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -338,13 +338,24 @@ class BackgroundCatalog(pangloss.Catalog):
             # Compute each halo's contribution to the convergence and shear:
             if lookup_table is True:
                 # Use lookup table to speed up kappa calculations
-                lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
+                lightcone.makeKappas(truncationscale=10,lensing_table=lens_table,void_corr=void_corr)
             else:
                 # Calculate kappa values explicitly
-                lightcone.makeKappas(truncationscale=10)
+                lightcone.makeKappas(truncationscale=10,void_corr=void_corr)
+
+            # Loop over redshift slices and subtract mean foreground kappa (void correction)
+            '''
+            #Old and Slow!!
+            if void_corr is True:
+                redshifts = lightcone.redshifts
+                for i in range(len(redshifts)):
+
+                    # Find foreground galaxies in this slice and sum up the masses
+                    lightcone.galaxies[lightcone.galaxies['z_sz']==redshifts[i]]['kappa'] -= self.foreground_kappas[i]
+            '''
 
             # Combine all contributions into a single kappa and gamma for the lightcone
-            lightcone.combineKappas(methods=methods)
+            lightcone.combineKappas(methods=methods,void_corr=void_corr)
 
             # Populate the kappa and gamma values using the 'use_method'
             if use_method == 'add' :
@@ -526,6 +537,9 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Only take the columns from foreground that are needed for a lightcone
         lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
+
+        # Save mean kappas in foreground redshift slices for void correction
+        self.foreground_kappas = foreground.mean_kappas
         del foreground
 
         # Set the counter to be 10%
@@ -546,7 +560,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Create the redshift scaffolding for lightcone i:
             self.lightcones[i].defineSystem(self.zl,self.zs)
             self.lightcones[i].loadGrid(self.grid)
-            self.lightcones[i].snapToGrid(self.grid)
+            self.lightcones[i].snapToGrid(self.grid,self.foreground_kappas)
 
             # Set relevance of each foreground object in the lightcone for lensing
             self.set_relevance(self.lightcones[i])
