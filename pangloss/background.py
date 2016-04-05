@@ -315,7 +315,8 @@ class BackgroundCatalog(pangloss.Catalog):
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
             # Remove galaxies in lightcone that do not meet the relevance limit
-            #lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['relevance'] >= relevance_lim]
+            lightcone.galaxies = lightcone.galaxies[lightcone.galaxies['relevance'] >= relevance_lim]
+            lightcone.galaxy_count = len(lightcone.galaxies)
 
             '''
             # Set the stellar mass - halo mass relation
