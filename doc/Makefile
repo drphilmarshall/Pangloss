@@ -1,6 +1,6 @@
 
 
-all: sulireport
+all: thesis
 
 clean:
 	-rm -f *.aux *.log *.dvi *.blg *.out *Notes.bib *.bbl paper-lcr.ps paper-lcr.pdf suli-report-swe.pdf
@@ -15,6 +15,15 @@ sulireport:
 	pdflatex suli-report-swe.tex
 	pdflatex suli-report-swe.tex
 	# mv suli-report-swe.pdf FinalPaper_SEverett.pdf
+
+# ----------------------------------------------------------------------------
+
+thesis:
+	pdflatex thesis_swe.tex
+	pdflatex thesis_swe.tex
+	bibtex thesis_swe
+	pdflatex thesis_swe.tex
+	pdflatex thesis_swe.tex
 
 # ----------------------------------------------------------------------------
 
