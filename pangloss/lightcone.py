@@ -500,12 +500,15 @@ class Lightcone(object):
                 self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
                 self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
 
-                if foreground_kappas is None: self.kappa_add_total=np.sum(self.galaxies['kappa'])
+                if foreground_kappas is None:
+                    # If no foreground kappas are passed, simply add all kappas in lightcone
+                    self.kappa_add_total=np.sum(self.galaxies['kappa'])
                 else:
+                    # If foreground kappas are passed, implement void correction
                     self.kappa_add_total = 0.0
                     for i in range(len(self.redshifts)):
-                        #
-                        self.kappa_add_total += np.sum(self.galaxies[lightcone.galaxies['z_sz']==redshifts[i]]['kappa']) - self.foreground_kappas[i]
+                        # Subtract mean kappa along each redshift slice
+                        self.kappa_add_total += np.sum(self.galaxies[self.galaxies['z_sz']==self.redshifts[i]]['kappa']) - self.foreground_kappas[i]
 
         return
 
