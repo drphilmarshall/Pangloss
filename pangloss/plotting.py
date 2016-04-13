@@ -334,6 +334,69 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
     return
 
+def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',galaxy_count=None,radius=None):
+    '''
+    Plots a comparrison of the ray-traced correlation, halo model correlation, and relevant-halos correlation.
+    '''
+
+    if corr_type == 'gg':
+        # Calculate percent error of relevant halos vs all halos
+        gg_percent_err = np.abs((corr_rel.xip-corr_halo.xip)/corr_halo.xip)*100
+        # Calculate mean/std percent error of relevant halos vs all halos
+        mean_gg_err = np.mean(gg_percent_err)
+        std_gg_err = np.std(gg_percent_err)
+        # Only care about correlations below 1 arcmin (OLD)
+        #gg_percent_err = gg_percent_err[np.exp(gg_halo_r.logr)<=1.0]
+        # Calculate mean Fraction for gg
+        gg_frac = corr_rel.xip/corr_halo.xip
+        mean_gg_frac = np.mean(gg_frac)
+        std_gg_frac = np.std(gg_frac)
+        # Calculate RMSE
+        gg_nrmse = np.sqrt( np.sum( (corr_rel.xip - corr_halo.xip)**2 ) / np.size(corr_halo.xip) ) / np.sqrt( np.sum( corr_halo.xip**2 ) / np.size(corr_halo.xip) )
+        # Set correlation component for plotting
+        corr_comp = 'plus'
+
+    elif corr_type == 'ng':
+        # Calculate percent error of relevant halos vs all halos
+        ng_percent_err = np.abs((corr_rel.xi-ng_halo.xi)/corr_halo.xi)*100
+        # Calculate mean/std percent error of relevant halos vs all halos
+        mean_ng_err = np.mean(ng_percent_err)
+        std_ng_err = np.std(ng_percent_err)
+        # Only care about correlations below 1 arcmin (OLD)
+        #ng_percent_err = ng_percent_err[np.exp(ng_halo_r.logr)<=1.0]
+        # Calculate mean Fraction for ng
+        ng_frac = corr_rel.xi/corr_halo.xi
+        mean_ng_frac = np.mean(ng_frac)
+        std_ng_frac = np.std(ng_frac)
+        # Calculate RMSE
+        ng_nrmse = np.sqrt( np.sum( (corr_rel.xi - corr_halo.xi)**2 ) / np.size(corr_halo.xi) ) / np.sqrt( np.sum( corr_halo.xi**2 ) / np.size(corr_halo.xi) )
+        # Set correlation component for plotting
+        corr_comp = 'real'
+
+    # Plot the correlation functions
+    plt.subplot(2,1,1)
+    plot_corr(corr_map,corr_type=corr_type,corr_comp=corr_comp,lensed='map',color='green',galaxy_count=galaxy_count,radius=radius)
+    plot_corr(corr_halo,corr_type=corr_type,corr_comp=corr_comp,lensed='halo',color='purple')
+    plot_corr(corr_rel,corr_type=corr_type,corr_comp=corr_comp,lensed='halo_rel',color='red')
+
+    plt.subplot(2,1,2)
+    dtheta = np.exp(corr_map.logr)
+    if corr_type == 'gg':
+        plt.plot(dtheta,gg_percent_err,'ob')
+        plt.plot([dtheta[0], dtheta[-1]],[mean_gg_err, mean_gg_err],'b')
+    if corr_type == 'ng':
+        plt.plot(dtheta,ng_percent_err,'og')
+        plt.plot([dtheta[0], dtheta[-1]],[mean_ng_err, mean_ng_err],'g')
+    plt.xlabel('$\Delta\Theta$ (arcmin)')
+    plt.ylabel('Percent Error (Blue for gg, Green for ng)')
+
+    plt.gcf().set_size_inches(10,10)
+    plt.show()
+
+    #dtheta = np.exp(gg_halo_r.logr[np.exp(gg_halo_r.logr)<=1.0])
+
+    return
+
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.
 
