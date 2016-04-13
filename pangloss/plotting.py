@@ -371,7 +371,6 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         # Reject outliers (error can get very large when corr is near 0)
         gg_percent_err, indices = reject_outliers(gg_percent_err)
         dtheta = dtheta[indices]
-        print('len dtheta = {}, len gg_percent_err = {}'.format(np.size(dtheta),np.size(gg_percent_err)))
         # Calculate mean/std percent error of relevant halos vs all halos
         mean_gg_err = np.mean(gg_percent_err)
         std_gg_err = np.std(gg_percent_err)
