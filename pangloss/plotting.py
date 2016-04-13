@@ -174,7 +174,7 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
 
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,line_style=None,fig_size=10,M=None,galaxy_count=None):
+def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,line_style=None,fig_size=10,M=None,galaxy_count=None,radius=None):
     '''
     Plot the correlation component 'corr_comp' of type 'corr_type' in separation units of 'sep_units'.
     By default the method will plot the lensed-by-map correlation, but can also plot without lensing
@@ -234,10 +234,11 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     if corr_type == 'gg':
         # For shear-shear (or ellipticity-ellipticity) correlation
 
-        # Mark first label as intrinsic, observed, or predicted
+        # Mark first label as intrinsic, ray-traced, or halo model
         if lensed == 'none': label1 = 'Intrinsic '
-        if lensed == 'map': label1 = 'Ray-Traced '
+        elif lensed == 'map': label1 = 'Ray-Traced '
         elif lensed == 'halo': label1 = 'Halo Model '
+        elif lensed == 'halo_rel': label1 = 'Most Relevant Halos '
 
         # Create the correct component label and linestyle to be used in legend
         if corr_comp == 'plus':
@@ -284,8 +285,9 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
         # Mark first label as intrinsic, observed, or predicted
         if lensed == 'none': label1 = 'Intrinsic '
-        if lensed == 'map': label1 = 'Ray-Traced '
+        elif lensed == 'map': label1 = 'Ray-Traced '
         elif lensed == 'halo': label1 = 'Halo Model '
+        elif lensed == 'halo_rel': label1 = 'Most Relevant Halos '
 
         if corr_comp == 'real':
             # Plot real(xi) with a solid line
@@ -323,9 +325,9 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     handles = [h[0] for h in handles]
     plt.legend(handles,labels,fontsize=18)
 
-    if galaxy_count is not None:
+    if galaxy_count and radius is not None:
         # place a text box in upper left in axes coords
-        plt.gca().text(0.1,0.95,str(galaxy_count)+' background galaxies used',transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+        plt.gca().text(0.1,0.95,'{} lightcones with radius {}'.format(galaxy_count,radius),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
     return
 
