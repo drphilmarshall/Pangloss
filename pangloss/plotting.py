@@ -375,8 +375,6 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         # Calculate mean/std percent error of relevant halos vs all halos
         mean_gg_err = np.mean(gg_percent_err)
         std_gg_err = np.std(gg_percent_err)
-        # Only care about correlations below 1 arcmin (OLD)
-        #gg_percent_err = gg_percent_err[np.exp(gg_halo_r.logr)<=1.0]
         # Calculate mean Fraction for gg
         gg_frac = corr_rel.xip/corr_halo.xip
         mean_gg_frac = np.mean(gg_frac)
@@ -385,9 +383,6 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         nrmse = np.sqrt( np.sum( (corr_rel.xip - corr_halo.xip)**2 ) / np.size(corr_halo.xip) ) / np.sqrt( np.sum( corr_halo.xip**2 ) / np.size(corr_halo.xip) )
         # Set correlation component for plotting
         corr_comp = 'plus'
-
-
-    #ng_percent_err = reject_outliers(ng_percent_err)
 
     elif corr_type == 'ng':
         # Calculate percent error of relevant halos vs all halos
@@ -398,8 +393,6 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         # Calculate mean/std percent error of relevant halos vs all halos
         mean_ng_err = np.mean(ng_percent_err)
         std_ng_err = np.std(ng_percent_err)
-        # Only care about correlations below 1 arcmin (OLD)
-        #ng_percent_err = ng_percent_err[np.exp(ng_halo_r.logr)<=1.0]
         # Calculate mean Fraction for ng
         ng_frac = corr_rel.xi/corr_halo.xi
         mean_ng_frac = np.mean(ng_frac)
@@ -415,9 +408,8 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
     plot_corr(corr_halo,corr_type=corr_type,corr_comp=corr_comp,lensed='halo',color='purple')
     plot_corr(corr_rel,corr_type=corr_type,corr_comp=corr_comp,lensed='halo_rel',color='blue',rel_halos=rel_halos)
 
+    # Plot the percent error of all halos vs relevant halos at each separation distance
     plt.subplot(2,1,2)
-    #dtheta = np.exp(gg_halo_r.logr[np.exp(gg_halo_r.logr)<=1.0])
-
     if corr_type == 'gg':
         plt.plot(dtheta,gg_percent_err,'ob',label='Individual Error')
         plt.plot([min_sep, max_sep],[mean_gg_err, mean_gg_err],'--b',label='Mean Error: {:.3}%'.format(mean_gg_err),linewidth=2)
