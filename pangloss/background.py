@@ -21,6 +21,9 @@ import pangloss
 # Verbose
 vb = True
 
+# Record CPU time per lightcone?
+time = True
+
 # ============================================================================
 
 class BackgroundCatalog(pangloss.Catalog):
@@ -310,7 +313,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Calculate lensing in each lightcone:
         for lightcone in self.lightcones:
-            start_time = timeit.default_timer()
+            if time is True: start_time = timeit.default_timer()
             if lightcone.ID%counter == 0 and vb is True:
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
@@ -381,12 +384,13 @@ class BackgroundCatalog(pangloss.Catalog):
                 gamma1[lightcone.ID] = lightcone.gamma1_tom_total
                 gamma2[lightcone.ID] = lightcone.gamma2_tom_total
 
-            elapsed = timeit.default_timer() - start_time
-            runtimes[lightcone.ID] = elapsed
+            if time is True:
+                elapsed = timeit.default_timer() - start_time
+                runtimes[lightcone.ID] = elapsed
 
             assert lightcone.galaxy_count == len(lightcone.galaxies)
 
-        if vb is True:
+        if vb and time is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
 
         # Calculate mean/std relevant galaxies per lightcone
