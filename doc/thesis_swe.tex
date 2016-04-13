@@ -44,6 +44,7 @@
 \usepackage{dcolumn}% Align table columns on decimal point
 \usepackage{bm}% bold math
 \usepackage{mathtools}
+\usepackage{color}
 %\usepackage{float}
 \usepackage[format=plain]{caption}
 \usepackage{subcaption}
@@ -241,6 +242,24 @@ While ideally all foreground mass in a field would be considered when predicting
 To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first snapped to a grid of 100 equally-sized redshift bins and then converted to physical distance.
 
 Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
+
+\textcolor{red}{\subsection*{Relevant Halos}
+\begin{enumerate}
+\item Metric from McCully et al. (cite)
+\item Implementation
+\item Plot the percent difference between all halos and relevant halos as a function of $\#$ of relevant halos (can adopt relevant-test.py to do this)
+\end{enumerate}
+
+\subsection*{Void Correction}
+
+\subsection*{Speedups}
+\begin{enumerate}
+\item Lookup tables (lensing table)
+\item relevant halos
+\item more plots to quantify speedup times!
+\end{enumerate}
+
+}
 
 \subsection*{Checking the Halo Model}
 
