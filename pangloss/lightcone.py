@@ -379,7 +379,7 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Compute halos' contributions to the convergence:
 
-    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None,void_corr=False):
+    def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None):
 
         rho_s = pangloss.delta_c(self.galaxies['c200'])*self.galaxies['rho_crit']
         self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
@@ -413,13 +413,6 @@ class Lightcone(object):
         #phi = self.galaxies['phi']
         kappa = 1.0*self.kappa_s*F
 
-        '''Don't think this works - kills off all kappa
-        # Subtract mean foreground kappas per redshift slice for void correction
-        print('mean kappa = {}'.format(np.mean(kappa)))
-        if void_corr is True: kappa -= self.galaxies['f_kappa']
-        print('mean corrected kappa = {}'.format(np.mean(kappa)))
-        '''
-
         gamma = 1.0*self.kappa_s*(G-F)
         gamma1 = gamma*np.cos(2*self.galaxies['phi'])
         gamma2 = gamma*np.sin(2*self.galaxies['phi'])
@@ -437,7 +430,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def combineKappas(self,methods=['add','keeton','tom'],foreground_kappas=None,void_corr=None):
+    def combineKappas(self,methods=['add','keeton','tom'],foreground_kappas=None):
 
         # If a single string is passed for methods, place it in a list
         if type(methods) != list:
