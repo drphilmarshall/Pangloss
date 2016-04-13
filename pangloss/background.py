@@ -389,6 +389,11 @@ class BackgroundCatalog(pangloss.Catalog):
         if vb is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
 
+        # Calculate mean/std relevant galaxies per lightcone
+        self.relevant_counts = [lightcone.galaxy_count for lightcone in self.lightcones]
+        self.mean_relevant_halos = np.mean(self.relevant_counts)
+        self.std_relevant_halos = np.std(self.relevant_counts)
+
         #-------------------------------------------------------------------------------------
         # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
 
