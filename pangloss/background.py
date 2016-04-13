@@ -355,7 +355,12 @@ class BackgroundCatalog(pangloss.Catalog):
             '''
 
             # Combine all contributions into a single kappa and gamma for the lightcone
-            lightcone.combineKappas(methods=methods,void_corr=void_corr)
+            if void_corr is True:
+                # Implement void correction using calcualted mean foreground kappas
+                lightcone.combineKappas(methods=methods,foreground_kappas=self.foreground_kappas)
+            else:
+                # No void correction - simply add all kappas
+                lightcone.combineKappas(methods=methods)
 
             # Populate the kappa and gamma values using the 'use_method'
             if use_method == 'add' :
