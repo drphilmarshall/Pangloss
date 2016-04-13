@@ -174,11 +174,12 @@ def plot_sticks(ra,dec,mod,phi,axis,color):
 
 # ----------------------------------------------------------------------------
 
-def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,line_style=None,fig_size=10,M=None,galaxy_count=None,radius=None):
+def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='map',color=None,line_style=None,fig_size=10,M=None,galaxy_count=None,radius=None,rel_halos=None):
     '''
     Plot the correlation component 'corr_comp' of type 'corr_type' in separation units of 'sep_units'.
     By default the method will plot the lensed-by-map correlation, but can also plot without lensing
-    (lensed='none') or with the lensed-by-halo correlation (lensed='halo').
+    (lensed='none'), lensed-by-halo correlation (lensed='halo'), or with the lensed-by-halo correlation
+    using only the most relevant halos (lensed='halo_rel').
     '''
 
     # If no color is inputted, plot in black
@@ -325,23 +326,52 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     handles = [h[0] for h in handles]
     plt.legend(handles,labels,fontsize=18)
 
+    # Print the number of lightcones and their radii
     if galaxy_count and radius is not None:
         # place a text box in upper left in axes coords
-        plt.gca().text(0.1,0.95,'{} lightcones with radius {} arcmin'.format(galaxy_count,radius),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+        plt.gca().text(0.3,0.95,'{} lightcones with radius {} arcmin'.format(galaxy_count,radius),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
     elif galaxy_count is not None:
         # place a text box in upper left in axes coords
-        plt.gca().text(0.1,0.95,'{} lightcones'.format(galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+        plt.gca().text(0.3,0.95,'{} lightcones'.format(galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+
+    # Print the number of relevant halos in each lightcone if applicable
+    if lensed == 'halo_rel' and rel_halos is not None:
+        # place a text box in upper left in axes coords
+        mean_rel, std_rel = rel_halos[0], rel_halos[1]
+        plt.gca().text(0.3,0.85,'{:.3}+/-{:.3} relevant halos per lightcone'.format(mean_rel,std_rel),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
     return
 
-def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',galaxy_count=None,radius=None):
+def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
     '''
     Plots a comparrison of the ray-traced correlation, halo model correlation, and relevant-halos correlation.
     '''
 
+    # Set max and min dtheta
+    min_sep = corr_map.min_sep
+    max_sep = corr_map.max_sep
+
+    if sep_units == 'arcmin':
+        min_sep = np.rad2deg(min_sep)*60
+        max_sep = np.rad2deg(max_sep)*60
+
+    elif sep_units == 'deg':
+        min_sep = np.rad2deg(min_sep)
+        max_sep = np.rad2deg(max_sep)
+
+    elif sep_units == 'rad':
+        min_sep = min_sep
+        max_sep = max_sep
+
+    dtheta = np.exp(corr_map.logr)
+
     if corr_type == 'gg':
         # Calculate percent error of relevant halos vs all halos
         gg_percent_err = np.abs((corr_rel.xip-corr_halo.xip)/corr_halo.xip)*100
+        # Reject outliers (error can get very large when corr is near 0)
+        gg_percent_err, indices = reject_outliers(gg_percent_err)
+        dtheta = dtheta[indices]
+        print('len dtheta = {}, len gg_percent_err = {}'.format(np.size(dtheta),np.size(gg_percent_err)))
         # Calculate mean/std percent error of relevant halos vs all halos
         mean_gg_err = np.mean(gg_percent_err)
         std_gg_err = np.std(gg_percent_err)
@@ -352,13 +382,19 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',galaxy_cou
         mean_gg_frac = np.mean(gg_frac)
         std_gg_frac = np.std(gg_frac)
         # Calculate RMSE
-        gg_nrmse = np.sqrt( np.sum( (corr_rel.xip - corr_halo.xip)**2 ) / np.size(corr_halo.xip) ) / np.sqrt( np.sum( corr_halo.xip**2 ) / np.size(corr_halo.xip) )
+        nrmse = np.sqrt( np.sum( (corr_rel.xip - corr_halo.xip)**2 ) / np.size(corr_halo.xip) ) / np.sqrt( np.sum( corr_halo.xip**2 ) / np.size(corr_halo.xip) )
         # Set correlation component for plotting
         corr_comp = 'plus'
 
+
+    #ng_percent_err = reject_outliers(ng_percent_err)
+
     elif corr_type == 'ng':
         # Calculate percent error of relevant halos vs all halos
-        ng_percent_err = np.abs((corr_rel.xi-ng_halo.xi)/corr_halo.xi)*100
+        ng_percent_err = np.abs((corr_rel.xi-corr_halo.xi)/corr_halo.xi)*100
+        # Reject outliers (error can get very large when corr is near 0)
+        ng_percent_err, indices = reject_outliers(ng_percent_err)
+        dtheta = dtheta[indices]
         # Calculate mean/std percent error of relevant halos vs all halos
         mean_ng_err = np.mean(ng_percent_err)
         std_ng_err = np.std(ng_percent_err)
@@ -369,7 +405,7 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',galaxy_cou
         mean_ng_frac = np.mean(ng_frac)
         std_ng_frac = np.std(ng_frac)
         # Calculate RMSE
-        ng_nrmse = np.sqrt( np.sum( (corr_rel.xi - corr_halo.xi)**2 ) / np.size(corr_halo.xi) ) / np.sqrt( np.sum( corr_halo.xi**2 ) / np.size(corr_halo.xi) )
+        nrmse = np.sqrt( np.sum( (corr_rel.xi - corr_halo.xi)**2 ) / np.size(corr_halo.xi) ) / np.sqrt( np.sum( corr_halo.xi**2 ) / np.size(corr_halo.xi) )
         # Set correlation component for plotting
         corr_comp = 'real'
 
@@ -377,25 +413,46 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',galaxy_cou
     plt.subplot(2,1,1)
     plot_corr(corr_map,corr_type=corr_type,corr_comp=corr_comp,lensed='map',color='green',galaxy_count=galaxy_count,radius=radius)
     plot_corr(corr_halo,corr_type=corr_type,corr_comp=corr_comp,lensed='halo',color='purple')
-    plot_corr(corr_rel,corr_type=corr_type,corr_comp=corr_comp,lensed='halo_rel',color='red')
+    plot_corr(corr_rel,corr_type=corr_type,corr_comp=corr_comp,lensed='halo_rel',color='blue',rel_halos=rel_halos)
 
     plt.subplot(2,1,2)
-    dtheta = np.exp(corr_map.logr)
+    #dtheta = np.exp(gg_halo_r.logr[np.exp(gg_halo_r.logr)<=1.0])
+
     if corr_type == 'gg':
-        plt.plot(dtheta,gg_percent_err,'ob')
-        plt.plot([dtheta[0], dtheta[-1]],[mean_gg_err, mean_gg_err],'b')
+        plt.plot(dtheta,gg_percent_err,'ob',label='Individual Error')
+        plt.plot([min_sep, max_sep],[mean_gg_err, mean_gg_err],'--b',label='Mean Error: {:.3}%'.format(mean_gg_err),linewidth=2)
     if corr_type == 'ng':
-        plt.plot(dtheta,ng_percent_err,'og')
-        plt.plot([dtheta[0], dtheta[-1]],[mean_ng_err, mean_ng_err],'g')
-    plt.xlabel('$\Delta\Theta$ (arcmin)')
-    plt.ylabel('Percent Error (Blue for gg, Green for ng)')
+        plt.plot(dtheta,ng_percent_err,'ob',label='Individual Error')
+        plt.plot([min_sep, max_sep],[mean_ng_err, mean_ng_err],'--b',label='Mean Error: {:.3}%'.format(mean_ng_err),linewidth=2)
+    # Set plot settings
+    plt.xscale('log')
+    plt.gca().set_xlim(min_sep,max_sep)
+
+    # Make axis ticks larger
+    plt.gca().tick_params('both', length=5, width=1, which='major')
+    plt.gca().tick_params('both', length=5, width=1, which='minor')
+
+    # Set axes labels
+    plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+    plt.ylabel('Percent Error',fontsize=20)
+    plt.legend(fontsize=18)
+
+    # State the NRMSE
+    plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
     plt.gcf().set_size_inches(10,10)
     plt.show()
 
-    #dtheta = np.exp(gg_halo_r.logr[np.exp(gg_halo_r.logr)<=1.0])
-
     return
+
+def reject_outliers(data, m=5):
+    '''
+    Used in compare_relevant_halos() to reject percent error outliers that are
+    very high due to the correlation values being very near zero. Returns non-outliers
+    and their indices
+    '''
+    return data[abs(data - np.mean(data)) < m * np.std(data)], abs(data - np.mean(data)) < m * np.std(data)
+
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.
