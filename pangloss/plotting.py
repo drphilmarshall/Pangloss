@@ -327,7 +327,10 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
     if galaxy_count and radius is not None:
         # place a text box in upper left in axes coords
-        plt.gca().text(0.1,0.95,'{} lightcones with radius {}'.format(galaxy_count,radius),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+        plt.gca().text(0.1,0.95,'{} lightcones with radius {} arcmin'.format(galaxy_count,radius),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    elif galaxy_count is not None:
+        # place a text box in upper left in axes coords
+        plt.gca().text(0.1,0.95,'{} lightcones'.format(galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
     return
 
