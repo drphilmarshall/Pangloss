@@ -338,10 +338,10 @@ class BackgroundCatalog(pangloss.Catalog):
             # Compute each halo's contribution to the convergence and shear:
             if lookup_table is True:
                 # Use lookup table to speed up kappa calculations
-                lightcone.makeKappas(truncationscale=10,lensing_table=lens_table,void_corr=void_corr)
+                lightcone.makeKappas(truncationscale=10,lensing_table=lens_table)
             else:
                 # Calculate kappa values explicitly
-                lightcone.makeKappas(truncationscale=10,void_corr=void_corr)
+                lightcone.makeKappas(truncationscale=10)
 
             # Loop over redshift slices and subtract mean foreground kappa (void correction)
             '''
