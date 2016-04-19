@@ -344,7 +344,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
 def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
     '''
-    Plots a comparrison of the ray-traced correlation, halo model correlation, and relevant-halos correlation.
+    Plots a comparrison of the ray-traced/map correlation, halo model correlation, and relevant-halos correlation.
     '''
 
     # Set max and min dtheta
