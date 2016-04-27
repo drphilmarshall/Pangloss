@@ -464,6 +464,10 @@ class Lightcone(object):
                 self.gamma1_keeton_total=np.sum(self.galaxies['gamma1_keeton'])
                 self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
 
+                if foreground_kappas is not None:
+                    # If foreground kappas are passed, implement void correction
+                    self.kappa_keeton_total -= np.sum(foreground_kappas)
+
             if method == 'tom':
                 # Calculate the 'tom' convergence and shear for each galaxy in the lightcone
                 kappa_tom  = (1.-B) * K
@@ -480,6 +484,10 @@ class Lightcone(object):
                 self.gamma1_tom_total=np.sum(self.galaxies['gamma1_tom'])
                 self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
 
+                if foreground_kappas is not None:
+                    # If foreground kappas are passed, implement void correction
+                    self.kappa_tom_total -= np.sum(foreground_kappas)
+
 
             if method == 'add':
                 # Calculate the convergence and shear for each galaxy in the lightcone
@@ -489,11 +497,9 @@ class Lightcone(object):
                 self.writeColumn('gamma2_add',G2)
 
                 # Add the total convergence and shear from all galaxies
-                #self.kappa_add_total=np.sum(self.galaxies['kappa'])
+                self.kappa_add_total=np.sum(self.galaxies['kappa'])
                 self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
                 self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
-
-                self.kappa_add_total=np.sum(self.galaxies['kappa'])
 
                 if foreground_kappas is not None:
                     # If foreground kappas are passed, implement void correction
