@@ -317,7 +317,7 @@ class Lightcone(object):
         rphys = self.galaxies['r']*pangloss.arcmin2rad*self.galaxies['Da_p']
         self.writeColumn('rphys',rphys)
 
-        # Write foreground mean kappas for void correction (0 if foreground kappas not inputed)
+        # Write foreground mean kappas for foreground correction (0 if foreground kappas not inputed)
         if foreground_kappas is None:
             f_kappa = np.zeros(np.size(z))
         else:
@@ -465,7 +465,7 @@ class Lightcone(object):
                 self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
 
                 if foreground_kappas is not None:
-                    # If foreground kappas are passed, implement void correction
+                    # If foreground kappas are passed, implement foreground correction
                     self.kappa_keeton_total -= np.sum(foreground_kappas)
 
             if method == 'tom':
@@ -485,7 +485,7 @@ class Lightcone(object):
                 self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
 
                 if foreground_kappas is not None:
-                    # If foreground kappas are passed, implement void correction
+                    # If foreground kappas are passed, implement foreground correction
                     self.kappa_tom_total -= np.sum(foreground_kappas)
 
 
@@ -502,7 +502,7 @@ class Lightcone(object):
                 self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
 
                 if foreground_kappas is not None:
-                    # If foreground kappas are passed, implement void correction
+                    # If foreground kappas are passed, implement foreground correction
                     self.kappa_add_total -= np.sum(foreground_kappas)
 
         return

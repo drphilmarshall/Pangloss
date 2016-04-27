@@ -275,7 +275,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,void_corr=False):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,foreground_corr=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -347,11 +347,11 @@ class BackgroundCatalog(pangloss.Catalog):
                 lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
-            if void_corr is True:
-                # Implement void correction using calcualted mean foreground kappas
+            if foregrond_corr is True:
+                # Implement foreground correction using calcualted mean foreground kappas
                 lightcone.combineKappas(methods=methods,foreground_kappas=self.foreground_kappas)
             else:
-                # No void correction - simply add all kappas
+                # No foreground correction - simply add all kappas
                 lightcone.combineKappas(methods=methods)
 
             # Populate the kappa and gamma values using the 'use_method'
@@ -541,7 +541,7 @@ class BackgroundCatalog(pangloss.Catalog):
         # Only take the columns from foreground that are needed for a lightcone
         lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
 
-        # Save mean kappas in foreground redshift slices for void correction
+        # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
         del foreground
 
