@@ -194,7 +194,7 @@ V(z)=\int_{V_z}dV_p=d_H\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}}\int_{\
 Integrating over $d\theta^\prime$ and $d\phi^\prime$ and using the trig identity ${\cos(u)-\cos(v)=-2\sin\left(\frac{u+v}{2}\right)\sin\left(\frac{u-v}{2}\right)}$ gives
 
 \begin{equation}\label{volume_final}
-V(z)=2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2\sin(\theta^\prime)}{E(z^\prime)(1+z^\prime)^3}dz^\prime d\theta^\prime d\phi^\prime
+V(z)=2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime
 \end{equation}
 
 which is our final expression for the proper volume.\\
@@ -202,7 +202,7 @@ which is our final expression for the proper volume.\\
 With the proper volume calculated, the halo mass density $\rho_h(z)$ is simply the sum of the individual halo masses $M_{i,z}$ in the $z$-plane divided by Equation \eqref{volume_final}:
 
 \begin{equation}\label{rho_h}
-\rho_h(z)=\frac{\sum_i M_{i,z}}{V(z)}=\frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2\sin(\theta^\prime)}{E(z^\prime)(1+z^\prime)^3}dz^\prime d\theta^\prime d\phi^\prime}.
+\rho_h(z)=\frac{\sum_i M_{i,z}}{V(z)}=\frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}.
 \end{equation}
 
 \subsection*{Calculating $\bm{\rho_s(z)}$:}
@@ -211,7 +211,7 @@ Now that $\rho_m(z)$ and $\rho_h(z)$ have been calculated, the smooth-component 
 
 \begin{align}\label{smooth_component} 
 \rho_s(z)&=\rho_m(z)-\rho_h(z)\nonumber\\
-&=\left(\frac{3H_0^2}{8\pi G}\,\Omega_{m,0}\right)(1+z)^3 - \frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2\sin(\theta^\prime)}{E(z^\prime)(1+z^\prime)^3}dz^\prime d\theta^\prime d\phi^\prime}
+&=\left(\frac{3H_0^2}{8\pi G}\,\Omega_{m,0}\right)(1+z)^3 - \frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}
 \end{align}
 
 where $\rho_s(z)$ is a discrete function only evaluated at the $N$ values of $z$. Finally, note that this equation needs a small correction in the integral bounds for the boundary cases of $z=0$ and $z=1.3857$. Simply change the bounds to ($0,\Delta z$) and ($z-\Delta z,z$) respectively.
