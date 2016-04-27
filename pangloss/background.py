@@ -346,17 +346,6 @@ class BackgroundCatalog(pangloss.Catalog):
                 # Calculate kappa values explicitly
                 lightcone.makeKappas(truncationscale=10)
 
-            # Loop over redshift slices and subtract mean foreground kappa (void correction)
-            '''
-            #Old and Slow!!
-            if void_corr is True:
-                redshifts = lightcone.redshifts
-                for i in range(len(redshifts)):
-
-                    # Find foreground galaxies in this slice and sum up the masses
-                    lightcone.galaxies[lightcone.galaxies['z_sz']==redshifts[i]]['kappa'] -= self.foreground_kappas[i]
-            '''
-
             # Combine all contributions into a single kappa and gamma for the lightcone
             if void_corr is True:
                 # Implement void correction using calcualted mean foreground kappas
