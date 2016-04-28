@@ -4,6 +4,7 @@ import pangloss
 
 import cPickle, gc
 import numpy as np
+import scipy as sp
 import pylab as plt
 from math import pi
 from astropy.table import Column
@@ -309,6 +310,7 @@ class Lightcone(object):
     def snapToGrid(self, Grid,foreground_kappas=None):
         z = self.galaxies['z']
         sz,p = Grid.snap(z)
+        self.sigma_crit = Grid.sigma_crit
         self.writeColumn('z_sz',sz)
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
@@ -323,8 +325,6 @@ class Lightcone(object):
         else:
             self.foreground_kappas = foreground_kappas
             f_kappa = foreground_kappas[p]
-            #print('p = {}'.format(p))
-            #print('f_kappa = {}'.format(f_kappa))
         self.writeColumn('f_kappa',f_kappa)
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
@@ -430,7 +430,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def combineKappas(self,methods=['add','keeton','tom'],foreground_kappas=None):
+    def combineKappas(self,methods=['add','keeton','tom'],smooth_corr=False,foreground_kappas=None):
 
         # If a single string is passed for methods, place it in a list
         if type(methods) != list:
@@ -468,6 +468,9 @@ class Lightcone(object):
                     # If foreground kappas are passed, implement foreground correction
                     self.kappa_keeton_total -= np.sum(foreground_kappas)
 
+                if smooth_corr is True:
+                    self.kappa_keeton_total += self.smooth_corr_kappas()
+
             if method == 'tom':
                 # Calculate the 'tom' convergence and shear for each galaxy in the lightcone
                 kappa_tom  = (1.-B) * K
@@ -488,6 +491,9 @@ class Lightcone(object):
                     # If foreground kappas are passed, implement foreground correction
                     self.kappa_tom_total -= np.sum(foreground_kappas)
 
+                if smooth_corr is True:
+                    self.kappa_tom_total += self.smooth_corr_kappas()
+
 
             if method == 'add':
                 # Calculate the convergence and shear for each galaxy in the lightcone
@@ -505,7 +511,98 @@ class Lightcone(object):
                     # If foreground kappas are passed, implement foreground correction
                     self.kappa_add_total -= np.sum(foreground_kappas)
 
+                if smooth_corr is True:
+                    self.kappa_add_total += np.sum(self.smooth_corr_kappas())
+
         return
+
+    def smooth_corr_kappas(self):
+        '''
+        Calculates the smooth-component correction kappas, which account for the additional mass
+        in the Millennium Simulation that is not in the form of stellar mass, halos, or
+        subhalos. For details, see void_correction.pdf in `pangloss/doc`.
+        '''
+
+        # Important parameters
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+        h = self.cosmo[2]
+        H_0 = 100*h # km/s/Mpc
+        G = 4.301e-9 # km^2*Mpc/M_sol*s^2
+
+        # Useful functions
+        D = pangloss.Distance(self.cosmo)
+
+        kappa_smooth = np.zeros(np.size(redshifts))
+
+        # Calculate the smooth-component correction at each redshift slice
+        for i in range(np.size(redshifts)):
+            z = redshifts[i]
+            # z-range is (z +/- delta_z except for at boundary)
+            if z == redshifts[0]: z1, z2 = z, z+delta_z
+            elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+            else: z1, z2 = z-delta_z, z+delta_z
+
+            # Mean mass density at given z for assumed cosmology
+            rho_m = ( 3*H_0**2 / (8*np.pi*G) ) * (1+z)**3 # M_sol/Mpc^3
+
+            # Halo mass density in this lightcone at this z
+            rho_h = np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
+
+            # Smooth-component mass density is difference between mean mass and halo mass
+            rho_s = rho_m - rho_h # M_sol/Mpc^3
+
+            # Projected mass density found by integrating over z in redshift slice
+            sigma_s = rho_s * self.int_over_z(z1,z2)
+
+            # Smooth-component kappa correction at redshift z:
+            kappa_smooth[i] = 1.0*sigma_s / self.sigma_crit[i]
+
+        return kappa_smooth
+
+    def int_over_z(self,z1,z2=0.):
+        '''
+        Integrates the z-component of the proper volume element. Used in smooth-component
+        void correction. Details in `pangloss/doc/void_correction.pdf`.
+        '''
+        # If only one redshift is passed...
+        if z2<z1: z1,z2 = z2,z1
+
+        # Important parameters
+        omega_m0 = self.cosmo[0]
+        omega_l0 = self.cosmo[1]
+        omega_k = 1 - (omega_m0 + omega_l0)
+        h = self.cosmo[2]
+        H_0 = 100.*h # km/s/Mpc
+        c = 299792.458 # km/s
+        Dh = c/H_0 # Hubble distance in Mpc
+
+        # Useful distance functions
+        D = pangloss.Distance(self.cosmo)
+
+        # Integrand for proper volume
+        f = lambda z,o_m,o_l,o_k: (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1+z) )
+        return Dh * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # Mpc^3
+
+
+    def slice_proper_volume(self,z):
+        '''
+        Calculate proper volume of redshift slice at z in Mpc^3. Details in `pangloss/doc/void_correction.pdf`.
+        '''
+
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+
+        # z-range is (z +/- delta_z except for at boundary)
+        if z == redshifts[0]: z1, z2 = z, z+delta_z
+        elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+        else: z1, z2 = z-delta_z, z+delta_z
+
+        # Solid angle of cone with apex angle of lightcone diameter:
+        solid_angle = 2*pi*( 1-np.cos(self.rmax*pangloss.arcmin2rad) )
+
+        # Return proper volume of redshift slice
+        return solid_angle * self.int_over_z(z1,z2) # Mpc^3
 
 # ----------------------------------------------------------------------------
 # Calculate magnification along line of sight
