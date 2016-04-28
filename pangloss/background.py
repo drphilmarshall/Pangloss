@@ -275,7 +275,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,foreground_corr=False):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,smooth_corr=False,foreground_corr=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -347,12 +347,12 @@ class BackgroundCatalog(pangloss.Catalog):
                 lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
-            if foregrond_corr is True:
+            if foreground_corr is True:
                 # Implement foreground correction using calcualted mean foreground kappas
-                lightcone.combineKappas(methods=methods,foreground_kappas=self.foreground_kappas)
+                lightcone.combineKappas(methods=methods,smooth_corr=smooth_corr,foreground_kappas=self.foreground_kappas)
             else:
                 # No foreground correction - simply add all kappas
-                lightcone.combineKappas(methods=methods)
+                lightcone.combineKappas(methods=methods,smooth_corr=smooth_corr)
 
             # Populate the kappa and gamma values using the 'use_method'
             if use_method == 'add' :
