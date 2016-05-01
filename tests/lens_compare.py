@@ -15,11 +15,17 @@ vb = True
 # Turn on for pickling correlation data
 pickle = False
 
+# Turn on for relevance plots
+rel_plots = False
+
+# Turn on for void correction plots
+void_plots = True
+
 # Turn on for plotting correlation function plots
-corr_plots = True
+corr_plots = False
 
 # Turn on for plotting maps
-maps = True
+maps = False
 
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -35,15 +41,15 @@ S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_pl
 if vb is True: print('Loading foreground catalog...')
 config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
 F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
-#F.plot_mean_kappas()
+#if void_plots is True: F.plot_mean_kappas()
 
 # Generate Background Catalog in the middle of the (0,0,0,0) field
 if vb is True: print('Generating background catalog...')
 # Can pick one of the domains below
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
-d = [1.65,1.35,-1.65,-1.35]
-#d = [1.55,1.45,-1.55,-1.45]
+#d = [1.65,1.35,-1.65,-1.35]
+d = [1.55,1.45,-1.55,-1.45]
 #d = [1.6,1.4,-1.6,-1.4]
 #d = [1.55,1.48,-1.55,-1.48]
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
@@ -57,7 +63,7 @@ print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
 if vb is True: print('Drilling lightcones...')
-B.drill_lightcones(radius=8.0,foreground=F,save=False)
+B.drill_lightcones(radius=4.0,foreground=F,save=False)
 
 # Calculate mean/std galaxies per lightcone
 galaxy_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
@@ -67,18 +73,19 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
-relevance_lim = 0.0001
+relevance_lim = 0.0
+#relevance_lim = 0.00005
 #cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,void_corr=True)
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=False)
 
-# Calculate mean/std relevant galaxies per lightcone
-relevant_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
-mean_relevant = np.mean(relevant_counts)
-std_relevant = np.std(relevant_counts)
-print 'Lightcones have {0:.2f} +/- {1:.2f} important galaxies'.format(mean_relevant,std_relevant)
+# Calculate mean/std relevant galaxies per lightcone (now done in makeKappas!!)
+##relevant_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
+##mean_relevant = np.mean(relevant_counts)
+##std_relevant = np.std(relevant_counts)
+print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 
 # Plot 'relevance' distribution
-if relevance_lim == 0.0:
+if relevance_lim == 0.0 and rel_plots is True:
     mean_relevance = [np.mean(lightcone.galaxies['relevance']) for lightcone in B.lightcones]
     plt.subplot(2, 1, 1)
     plt.hist(mean_relevance,100,alpha=0.75,log=True)
@@ -92,6 +99,12 @@ if relevance_lim == 0.0:
     plt.xlabel('Max Relevance per Lightcone (M=10^12 Sol Mass, R=10 kpc)',fontsize=16)
     plt.ylabel('Lightcone Count ({} total )'.format(B.galaxy_count),fontsize=16)
     plt.show()
+
+if void_plots is True:
+    lc = B.lightcones[np.random.randint(0,B.galaxy_count)]
+    lc.plot_kappas()
+    pangloss.plotting.plot_densities(F,lc,density_type='surface')
+    pangloss.plotting.plot_densities(F,lc)
 
 if corr_plots is True:
     # Calculate the correlation function for each lensing type
