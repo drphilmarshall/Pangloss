@@ -123,3 +123,25 @@ class Distance:
     def rho_crit_univ(self,z):   #critical density of the universe at z
        rho= (2.642*10**46)*self.Hsquared(z) #units of solar mass per cubic megaparsec, H(z) must be in units of per second.
        return rho
+
+# ============================================================================
+
+    def mean_mass_density(self,z):
+        '''
+        Mean non-relativistic mass density of universe at z. Details in
+        'doc/void_correction.pdf' (only valid for flat universe).
+        '''
+
+        h = self.h
+        H_0 = 100.*h # km/s/Mpc
+        G = 4.301e-9 # km^2*Mpc/M_sol*s^2
+
+        # Calculate curvature
+        om = self.OMEGA_M
+        ol = self.OMEGA_L
+        ok = 1.-om-ol
+
+        if ok != 0:
+            print 'Warning: mean mass density calculation only valid for Omega_k=0 !'
+
+        return ( ( 3.*H_0**2 ) / (8.*pi*G) ) * (1.+z)**3 # M_sol/Mpc^3
