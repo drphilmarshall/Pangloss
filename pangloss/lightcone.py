@@ -133,6 +133,8 @@ class Lightcone(object):
 
         if self.flavor == 'simulated':
             # Take the log of the halo mass, and set up the parameter array:
+            zero = np.sum(self.galaxies['Mhalo_obs']==0)
+            if zero != 0: print 'There are {} galaxies with subhalo mass = 0'.format(zero)
             self.writeColumn('Mh_obs',np.log10(self.galaxies['Mhalo_obs']))
             self.writeColumn('Mh',self.galaxies['Mh_obs']*1.0)
             # Stellar masses will be added by drawMstars
@@ -145,6 +147,9 @@ class Lightcone(object):
 
         if len(self.galaxies) == 0:
             print "Lightcone: WARNING: no galaxies here!"
+
+        # No smooth-component correction kappas until set!
+        self.smooth_kappas = None
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -516,6 +521,9 @@ class Lightcone(object):
 
         return
 
+    #----------------------------------------------------------------------------
+    # Functions used to calculate matter densities and the smooth-component correction
+
     def smooth_corr_kappas(self):
         '''
         Calculates the smooth-component correction kappas, which account for the additional mass
@@ -523,17 +531,13 @@ class Lightcone(object):
         subhalos. For details, see void_correction.pdf in `pangloss/doc`.
         '''
 
-        # Important parameters
         redshifts = self.redshifts
         delta_z = self.dz/2.0
-        h = self.cosmo[2]
-        H_0 = 100*h # km/s/Mpc
-        G = 4.301e-9 # km^2*Mpc/M_sol*s^2
 
         # Useful functions
         D = pangloss.Distance(self.cosmo)
 
-        kappa_smooth = np.zeros(np.size(redshifts))
+        self.smooth_kappas = np.zeros(np.size(redshifts))
 
         # Calculate the smooth-component correction at each redshift slice
         for i in range(np.size(redshifts)):
@@ -544,10 +548,11 @@ class Lightcone(object):
             else: z1, z2 = z-delta_z, z+delta_z
 
             # Mean mass density at given z for assumed cosmology
-            rho_m = ( 3*H_0**2 / (8*np.pi*G) ) * (1+z)**3 # M_sol/Mpc^3
+            rho_m = D.mean_mass_density(z) # M_sol/Mpc^3
+            #rho_m = ( 3*H_0**2 / (8*np.pi*G) ) * (1+z)**3 # M_sol/Mpc^3
 
             # Halo mass density in this lightcone at this z
-            rho_h = np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
+            rho_h = self.halo_density(z) # M_sol/Mpc^3
 
             # Smooth-component mass density is difference between mean mass and halo mass
             rho_s = rho_m - rho_h # M_sol/Mpc^3
@@ -556,9 +561,15 @@ class Lightcone(object):
             sigma_s = rho_s * self.int_over_z(z1,z2)
 
             # Smooth-component kappa correction at redshift z:
-            kappa_smooth[i] = 1.0*sigma_s / self.sigma_crit[i]
+            self.smooth_kappas[i] = 1.0*sigma_s / self.sigma_crit[i]
 
-        return kappa_smooth
+        return self.smooth_kappas
+
+    def halo_density(self,z):
+        '''
+        Returns the halo mass density at the given redshift slice.
+        '''
+        return np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
 
     def int_over_z(self,z1,z2=0.):
         '''
@@ -676,6 +687,28 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Plotting
 # ----------------------------------------------------------------------------
+
+    def plot_kappas(self):
+        '''
+        Compares the halo, foreground, and smooth-component kappas at each
+        redshift slice.
+        '''
+        assert self.galaxies['kappa'] is not None
+        if self.smooth_kappas is None:
+            self.smooth_kappas = self.smooth_corr_kappas()
+
+        kappa = self.galaxies['kappa']
+        kappa_s = self.smooth_kappas
+        redshifts = self.redshifts
+
+        plt.plot(self.galaxies['z_sz'],kappa,'og',label='Individual Kappas')
+        plt.plot(redshifts,kappa_s,'ob',label='Smooth-component Kappas')
+        plt.xlabel('Redshift (z)',fontsize=16)
+        plt.ylabel(r'$\kappa$',fontsize=16)
+        plt.legend()
+        plt.show()
+
+        return
 
     def plotFieldOfView(self,quantity,AX):
 
