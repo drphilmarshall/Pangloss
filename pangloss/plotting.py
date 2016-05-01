@@ -444,6 +444,81 @@ def reject_outliers(data, m=5):
     '''
     return data[abs(data - np.mean(data)) < m * np.std(data)], abs(data - np.mean(data)) < m * np.std(data)
 
+def plot_densities(foreground,lightcone,density_type='volume'):
+    '''
+    Plots the universe's mass density, halo mass density, and smooth-component mass density
+    as a function of redshift.
+    '''
+
+    # Use the cosmology defined by the lightcone
+    cosmo = lightcone.cosmo
+    redshifts = lightcone.redshifts
+    N = np.size(redshifts)
+
+    D = pangloss.Distance(cosmo)
+
+    rho_m = np.zeros(N)
+    rho_h = np.zeros(N)
+    rho_s = np.zeros(N)
+    sigma_m = np.zeros(N)
+    sigma_h = np.zeros(N)
+    sigma_s = np.zeros(N)
+
+    # Calculate the universe's mean mass density at each redshift slice
+    for i in range(N):
+        z = redshifts[i]
+        rho_m[i] = D.mean_mass_density(z) # M_sol/Mpc^3
+        rho_h[i] = lightcone.halo_density(z) # M_sol/Mpc^3
+        rho_s[i] = rho_m[i] - rho_h[i] # M_sol/Mpc^3
+
+        if density_type == 'surface':
+            sigma_m[i] = rho_m[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
+            sigma_h[i] = rho_h[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
+            sigma_s[i] = rho_s[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
+
+    # Set up density axis
+    fig, ax_rho = plt.subplots()
+    plt.xlabel('Redshift (z)',fontsize='14')
+    plt.xticks(fontsize=14)
+
+    # Plot densities
+    if density_type == 'volume':
+        plt.plot(redshifts,rho_m,'--k',linewidth=2,label='Universe Mean Density',zorder=10)
+        plt.plot(redshifts,rho_h,'--og',label='Foreground Halos',zorder=10)
+        plt.plot(redshifts,rho_s,'--ob',label='Smooth-Component',zorder=10)
+        degree = 3
+    elif density_type == 'surface':
+        # Critical surface density
+        sigma_crit = lightcone.sigma_crit
+        plt.plot(redshifts,sigma_crit,'--r',linewidth=2,label='Sigma_crit',zorder=10)
+        plt.plot(redshifts,sigma_s,'--ob',label='Sigma_s',zorder=10)
+        plt.plot(redshifts,sigma_h,'--og',label='Sigma_h',zorder=10)
+        degree = 2
+
+    plt.yticks(fontsize=14)
+    plt.yscale('log')
+    ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize='16')
+    plt.legend()
+
+    # Set up histogram axis
+    ax_hist = ax_rho.twinx()
+
+    # Plot histogram
+    plt.hist(lightcone.galaxies['z_sz'],50,normed=False,facecolor='green', alpha=0.1,zorder=1)
+    plt.yscale('log')
+    ax_hist.set_ylabel('Galaxy Count', color='g',fontsize='16')
+    plt.yticks(fontsize=14)
+
+    # Match axis label colors to plot colors
+    #for tl in ax_rho.get_yticklabels(): tl.set_color('b')
+    for tl in ax_hist.get_yticklabels():  tl.set_color('g')
+
+    plt.gca().text(0.1,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+
+    plt.show()
+
+    return
+
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.
