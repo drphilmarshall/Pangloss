@@ -490,6 +490,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     elif density_type == 'surface':
         # Critical surface density
         sigma_crit = lightcone.sigma_crit
+        plt.plot(redshifts,sigma_m,'--k',linewidth=2,label='Universe Mean Density',zorder=10)
         plt.plot(redshifts,sigma_crit,'--r',linewidth=2,label='Sigma_crit',zorder=10)
         plt.plot(redshifts,sigma_s,'--ob',label='Sigma_s',zorder=10)
         plt.plot(redshifts,sigma_h,'--og',label='Sigma_h',zorder=10)
