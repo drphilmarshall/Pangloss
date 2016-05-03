@@ -549,7 +549,6 @@ class Lightcone(object):
 
             # Mean mass density at given z for assumed cosmology
             rho_m = D.mean_mass_density(z) # M_sol/Mpc^3
-            #rho_m = ( 3*H_0**2 / (8*np.pi*G) ) * (1+z)**3 # M_sol/Mpc^3
 
             # Halo mass density in this lightcone at this z
             rho_h = self.halo_density(z) # M_sol/Mpc^3
@@ -582,7 +581,7 @@ class Lightcone(object):
         # Important parameters
         omega_m0 = self.cosmo[0]
         omega_l0 = self.cosmo[1]
-        omega_k = 1 - (omega_m0 + omega_l0)
+        omega_k = 1. - (omega_m0 + omega_l0)
         h = self.cosmo[2]
         H_0 = 100.*h # km/s/Mpc
         c = 299792.458 # km/s
@@ -592,7 +591,7 @@ class Lightcone(object):
         D = pangloss.Distance(self.cosmo)
 
         # Integrand for proper volume
-        f = lambda z,o_m,o_l,o_k: (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1+z) )
+        f = lambda z,o_m,o_l,o_k: (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
         return Dh * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # Mpc^3
 
 
@@ -610,7 +609,7 @@ class Lightcone(object):
         else: z1, z2 = z-delta_z, z+delta_z
 
         # Solid angle of cone with apex angle of lightcone diameter:
-        solid_angle = 2*pi*( 1-np.cos(self.rmax*pangloss.arcmin2rad) )
+        solid_angle = 2.*np.pi*( 1.-np.cos(self.rmax*pangloss.arcmin2rad) )
 
         # Return proper volume of redshift slice
         return solid_angle * self.int_over_z(z1,z2) # Mpc^3
