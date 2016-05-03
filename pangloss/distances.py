@@ -144,4 +144,4 @@ class Distance:
         if ok != 0:
             print 'Warning: mean mass density calculation only valid for Omega_k=0 !'
 
-        return ( ( 3.*H_0**2 ) / (8.*pi*G) ) * (1.+z)**3 # M_sol/Mpc^3
+        return ( ( 3.*H_0**2*om ) / (8.*pi*G) ) * (1.+z)**3 # M_sol/Mpc^3
