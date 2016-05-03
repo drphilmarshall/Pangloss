@@ -499,7 +499,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     plt.yticks(fontsize=14)
     plt.yscale('log')
     ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize='16')
-    plt.legend()
+    plt.legend(loc=2)
 
     # Set up histogram axis
     ax_hist = ax_rho.twinx()
@@ -514,7 +514,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     #for tl in ax_rho.get_yticklabels(): tl.set_color('b')
     for tl in ax_hist.get_yticklabels():  tl.set_color('g')
 
-    plt.gca().text(0.1,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    plt.gca().text(0.25,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
     plt.show()
 
