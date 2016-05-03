@@ -106,7 +106,7 @@ and so we may write the non-relativistic mass density of the universe as a funct
 \rho_m(z)\approx\left(\frac{3H_0^2}{8\pi G}\,\Omega_{m,0}\right)(1+z)^3.
 \end{equation}
 
-Current \texttt{Pangloss} code assumes a cosmology of $\Omega_{m,0}=0.25$, $\Omega_{\Lambda,0}=0.75$ (to ensure a flat universe), and $H_0=73$ km$\cdot$s$^{-1}\cdot$Mpc$^{-1}$ (\textcolor{red}{Were these values chosen to match the original Millennium Simulation parameters? A later run that Stefan used for his ray tracing? Known values when Collett et al. was published?}) which leads to an evolving mass density of
+Current \texttt{Pangloss} code assumes a cosmology of $\Omega_{m,0}=0.25$, $\Omega_{\Lambda,0}=0.75$ (to ensure a flat universe), and $H_0=73$ km$\cdot$s$^{-1}\cdot$Mpc$^{-1}$ which leads to an evolving mass density of
 
 \begin{equation}\label{rho}
 \rho_m(z)\approx\left(3.70\times10^{10}\frac{M_{\odot}}{\text{Mpc}^3}\right)(1+z)^3.
@@ -114,7 +114,7 @@ Current \texttt{Pangloss} code assumes a cosmology of $\Omega_{m,0}=0.25$, $\Ome
 
 \subsection*{Calculating $\bm{\rho_h(z)}$:}
 
-Now we must calculate $\rho_h(z)$ given the foreground catalogs of the Millennium Simulation. While each galaxy/halo are on a continuum of redshifts, we snap each halo to one of $N$ redshift planes from $z=0$ to the source redshift of $z_s=1.3857$, each separated by a constant $\Delta z=1.3857/N$ for faster computation (typically, $N=100$ and $\Delta z\approx0.014$). We can approximate $\rho_h$ at each of the $N$ redshift values by summing the halo masses and dividing by the integral the proper volume element $dV_p$ over the redshift range $z\pm \Delta z/2$ and solid angle $d\Omega$ covered by the foreground catalog. Figure \ref{rho_slice} visualizes this process.\\
+Now we must calculate $\rho_h(z)$ given the foreground catalogs of the Millennium Simulation. While each galaxy/halo are on a continuum of redshifts, we snap each halo to one of $N$ redshift planes from $z=0$ to the source redshift of $z_s=1.3857$, each separated by a constant $\Delta z=1.3857/N$ for faster computation (typically, $N=100$ and $\Delta z\approx0.014$). We can approximate $\rho_h$ at each of the $N$ redshift values by summing the halo masses and dividing by the integral the proper volume element $dV_p$ over the redshift range $z\pm \Delta z/2$ and solid angle $d\Omega$ covered by the lightcone. Figure \ref{rho_slice} visualizes this process.\\
 
 \begin{figure}[!ht]
   \centering
@@ -123,10 +123,10 @@ Now we must calculate $\rho_h(z)$ given the foreground catalogs of the Millenniu
   \label{rho_slice}
 \end{figure}
 
-From Figure \ref{rho_slice}, it is clear that we want a proper volume element that is expressed in terms of the solid angle $d\Omega$ (or really, $d\theta d\phi$) and the redshift $dz$. To do this, we can start with the standard spherical volume element $dV=r^2\sin(\theta)drd\theta d\phi$. However, we must be careful that (1) we are using proper distances, (2) account for the possibility of a curved universe, and (3) use the correct distance measure for $r$ (in this case, the angular diameter distance). From this we can gather that the proper volume element must have the form of
+From Figure \ref{rho_slice}, it is clear that we want a proper volume element that is expressed in terms of the solid angle $d\Omega$ and the redshift $dz$. To do this, we can start with the standard spherical volume element $dV=r^2drd\Omega$. However, we must be careful that (1) we are using proper distances, (2) account for the possibility of a curved universe, and (3) use the correct distance measure for $r$ (in this case, the angular diameter distance). From this we can gather that the proper volume element must have the form of
 
 \begin{equation}\label{proper_element}
-dV_p=dr_pdA=d_A(z)^2dr_pd\omega=d_A(z)^2\sin(\theta)dr_pd\theta d\phi
+dV_p=d_A(z)^2dr_pd\Omega
 \end{equation}
 % and $r_a$ is the angular diameter distance 
 where $d_A(z)$ is the angular diameter distance and the subscript $p$ denotes proper distance. When the angular diameter distance $d_A(z)$ is multiplied by an angle (i.e. $d_A(z)d\theta$ and $d_A(z)d\phi$), it gives an approximation of the proper distance between two objects at the same redshift. $d_A(z)$ can be expressed in terms of the transverse comoving distance $d_M(z)$,
@@ -162,7 +162,7 @@ E(z)=\sqrt{\Omega_m(1+z)^3+\Omega_k(1+z)^2+\Omega_\Lambda}.
 Substituting Equation \eqref{angular2transverse} into \eqref{proper_element} leads to
 
 \begin{equation}\label{temp_solution}
-dV_p=d_a(z)^2\sin(\theta)dr_pd\theta d\phi=\left(\frac{d_m(z)}{(1+z)}\right)^2\sin(\theta)dr_pd\theta d\phi=\frac{d_m(z)^2\sin(\theta)}{(1+z)^2}dr_pd\theta d\phi
+dV_p=d_a(z)^2dr_pd\Omega=\left(\frac{d_m(z)}{(1+z)}\right)^2dr_pd\Omega=\frac{d_m(z)^2}{(1+z)^2}dr_pd\Omega
 \end{equation}
 
 and so all that remains is to express $dr_p$ in terms of $dz$. As the LOS proper distance between two objects $r_p(z)$ is related to the LOS comoving distance $d_C(z)$ by
@@ -180,29 +180,29 @@ dr_p=\frac{d_H}{E(z)(1+z)}dz.
 Combining this result with Equation \eqref{temp_solution} leads to the desired proper volume element given by
 
 \begin{align}
-dV_p&=\frac{d_m(z)^2\sin(\theta)}{(1+z)^2}dr_pd\theta d\phi\nonumber\\
-&=\frac{d_m(z)^2\sin(\theta)}{(1+z)^2}\left(\frac{d_H}{E(z)(1+z)}dz\right)d\theta d\phi\nonumber\\
-&=\frac{d_Hd_M(z)^2\sin(\theta)}{E(z)(1+z)^3}dzd\theta d\phi.
+dV_p&=\frac{d_m(z)^2}{(1+z)^2}dr_pd\Omega\nonumber\\
+&=\frac{d_m(z)^2}{(1+z)^2}\left(\frac{d_H}{E(z)(1+z)}dz\right)d\Omega\nonumber\\
+&=\frac{d_Hd_M(z)^2}{E(z)(1+z)^3}dzd\Omega.
 \end{align}
 
-We can calculate the proper volume of a given grid slice at redshift $z$ in a foreground catalog centered at ($\theta,\phi$) by integrating the above volume element over the $\Delta z$, $\Delta\theta$, and $\Delta\phi$ range of the redshift slice:
+We can calculate the proper volume of the lightcone a given grid slice at redshift $z$ in a foreground catalog centered at ($\theta,\phi$) by integrating the above volume element over the solid angle $d\Omega$ and $\Delta z$ range of the redshift slice:
 
 \begin{equation}
-V(z)=\int_{V_z}dV_p=d_H\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}}\int_{\theta-\frac{\Delta\theta}{2}}^{\theta+\frac{\Delta\theta}{2}}\int_{\phi-\frac{\Delta\phi}{2}}^{\phi+\frac{\Delta\phi}{2}} \frac{d_M(z^\prime)^2\sin(\theta^\prime)}{E(z^\prime)(1+z^\prime)^3}dz^\prime d\theta^\prime d\phi^\prime.
+V(z)=\int_{V_z}dV_p=d_H\int_\Omega\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime d\Omega.
 \end{equation}
 
-Integrating over $d\theta^\prime$ and $d\phi^\prime$ and using the trig identity ${\cos(u)-\cos(v)=-2\sin\left(\frac{u+v}{2}\right)\sin\left(\frac{u-v}{2}\right)}$ gives
+Integrating over $d\Omega$ results in the solid angle of a cone given by $\Omega=2\pi(1-\cos\theta)$, so the previous equation becomes
 
 \begin{equation}\label{volume_final}
-V(z)=2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime
+V(z)=2\pi(1-\cos\theta)d_H\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime
 \end{equation}
 
-which is our final expression for the proper volume.\\
+which is our final equation for the proper volume.\\
 
 With the proper volume calculated, the halo mass density $\rho_h(z)$ is simply the sum of the individual halo masses $M_{i,z}$ in the $z$-plane divided by Equation \eqref{volume_final}:
 
 \begin{equation}\label{rho_h}
-\rho_h(z)=\frac{\sum_i M_{i,z}}{V(z)}=\frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}.
+\rho_h(z)=\frac{\sum_i M_{i,z}}{V(z)}=\frac{\sum_i M_{i,z}}{2\pi(1-\cos\theta)d_H\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}.
 \end{equation}
 
 \subsection*{Calculating $\bm{\rho_s(z)}$:}
@@ -211,7 +211,7 @@ Now that $\rho_m(z)$ and $\rho_h(z)$ have been calculated, the smooth-component 
 
 \begin{align}\label{smooth_component} 
 \rho_s(z)&=\rho_m(z)-\rho_h(z)\nonumber\\
-&=\left(\frac{3H_0^2}{8\pi G}\,\Omega_{m,0}\right)(1+z)^3 - \frac{\sum_i M_{i,z}}{2d_H\Delta\phi\sin(\theta)\sin(\Delta\theta/2)\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}
+&=\left(\frac{3H_0^2}{8\pi G}\,\Omega_{m,0}\right)(1+z)^3 - \frac{\sum_i M_{i,z}}{2\pi(1-\cos\theta)d_H\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \frac{d_M(z^\prime)^2}{E(z^\prime)(1+z^\prime)^3}dz^\prime}
 \end{align}
 
 where $\rho_s(z)$ is a discrete function only evaluated at the $N$ values of $z$. Finally, note that this equation needs a small correction in the integral bounds for the boundary cases of $z=0$ and $z=1.3857$. Simply change the bounds to ($0,\Delta z$) and ($z-\Delta z,z$) respectively.
