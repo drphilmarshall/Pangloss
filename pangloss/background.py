@@ -21,6 +21,9 @@ import pangloss
 # Verbose
 vb = True
 
+# Record CPU time per lightcone?
+time = True
+
 # ============================================================================
 
 class BackgroundCatalog(pangloss.Catalog):
@@ -272,7 +275,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False):
+    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,smooth_corr=False,foreground_corr=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -310,7 +313,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Calculate lensing in each lightcone:
         for lightcone in self.lightcones:
-            start_time = timeit.default_timer()
+            if time is True: start_time = timeit.default_timer()
             if lightcone.ID%counter == 0 and vb is True:
                 print lightcone.ID,' ',np.ceil(100*lightcone.ID/self.galaxy_count),'%'
 
@@ -344,7 +347,12 @@ class BackgroundCatalog(pangloss.Catalog):
                 lightcone.makeKappas(truncationscale=10)
 
             # Combine all contributions into a single kappa and gamma for the lightcone
-            lightcone.combineKappas(methods=methods)
+            if foreground_corr is True:
+                # Implement foreground correction using calcualted mean foreground kappas
+                lightcone.combineKappas(methods=methods,smooth_corr=smooth_corr,foreground_kappas=self.foreground_kappas)
+            else:
+                # No foreground correction - simply add all kappas
+                lightcone.combineKappas(methods=methods,smooth_corr=smooth_corr)
 
             # Populate the kappa and gamma values using the 'use_method'
             if use_method == 'add' :
@@ -365,13 +373,19 @@ class BackgroundCatalog(pangloss.Catalog):
                 gamma1[lightcone.ID] = lightcone.gamma1_tom_total
                 gamma2[lightcone.ID] = lightcone.gamma2_tom_total
 
-            elapsed = timeit.default_timer() - start_time
-            runtimes[lightcone.ID] = elapsed
+            if time is True:
+                elapsed = timeit.default_timer() - start_time
+                runtimes[lightcone.ID] = elapsed
 
             assert lightcone.galaxy_count == len(lightcone.galaxies)
 
-        if vb is True:
+        if vb and time is True:
             print 'average CPU time per background galaxy: ',np.mean(runtimes),'+/-',np.std(runtimes)
+
+        # Calculate mean/std relevant galaxies per lightcone
+        self.relevant_counts = [lightcone.galaxy_count for lightcone in self.lightcones]
+        self.mean_relevant_halos = np.mean(self.relevant_counts)
+        self.std_relevant_halos = np.std(self.relevant_counts)
 
         #-------------------------------------------------------------------------------------
         # Use the halo model's kappa and gamma values to compute the new galaxy ellipticities
@@ -526,6 +540,9 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Only take the columns from foreground that are needed for a lightcone
         lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
+
+        # Save mean kappas in foreground redshift slices for foreground correction
+        self.foreground_kappas = foreground.mean_kappas
         del foreground
 
         # Set the counter to be 10%
@@ -546,7 +563,7 @@ class BackgroundCatalog(pangloss.Catalog):
             # Create the redshift scaffolding for lightcone i:
             self.lightcones[i].defineSystem(self.zl,self.zs)
             self.lightcones[i].loadGrid(self.grid)
-            self.lightcones[i].snapToGrid(self.grid)
+            self.lightcones[i].snapToGrid(self.grid,self.foreground_kappas)
 
             # Set relevance of each foreground object in the lightcone for lensing
             self.set_relevance(self.lightcones[i])

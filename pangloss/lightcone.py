@@ -4,6 +4,7 @@ import pangloss
 
 import cPickle, gc
 import numpy as np
+import scipy as sp
 import pylab as plt
 from math import pi
 from astropy.table import Column
@@ -132,6 +133,8 @@ class Lightcone(object):
 
         if self.flavor == 'simulated':
             # Take the log of the halo mass, and set up the parameter array:
+            zero = np.sum(self.galaxies['Mhalo_obs']==0)
+            if zero != 0: print 'There are {} galaxies with subhalo mass = 0'.format(zero)
             self.writeColumn('Mh_obs',np.log10(self.galaxies['Mhalo_obs']))
             self.writeColumn('Mh',self.galaxies['Mh_obs']*1.0)
             # Stellar masses will be added by drawMstars
@@ -144,6 +147,9 @@ class Lightcone(object):
 
         if len(self.galaxies) == 0:
             print "Lightcone: WARNING: no galaxies here!"
+
+        # No smooth-component correction kappas until set!
+        self.smooth_kappas = None
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -306,15 +312,25 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Snap the parameters z onto the grid, to speed up calculations:
 
-    def snapToGrid(self, Grid):
+    def snapToGrid(self, Grid,foreground_kappas=None):
         z = self.galaxies['z']
         sz,p = Grid.snap(z)
+        self.sigma_crit = Grid.sigma_crit
+        self.writeColumn('z_sz',sz)
         self.writeColumn('Da_p',Grid.Da_p[p])
         self.writeColumn('rho_crit',Grid.rho_crit[p])
         self.writeColumn('sigma_crit',Grid.sigma_crit[p])
         self.writeColumn('beta',Grid.beta[p])
         rphys = self.galaxies['r']*pangloss.arcmin2rad*self.galaxies['Da_p']
         self.writeColumn('rphys',rphys)
+
+        # Write foreground mean kappas for foreground correction (0 if foreground kappas not inputed)
+        if foreground_kappas is None:
+            f_kappa = np.zeros(np.size(z))
+        else:
+            self.foreground_kappas = foreground_kappas
+            f_kappa = foreground_kappas[p]
+        self.writeColumn('f_kappa',f_kappa)
 # ----------------------------------------------------------------------------
 # Given Mhalo and z, draw an Mstar, and an identical Mstar_obs:
 
@@ -401,6 +417,7 @@ class Lightcone(object):
 
         #phi = self.galaxies['phi']
         kappa = 1.0*self.kappa_s*F
+
         gamma = 1.0*self.kappa_s*(G-F)
         gamma1 = gamma*np.cos(2*self.galaxies['phi'])
         gamma2 = gamma*np.sin(2*self.galaxies['phi'])
@@ -418,7 +435,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def combineKappas(self,methods=['add','keeton','tom']):
+    def combineKappas(self,methods=['add','keeton','tom'],smooth_corr=False,foreground_kappas=None):
 
         # If a single string is passed for methods, place it in a list
         if type(methods) != list:
@@ -452,6 +469,13 @@ class Lightcone(object):
                 self.gamma1_keeton_total=np.sum(self.galaxies['gamma1_keeton'])
                 self.gamma2_keeton_total=np.sum(self.galaxies['gamma2_keeton'])
 
+                if foreground_kappas is not None:
+                    # If foreground kappas are passed, implement foreground correction
+                    self.kappa_keeton_total -= np.sum(foreground_kappas)
+
+                if smooth_corr is True:
+                    self.kappa_keeton_total += self.smooth_corr_kappas()
+
             if method == 'tom':
                 # Calculate the 'tom' convergence and shear for each galaxy in the lightcone
                 kappa_tom  = (1.-B) * K
@@ -468,9 +492,17 @@ class Lightcone(object):
                 self.gamma1_tom_total=np.sum(self.galaxies['gamma1_tom'])
                 self.gamma2_tom_total=np.sum(self.galaxies['gamma2_tom'])
 
+                if foreground_kappas is not None:
+                    # If foreground kappas are passed, implement foreground correction
+                    self.kappa_tom_total -= np.sum(foreground_kappas)
+
+                if smooth_corr is True:
+                    self.kappa_tom_total += self.smooth_corr_kappas()
+
 
             if method == 'add':
                 # Calculate the convergence and shear for each galaxy in the lightcone
+                ## Why are these necessary ?? Should check if we can delete
                 self.writeColumn('kappa_add',K)
                 self.writeColumn('gamma1_add',G1)
                 self.writeColumn('gamma2_add',G2)
@@ -480,7 +512,124 @@ class Lightcone(object):
                 self.gamma1_add_total=np.sum(self.galaxies['gamma1'])
                 self.gamma2_add_total=np.sum(self.galaxies['gamma2'])
 
+                if foreground_kappas is not None:
+                    # If foreground kappas are passed, implement foreground correction
+                    self.kappa_add_total -= np.sum(foreground_kappas)
+
+                if smooth_corr is True:
+                    self.kappa_add_total += np.sum(self.smooth_corr_kappas())
+
         return
+
+    #----------------------------------------------------------------------------
+    # Functions used to calculate matter densities and the smooth-component correction
+
+    def smooth_corr_kappas(self):
+        '''
+        Calculates the smooth-component correction kappas, which account for the additional mass
+        in the Millennium Simulation that is not in the form of stellar mass, halos, or
+        subhalos. For details, see void_correction.pdf in `pangloss/doc`.
+        '''
+
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+
+        # Useful functions
+        D = pangloss.Distance(self.cosmo)
+
+        self.smooth_kappas = np.zeros(np.size(redshifts))
+
+        # Calculate the smooth-component correction at each redshift slice
+        for i in range(np.size(redshifts)):
+            z = redshifts[i]
+            # z-range is z +/- delta_z (except at boundaries)
+            if z == redshifts[0]: z1, z2 = z, z+delta_z
+            elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+            else: z1, z2 = z-delta_z, z+delta_z
+
+            # Mean mass density at given z for assumed cosmology
+            rho_m = D.mean_mass_density(z) # M_sol/Mpc^3
+
+            # Halo mass density in this lightcone at this z
+            rho_h = self.halo_density(z) # M_sol/Mpc^3
+
+            # Smooth-component mass density is difference between mean mass and halo mass
+            rho_s = rho_m - rho_h # M_sol/Mpc^3
+
+            # Projected mass density found by integrating over z in redshift slice
+            sigma_s = self.slice_sigma(rho_s,z)
+
+            # Smooth-component kappa correction at redshift z:
+            self.smooth_kappas[i] = 1.0*sigma_s / self.sigma_crit[i]
+
+        return self.smooth_kappas
+
+    def halo_density(self,z):
+        '''
+        Returns the halo mass density at the given redshift slice.
+        '''
+        assert z in self.redshifts
+        return np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
+
+    def slice_proper_volume(self,z):
+        '''
+        Calculate proper volume of redshift slice at z in Mpc^3. Details in `pangloss/doc/void_correction.pdf`.
+        '''
+
+        # Important parameters
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+        omega_m0 = self.cosmo[0]
+        omega_l0 = self.cosmo[1]
+        omega_k = 1. - (omega_m0 + omega_l0)
+        h = self.cosmo[2]
+        H_0 = 100.*h # km/s/Mpc
+        c = 299792.458 # km/s
+        Dh = c/H_0 # Hubble distance in Mpc
+
+        # Useful distance functions
+        D = pangloss.Distance(self.cosmo)
+
+        # z-range is z +/- delta_z (except at boundaries)
+        assert z in redshifts
+        if z == redshifts[0]: z1, z2 = z, z+delta_z
+        elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+        else: z1, z2 = z-delta_z, z+delta_z
+
+        # Solid angle of cone with apex angle of lightcone diameter:
+        solid_angle = 2.*np.pi*( 1.-np.cos(self.rmax*pangloss.arcmin2rad) )
+
+        # Integrand for proper volume
+        f = lambda z,o_m,o_l,o_k: Dh * (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
+
+        # Return proper volume of redshift slice
+        return solid_angle * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # M_sol/Mpc^3
+
+    def slice_sigma(self,rho,z):
+        '''
+        Calculates the projected surface mass density of rho(z) for the z slice.
+        '''
+
+        # Important parameters
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+        omega_m0 = self.cosmo[0]
+        omega_l0 = self.cosmo[1]
+        omega_k = 1. - (omega_m0 + omega_l0)
+        h = self.cosmo[2]
+        H_0 = 100.*h # km/s/Mpc
+        c = 299792.458 # km/s
+        Dh = c/H_0 # Hubble distance in Mpc
+
+        # z-range is z +/- delta_z (except at boundaries)
+        assert z in redshifts
+        if z == redshifts[0]: z1, z2 = z, z+delta_z
+        elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+        else: z1, z2 = z-delta_z, z+delta_z
+
+        f = lambda z,o_m,o_l,o_k: Dh / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
+
+        return rho * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # M_sol/Mpc^2
 
 # ----------------------------------------------------------------------------
 # Calculate magnification along line of sight
@@ -554,6 +703,28 @@ class Lightcone(object):
 # ----------------------------------------------------------------------------
 # Plotting
 # ----------------------------------------------------------------------------
+
+    def plot_kappas(self):
+        '''
+        Compares the halo, foreground, and smooth-component kappas at each
+        redshift slice.
+        '''
+        assert self.galaxies['kappa'] is not None
+        if self.smooth_kappas is None:
+            self.smooth_kappas = self.smooth_corr_kappas()
+
+        kappa = self.galaxies['kappa']
+        kappa_s = self.smooth_kappas
+        redshifts = self.redshifts
+
+        plt.plot(self.galaxies['z_sz'],kappa,'og',label='Individual Kappas')
+        plt.plot(redshifts,kappa_s,'ob',label='Smooth-component Kappas')
+        plt.xlabel('Redshift (z)',fontsize=16)
+        plt.ylabel(r'$\kappa$',fontsize=16)
+        plt.legend()
+        plt.show()
+
+        return
 
     def plotFieldOfView(self,quantity,AX):
 

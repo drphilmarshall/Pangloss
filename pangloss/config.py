@@ -99,6 +99,8 @@ class Configuration(object):
 
         # Calibration catalogs and kappa maps must come in pairs...
         if self.parameters['CalibrationKappamaps'] != None:
+            print self.parameters['CalibrationCatalogs']
+            print self.parameters['CalibrationKappamaps']
             assert len(self.parameters['CalibrationCatalogs']) == \
                   len(self.parameters['CalibrationKappamaps']), \
                   "There are {} catalog(s), but {} kappa map(s)! Should be equal.".format( \
