@@ -542,7 +542,7 @@ class Lightcone(object):
         # Calculate the smooth-component correction at each redshift slice
         for i in range(np.size(redshifts)):
             z = redshifts[i]
-            # z-range is (z +/- delta_z except for at boundary)
+            # z-range is z +/- delta_z (except at boundaries)
             if z == redshifts[0]: z1, z2 = z, z+delta_z
             elif z == redshifts[-1]: z1, z2 = z-delta_z, z
             else: z1, z2 = z-delta_z, z+delta_z
@@ -557,7 +557,7 @@ class Lightcone(object):
             rho_s = rho_m - rho_h # M_sol/Mpc^3
 
             # Projected mass density found by integrating over z in redshift slice
-            sigma_s = rho_s * self.int_over_z(z1,z2)
+            sigma_s = self.slice_sigma(rho_s,z)
 
             # Smooth-component kappa correction at redshift z:
             self.smooth_kappas[i] = 1.0*sigma_s / self.sigma_crit[i]
@@ -568,17 +568,17 @@ class Lightcone(object):
         '''
         Returns the halo mass density at the given redshift slice.
         '''
+        assert z in self.redshifts
         return np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
 
-    def int_over_z(self,z1,z2=0.):
+    def slice_proper_volume(self,z):
         '''
-        Integrates the z-component of the proper volume element. Used in smooth-component
-        void correction. Details in `pangloss/doc/void_correction.pdf`.
+        Calculate proper volume of redshift slice at z in Mpc^3. Details in `pangloss/doc/void_correction.pdf`.
         '''
-        # If only one redshift is passed...
-        if z2<z1: z1,z2 = z2,z1
 
         # Important parameters
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
         omega_m0 = self.cosmo[0]
         omega_l0 = self.cosmo[1]
         omega_k = 1. - (omega_m0 + omega_l0)
@@ -590,20 +590,8 @@ class Lightcone(object):
         # Useful distance functions
         D = pangloss.Distance(self.cosmo)
 
-        # Integrand for proper volume
-        f = lambda z,o_m,o_l,o_k: (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
-        return Dh * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # Mpc^3
-
-
-    def slice_proper_volume(self,z):
-        '''
-        Calculate proper volume of redshift slice at z in Mpc^3. Details in `pangloss/doc/void_correction.pdf`.
-        '''
-
-        redshifts = self.redshifts
-        delta_z = self.dz/2.0
-
-        # z-range is (z +/- delta_z except for at boundary)
+        # z-range is z +/- delta_z (except at boundaries)
+        assert z in redshifts
         if z == redshifts[0]: z1, z2 = z, z+delta_z
         elif z == redshifts[-1]: z1, z2 = z-delta_z, z
         else: z1, z2 = z-delta_z, z+delta_z
@@ -611,8 +599,37 @@ class Lightcone(object):
         # Solid angle of cone with apex angle of lightcone diameter:
         solid_angle = 2.*np.pi*( 1.-np.cos(self.rmax*pangloss.arcmin2rad) )
 
+        # Integrand for proper volume
+        f = lambda z,o_m,o_l,o_k: Dh * (D.angular_diameter_distance(0,z)**2) / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
+
         # Return proper volume of redshift slice
-        return solid_angle * self.int_over_z(z1,z2) # Mpc^3
+        return solid_angle * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # M_sol/Mpc^3
+
+    def slice_sigma(self,rho,z):
+        '''
+        Calculates the projected surface mass density of rho(z) for the z slice.
+        '''
+
+        # Important parameters
+        redshifts = self.redshifts
+        delta_z = self.dz/2.0
+        omega_m0 = self.cosmo[0]
+        omega_l0 = self.cosmo[1]
+        omega_k = 1. - (omega_m0 + omega_l0)
+        h = self.cosmo[2]
+        H_0 = 100.*h # km/s/Mpc
+        c = 299792.458 # km/s
+        Dh = c/H_0 # Hubble distance in Mpc
+
+        # z-range is z +/- delta_z (except at boundaries)
+        assert z in redshifts
+        if z == redshifts[0]: z1, z2 = z, z+delta_z
+        elif z == redshifts[-1]: z1, z2 = z-delta_z, z
+        else: z1, z2 = z-delta_z, z+delta_z
+
+        f = lambda z,o_m,o_l,o_k: Dh / ( (o_m*(1.+z)**3+o_k*(1.+z)**2+o_l)**0.5 * (1.+z) )
+
+        return rho * sp.integrate.romberg(f,z1,z2,(omega_m0,omega_l0,omega_k)) # M_sol/Mpc^2
 
 # ----------------------------------------------------------------------------
 # Calculate magnification along line of sight
