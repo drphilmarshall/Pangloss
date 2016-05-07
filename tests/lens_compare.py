@@ -6,6 +6,7 @@ import os,sys
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import cmath, cProfile
+import copy
 import cPickle as pickle
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
@@ -18,11 +19,17 @@ pickle = False
 # Turn on for relevance plots
 rel_plots = False
 
-# Turn on for void correction plots
-void_plots = True
+# Turn on for smooth-component correction plots
+smooth_plots = True
 
 # Turn on for plotting correlation function plots
-corr_plots = False
+corr_plots = True
+
+# Turn on for plotting correlation function comparrison plots for relevant halos
+rel_compare = False
+
+# Turn on for plotting correlation function comparrison plots for smooth-component correctoin
+smooth_compare = False
 
 # Turn on for plotting maps
 maps = False
@@ -41,7 +48,7 @@ S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_pl
 if vb is True: print('Loading foreground catalog...')
 config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
 F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
-#if void_plots is True: F.plot_mean_kappas()
+#if smooth_plots is True: F.plot_mean_kappas()
 
 # Generate Background Catalog in the middle of the (0,0,0,0) field
 if vb is True: print('Generating background catalog...')
@@ -49,9 +56,9 @@ if vb is True: print('Generating background catalog...')
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
 #d = [1.65,1.35,-1.65,-1.35]
-d = [1.55,1.45,-1.55,-1.45]
-#d = [1.6,1.4,-1.6,-1.4]
-#d = [1.55,1.48,-1.55,-1.48]
+d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
+#d = [1.55,1.45,-1.55,-1.45]
+#d = [1.55,1.48,-1.55,-1.48] # 176 galaxies
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
@@ -63,7 +70,13 @@ print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
 if vb is True: print('Drilling lightcones...')
-B.drill_lightcones(radius=4.0,foreground=F,save=False)
+lc_radius = 6.0
+B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
+
+# Save copy of background lightcones for relevant halos:
+if rel_compare is True: B_rel = copy.deepcopy(B)
+# Save copy of background lightcones for smooth-comp correction halos:
+if smooth_compare is True: B_smooth = copy.deepcopy(B)
 
 # Calculate mean/std galaxies per lightcone
 galaxy_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
@@ -74,15 +87,24 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
 relevance_lim = 0.0
-#relevance_lim = 0.00005
+#relevance_lim = 0.00001
 #cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=False)
-
-# Calculate mean/std relevant galaxies per lightcone (now done in makeKappas!!)
-##relevant_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
-##mean_relevant = np.mean(relevant_counts)
-##std_relevant = np.std(relevant_counts)
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=True)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
+
+if rel_compare is True:
+    # Lens the background catalog using only relevant foreground halos
+    if vb is True: print('Lensing background by relevant halos..')
+    relevance_lim2 = 0.00001 # ~60 galaxies/lightcone
+    B_rel.lens_by_halos(relevance_lim=relevance_lim2,lookup_table=True)
+    mean_rel =  B_rel.mean_relevant_halos
+    std_rel = B_rel.std_relevant_halos
+    print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(mean_rel,std_rel)
+
+if smooth_compare is True:
+    # Lens the background catalog using smooth-component correction
+    if vb is True: print('Lensing background with smooth-component correction..')
+    B_smooth.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=True)
 
 # Plot 'relevance' distribution
 if relevance_lim == 0.0 and rel_plots is True:
@@ -100,7 +122,7 @@ if relevance_lim == 0.0 and rel_plots is True:
     plt.ylabel('Lightcone Count ({} total )'.format(B.galaxy_count),fontsize=16)
     plt.show()
 
-if void_plots is True:
+if smooth_plots is True:
     lc = B.lightcones[np.random.randint(0,B.galaxy_count)]
     lc.plot_kappas()
     pangloss.plotting.plot_densities(F,lc,density_type='surface')
@@ -113,6 +135,16 @@ if corr_plots is True:
     gg_halo = B.calculate_corr(corr_type='gg',lensed='halo',foreground=F)
     ng_map = B.calculate_corr(corr_type='ng',lensed='map',foreground=F)
     ng_halo = B.calculate_corr(corr_type='ng',lensed='halo',foreground=F)
+
+    if rel_compare is True:
+        # Calculate the correlation function using only most relevant halos
+        gg_halo_r = B_rel.calculate_corr(corr_type='gg',lensed='halo',foreground=F)
+        ng_halo_r = B_rel.calculate_corr(corr_type='ng',lensed='halo',foreground=F)
+
+    if smooth_compare is True:
+        # Calculate the correlation function using the smooth-component correction
+        gg_halo_s = B_smooth.calculate_corr(corr_type='gg',lensed='halo',foreground=F)
+        ng_halo_s = B_smooth.calculate_corr(corr_type='ng',lensed='halo',foreground=F)
 
     # Plot the correlation functions
     pangloss.plotting.plot_corr(gg_map,corr_type='gg',corr_comp='plus',lensed='map',color='green',galaxy_count=B.galaxy_count)
@@ -133,6 +165,22 @@ if corr_plots is True:
 
     chi2,n_sigma,percent_err,std_err = B.compare_corr(ng_halo,ng_map,corr_type='ng',corr_comp='real')
     print 'Galaxy-Galaxy correlation difference intrinsic to mapped:','chi^2: ',chi2,'n_sigma: ',n_sigma,'percent_err: ',percent_err,'+\-',std_err
+
+    if rel_compare is True:
+        # Compare the correlations for intrinsic, halos, and relevant halos
+        if vb is True: print('Comparing correlations (rel)...')
+        pangloss.plotting.compare_relevant_halos(gg_map,gg_halo,gg_halo_r,corr_type='gg',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
+        pangloss.plotting.compare_relevant_halos(ng_map,ng_halo,ng_halo_r,corr_type='ng',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
+
+    if smooth_compare is True:
+        # Compare the correlations for intrinsic, halos, and halos with smooth-component correction
+        if vb is True: print('Comparing correlations (smooth)...')
+        if rel_compare is False:
+            mean_rel =  None
+            std_rel = None
+        pangloss.plotting.compare_smooth_component(gg_map,gg_halo,gg_halo_s,corr_type='gg',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
+        pangloss.plotting.compare_smooth_component(ng_map,ng_halo,ng_halo_s,corr_type='ng',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
+
 
 # Plot a map near a lens
 if maps is True:
