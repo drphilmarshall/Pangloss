@@ -240,6 +240,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         elif lensed == 'map': label1 = 'Ray-Traced '
         elif lensed == 'halo': label1 = 'Halo Model '
         elif lensed == 'halo_rel': label1 = 'Most Relevant Halos '
+        elif lensed == 'halo_smooth': label1 = 'Smooth-Component Correction '
 
         # Create the correct component label and linestyle to be used in legend
         if corr_comp == 'plus':
@@ -289,6 +290,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         elif lensed == 'map': label1 = 'Ray-Traced '
         elif lensed == 'halo': label1 = 'Halo Model '
         elif lensed == 'halo_rel': label1 = 'Most Relevant Halos '
+        elif lensed == 'halo_smooth': label1 = 'Smooth-Component Correction '
 
         if corr_comp == 'real':
             # Plot real(xi) with a solid line
@@ -436,6 +438,105 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
 
     return
 
+def compare_smooth_component(corr_map,corr_halo,corr_smooth,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
+    '''
+    Plots a comparrison of the ray-traced/map correlation, halo model correlation, and halo model with smooth-component correction correlation.
+    '''
+
+    # Set max and min dtheta
+    min_sep = corr_map.min_sep
+    max_sep = corr_map.max_sep
+
+    if sep_units == 'arcmin':
+        min_sep = np.rad2deg(min_sep)*60
+        max_sep = np.rad2deg(max_sep)*60
+
+    elif sep_units == 'deg':
+        min_sep = np.rad2deg(min_sep)
+        max_sep = np.rad2deg(max_sep)
+
+    elif sep_units == 'rad':
+        min_sep = min_sep
+        max_sep = max_sep
+
+    dtheta = np.exp(corr_map.logr)
+
+    if corr_type == 'gg':
+        # Calculate percent error of relevant halos vs all halos
+        gg_percent_err = np.abs((corr_smooth.xip-corr_halo.xip)/corr_halo.xip)*100
+        # Reject outliers (error can get very large when corr is near 0)
+        gg_percent_err, indices = reject_outliers(gg_percent_err)
+        dtheta = dtheta[indices]
+        # Calculate mean/std percent error of relevant halos vs all halos
+        mean_gg_err = np.mean(gg_percent_err)
+        std_gg_err = np.std(gg_percent_err)
+        # Calculate mean Fraction for gg
+        gg_frac = corr_smooth.xip/corr_halo.xip
+        mean_gg_frac = np.mean(gg_frac)
+        std_gg_frac = np.std(gg_frac)
+        # Calculate RMSE
+        nrmse = np.sqrt( np.sum( (corr_smooth.xip - corr_halo.xip)**2 ) / np.size(corr_halo.xip) ) / np.sqrt( np.sum( corr_halo.xip**2 ) / np.size(corr_halo.xip) )
+        # Set correlation component for plotting
+        corr_comp = 'plus'
+
+    elif corr_type == 'ng':
+        # Calculate percent error of relevant halos vs all halos
+        ng_percent_err = np.abs((corr_smooth.xi-corr_halo.xi)/corr_halo.xi)*100
+        # Reject outliers (error can get very large when corr is near 0)
+        ng_percent_err, indices = reject_outliers(ng_percent_err)
+        dtheta = dtheta[indices]
+        # Calculate mean/std percent error of relevant halos vs all halos
+        mean_ng_err = np.mean(ng_percent_err)
+        std_ng_err = np.std(ng_percent_err)
+        # Calculate mean Fraction for ng
+        ng_frac = corr_smooth.xi/corr_halo.xi
+        mean_ng_frac = np.mean(ng_frac)
+        std_ng_frac = np.std(ng_frac)
+        # Calculate RMSE
+        nrmse = np.sqrt( np.sum( (corr_smooth.xi - corr_halo.xi)**2 ) / np.size(corr_halo.xi) ) / np.sqrt( np.sum( corr_halo.xi**2 ) / np.size(corr_halo.xi) )
+        # Set correlation component for plotting
+        corr_comp = 'real'
+
+    # Plot the correlation functions
+    #plt.subplot(2,1,1)
+    plot_corr(corr_map,corr_type=corr_type,corr_comp=corr_comp,lensed='map',color='green',galaxy_count=galaxy_count,radius=radius)
+    plot_corr(corr_halo,corr_type=corr_type,corr_comp=corr_comp,lensed='halo',color='purple')
+    plot_corr(corr_smooth,corr_type=corr_type,corr_comp=corr_comp,lensed='halo_smooth',color='blue',rel_halos=rel_halos)
+
+    '''
+    **Eventually change this to plot the percent change in correlation in respect to existing difference between maps
+    and halos without correction**
+    # Plot the percent error of all halos vs relevant halos at each separation distance
+    plt.subplot(2,1,2)
+    if corr_type == 'gg':
+        plt.plot(dtheta,gg_percent_err,'ob',label='Individual Error')
+        plt.plot([min_sep, max_sep],[mean_gg_err, mean_gg_err],'--b',label='Mean Error: {:.3}%'.format(mean_gg_err),linewidth=2)
+    if corr_type == 'ng':
+        plt.plot(dtheta,ng_percent_err,'ob',label='Individual Error')
+        plt.plot([min_sep, max_sep],[mean_ng_err, mean_ng_err],'--b',label='Mean Error: {:.3}%'.format(mean_ng_err),linewidth=2)
+    # Set plot settings
+    plt.xscale('log')
+    plt.gca().set_xlim(min_sep,max_sep)
+
+    # Make axis ticks larger
+    plt.gca().tick_params('both', length=5, width=1, which='major')
+    plt.gca().tick_params('both', length=5, width=1, which='minor')
+
+    # Set axes labels
+    plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
+    plt.ylabel('Percent Error',fontsize=20)
+    plt.legend(fontsize=18)
+
+    # State the NRMSE
+    plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    '''
+
+    plt.gcf().set_size_inches(10,10)
+    plt.show()
+
+    return
+
+
 def reject_outliers(data, m=5):
     '''
     Used in compare_relevant_halos() to reject percent error outliers that are
@@ -472,9 +573,9 @@ def plot_densities(foreground,lightcone,density_type='volume'):
         rho_s[i] = rho_m[i] - rho_h[i] # M_sol/Mpc^3
 
         if density_type == 'surface':
-            sigma_m[i] = rho_m[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
-            sigma_h[i] = rho_h[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
-            sigma_s[i] = rho_s[i]*lightcone.int_over_z(z) # M_sol/Mpc^2
+            sigma_m[i] = lightcone.slice_sigma(rho_m[i],z) # M_sol/Mpc^2
+            sigma_h[i] = lightcone.slice_sigma(rho_h[i],z) # M_sol/Mpc^2
+            sigma_s[i] = lightcone.slice_sigma(rho_s[i],z) # M_sol/Mpc^2
 
     # Set up density axis
     fig, ax_rho = plt.subplots()
