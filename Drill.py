@@ -51,6 +51,7 @@ def Drill(argv):
 
     HISTORY
       2013-03-21 started Collett & Marshall (Oxford)
+      2015-09-08 updated Everett (SLAC)
     """
 
     # --------------------------------------------------------------------
@@ -131,7 +132,7 @@ def Drill(argv):
         for i,catalog in enumerate(calcats):
 
             print "Drill: Reading in calibration catalog from "+catalog+"..."
-            table = pangloss.readCatalog(catalog,experiment)
+            table = pangloss.read_hilbert_catalog(catalog,experiment)
 
             if units == 'deg':
                 table['nRA'] = -table['nRA'] * pangloss.deg2rad
@@ -198,7 +199,7 @@ def Drill(argv):
 
             flavor = 'real'
 
-            table = pangloss.readCatalog(obscat,experiment)
+            table = pangloss.read_hilbert_catalog(obscat,experiment)
 
             xc = [x0,y0]
             lc = pangloss.Lightcone(table,'real',xc,Rc)

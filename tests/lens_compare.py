@@ -6,10 +6,7 @@ import os,sys
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import cmath, cProfile
-<<<<<<< HEAD
 import copy
-=======
->>>>>>> db07a9ee8de5043b3ce9b5d79f479c557814bc31
 import cPickle as pickle
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
@@ -19,7 +16,6 @@ vb = True
 # Turn on for pickling correlation data
 pickle = False
 
-<<<<<<< HEAD
 # Turn on for relevance plots
 rel_plots = False
 
@@ -37,10 +33,9 @@ smooth_compare = False
 
 # Turn on for plotting maps
 maps = False
-=======
+
 # Turn on for plotting maps
 maps = True
->>>>>>> db07a9ee8de5043b3ce9b5d79f479c557814bc31
 
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -56,10 +51,7 @@ S = pangloss.Shearmap([PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_pl
 if vb is True: print('Loading foreground catalog...')
 config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
 F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
-<<<<<<< HEAD
 #if smooth_plots is True: F.plot_mean_kappas()
-=======
->>>>>>> db07a9ee8de5043b3ce9b5d79f479c557814bc31
 
 # Generate Background Catalog in the middle of the (0,0,0,0) field
 if vb is True: print('Generating background catalog...')
@@ -67,14 +59,9 @@ if vb is True: print('Generating background catalog...')
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
 #d = [1.65,1.35,-1.65,-1.35]
-<<<<<<< HEAD
 #d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.45,-1.55,-1.45]
 d = [1.55,1.48,-1.55,-1.48] # 176 galaxies
-=======
-#d = [1.6,1.4,-1.6,-1.4]
-d = [1.55,1.45,-1.55,-1.45]
->>>>>>> db07a9ee8de5043b3ce9b5d79f479c557814bc31
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
@@ -86,7 +73,6 @@ print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
 if vb is True: print('Drilling lightcones...')
-<<<<<<< HEAD
 lc_radius = 6.0
 B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
 
@@ -198,7 +184,6 @@ if corr_plots is True:
         pangloss.plotting.compare_smooth_component(gg_map,gg_halo,gg_halo_s,corr_type='gg',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
         pangloss.plotting.compare_smooth_component(ng_map,ng_halo,ng_halo_s,corr_type='ng',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
 
-=======
 B.drill_lightcones(radius=2.0,foreground=F,save=False)
 
 # Calculate mean/std galaxies per lightcone
@@ -242,7 +227,6 @@ print 'Ellipticity-Ellipticity correlation difference intrinsic to mapped:','chi
 
 chi2,n_sigma,percent_err,std_err = B.compare_corr(ng_halo,ng_map,corr_type='ng',corr_comp='real')
 print 'Galaxy-Galaxy correlation difference intrinsic to mapped:','chi^2: ',chi2,'n_sigma: ',n_sigma,'percent_err: ',percent_err,'+\-',std_err
->>>>>>> db07a9ee8de5043b3ce9b5d79f479c557814bc31
 
 # Plot a map near a lens
 if maps is True:
