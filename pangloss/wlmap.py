@@ -4,11 +4,6 @@ import struct
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 
-arcmin2rad = (1.0/60.0)*np.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-deg2rad = np.pi/180.0
-rad2deg = 1.0/deg2rad
-
 vb = False
 
 class WLMap:
@@ -228,8 +223,8 @@ class WLMap:
         # j = LTV2 + LTM2_2*(y/rad)
         self.wcs[i]['LTV1'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
         self.wcs[i]['LTV2'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
-        self.wcs[i]['LTM1_1'] = 1.0/(self.PIXSCALE[i]*deg2rad)
-        self.wcs[i]['LTM2_2'] = 1.0/(self.PIXSCALE[i]*deg2rad)
+        self.wcs[i]['LTM1_1'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        self.wcs[i]['LTM2_2'] = 1.0/np.deg2rad(self.PIXSCALE[i])
         return None
 
 # ----------------------------------------------------------------------------

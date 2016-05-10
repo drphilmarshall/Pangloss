@@ -44,6 +44,20 @@ class BackgroundCatalog(pangloss.Catalog):
     METHODS
         generate()
         write(output)
+        generate
+        write
+        lens_by_map
+        lens_by_halos
+        add_noise
+        setup_grid
+        set_importance
+        drill_lightcones
+        save
+        load
+        bin_to_map
+        calculate_corr
+        compare_corr
+        plot
 
     BUGS
 
@@ -56,7 +70,7 @@ class BackgroundCatalog(pangloss.Catalog):
       2015-06-29  Started Everett (SLAC)
     """
 
-    # ============================================================================
+# ============================================================================
 
     def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         self.type = 'background'
@@ -127,9 +141,13 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def __str__(self):
         # *!Need to fix with new attributes!*
         return 'Background catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxy_count,self.minZ,self.maxZ)
+
+# ----------------------------------------------------------------------------
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
@@ -435,6 +453,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
 
     def add_noise(self,M=1,sigma_obs=0.1):
         '''
@@ -473,6 +492,8 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
 
         return
+
+# ----------------------------------------------------------------------------
 
     def setup_grid(self):
         '''
@@ -518,6 +539,8 @@ class BackgroundCatalog(pangloss.Catalog):
         assert (lightcone.galaxies['relevance'] > 0).all()
 
         return
+
+# ----------------------------------------------------------------------------
 
     def drill_lightcones(self,radius=2.0,foreground=None,save=False):
         '''
@@ -599,6 +622,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def load(self,filename=None):
         '''
         Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
@@ -615,6 +640,8 @@ class BackgroundCatalog(pangloss.Catalog):
         self.__dict__.update(tmp_dict)
 
         return
+
+# ----------------------------------------------------------------------------
 
     def bin_to_maps(self,lensed='none',binsize=1.0,center=None):
         '''
@@ -787,6 +814,8 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
 
+# ----------------------------------------------------------------------------
+
     def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus',percent_type='error'):
         '''
         Compares two correlation function components (with the same binning and separation values) using
@@ -860,6 +889,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return chi2, n_sigma, mean_err, std_err
 
+# ----------------------------------------------------------------------------
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='none'):
         '''
@@ -1042,3 +1072,5 @@ class BackgroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+# ============================================================================

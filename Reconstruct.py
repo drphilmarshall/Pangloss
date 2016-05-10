@@ -204,7 +204,7 @@ def Reconstruct(argv):
             # Compute each halo's contribution to the convergence:
             lc.makeKappas(truncationscale=10)
             
-            k_add=lc.combineKappas()
+            lc.combineKappas()
 
             if RTscheme == 'sum':
                 p.append([lc.kappa_add_total])
