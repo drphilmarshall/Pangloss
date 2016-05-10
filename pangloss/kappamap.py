@@ -48,11 +48,11 @@ class Kappamap(pangloss.WLMap):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,kappafile,FITS=True):
+    def __init__(self,kappafile=None,data=None,FITS=True):
 
         self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        pangloss.WLMap.__init__(self,kappafile,FITS)
+        pangloss.WLMap.__init__(self,mapfiles=kappafile,data=data,FITS=FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -75,20 +75,20 @@ class Kappamap(pangloss.WLMap):
 
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
-        
+
         # Always start a figure when plotting kappa maps:
         fig = plt.figure("Pangloss Map")
 
         # Set figure size:
-        pangloss.plotting.set_figure_size(fig,fig_size,Lx,Ly)
+        pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         # Set up two sets of axes:
         # Adjust the subplot in image and wcs by half a pixel
         imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
         #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
-        
+
         # Create the axes
-        imshow,world = pangloss.plotting.make_axes(fig,subplot,imsubplot)
+        imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
 
         # Plot image
         fig.sca(imshow)
