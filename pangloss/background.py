@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
-import os, random, math, cmath, sys, timeit, cProfile, pylab
+import os, random, math, cmath, sys, timeit, cProfile
 import cPickle as pickle
 from astropy.table import Table, Column
 from matplotlib.patches import Ellipse
@@ -709,8 +709,8 @@ class BackgroundCatalog(pangloss.Catalog):
             # gives the sum of the map contributions, the second the
             # number of map contributions. We want the simple average,
             # so we divide one by the other.
-            H,x,y = pylab.histogram2d(ra,dec,weights=values,bins=[rabins,decbins])
-            N,x,y = pylab.histogram2d(ra,dec,bins=[rabins,decbins])
+            H,x,y = np.histogram2d(ra,dec,weights=values,bins=[rabins,decbins])
+            N,x,y = np.histogram2d(ra,dec,bins=[rabins,decbins])
 
             if map == 'kappa':
                 kappadata[0] = H/N
