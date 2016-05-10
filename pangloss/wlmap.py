@@ -80,7 +80,10 @@ class WLMap:
             assert len(data) == 3
             d,x,y = data[0],data[1],data[2]
             assert len(d.shape) == 3
-            assert d[0].shape == d[1].shape == d[2].shape == x.shape == y.shape
+            assert d[0].shape == d[1].shape
+            assert d[0].shape[0] == d[1].shape[0] == x.shape[0]-1
+            assert d[0].shape[1] == d[1].shape[1] == y.shape[0]-1
+            assert x.shape == y.shape
             self.input = ['']
             self.origin = 'scratch'
 
