@@ -20,7 +20,7 @@ pickle = False
 rel_plots = False
 
 # Turn on for smooth-component correction plots
-smooth_plots = True
+smooth_plots = False
 
 # Turn on for plotting correlation function plots
 corr_plots = True
@@ -32,7 +32,7 @@ rel_compare = False
 smooth_compare = False
 
 # Turn on for plotting maps
-maps = False
+maps = True
 
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -58,8 +58,8 @@ if vb is True: print('Generating background catalog...')
 #d = [1.65,1.35,-1.65,-1.35]
 #d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.45,-1.55,-1.45]
-d = [1.55,1.48,-1.55,-1.48] # 176 galaxies
-#d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
+#d = [1.55,1.48,-1.55,-1.48] # 176 galaxies
+d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
 
