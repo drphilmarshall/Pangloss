@@ -87,6 +87,8 @@ class Kappamap(pangloss.WLMap):
 
         # Plot image
         fig.sca(imshow)
+        print 'pix_xi = {}, pix_xf = {}, pix_yi = {}, pix_yf = {}'.format(pix_xi,pix_xf,pix_yi,pix_yf)
+        print 'values[0][index] = {}'.format(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf])
         plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
 
         return
