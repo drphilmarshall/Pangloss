@@ -75,11 +75,13 @@ class BackgroundCatalog(pangloss.Catalog):
     def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
         self.type = 'background'
 
-        # Only a subplot OR a field is allowed, not both!
+        # A domain must come with a corresponding field!
         assert not (domain is not None and field is None)
 
         # The catalog can be created over a field corresponding to a foreground catalog (1 deg^2) or over an inputted subplot
         if domain is not None and field is not None:
+            self.domain = domain
+            self.field = field
             self.map_x = field[0]
             self.map_y = field[1]
             self.field_i = field[2]
@@ -88,6 +90,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         elif domain is None and field is not None:
             # Set domain based upon inputted field
+            self.field = field
             self.map_x = field[0]
             self.map_y = field[1]
             self.field_i = field[2]
@@ -100,18 +103,19 @@ class BackgroundCatalog(pangloss.Catalog):
             dec_f = -1.0+self.map_y*4.0+self.field_j*1.0
 
             # Set the domain to the inputted field
-            domain = [ra_i,ra_f,dec_i,dec_f]
+            self.domain = [ra_i,ra_f,dec_i,dec_f]
 
         elif domain is None and field is None:
             # If neither are inputted, use the field x=y=i=j=0:
-            domain = [2.0,1.0,-2.0,-1.0]
+            self.domain = [2.0,1.0,-2.0,-1.0]
+            self.field = [0,0,0,0]
             self.map_x = 0
             self.map_y = 0
             self.field_i = 0
             self.field_j = 0
 
         # Generate the background catalog
-        self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
+        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e)
 
         # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
         self.strong_lensed_removed = 0
@@ -655,13 +659,12 @@ class BackgroundCatalog(pangloss.Catalog):
 
         maps=['kappa','gamma1','gamma2']
 
-        count = 0
+        setup = False
         for map in maps:
-
-            if count == 0:
+            if setup is False:
                 # Set up x and y bins - only need to do this the first
                 # time through!
-
+                setup = True
                 ra,dec = self.galaxies['RA'],self.galaxies['Dec']
                 decmin,decmax = np.min(dec),np.max(dec)
                 NY = int( np.rad2deg(decmax-decmin)*60.0/binsize )
@@ -675,7 +678,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
                 # Set up some data arrays:
                 empty = np.outer(np.zeros(NY),np.zeros(NX))
-                kappadata = np.array([empty,empty])
+                kappadata = np.array([empty])
                 gammadata = np.array([empty,empty])
 
             if map == 'kappa':
@@ -713,15 +716,16 @@ class BackgroundCatalog(pangloss.Catalog):
             N,x,y = np.histogram2d(ra,dec,bins=[rabins,decbins])
 
             if map == 'kappa':
-                kappadata[0] = H/N
+                kappadata[0] = 1.0*H/N
             elif map == 'gamma1':
-                gammadata[0] = H/N
+                gammadata[0] = 1.0*H/N
             elif map == 'gamma2':
-                gammadata[1] = H/N
+                gammadata[1] = 1.0*H/N
 
         # Store these histograms in WLMap objects
-        kappamap = pangloss.Kappamap(data=[kappadata,x,y])
-        shearmap = pangloss.Shearmap(data=[gammadata,x,y])
+        map_xy = [self.map_x, self.map_y]
+        kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy])
+        shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy])
 
         return kappamap,shearmap
 
