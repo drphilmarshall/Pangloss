@@ -77,14 +77,16 @@ class WLMap:
         # of the pixel centers.
         elif data is not None:
             assert type(data) == list
-            assert len(data) == 3
-            d,x,y = data[0],data[1],data[2]
+            assert len(data) == 5
+            d,x,y,domain,map_xy = data[0],data[1],data[2],data[3],data[4]
             assert len(d.shape) == 3
-            assert d[0].shape == d[1].shape
-            assert d[0].shape[0] == d[1].shape[0] == x.shape[0]-1
-            assert d[0].shape[1] == d[1].shape[1] == y.shape[0]-1
-            assert x.shape == y.shape
-            self.input = ['']
+            assert len(domain) == 4
+            assert len(map_xy) == 2
+            assert d[0].shape[0] == x.shape[0]-1
+            assert d[0].shape[1] == y.shape[0]-1
+            assert x.shape == y.shape # For now, must be square!
+            if len(d) == 2: assert d[0].shape == d[1].shape
+            self.input = []
             self.origin = 'scratch'
 
         else:
@@ -98,12 +100,12 @@ class WLMap:
         self.field = []
         self.wcs = []
         self.output = []
+        self.map_x = []
+        self.map_y = []
 
         if self.origin == 'file':
             # Parsing the file name(s)
             # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
-            self.map_x = []
-            self.map_y = []
             for i in range(0,len(self.input)):
                 input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
                 self.map_x.append(eval(input_parse[3])) # The x location of the map grid
@@ -123,10 +125,15 @@ class WLMap:
         elif self.origin == 'scratch':
             # Reformat data into self.values:
             if vb: print "Making map from data arrays"
-            self.reformat_data(d,x,y)
+            for i in range(0,len(d)):
+                # The map (x,y) positions corresponding to the Hilbert maps
+                self.map_x.append(map_xy[0]) # The x location of the map grid
+                self.map_y.append(map_xy[1]) # The y location of the map grid
+
+            self.reformat_data(d,x,y,domain)
 
             # Set up the WCS:
-            self.make_wcs(x,y)
+            #self.make_wcs(x,y)
 
         # Check file consistency
         assert self.PIXSCALE[1:] == self.PIXSCALE[:-1]
@@ -191,8 +198,25 @@ class WLMap:
 
 # ----------------------------------------------------------------------------
 
-    def reformat_data(self,d,x,y):
-        pass
+    def reformat_data(self,d,x,y,domain):
+        #
+        for i in range(0,len(d)):
+            #
+            self.values.append(d[i])
+            #self.NX.append(np.sqrt(self.values[i].shape[0]))
+
+            ra_i, ra_f, dec_i, dec_f = domain[0], domain[1], domain[2], domain[3] # degrees
+            dra, ddec = abs(ra_i-ra_f), abs(dec_i-dec_f) # degrees
+            assert dra == ddec
+            self.field.append(dra) # degrees
+            self.NX.append(int( 4096.0 * (self.field[i] / 4.0) ))
+            self.PIXSCALE.append(self.field[i]/(1.0*self.NX[i])) # degrees
+            self.setwcs(i)
+            self.input.append('')
+            self.output.append('')
+
+            #self.input.append('background_catalog_{}_{}'.format()
+
         return
 
 # ----------------------------------------------------------------------------
