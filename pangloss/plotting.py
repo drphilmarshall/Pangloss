@@ -69,6 +69,8 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     ease of use.
     '''
 
+    '''
+    # Works for shearmaps...
     # Make image axes for plotting maps in:
     imshow = fig.add_axes(viewport,label='imshow')
     imshow.set_xlim(imsubplot[0],imsubplot[1])
@@ -83,6 +85,24 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     world.set_title('')
     world.set_xlim(subplot[0],subplot[1])
     world.set_ylim(subplot[2],subplot[3])
+    '''
+
+
+    # works for kappamaps...
+    # Make wcs axes for plotting catalogs in:
+    world = fig.add_axes(viewport,label='world')
+    world.set_xlabel('Right Ascension / deg')
+    world.set_ylabel('Declination / deg')
+    world.set_title('')
+    world.set_xlim(subplot[0],subplot[1])
+    world.set_ylim(subplot[2],subplot[3])
+
+    # Make image axes for plotting maps in:
+    imshow = fig.add_axes(viewport,label='imshow')
+    imshow.set_xlim(imsubplot[0],imsubplot[1])
+    imshow.set_ylim(imsubplot[2],imsubplot[3])
+    imshow.get_xaxis().set_visible(False)
+    imshow.get_yaxis().set_visible(False)
 
     return imshow,world
 

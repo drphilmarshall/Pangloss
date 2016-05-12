@@ -647,7 +647,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=1.0,center=None):
+    def bin_to_maps(self,lensed='none',binsize=0.1,center=None):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
@@ -655,6 +655,7 @@ class BackgroundCatalog(pangloss.Catalog):
         Binsize is in units of arcmin, and an optional map centroid is
         passed in as the 'center' list [ra,dec] where these world
         coordinates are in degrees.
+        ** set binsize=0.586 for same resolution scale as Hilbert maps **
         '''
 
         maps=['kappa','gamma1','gamma2']
@@ -726,6 +727,10 @@ class BackgroundCatalog(pangloss.Catalog):
         map_xy = [self.map_x, self.map_y]
         kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy])
         shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy])
+
+        ## ONLY HERE FOR TESTING
+        plt.imshow(kappadata[0],cmap='gray_r',origin='lower')
+        plt.show()
 
         return kappamap,shearmap
 

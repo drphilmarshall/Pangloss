@@ -208,8 +208,10 @@ class WLMap:
             ra_i, ra_f, dec_i, dec_f = domain[0], domain[1], domain[2], domain[3] # degrees
             dra, ddec = abs(ra_i-ra_f), abs(dec_i-dec_f) # degrees
             assert dra == ddec
-            self.field.append(dra) # degrees
-            self.NX.append(int( 4096.0 * (self.field[i] / 4.0) ))
+            #self.field.append(dra) # degrees
+            #self.NX.append(int( 4096.0 * (dra / 4.0) ))
+            self.NX.append(self.values[i].shape[0])
+            self.field.append(4.0) # deg (must match binary files!)
             self.PIXSCALE.append(self.field[i]/(1.0*self.NX[i])) # degrees
             self.setwcs(i)
             self.input.append('')
@@ -222,7 +224,26 @@ class WLMap:
 # ----------------------------------------------------------------------------
 
     def make_wcs(self,x,y):
-        pass
+        self.wcs.append(dict())
+        # ra  = CRVAL1 + CD1_1*(i-CRPIX1)
+        # dec = CRVAL2 + CD2_2*(j-CRPIX2)
+        self.wcs[i]['CRPIX1'] = 0.0
+        self.wcs[i]['CRPIX2'] = 0.0
+        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.map_x[i]*self.field[i]
+        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.map_y[i]*self.field[i]
+        self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
+        self.wcs[i]['CD1_2'] = 0.0
+        self.wcs[i]['CD2_1'] = 0.0
+        self.wcs[i]['CD2_2'] = self.PIXSCALE[i]
+        self.wcs[i]['CTYPE1'] = 'RA---TAN'
+        self.wcs[i]['CTYPE2'] = 'DEC--TAN'
+
+        # i = LTV1 + LTM1_1*(x/rad)
+        # j = LTV2 + LTM2_2*(y/rad)
+        self.wcs[i]['LTV1'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
+        self.wcs[i]['LTV2'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
+        self.wcs[i]['LTM1_1'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        self.wcs[i]['LTM2_2'] = 1.0/np.deg2rad(self.PIXSCALE[i])
         return
 
 # ----------------------------------------------------------------------------
