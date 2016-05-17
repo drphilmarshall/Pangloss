@@ -152,8 +152,8 @@ class WLMap:
     def read_in_fits_data(self):
         for i in range(0,len(self.input)):
             hdu = pyfits.open(self.input[i])[0]
-            hdr = hdu.header
-            self.get_fits_wcs(hdr,i)
+            self.hdr = hdu.header
+            self.get_fits_wcs(self.hdr,i)
             self.values.append(hdu.data)
             # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
             # self.values[i] = self.values[i].transpose()
@@ -296,6 +296,7 @@ class WLMap:
         # the image correctly, if we hadn't already done it in read_in_fits_data()
         # hdu.data = self.values[i].transpose()
         hdu.data = self.values[i]
+        self.hdr = hdu.header
         # Verify and write to file:
         hdu.verify()
         hdu.writeto(self.output[i])
