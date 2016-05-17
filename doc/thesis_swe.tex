@@ -254,23 +254,29 @@ To calculate the convergence and shear contribution of each halo, the physical d
 
 Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
 
-\textcolor{red}{\subsection*{Relevant Halos}
+\subsection*{Relevant Halos}
 \begin{enumerate}
 \item Metric from McCully et al. (cite)
 \item Implementation
 \item Plot the percent difference between all halos and relevant halos as a function of $\#$ of relevant halos (can adopt relevant-test.py to do this)
 \end{enumerate}
 
-\subsection*{Void Correction}
+\subsection*{Smooth-Component Correction}
+\begin{enumerate}
+\item Introduce issue
+\item Either derive result or state result with derivation in appendix
+\item Plots of volume/surface density of halos vs mean universe density
+\item Plot distribution of correction kappas
+\item Plot distribution of reduced-shear with and without correction
+\end{enumerate}
 
 \subsection*{Speedups}
 \begin{enumerate}
 \item Lookup tables (lensing table)
 \item relevant halos
+\item pre-calculate grid volumes for s-c correction
 \item more plots to quantify speedup times!
 \end{enumerate}
-
-}
 
 \subsection*{Checking the Halo Model}
 
@@ -292,6 +298,24 @@ the ellipticity-ellipticity correlation function definition used in
 literature; for a derivation of the connection between Jarvis's
 definition and the more common Schneider definition \cite{schneider},
 visit the \texttt{Pangloss} repository\footnotemark[\ref{note1}].
+
+\subsection*{Feasibility of Inference}
+
+\subsubsection*{Likelihood Estimation}
+\begin{enumerate}
+\item Equation from Phil's dissertation
+\item Calculate time with and without drilling
+\item Time per lensing event, time per lightcone
+\end{enumerate}
+
+\subsubsection*{Approximate Bayesian Computation}
+\begin{enumerate}
+\item Difficult to calculate likelihood, can instead make mock data by samping parameters from prior distribution
+\item Come up with `distance' function (compare e-e corr functions) and threshold value
+\item Use accepted simulations to approximate posterior
+\item Time per ABC
+\item Compare time to single lensing event
+\end{enumerate}
 
 \section{Results}
 
@@ -446,6 +470,10 @@ The same plots for the source galaxies \textit{after lensing} are shown in Figur
     \caption{Correlation visualization for lensed galaxies.}
     \label{colored_corr_lensed}
 \end{figure}
+
+\subsection*{Smooth-Component Correction Derivation}
+
+\subsection*{TreeCorr to Schneider Proof}
 
 \section{References}
 \vspace{-.2825in}
