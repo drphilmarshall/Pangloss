@@ -649,7 +649,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=0.1,center=None):
+    def bin_to_maps(self,lensed='none',binsize=0.1,center=None,savefile=None):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
