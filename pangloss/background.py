@@ -72,7 +72,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ============================================================================
 
-    def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
+    def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2,spacing=None):
         self.type = 'background'
 
         # A domain must come with a corresponding field!
@@ -115,7 +115,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.field_j = 0
 
         # Generate the background catalog
-        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e)
+        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e,uniform)
 
         # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
         self.strong_lensed_removed = 0
@@ -160,7 +160,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2,spacing=None):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per
         square arcminute inside a given domain of the form
@@ -203,13 +203,20 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Populate the generated variables
         ID = np.arange(self.galaxy_count)
-        ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
-        dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
         mag = np.random.uniform(mag_lim[0],mag_lim[1],self.galaxy_count)
         mass = np.random.uniform(mass_lim[0],mass_lim[1],self.galaxy_count)
         z = np.random.uniform(z_lim[0],z_lim[1],self.galaxy_count)
         e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
         e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
+
+        # Generate positions based upon random locations or a uniform spacing
+        # (spacing = 0.000977 deg/pix for kappa/shear map density)
+        if spacing is None:
+            ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
+            dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
+        else:
+            ra = np.arange(ra_init,ra_final,spacing)
+            dec = np.arange(ra_init,ra_final,spacing)
 
         # Change any |e|> 1 ellipticity components
         while (e1_int>1.0).any() or (e2_int>1.0).any():
@@ -732,7 +739,7 @@ class BackgroundCatalog(pangloss.Catalog):
         plt.imshow(kappadata[0],cmap='gray_r',origin='lower')
         plt.show()
 
-        return kappamap,shearmap
+        return kappamap, shearmap
 
 # ----------------------------------------------------------------------------
 
