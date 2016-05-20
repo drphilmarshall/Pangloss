@@ -733,7 +733,7 @@ class BackgroundCatalog(pangloss.Catalog):
         ## ONLY HERE FOR TESTING
         plt.imshow(kappadata[0],cmap='gray_r',origin='lower')
         if savefile is not None:
-            savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+            plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
         plt.show()
 
         return kappamap, shearmap
