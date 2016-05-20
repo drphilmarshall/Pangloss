@@ -115,7 +115,7 @@ class BackgroundCatalog(pangloss.Catalog):
             self.field_j = 0
 
         # Generate the background catalog
-        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e,uniform)
+        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e,spacing)
 
         # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
         self.strong_lensed_removed = 0
@@ -184,22 +184,26 @@ class BackgroundCatalog(pangloss.Catalog):
             dec_init = np.deg2rad(domain[2])
             dec_final = np.deg2rad(domain[3])
 
-        # Determine area of domain and the number of generated galaxies contained in it
+        # Determine area of domain and the number of generated galaxies contained in it,
+        # as well as fenerate positions based upon random locations or a uniform spacing
         # (expecting wcs in degrees)
         self.Lx, self.Ly = abs(np.rad2deg(ra_final)-np.rad2deg(ra_init)), abs(np.rad2deg(dec_final)-np.rad2deg(dec_init))
-        area = 3600*self.Lx*self.Ly # square arcminutes
-        self.galaxy_count = int(N*area) # N galaxies per square arcminute
-
-        # Initialize generated variables
-        ra = np.zeros(self.galaxy_count)
-        dec = np.zeros(self.galaxy_count)
-        mag = np.zeros(self.galaxy_count)
-        mass = np.zeros(self.galaxy_count)
-        z = np.zeros(self.galaxy_count)
-        e1_int = np.zeros(self.galaxy_count)
-        e2_int = np.zeros(self.galaxy_count)
-        eMod_int = np.zeros(self.galaxy_count)
-        ePhi_int = np.zeros(self.galaxy_count)
+        if spacing is None:
+            # Determine number of galaxies at uniformly distributed positions
+            # by the passed galaxy density N
+            area = 3600*self.Lx*self.Ly # square arcminutes
+            self.galaxy_count = int(N*area) # N galaxies per square arcminute
+            ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
+            dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
+        else:
+            # If a spacing is passed, overrule N to make a uniformly spaced
+            # grid of background galaxies with separation distance 'spacing'
+            # in rad (spacing = 1.705e-5 rad/pix for kappa/shear map density)
+            r = np.arange(ra_final,ra_init,spacing) # swapped b/c left-handed
+            d = np.arange(dec_init,dec_final,spacing)
+            self.galaxy_count = np.size(r)*np.size(d)
+            ra, dec = np.meshgrid(r,d)
+            ra, dec = ra.reshape(self.galaxy_count), dec.reshape(self.galaxy_count)
 
         # Populate the generated variables
         ID = np.arange(self.galaxy_count)
@@ -208,15 +212,6 @@ class BackgroundCatalog(pangloss.Catalog):
         z = np.random.uniform(z_lim[0],z_lim[1],self.galaxy_count)
         e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
         e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
-
-        # Generate positions based upon random locations or a uniform spacing
-        # (spacing = 0.000977 deg/pix for kappa/shear map density)
-        if spacing is None:
-            ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
-            dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
-        else:
-            ra = np.arange(ra_init,ra_final,spacing)
-            dec = np.arange(ra_init,ra_final,spacing)
 
         # Change any |e|> 1 ellipticity components
         while (e1_int>1.0).any() or (e2_int>1.0).any():
@@ -737,6 +732,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         ## ONLY HERE FOR TESTING
         plt.imshow(kappadata[0],cmap='gray_r',origin='lower')
+        if savefile is not None:
+            savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
         plt.show()
 
         return kappamap, shearmap
