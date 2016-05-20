@@ -68,25 +68,24 @@ class Kappamap(pangloss.WLMap):
                             'pixel', 'physical', or 'world'
         """
 
+        # Always start a figure when plotting kappa maps:
+        fig = plt.figure('Pangloss Map')
+
         # Use plotting method from WLMap class to calculate values common to both Kappamaps and Shearmaps
         pix_xi,pix_xf,pix_yi,pix_yf,Lx,Ly,pix_Lx,pix_Ly,subplot = self.plot_setup(subplot,coords)
-
-        # Always start a figure when plotting kappa maps:
-        fig = plt.figure("Pangloss Map")
 
         # Set figure size:
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-        # Set up two sets of axes:
-        # Adjust the subplot in image and wcs by half a pixel
-        imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
-        #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
+        # Set the pixel and wcs axes
+        imsubplot = [pix_xi, pix_xf, pix_yi, pix_yf]
+        ax = pangloss.set_axes(fig,Lx,Ly,self.hdr[0],imsubplot)
 
-        # Create the axes
-        imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
+        # Used for colormap scaling
+        Kmin = np.min(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf])
+        Kmax = np.max(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf])
 
-        # Plot image
-        fig.sca(imshow)
-        plt.imshow(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf],cmap = 'gray_r',origin = 'lower')
+        # Plot Kappamap image
+        ax.imshow(self.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
 
         return

@@ -94,6 +94,7 @@ class WLMap:
             return None
 
         # Declare needed attributes as lists
+        self.hdr = []
         self.values = []
         self.NX = []
         self.PIXSCALE = []
@@ -152,15 +153,15 @@ class WLMap:
     def read_in_fits_data(self):
         for i in range(0,len(self.input)):
             hdu = pyfits.open(self.input[i])[0]
-            self.hdr = hdu.header
-            self.get_fits_wcs(self.hdr,i)
+            self.hdr.append(hdu.header)
+            self.get_fits_wcs(self.hdr[i],i)
             self.values.append(hdu.data)
             # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
             # self.values[i] = self.values[i].transpose()
             self.NX.append(self.values[i].shape[0])
-            self.PIXSCALE.append(self.wcs[i]['CD1_1'])
+            self.PIXSCALE.append(-self.wcs[i]['CD1_1'])
             self.field.append(self.NX[i]*self.PIXSCALE[i])
-            return None
+        return None
 
 # ----------------------------------------------------------------------------
 
@@ -189,6 +190,7 @@ class WLMap:
             self.output.append(self.input[i]+'.fits')
             if os.path.exists(self.output[i]):
               if vb: print "FITS version already exists: ",self.output
+              self.make_header(i)
             else:
               if vb: print "Writing map to "+self.output[i]
               self.write_out_to_fits(i)
@@ -280,23 +282,29 @@ class WLMap:
     def get_fits_wcs(self,hdr,i):
         self.wcs.append(dict())
         for keyword in hdr.keys():
-           self.wcs[i][keyword] = hdr[keyword]
+            self.wcs[i][keyword] = hdr[keyword]
         return None
 
 # ----------------------------------------------------------------------------
 
-    def write_out_to_fits(self,i):
-
+    def make_header(self,i):
         # Start a FITS header + data unit:
         hdu = pyfits.PrimaryHDU()
         # Add WCS keywords to the FITS header (in apparently random order):
         for keyword in self.wcs[i].keys():
-            hdu.header.update(keyword,self.wcs[i][keyword])
+            hdu.header.set(keyword,self.wcs[i][keyword])
         # Make image array. The transpose would be necessary so that ds9 displays
         # the image correctly, if we hadn't already done it in read_in_fits_data()
         # hdu.data = self.values[i].transpose()
         hdu.data = self.values[i]
-        self.hdr = hdu.header
+        self.hdr.append(hdu.header)
+        return hdu
+
+# ----------------------------------------------------------------------------
+
+    def write_out_to_fits(self,i):
+        # Make header
+        hdu = self.make_header(i)
         # Verify and write to file:
         hdu.verify()
         hdu.writeto(self.output[i])

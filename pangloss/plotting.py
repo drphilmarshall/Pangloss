@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 from astropy.table import Table, Column
+from astropy.wcs import WCS
 from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
@@ -61,16 +62,74 @@ HISTORY
   2015-07-5  Collected and extended by Everett (SLAC)
 """
 
+# ============================================================================
+
+def set_axes(fig,Lx=10,Ly=10,header=None,imsubplot=[0,1,0,1]):
+    '''
+    Sets wcs and pixel axes for plotting maps and catalogs. Both sets of axes are
+    contained in the current figure instance, and also returned for ease of use.
+    '''
+
+    assert header is not None, "Must pass a FITS header!"
+
+    # Create world coordinate axis
+    wcs = WCS(header)
+    ax = fig.add_axes(viewport, projection=wcs, label='wcs')
+    ax.set_autoscale_on(False)
+    ra = ax.coords['ra']
+    dec = ax.coords['dec']
+
+    # Set pixel limits on axis
+    pix_xi = imsubplot[0]
+    pix_xf = imsubplot[1]
+    pix_yi = imsubplot[2]
+    pix_yf = imsubplot[3]
+    ax.set_xlim(pix_xi-0.5, pix_xf-0.5)
+    ax.set_ylim(pix_yi-0.5, pix_yf-0.5)
+
+    # Set labels
+    ra.set_axislabel('Right Ascension / deg')
+    dec.set_axislabel('Declination / deg')
+
+    # Set x/y-axis unit formatter
+    if Lx > 0.03 and Lx <= 0.3:
+        ra.set_major_formatter('d.dd')
+    elif Lx <= 0.03:
+        ra.set_major_formatter('d.ddd')
+    else:
+        ra.set_major_formatter('d.d')
+
+    if Ly >0.03 and Ly <= 0.3:
+        dec.set_major_formatter('d.dd')
+    elif Ly <= 0.03:
+        dec.set_major_formatter('d.ddd')
+    else:
+        dec.set_major_formatter('d.d')
+
+    # max number of ticks
+    num = 8
+    if Lx > Ly:
+        ra.set_ticks(number=num)
+        dec.set_ticks(number=np.ceil(num*Ly/Lx))
+
+    elif Lx < Ly:
+        ra.set_ticks(number=np.ceil(num*Lx/Ly))
+        dec.set_ticks(number=num)
+
+    else:
+        ra.set_ticks(number=num)
+        dec.set_ticks(number=num)
+
+    return ax
+
+# ----------------------------------------------------------------------------
 
 def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     '''
     Creates axes for plotting maps and catalogs. Both sets of axes are
     contained in the current figure instance, and also returned for
-    ease of use.
+    ease of use. OLD VERSION - only remains for old demos.
     '''
-
-    '''
-    # Works for shearmaps...
     # Make image axes for plotting maps in:
     imshow = fig.add_axes(viewport,label='imshow')
     imshow.set_xlim(imsubplot[0],imsubplot[1])
@@ -85,27 +144,10 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     world.set_title('')
     world.set_xlim(subplot[0],subplot[1])
     world.set_ylim(subplot[2],subplot[3])
-    '''
 
+    return
 
-    # works for kappamaps...
-    # Make wcs axes for plotting catalogs in:
-    world = fig.add_axes(viewport,label='world')
-    world.set_xlabel('Right Ascension / deg')
-    world.set_ylabel('Declination / deg')
-    world.set_title('')
-    world.set_xlim(subplot[0],subplot[1])
-    world.set_ylim(subplot[2],subplot[3])
-
-    # Make image axes for plotting maps in:
-    imshow = fig.add_axes(viewport,label='imshow')
-    imshow.set_xlim(imsubplot[0],imsubplot[1])
-    imshow.set_ylim(imsubplot[2],imsubplot[3])
-    imshow.get_xaxis().set_visible(False)
-    imshow.get_yaxis().set_visible(False)
-
-    return imshow,world
-
+# ----------------------------------------------------------------------------
 
 def set_figure_size(fig,fig_size,Lx,Ly):
     '''
