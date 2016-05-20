@@ -649,7 +649,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=0.1,center=None,savefile=None):
+    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
@@ -731,7 +731,14 @@ class BackgroundCatalog(pangloss.Catalog):
         shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy])
 
         ## ONLY HERE FOR TESTING
-        plt.imshow(kappadata[0],cmap='gray_r',origin='lower')
+        subplot = [ramax,ramin,decmin,decmax] # ra flipped b/c left-handed
+        print subplot
+        # Used for colormap scaling
+        Kmin = np.min(kappadata[0])
+        Kmax = np.max(kappadata[0])
+        plt.imshow(kappadata[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+        #kappamap.plot(subplot=subplot,coords='physical')
+
         if savefile is not None:
             plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
         plt.show()
