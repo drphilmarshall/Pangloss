@@ -691,6 +691,7 @@ def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
     '''
     Plots two binned kappamaps, one from lensed_by_maps() and one from lensed_by_halos(), as well as their difference.
     NOTE: Currently, this will only compare binned kappamaps that are square.
+    NOTE: Currenlty, colormap only displays correclty for a fig_size of 20.
     '''
 
     if Kmap is None or Khalo is None:
@@ -703,7 +704,7 @@ def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
     assert Kmap.field[0] == Khalo.field[0]
 
     # Create difference kappamap (map-halo)
-    kappadata = np.array([Kmap.values[0] - Khalo.values[0]])
+    kappadata = np.array([Khalo.values[0] - Kmap.values[0]])
     assert Kmap.map_x == Khalo.map_x
     assert Kmap.map_y == Khalo.map_y
     map_xy = [Kmap.map_x, Kmap.map_y]
