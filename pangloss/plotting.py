@@ -5,6 +5,7 @@ from astropy.table import Table, Column
 from astropy.wcs import WCS
 from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
+import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 # Import Pangloss:
@@ -683,6 +684,54 @@ def plot_densities(foreground,lightcone,density_type='volume'):
 
     return
 
+#-------------------------------------------------------------------------------------------------------------------
+
+def compare_binned_maps(Kmap=None,Khalo=None,subplot=None,savefile=None):
+    '''
+    Plots two binned kappamaps, one from lensed_by_maps() and one from lensed_by_halos(), as well as their difference.
+    '''
+
+    if Kmap is None or Khalo is None:
+        print('Must pass two binned kappamaps!')
+        return
+    if subplot is None:
+        print('For the moment, a subplot must be passed!')
+        return
+
+    # Create difference kappamap (map-halo)
+    kappadata = np.array([Kmap.values[0] - Khalo.values[0]])
+    assert Kmap.map_x == Khalo.map_x
+    assert Kmap.map_y == Khalo.map_y
+    map_xy = [Kmap.map_x, Kmap.map_y]
+    ra_i, dec_i = Kmap.image2world(0,0)
+    ra_f, dec_f = Kmap.image2world(Kmap.NX[0],Kmap.NX[0])
+    domain = [ra_i, ra_f, dec_i, dec_f]
+    Kdiff = pangloss.Kappamap(data=[kappadata,domain,map_xy])
+
+    # Make 1x3 subplots of map, halo, difference (each square)
+
+    # Binned lensed-by-map kappamap
+    plt.subplot(1, 3, 1)
+    #Kmap.plot(subplot=subplot)
+
+    plt.title('Ray-Traced Convergence')
+
+    # Binned lensed-by-halo kappamap
+    plt.subplot(1,3,2)
+    #Khalo.plot(subplot=subplot)
+    plt.title('Pangloss Predicted Convergence')
+
+    # Difference between binned kappamaps
+    plt.subplot(1,3,3)
+    #Kdiff.plot(subplot=subplot)
+    plt.title('Difference in Convergence')
+
+    if savefile is not None:
+        plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+
+    plt.show()
+
+    return
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.

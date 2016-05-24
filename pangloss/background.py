@@ -675,9 +675,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 NX = int( np.rad2deg(ramax-ramin)*60.0/(binsize*np.cos(np.deg2rad(np.mean(dec)))) )
 
                 rabins = np.linspace(ramin,ramax,NX+1)
-                # x = np.outer(np.ones(NY),rabins)
                 decbins = np.linspace(decmin,decmax,NY+1)
-                # y = np.outer(decbins,np.ones(NX))
 
                 # Set up some data arrays:
                 empty = np.outer(np.zeros(NY),np.zeros(NX))
@@ -727,21 +725,24 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Store these histograms in WLMap objects
         map_xy = [self.map_x, self.map_y]
-        kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy])
-        shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy])
+        kappamap = pangloss.Kappamap(data=[kappadata,self.domain,map_xy])
+        shearmap = pangloss.Shearmap(data=[gammadata,self.domain,map_xy])
+        #kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy]) # no longer use x,y
+        #shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy]) # no longer use x,y
 
         ## ONLY HERE FOR TESTING
-        subplot = [ramax,ramin,decmin,decmax] # ra flipped b/c left-handed
-        print subplot
+        subplot = np.rad2deg([ramax,ramin,decmin,decmax]) # ra flipped b/c left-handed
+        #subplot = [ramin,ramax,decmin,decmax]
+
         # Used for colormap scaling
-        Kmin = np.min(kappadata[0])
-        Kmax = np.max(kappadata[0])
-        plt.imshow(kappadata[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
-        #kappamap.plot(subplot=subplot,coords='physical')
+        #Kmin = np.min(kappadata[0])
+        #Kmax = np.max(kappadata[0])
+        #plt.imshow(kappadata[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+        kappamap.plot(subplot=subplot,coords='world')
 
         if savefile is not None:
             plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
-        plt.show()
+        #plt.show()
 
         return kappamap, shearmap
 
