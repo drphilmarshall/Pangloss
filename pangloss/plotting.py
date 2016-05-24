@@ -7,6 +7,7 @@ from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Import Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -686,17 +687,20 @@ def plot_densities(foreground,lightcone,density_type='volume'):
 
 #-------------------------------------------------------------------------------------------------------------------
 
-def compare_binned_maps(Kmap=None,Khalo=None,subplot=None,savefile=None):
+def compare_binned_maps(Kmap=None,Khalo=None,fig_size=10,savefile=None):
     '''
     Plots two binned kappamaps, one from lensed_by_maps() and one from lensed_by_halos(), as well as their difference.
+    NOTE: Currently, this will only compare binned kappamaps that are square.
     '''
 
     if Kmap is None or Khalo is None:
         print('Must pass two binned kappamaps!')
         return
-    if subplot is None:
-        print('For the moment, a subplot must be passed!')
-        return
+
+    # Make sure kappamaps are the same size
+    assert Kmap.NX[0] == Khalo.NX[0]
+    assert Kmap.PIXSCALE[0] == Khalo.PIXSCALE[0]
+    assert Kmap.field[0] == Khalo.field[0]
 
     # Create difference kappamap (map-halo)
     kappadata = np.array([Kmap.values[0] - Khalo.values[0]])
@@ -709,27 +713,97 @@ def compare_binned_maps(Kmap=None,Khalo=None,subplot=None,savefile=None):
     Kdiff = pangloss.Kappamap(data=[kappadata,domain,map_xy])
 
     # Make 1x3 subplots of map, halo, difference (each square)
+    fig = plt.figure()
 
-    # Binned lensed-by-map kappamap
-    plt.subplot(1, 3, 1)
-    #Kmap.plot(subplot=subplot)
+    # Set figure size:
+    fig.set_size_inches(fig_size,fig_size)
+    #pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-    plt.title('Ray-Traced Convergence')
+    # Used for colormap scaling
+    KMmin = np.min(Kmap.values[0])
+    KMmax = np.max(Kmap.values[0])
+    KHmin = np.min(Khalo.values[0])
+    KHmax = np.max(Khalo.values[0])
 
-    # Binned lensed-by-halo kappamap
-    plt.subplot(1,3,2)
-    #Khalo.plot(subplot=subplot)
-    plt.title('Pangloss Predicted Convergence')
+    Kmin = min(KMmin,KHmin)
+    # Kmin = 0
+    Kmax = max(KMmax,KHmax)
 
-    # Difference between binned kappamaps
-    plt.subplot(1,3,3)
-    #Kdiff.plot(subplot=subplot)
-    plt.title('Difference in Convergence')
+    # Set the pixel and wcs axes parameters
+    Lx, Ly = Kmap.field[0], Kmap.field[0]
+    pix_xi, pix_yi = 0, 0
+    pix_xf, pix_yf = Kmap.NX[0], Kmap.NX[0]
+    imsubplot = [pix_xi, pix_xf, pix_yi, pix_yf]
+
+    # Create world coordinate axes
+    wcs = WCS(Kmap.hdr[0])
+    ax1 = fig.add_subplot(1, 3, 1, projection=wcs, label = 'map wcs')
+    ax2 = fig.add_subplot(1, 3, 2, projection=wcs, label = 'halo wcs')
+    ax3 = fig.add_subplot(1, 3, 3, projection=wcs, label = 'diff wcs')
+
+    # set_axes() doesn't work well with subplots of this kind, so we do part
+    # of it here...
+    axes = [ax1, ax2, ax3]
+    for ax in axes:
+        # Set axis info
+        ax.set_autoscale_on(False)
+        ra = ax.coords['ra']
+        dec = ax.coords['dec']
+
+        # Set pixel limits on axis
+        pix_xi = imsubplot[0]
+        pix_xf = imsubplot[1]
+        pix_yi = imsubplot[2]
+        pix_yf = imsubplot[3]
+        ax.set_xlim(pix_xi-0.5, pix_xf-0.5)
+        ax.set_ylim(pix_yi-0.5, pix_yf-0.5)
+
+        # Set labels
+        ra.set_axislabel('Right Ascension / deg')
+        dec.set_axislabel('Declination / deg')
+
+        # Set x/y-axis unit formatter
+        if Lx > 0.03 and Lx <= 0.3:
+            ra.set_major_formatter('d.dd')
+        elif Lx <= 0.03:
+            ra.set_major_formatter('d.ddd')
+        else:
+            ra.set_major_formatter('d.d')
+
+        if Ly >0.03 and Ly <= 0.3:
+            dec.set_major_formatter('d.dd')
+        elif Ly <= 0.03:
+            dec.set_major_formatter('d.ddd')
+        else:
+            dec.set_major_formatter('d.d')
+
+        # max number of ticks
+        num = 8
+        if Lx > Ly:
+            ra.set_ticks(number=num)
+            dec.set_ticks(number=np.ceil(num*Ly/Lx))
+
+        elif Lx < Ly:
+            ra.set_ticks(number=np.ceil(num*Lx/Ly))
+            dec.set_ticks(number=num)
+
+        else:
+            ra.set_ticks(number=num)
+            dec.set_ticks(number=num)
+
+    # Plot the kappamaps
+    im1 = ax1.imshow(Kmap.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+    im2 = ax2.imshow(Khalo.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+    im3 = ax3.imshow(Kdiff.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+
+    # Make single colorbar
+    cbar_ax = fig.add_axes([0.925, 0.395, 0.0225, 0.2325])
+    fig.colorbar(im1, cax=cbar_ax)
+
+    plt.show()
 
     if savefile is not None:
         plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
-
-    plt.show()
 
     return
 

@@ -1,20 +1,4 @@
 # Script to test the 'bin_to_maps()' method
-
-'''
-import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
-import cPickle as pickle
-import astropy.io.fits as pyfits
-import os, sys, cmath, cProfile, copy
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
-import pangloss
-
-K = pangloss.Kappamap(kappafile=[PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa'],FITS=False)
-S = pangloss.Shearmap(shearfiles=[PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1',PANGLOSS_DIR+'/data/GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2'],FITS=False)
-'''
-
 import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
@@ -105,12 +89,7 @@ ra_f, dec_f = Kmap.image2world(Kmap.NX[0],Kmap.NX[0])
 domain = [ra_i, ra_f, dec_i, dec_f]
 Kdiff = pangloss.Kappamap(data=[kappadata,domain,map_xy])
 Kdiff.plot(subplot=d,coords='world')
-# Used for colormap scaling
-#Kmin = np.min(kappadata)
-#Kmax = np.max(kappadata)
-#plt.imshow(kappadata,cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+'kappa_difference', bbox_inches='tight')
 
-# plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+'kappa_difference', bbox_inches='tight')
-# plt.show()
-
-pangloss.plotting.compare_binned_maps(Kmap,Khalo,subplot=d,savefile='kappamap_plots')
+# Make 3 subplots of all maps
+pangloss.plotting.compare_binned_maps(Kmap,Khalo,fig_size=10,savefile='kappamap_plots')
