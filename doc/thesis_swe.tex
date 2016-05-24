@@ -449,6 +449,35 @@ $$\varepsilon_{obs}=M\cdot\varepsilon_{int}$$
 
 A common tool used by cosmologists to measure...   
 
+If all galaxies were spherical, then the measurement of their ellipticities would give an exact description of the lensing done by foreground mass structures. Unfortunately, the intrinsic ellipticities of background galaxies contribute significant noise as we do not know how any individual galaxy ellipticity has been altered by lensing. However as two sources lensed by the same foreground mass will have their ellipticities distorted (in a similar way), their lensed ellipticities should be correlated regardless of intrinsic orientation. The average correlation of a sufficient number of galaxy pairs should overcome the noise and lead to a detectable signal. Importantly, this implies that \textit{the correlation of galaxy ellipticities is a probe of the underlying dark matter mass distribution} (Citation!).
+
+The mathematical tool that measures this average correlation as a function of separation distance between two galaxies is called the ellipticity-ellipticity ($\varepsilon$-$\varepsilon$) correlation function. A quick overview of this function is given below, but readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid should see Appendix (??).
+
+Given two galaxies with ellipticities $\varepsilon_i$ and $\varepsilon_j$ whose orientation is offset by polar angle $\alpha$, the tangential and cross-component components of the ellipticities, $\varepsilon_t$ and $\varepsilon_\times$ respectively, for each are defined as
+\begin{align}
+\varepsilon_{n_t}&=-\operatorname{Re}\left(\varepsilon e^{-2i\alpha}\right),\\
+\varepsilon_{n_\times}&=-\operatorname{Im}\left(\varepsilon e^{-2i\alpha}\right).
+\end{align}
+
+\noindent Instead of using the autocorrelation and cross-correlation between these quantities, it turns out to be more convenient to define the combinations
+
+\begin{align}\label{gg_corr_def}
+\xi_\pm&=\left<\varepsilon_{i_t}\varepsilon_{j_t}\right>\pm\left<\varepsilon_{i_\times}\varepsilon_{j_\times}\right>\\
+\xi_\times&=\left<\varepsilon_{i_t}\varepsilon_{j_\times}\right>
+\end{align}
+
+\noindent where $\theta$ is the position vector of the first galaxy and $\Delta\vec{\theta}$ is the angular separation vector between the pair of galaxies \cite{schneider}. Gravitational lensing shears ellipticities tangentially, so $\xi_\times(\Delta\theta)$ should vanish with enough galaxies. (\textcolor{red}{Why is $\xi_-$ expected to be zero?}), which leaves $\xi_+(\Delta\theta)$ as the desired probe of lensing mass.
+
+As galaxies will only be lensed by the same foreground mass at relatively small separation distances, the $\varepsilon$-$\varepsilon$ correlation function decreases sharply as the separation increases. If the distribution of intrinsic galaxy ellipticities is indeed random, then their $\varepsilon$-$\varepsilon$ correlation function should be essentially zero across all separation scales. 
+
+A similar asdf often used in asdf is the galaxy-mass correlation function, which measures asdf and isdefined as
+\begin{equation}\label{ng_corr_def}
+\xi=
+\end{equation}
+
+\noindent where...
+
+
 %%==========================================================================================================================================
 \section{Pangloss: Line of Sight Mass Reconstructions}
 
@@ -566,6 +595,7 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 
 Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
 
+
 %%==========================================================================================================================================
 \section{Checking the Pangloss Model}
 
@@ -679,9 +709,21 @@ Of intrinsic interest is the relative number of relevant halos needed in each li
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{??}
+\subsection{Dark Matter Convergence Mass Maps}
 
+%%------------------------------------------------------------------------------------------------------------------------------------------
+%% 3 panel plot of binned Hilbert map, Pangloss map, and difference
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/kappamaps.png}
+%     \captionsetup{justification=raggedright,singlelinecheck=false}
+%     \caption{CAPTION}
+%     \label{corr_fraction}
+% \end{figure}
+%
+%%------------------------------------------------------------------------------------------------------------------------------------------
 
+(Explain figures, difference in maps, binning process, etc.)
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Computational Performance}
