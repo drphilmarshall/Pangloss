@@ -801,12 +801,12 @@ def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
     cbar_ax = fig.add_axes([0.925, 0.395, 0.0225, 0.2325])
     fig.colorbar(im1, cax=cbar_ax)
 
-    plt.show()
-
     if savefile is not None:
         plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
 
     return
+
+    plt.show()
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.
