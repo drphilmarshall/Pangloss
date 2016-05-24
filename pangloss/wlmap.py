@@ -461,10 +461,8 @@ class WLMap:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
 
         # Convert subplot bounds to pixel values
-        print 'xi = {}, xf = {}'.format(xi,xf)
         pix_xi,pix_yi = self.world2image(xi,yi)
         pix_xf,pix_yf = self.world2image(xf,yf)
-        print 'pix_xi = {}, pix_xf = {}'.format(pix_xi,pix_xf)
 
         # Pixel length of subplot
         pix_Lx = pix_xf-pix_xi
