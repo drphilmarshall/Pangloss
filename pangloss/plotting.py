@@ -687,7 +687,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
 
 #-------------------------------------------------------------------------------------------------------------------
 
-def compare_binned_maps(Kmap=None,Khalo=None,fig_size=10,savefile=None):
+def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
     '''
     Plots two binned kappamaps, one from lensed_by_maps() and one from lensed_by_halos(), as well as their difference.
     NOTE: Currently, this will only compare binned kappamaps that are square.
