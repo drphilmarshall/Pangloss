@@ -151,12 +151,12 @@ Outline thesis
 % In this paper, I attempt to do the former by applying a simple dark matter halo model to reconstruct mass along lines of sight in the Millennium Simulation and predict the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on 3,240 galaxies on a field size of 324 arcmin$^2$, along with a comparison of the predicted lensed ellipticities to ray-traced ellipticities, is given in Section IV.  Section V discusses limitations of the used framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
 
 %%==========================================================================================================================================
-\section{Cosmological Background}
+\section{Cosmological Background} \label{background}
 
 Before describing the developed model for line-of-sight dark matter mass map reconstructions from weak lensing measurements, I briefely review a few topics in astronomy and cosmology that are relevant for this thesis such as the dark matter halo model, gravitational lensing, and correlation functions.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Dark Matter Halos}
+\subsection{Dark Matter Halos} \label{halos}
 
 Cosmological simulations like the Millennium Simulation (MS) demonstrate that the underlying dark matter distribution of our universe is likely breathtakingly complex; rather than a largely disordered collection of galaxies and interstellar gas, matter appears to condense into clusters and superclusters of galaxies threaded together by large filaments (pocketed) with under-dense regions called voids, as shown in Figure ??(1.a) (CITE MS). While the exact relation between the distribution of galaxies and dark matter is not known, simulations predict that early galaxies formed in the large gravitational potentials of over-dense regions of dark matter (CITE!). This suggests that, while we cannot map dark matter directly, galaxies should trace out at least some of the underlying dark matter structures \textcolor{red}{(Citation!)}. A comparrison of the predicted galaxy and dark matter distribution from a small region of the MS is shown in Figure (???).
 
@@ -199,7 +199,7 @@ The simplest way to model the relationship between galaxies and the dark matter 
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Filaments, Voids, and the Smooth-Component Correction}
+\subsection{Filaments, Voids, and the Smooth-Component Correction} \label{scc}
 
 The halo model only accounts for dark matter structures associated with galaxies. However, this neglects other structures such as the filaments and voids that can be seen in Figure (??). Modelling these features accurately would be difficult; we could try, for example, to model filaments by attaching cylinders of dark matter between massive clusters of galaxies. While an intriguing idea, rigorously testing for the appropriate filament density distributions, selection criteria, and frequency to statistically match simulations could constitute its own thesis.
 
@@ -308,7 +308,7 @@ dr_p=\frac{d_H}{E(z)(1+z)}dz.
 \end{equation}
 
 \noindent Combining this result with Equation \eqref{temp_solution} leads to the desired proper volume element given by
-\begin{equation}
+\begin{equation}\label{pvolume_element}
 dV_p=\frac{d_Hd_M(z)^2}{E(z)(1+z)^3}dzd\Omega.
 \end{equation}
 
@@ -328,7 +328,7 @@ The proper volume is found by integrating the above volume element over the soli
 % \end{align}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Gravitational Lensing}
+\subsection{Gravitational Lensing} \label{grav_lensing}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Ellipticity Orientation Figure
@@ -422,7 +422,7 @@ $$\left<\varepsilon\right>=0.$$
  The analytical form of the convergence and shear contribution from a BMO-profile is quite messy, but is derived and explained in detail in (Cite Phil's paper!!). Calculating the lensing contribution of the smooth-component correction is much simpler; the projected surface mass density at at given redshift is found by integrating $\rho_s(z)$ over a sufficiently small $dz$ interval, and then the mass sheet's convergence is found using Equation \eqref{kappa}. There is no shear contribution as a uniform sheet of mass causes only magnification due to the mass sheet degeneracy (CITE!). However, Equation \eqref{lensing} shows that the lensed ellipticities depend on the \textit{reduced} shear, which does depend on the additional convergence terms resulting from the smooth-component correction.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Galaxies as Ellipses}
+\subsection{Galaxies as Ellipses} \label{galaxies_as_ellipses}
 
 (introduce issue)
 
@@ -445,28 +445,26 @@ $$\varepsilon_{obs}=M\cdot\varepsilon_{int}$$
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Correlation Functions}
-
-A common tool used by cosmologists to measure...   
+\subsection{Correlation Functions} \label{corr_functions}
 
 If all galaxies were spherical, then the measurement of their ellipticities would give an exact description of the lensing done by foreground mass structures. Unfortunately, the intrinsic ellipticities of background galaxies contribute significant noise as we do not know how any individual galaxy ellipticity has been altered by lensing. However as two sources lensed by the same foreground mass will have their ellipticities distorted (in a similar way), their lensed ellipticities should be correlated regardless of intrinsic orientation. The average correlation of a sufficient number of galaxy pairs should overcome the noise and lead to a detectable signal. Importantly, this implies that \textit{the correlation of galaxy ellipticities is a probe of the underlying dark matter mass distribution} (Citation!).
 
-The mathematical tool that measures this average correlation as a function of separation distance between two galaxies is called the ellipticity-ellipticity ($\varepsilon$-$\varepsilon$) correlation function. A quick overview of this function is given below, but readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid should see Appendix (??).
+The mathematical tool that measures the average correlation as a function of separation distance between two galaxies is called the ellipticity-ellipticity ($\varepsilon$-$\varepsilon$) correlation function. A quick overview of this function is given below, but readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid should see Appendix (??).
 
 Given two galaxies with ellipticities $\varepsilon_i$ and $\varepsilon_j$ whose orientation is offset by polar angle $\alpha$, the tangential and cross-component components of the ellipticities, $\varepsilon_t$ and $\varepsilon_\times$ respectively, for each are defined as
 \begin{align}
-\varepsilon_{n_t}&=-\operatorname{Re}\left(\varepsilon e^{-2i\alpha}\right),\\
-\varepsilon_{n_\times}&=-\operatorname{Im}\left(\varepsilon e^{-2i\alpha}\right).
+\varepsilon_{k_t}&=-\operatorname{Re}\left(\varepsilon_k e^{-2i\alpha}\right),\\
+\varepsilon_{k_\times}&=-\operatorname{Im}\left(\varepsilon_k e^{-2i\alpha}\right).
 \end{align}
 
-\noindent Instead of using the autocorrelation and cross-correlation between these quantities, it turns out to be more convenient to define the combinations
+\noindent Instead of using the autocorrelation and cross-correlation of these quantities, it turns out to be more convenient to define the combinations
 
 \begin{align}\label{gg_corr_def}
-\xi_\pm&=\left<\varepsilon_{i_t}\varepsilon_{j_t}\right>\pm\left<\varepsilon_{i_\times}\varepsilon_{j_\times}\right>\\
-\xi_\times&=\left<\varepsilon_{i_t}\varepsilon_{j_\times}\right>
+\xi_\pm(\Delta\theta)&=\left<\varepsilon_{i_t}(\vec{\theta})\varepsilon_{j_t}(\vec{\theta}+\vec{\Delta\theta})\right>\pm\left<\varepsilon_{i_\times}(\vec{\theta})\varepsilon_{j_\times}(\vec{\theta}+\vec{\Delta\theta})\right>\\
+\xi_\times(\vec{\Delta\theta})&=\left<\varepsilon_{i_t}(\vec{\theta})\varepsilon_{j_\times}(\vec{\theta}+\vec{\Delta\theta})\right>
 \end{align}
 
-\noindent where $\theta$ is the position vector of the first galaxy and $\Delta\vec{\theta}$ is the angular separation vector between the pair of galaxies \cite{schneider}. Gravitational lensing shears ellipticities tangentially, so $\xi_\times(\Delta\theta)$ should vanish with enough galaxies. (\textcolor{red}{Why is $\xi_-$ expected to be zero?}), which leaves $\xi_+(\Delta\theta)$ as the desired probe of lensing mass.
+\noindent where $\vec{\theta}$ is the position vector of the first galaxy and $\Delta\vec{\theta}$ is the angular separation vector between the pair of galaxies \cite{schneider}. Gravitational lensing shears ellipticities tangentially, so $\xi_\times(\Delta\theta)$ should vanish with enough galaxies. (\textcolor{red}{Why is $\xi_-$ expected to be zero?}), which leaves $\xi_+(\Delta\theta)$ as the desired probe of lensing mass.
 
 As galaxies will only be lensed by the same foreground mass at relatively small separation distances, the $\varepsilon$-$\varepsilon$ correlation function decreases sharply as the separation increases. If the distribution of intrinsic galaxy ellipticities is indeed random, then their $\varepsilon$-$\varepsilon$ correlation function should be essentially zero across all separation scales. 
 
@@ -479,7 +477,7 @@ A similar asdf often used in asdf is the galaxy-mass correlation function, which
 
 
 %%==========================================================================================================================================
-\section{Pangloss: Line of Sight Mass Reconstructions}
+\section{Pangloss: Line of Sight Mass Reconstructions} \label{pangloss}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Pangloss Cartoon
@@ -497,7 +495,7 @@ mass along the line of sight of each background galaxy using a halo model with s
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Model Assumptions}
+\subsection{Model Assumptions} \label{assumptions}
 While \texttt{Pangloss} may be used more generally, the present analysis makes some additional strong assumptions to simplify the problem for a first attempt at making weak lensing predictions.
 
 \begin{enumerate}
@@ -511,7 +509,7 @@ Testing the first assumption is the main goal of this paper. The second assumpti
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{The Millennium Simulation}
+\subsection{The Millennium Simulation} \label{ms}
 \texttt{Pangloss} cannot be used to make dark matter mass maps using existing galaxy catalogs until it is tested on a simulated universe with known dark matter structure to determine how accurately and precisely it predicts the lensing of background sources. For this purpose, \texttt{Pangloss} was tested on galaxy catalogs from the Millennium Simulation, an N-body simulation consisting of over 10 billion dark matter `particles' each representing a billion solar masses and populated with about 20 million galaxies \cite{millennium_simulation}. The simulation contains baryonic and dark matter structure believed to be similar to our own universe, and uses cosmological parameters from WMAP 1\textsuperscript{st}-year data analysis which assumed a matter density of $\Omega_m=0.25$, a dark energy density of $\Omega_\Lambda=0.75$, and a Hubble constant of $H_0=73$ km$\,$s$^{-1}\,$Mpc$^{-1}$ (\textcolor{red}{CITE!!}). From the work of Hilbert et al. \cite{ray_tracing}, high resolution maps of the ray-traced shear and convergence of galaxy sources at $z=1.3857$ are publicly available. From these maps, an estimate of the `true' lensing of background galaxy ellipticities when traveling through the foreground mass of the Millennium Simulation can be calculated using Equation \eqref{lensing}.
 
 
@@ -525,7 +523,7 @@ With a catalog of foreground galaxies chosen, a set of \textcolor{red}{???} back
 
 While ideally all foreground mass in a field would be considered when predicting the weak lensing of a background galaxy, it is computationally prohibitive to do so. Instead, all foreground halos contained within a `lightcone' centered along the line of sight to the source and extending out to a chosen lightcone radius $R$ were considered when calculating the lensing contributions for the background source. A cartoon model of this process is shown in Figure \ref{pangloss_cartoon}. Unless otherwise specified, experiments in this paper used a radius of 6 arcminutes and halo truncation scale of five times the virial radius.
 
-To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first binned to a grid of 100 equally-sized redshift bins from $z=0$ to the sourced redshift of $z=1.3857$ and then converted to physical distances using the cosmology defined by the Millennium Simulation.
+To calculate the convergence and shear contribution of each halo, the physical distance from the halo to the line of sight was needed. To increase the speed of distance calculations, the foreground halo redshifts were first binned to a grid of 100 equally-sized redshift bins $\Delta z\approx0.013857$ from $z=0$ to the sourced redshift of $z=1.3857$, and then converted to physical distances using the cosmology defined by the Millennium Simulation.
 
 \subsection{Assigning Relevance to Halos}
 
@@ -549,7 +547,7 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Calculating the Smooth-Component Correction}
+\subsection{Calculating the Smooth-Component Correction} \label{calc_scc}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Smooth-Component Correction Diagram
@@ -562,9 +560,14 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 % \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
-(Introduce idea in Cosmological background, but cover image and specific details to implementation here.)\\
+As discussed in Section \ref{scc}, the halo model does not account for additional mass structures such as filaments. To apply the smooth-component correction to \texttt{Pangloss}, the mean mass density $\rho(z)$ and halo density $\rho_h(z)$ had to be calculated at each of the 100 redshift bins. For $\rho_h(z)$, this was done by summing all halo masses $M_{h,i}$ in a given redshift bin and integrating Equation \eqref{pvolume_element} from ${z-\Delta z/2}$ to ${z+\Delta z/2}$, except for the boundary bins. Once $\rho_h(z)$ had been calculated for each redshift slice, the projected surface mass density was found by integrating over the redshift interval,
+\begin{equation}\label{surface_density} 
+\sum(z)=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho_s(z)\,dz=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho(z)-\rho_h(z)\,dz,
+\end{equation}
 
-(Volume and Surface density plots for s.c.c. redshift slices)
+\noindent and the convergence contribution of the mass sheet was calculated using Equation \eqref{convergence} with ${z_l=z}$ and ${z_s=1.3857}$. The corrected total convergence for a given background source is simply the sum of the halo contributions and the asfd. There is no additional shear produced by a uniform sheet of mass (citation!), but the corrected reduced shear is now calculated using the corrected total $\kappa$ in Equation \eqref{reduced_shear}. A diagram of this process is shown in Figure \ref{fig:scc}.
+
+The volume and projected surface mass densities of each redshift slice are shown in Figures \ref{fig:volume_densities} and \ref{fig:surface_densities} respectively. (Describe plots)
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Surface and Volume densities for smooth-component correction redshift slices
@@ -574,7 +577,7 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 %         \includegraphics[width=\textwidth]{figs-swe/thesis/scc_vol_den.png}
 %         \captionsetup{justification=raggedright,singlelinecheck=false}
 %         \caption{CAPTION}
-%         \label{volume_densities}
+%         \label{fig:volume_densities}
 %     \end{subfigure}
 %     ~
 %     %% Einstein Ring Figure
@@ -582,7 +585,7 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 %         \includegraphics[width=\textwidth]{figs-swe/thesis/scc_surf_deng.png}
 %         \captionsetup{justification=raggedright,singlelinecheck=false}
 %         \caption{CAPTION}
-%         \label{surface_densities}
+%         \label{fig:surface_densities}
 %     \end{subfigure}
 %     \caption{}
 % \end{figure*}
