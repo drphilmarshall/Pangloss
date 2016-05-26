@@ -571,7 +571,7 @@ class BackgroundCatalog(pangloss.Catalog):
             foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
 
         # Only take the columns from foreground that are needed for a lightcone
-        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
+        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type','mag'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type'],foreground.galaxies['mag_SDSS_i']])
 
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
@@ -923,14 +923,15 @@ class BackgroundCatalog(pangloss.Catalog):
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
-            imshow = fig.axes[0]
-            world = fig.axes[1]
+            ax = plt.gca()
+            ra = ax.coords['ra']
+            dec = ax.coords['dec']
 
             # If the Kappamap subplot was not passed to this Shearmap:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
-                fig.sca(world)
-                subplot = plt.axis()
+                subplot = [ax.axis()[0]+.5, ax.axis()[1]+.5, ax.axis()[2]+.5, ax.axis()[3]+.5]
+                coords = 'pixel'
 
             # Adopt figure size from open Kappamap:
             fig_size = plt.gcf().get_size_inches()[0]
@@ -995,14 +996,15 @@ class BackgroundCatalog(pangloss.Catalog):
                 ePhi_halo = -galaxies['ePhi_halo']
 
         # Set current axis to world coordinates and set the limits
-        fig.sca(world)
-        world.set_xlim(subplot[0],subplot[1])
-        world.set_ylim(subplot[2],subplot[3])
+        # OLD; before astropy wcs implementation
+        #fig.sca(world)
+        #world.set_xlim(subplot[0],subplot[1])
+        #world.set_ylim(subplot[2],subplot[3])
 
         if graph == 'scatter':
             # Scale size of point by the galaxy mass
             s = [math.log(mass[i]) for i in range(0,len(mass))]
-            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
+            ax.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue',transform='wcs')
 
         elif graph == 'ellipse':
             # Scale galaxy plot size by its mass?
