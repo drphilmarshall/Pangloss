@@ -462,11 +462,11 @@ Given two galaxies with ellipticities $\varepsilon_i$ and $\varepsilon_j$ whose 
 \xi_\times(\vec{\Delta\theta})&=\left<\varepsilon_{i_t}(\vec{\theta})\varepsilon_{j_\times}(\vec{\theta}+\vec{\Delta\theta})\right>
 \end{align}
 
-\noindent where $\vec{\theta}$ is the position vector of the first galaxy and $\Delta\vec{\theta}$ is the angular separation vector between the pair of galaxies \cite{schneider}. Gravitational lensing shears ellipticities tangentially, so $\xi_\times(\Delta\theta)$ should vanish with enough galaxies. (\textcolor{red}{Why is $\xi_-$ expected to be zero?}), which leaves $\xi_+(\Delta\theta)$ as the desired probe of lensing mass.
+\noindent where $\vec{\theta}$ is the position vector of the first galaxy and $\Delta\vec{\theta}$ is the angular separation vector between the pair of galaxies \cite{schneider}. Gravitational lensing shears ellipticities tangentially, so $\xi_\times(\Delta\theta)$ should vanish with enough galaxies and therefore is a useful estimate of the bias. (\textcolor{red}{Why is $\xi_-$ expected to be zero?}), which leaves $\xi_+(\Delta\theta)$ as the desired probe of lensing mass.
 
 As galaxies will only be lensed by the same foreground mass at relatively small separation distances, the $\varepsilon$-$\varepsilon$ correlation function decreases sharply as the separation increases. If the distribution of intrinsic galaxy ellipticities is indeed random, then their $\varepsilon$-$\varepsilon$ correlation function should be essentially zero across all separation scales. 
 
-A similar asdf often used in asdf is the galaxy-mass correlation function, which measures asdf and isdefined as
+A similar statistical measure often used in ... is the galaxy-mass correlation function, which measures ... and is defined as
 \begin{equation}\label{ng_corr_def}
 \xi=
 \end{equation}
@@ -783,23 +783,53 @@ A secondary goal of this research was to investigate how quickly the prediction 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 %%==========================================================================================================================================
-\section{Feasibility of Parameter Inference using Pangloss}
+\section{Feasibility of Parameter Inference using Pangloss} \label{feasibility}
 
 Introduction, explain difference between the two different methods.
 
-
-%%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Likelihood Estimation}
-
-\begin{enumerate}
-\item Equation from Phil's dissertation
-\item Calculate time with and without drilling
-\item Time per lensing event, time per lightcone
-\end{enumerate}
+One of the long-term goals of \texttt{Pangloss} is to be able to use all available sky survey data (sky positions, stellar masses, magnitude, photometric redshift, ellipticities, etc.) to make a hierarchial inference of the Universe's cosmological and galaxy population model hyper-parameters such as the density paramters $\Omega_m$ and $\Omega_\Lambda$, the Hubble constant $H_0$, and stellar mass - halo mass relation. This is a large undertaking and will require considerable testing and calibration on large N-body simulations such as the Millennium Simulation. As a first step towards this goal, I attempted to gague the feasibility of implementing two methods of parameter inference, maximum likelihood estimation and approximate Bayesian computation (ABC), using the current framework. The results of this feasibility test, particularly the CPU time per likelihood estimation, will help guide fugure work on \texttt{Pangloss}. For a detailed description of a probablistic modeling approach to gravitational lensing inference for large sky surveys, see \cite{grav_lens_inference}. Exploratory notes of implementing such an inference in the framework is available on \texttt{Pangloss}'s public github repository\footnote{https://github.com/drphilmarshall/Pangloss/issues/23}.
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-\subsection{Approximate Bayesian Computation}
+\subsection{Likelihood Estimation} \label{mle}
+
+Perhaps the most common method of parameter estimation of statistical models is called maximum-likelihood estimation (MLE). The likelihood is a function of the parameters of a statistical model that measures the probability of a data set or outcomes given the model parameters \cite{??}. It is the mathematical answer to the question, ``\textit{Given a particular set of parameters, what is the probability that this data set could have occured?}" The form of the likelihood depends on the properties and circumstances of the data, but generally has the form of the product of the probability density function $f$ of each individual observation $x_i$ given model parameters $\vec{\theta}$ \cite{likelihood}:
+\begin{equation}
+\mathcal{L}(\vec{\theta},x_1,x_2,\ldots,x_n)=\prod_{i=1}^nf(x_i|\vec{\theta}).
+\end{equation}
+
+A much more detailed introduction to likelihood and MLE is given in \cite{likelihood}. For this work, the likelihood is given by \cite{marshall_thesis}:
+\begin{equation}\label{likelihood}
+\mathcal{L}(\Sigma|\varepsilon_i,j,g_i,j)=\frac{1}{Z_L}\exp\left(\frac{-\chi^2}{2}\right),
+\end{equation}
+
+\noindent where $\varepsilon_i,j$ is the $j$-component of the $i$-th predicted lensed galaxy ellipticity, $g_i,j$ is the $j$-th component of the `true' reduced shear corresponding to $\varepsilon_i$, $\chi^2$ is the typical test statistic
+\begin{equation}\label{chi2}
+\chi^2=\sum_{i=1}^N\sum_{j=1}^2\frac{(\varepsilon_{i,j}-g_{i,j})^2}{\sigma^2},
+\end{equation}
+
+\noindent the normalization factor $Z_L$ is
+\begin{equation}
+Z_L=(2\pi\sigma^2)^{(2N)/2},
+\end{equation}
+
+\noindent where $N$ is the number of background galaxies (the $2N$ exponent is a result of the two ellipticity components for each of the $N$ galaxies), and the uncertainty in galaxy ellipticity estimation $\sigma$ is the sum in quadrature of the dispersions of intrinsic and `observed' (i.e. \texttt{Pangloss}-predicted) ellipticities:
+\begin{equation}\label{sigma}
+\sigma=\sqrt{\sigma_{\text{int}}^2+\sigma_{\text{obs}}^2}.
+\end{equation}
+
+While this works in principle, computationally it is much easier to work with the natural logarithm of the likelihood function called the log-likelihood. As the logarithm is a monotonically increasing function, the likelihood and log-likelihood achieve their maximum at the same points and so can be used interchangably in maximum likelihood estimation. From Equations \eqref{likelihood}-\eqref{sigma} is follows that the log-likelihood is given by
+\begin{align}\label{log-likelihood}
+\ln\mathcal{L}&=-\ln Z_L-\frac{1}{2}\chi^2\\
+&=-\frac{N}{2}\ln(2\pi\sigma)-\frac{1}{2}\sum_{i=1}^N\sum_{j=1}^2\frac{(\varepsilon_{i,j}-g_{i,j})^2}{\sigma^2}.
+\end{align}
+
+To use \texttt{Pangloss} to infer hyperparameters using MLE, a set of trial parameters would be sampled from appropriate prior distributions and used to calculate the lensed ellipticities of a mock background catalog using the methodology shown in Section \ref{pangloss}. The log-likelihood of this set of parameters would be calculated using Equation \eqref{log-likelihood}, and the process would be repeated for many parameter combinations until a sufficient approximation of the likelihood is made. The most likely hyperparameters would then simply be the set of parameters that led to the maximum likelihood.
+
+However, exploring the parameter space efficiently is a significant problem in MLE, especially in a dataset such as this which there are potentially millions or even billions of parameters (i.e. halo masses). For this thesis, I only compute the log-likelihood for a small handful of parameter sets to gague how feasible such an inference would be in future work with far more computational power.
+
+%%------------------------------------------------------------------------------------------------------------------------------------------
+\subsection{Approximate Bayesian Computation} \label{abc}
 
 \begin{enumerate}
 \item Difficult to calculate likelihood, can instead make mock data by samping parameters from prior distribution
@@ -809,6 +839,23 @@ Introduction, explain difference between the two different methods.
 \item Compare time to single lensing event
 \end{enumerate}
 
+As discussed in the previous section, the likelihood is computationally expensive to calculate and difficult to ...
+
+ABC is a class of computational methods that estimate the posterior distribution of ... without calculating the likelihood function.
+
+
+A general overview of the ABC process is shown in Figure \ref{fig:abc} which is taken from \cite{abc}, which offers an excellent introduction to the topic.
+
+%%------------------------------------------------------------------------------------------------------------------------------------------
+% Mean lightcone CPU time
+\begin{figure}
+    \centering
+    \includegraphics[width=0.475\textwidth]{figs-swe/thesis/abc.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:abc}
+\end{figure}
+%%------------------------------------------------------------------------------------------------------------------------------------------
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Results}
