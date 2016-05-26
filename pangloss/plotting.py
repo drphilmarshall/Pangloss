@@ -392,6 +392,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     handles = [h[0] for h in handles]
     plt.legend(handles,labels,fontsize=18)
 
+    plt.tick_params(axis='both', which='major', labelsize=16)
+
     # Print the number of lightcones and their radii
     if galaxy_count and radius is not None:
         # place a text box in upper left in axes coords
@@ -408,7 +410,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
     return
 
-def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
+def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None,fig_size=10,show=True):
     '''
     Plots a comparrison of the ray-traced/map correlation, halo model correlation, and relevant-halos correlation.
     '''
@@ -483,7 +485,9 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         plt.plot([min_sep, max_sep],[mean_ng_err, mean_ng_err],'--b',label='Mean Error: {:.3}%'.format(mean_ng_err),linewidth=2)
     # Set plot settings
     plt.xscale('log')
+    plt.yscale('log')
     plt.gca().set_xlim(min_sep,max_sep)
+    plt.tick_params(axis='both', which='major', labelsize=16)
 
     # Make axis ticks larger
     plt.gca().tick_params('both', length=5, width=1, which='major')
@@ -492,13 +496,14 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
     # Set axes labels
     plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
     plt.ylabel('Percent Error',fontsize=20)
-    plt.legend(fontsize=18)
+    plt.legend(fontsize=16)
 
     # State the NRMSE
     plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
-    plt.gcf().set_size_inches(10,10)
-    plt.show()
+    plt.gcf().set_size_inches(fig_size,fig_size)
+
+    if show is True: plt.show()
 
     return
 
@@ -609,7 +614,7 @@ def reject_outliers(data, m=5):
     '''
     return data[abs(data - np.mean(data)) < m * np.std(data)], abs(data - np.mean(data)) < m * np.std(data)
 
-def plot_densities(foreground,lightcone,density_type='volume'):
+def plot_densities(foreground,lightcone,density_type='volume',fig_size=10,show=True,label=True):
     '''
     Plots the universe's mass density, halo mass density, and smooth-component mass density
     as a function of redshift.
@@ -664,7 +669,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     plt.yticks(fontsize=14)
     plt.yscale('log')
     ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize='16')
-    plt.legend(loc=2)
+    plt.legend(loc=2,fontsize=16)
 
     # Set up histogram axis
     ax_hist = ax_rho.twinx()
@@ -674,14 +679,15 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     plt.yscale('log')
     ax_hist.set_ylabel('Galaxy Count', color='g',fontsize='16')
     plt.yticks(fontsize=14)
+    plt.gcf().set_size_inches(fig_size,fig_size)
 
     # Match axis label colors to plot colors
     #for tl in ax_rho.get_yticklabels(): tl.set_color('b')
     for tl in ax_hist.get_yticklabels():  tl.set_color('g')
 
-    plt.gca().text(0.25,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    if label is True: plt.gca().text(0.25,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
-    plt.show()
+    if show is True: plt.show()
 
     return
 

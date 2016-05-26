@@ -703,7 +703,7 @@ class Lightcone(object):
 # Plotting
 # ----------------------------------------------------------------------------
 
-    def plot_kappas(self):
+    def plot_kappas(self,fig_size=10,show=True):
         '''
         Compares the halo, foreground, and smooth-component kappas at each
         redshift slice.
@@ -718,10 +718,14 @@ class Lightcone(object):
 
         plt.plot(self.galaxies['z_sz'],kappa,'og',label='Individual Kappas')
         plt.plot(redshifts,kappa_s,'ob',label='Smooth-component Kappas')
-        plt.xlabel('Redshift (z)',fontsize=16)
-        plt.ylabel(r'$\kappa$',fontsize=16)
-        plt.legend()
-        plt.show()
+        plt.gca().set_yscale("log")
+        plt.xlabel(r'Redshift ($z$)',fontsize=18)
+        plt.ylabel(r'Convergence $\kappa$',fontsize=18)
+        plt.tick_params(axis='both', which='major', labelsize=16)
+        plt.legend(fontsize=16)
+        plt.gcf().set_size_inches(fig_size,0.75*fig_size)
+
+        if show is True: plt.show()
 
         return
 
@@ -886,7 +890,9 @@ class Lightcone(object):
        zmax = max(self.galaxies['z'].max(),self.zs+0.1)
 
        # Labels:
-       plt.xlabel('redshift z')
+       plt.xlabel('Redshift z')
+
+       plt.gcf().tight_layout()
 
        if output != None:
            pangloss.rm(output)
