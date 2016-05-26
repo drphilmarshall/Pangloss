@@ -134,21 +134,19 @@
 %%==========================================================================================================================================
 \section{Introduction}
 
-Intro\\
+In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, accounts for less than 20\% of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves \cite{rotation_curve}, velocity dispersions of galaxies \cite{zwicky}, and acoustic peaks in the cosmic microwave background \cite{planck_2015}.
 
-Place in context of recent work\\
+One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. Light from different origins in a source galaxy is subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
 
-The goals of this thesis are two answer the two following questions: How accurately can we reconstruct line-of-sight dark matter mass structures using a halo model? From our model outputs, how feasible is an inference of the stellar mass – halo mass relation parameters?\\
+While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background sources, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.\\
 
-Outline thesis
+(Connect to previous work done by Collett et al., Hilbert et al., McCully et al., Pache et al., etc.)\\
 
-% OLD: In a universe teeming with galaxies and light, it came as a shock when 20\textsuperscript{th} century astronomers discovered that most of the mass in the universe is in fact dark; the `normal' matter made of atoms that we interact with in everyday life, called baryonic matter, accounts for less than 20\% of the mass in the observable universe. The remaining mass takes the form of an exotic dark matter that does not absorb or emit light, rendering it invisible to our telescopes. While this claim sounds bizarre, there has been an abundance of indirect evidence in recent decades for the existence of dark matter including the flattening of galaxy rotation curves \cite{rotation_curve}, velocity dispersions of galaxies \cite{zwicky}, and acoustic peaks in the cosmic microwave background \cite{planck_2015}.
+%By applying a simple dark matter halo model to reconstruct lensing mass along lines of sight in the Millennium Simulation to predict the weakly lensed ellipticities of generated background sources, in this thesis I attempt to answer the following questions: 
 
-% One of the most successful probes of dark matter has been gravitational lensing. The path of light from distant `background' galaxies is bent when traveling through regions of space containing large amounts of `foreground' mass. Light from different origins in a source galaxy is subject to different bending which results in a distortion of the galaxy image. As the foreground mass is known to be largely dark matter, gravitational lensing supplies a direct constraint on the mass of dark matter in that region.
+In this thesis, I apply a simple dark matter halo model to reconstruct lensing mass along lines of sight in the Millennium Simulation to predict the weakly lensed ellipticities of generated background sources. By doing so, I attempt to answer the following questions: Under the best possible circumstances of having noiseless redshifts and halo masses, how accurately can I reconstruct line-of-sight dark matter mass structures using a simple halo model? What fraction of dark matter mass is in halos? How feasible is an inference of the Millennium Simulation's cosmological hyper-parameters, such as the stellar mass-halo mass relation, using all available halo data? How long does such an inference take?
 
-% While the effects of gravitational lensing can be dramatic, the shape of most galaxies is only distorted by a few percent and must be detected statistically as the intrinsic shape is not known. If a model for the distribution of dark matter in a region of foreground mass can accurately predict the statistical signal of this `weak' lensing of background sources, then the model can be used on galaxies in existing sky survey data to extrapolate the amount of dark matter in the region and construct large-scale maps of the dark matter in the universe.
-
-% In this paper, I attempt to do the former by applying a simple dark matter halo model to reconstruct mass along lines of sight in the Millennium Simulation and predict the weakly lensed ellipticities of generated background sources. A brief introduction into the theory of galaxy ellipticities, the effects of strong and weak gravitational lensing, and dark matter halos is discussed in Section II. The implementation of a halo model on the Millennium Simulation is described in Section III, and the results of the model on 3,240 galaxies on a field size of 324 arcmin$^2$, along with a comparison of the predicted lensed ellipticities to ray-traced ellipticities, is given in Section IV.  Section V discusses limitations of the used framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VI.
+A brief introduction to the halo model, the effects of strong and weak gravitational lensing, representing galaxy ellipticities, and cosmological correlation functions is discussed in Section II. The implementation of the \texttt{Pangloss} framework to make line of sight lensing predictions in the Millennium Simulation is described in Section III, and the results of the framework on ?? galaxies on a field size of ?? arcmin$^2$, along with a comparison of the predicted lensed ellipticities to ray-traced ellipticities, is given in Section IV. Section V explores the feasibility of using \texttt{Pangloss} to make parameter inferences using all available halo data either by likelihood estimation or approximate Bayesian computation. Section VI discusses limitations of the used framework as well as potential physical and computational improvements that can be made for upcoming work before concluding remarks in Section VII.
 
 %%==========================================================================================================================================
 \section{Cosmological Background} \label{background}
@@ -158,32 +156,32 @@ Before describing the developed model for line-of-sight dark matter mass map rec
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Dark Matter Halos} \label{halos}
 
+%%------------------------------------------------------------------------------------------------------------------------------------------
+%% FIGURE: Millennium Simulation Distribution plots (cosmic web, galaxy clusters with/without dark matter)
+\begin{figure*}
+    \centering
+    \begin{subfigure}[H]{0.375\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/ms_galaxies.jpg}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        \label{ms_galaxies}
+    \end{subfigure}
+    ~
+    %% Einstein Ring Figure
+    \begin{subfigure}[H]{0.375\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/ms_halos.jpg}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        \label{ms_halos}
+    \end{subfigure}
+    \caption{}
+\end{figure*}
+
+%%------------------------------------------------------------------------------------------------------------------------------------------
+
 Cosmological simulations like the Millennium Simulation (MS) demonstrate that the underlying dark matter distribution of our universe is likely breathtakingly complex; rather than a largely disordered collection of galaxies and interstellar gas, matter appears to condense into clusters and superclusters of galaxies threaded together by large filaments (pocketed) with under-dense regions called voids, as shown in Figure ??(1.a) (CITE MS). While the exact relation between the distribution of galaxies and dark matter is not known, simulations predict that early galaxies formed in the large gravitational potentials of over-dense regions of dark matter (CITE!). This suggests that, while we cannot map dark matter directly, galaxies should trace out at least some of the underlying dark matter structures \textcolor{red}{(Citation!)}. A comparrison of the predicted galaxy and dark matter distribution from a small region of the MS is shown in Figure (???).
 
 %However, these simulations also indicate that galaxies tend to form in the large gravitational potentials of dark matter over-dense regions of dark matter. While the exact relation between the distribution of galaxies and dark matter is not known, this m
-
-%%------------------------------------------------------------------------------------------------------------------------------------------
-%% FIGURE: Millennium Simulation Distribution plots (cosmic web, galaxy clusters with/without dark matter)
-% \begin{figure*}
-%     \centering
-%     \begin{subfigure}[H]{0.4\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/thesis/ms_galaxies.jpg}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{CAPTION}
-%         \label{ms_galaxies}
-%     \end{subfigure}
-%     ~
-%     %% Einstein Ring Figure
-%     \begin{subfigure}[H]{0.4\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/thesis/ms_halos.jpg}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{CAPTION}
-%         \label{ms_halos}
-%     \end{subfigure}
-%     \caption{}
-% \end{figure*}
-
-%%------------------------------------------------------------------------------------------------------------------------------------------
 
 The simplest way to model the relationship between galaxies and the dark matter distribution is by enveloping each galaxy in a spherically symmetric dark matter `halo' of a certain mass $M_h$. These halos extend far beyond the edge of the visible galaxy that they enclose, with the Milky Way's own halo estimated to have a radius of \textcolor{red}{(Check and cite!)}. While the density profile of the halos may be complex, numerous simulations have shown that it can be well approximated locally by the Navarro-Frenk-White (NFW) profile which has the form
 \begin{equation}\label{nfw_profile}
@@ -332,24 +330,24 @@ The proper volume is found by integrating the above volume element over the soli
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Ellipticity Orientation Figure
-% \begin{figure*}
-%     \centering
-%     \begin{subfigure}[H]{0.415\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/ellipse_orientations.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{The shape of a galaxy image for various ellipticity components $\varepsilon_1$ and $\varepsilon_2$ on the $x$ and $y$-axes respectively. Taken from \cite{schneider}.}
-%         \label{ellipses}
-%     \end{subfigure}
-%     ~
-%     %% Einstein Ring Figure
-%     \begin{subfigure}[H]{0.425\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/einstein_ring.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{An image of the luminous red galaxy LRG 3-757 along with a strongly lensed background galaxy, called the `Cosmic Horseshoe' \cite{einstein_ring}.}
-%         \label{einstein_ring}
-%     \end{subfigure}
-%     \caption{}
-% \end{figure*}
+\begin{figure*}
+    \centering
+    \begin{subfigure}[H]{0.415\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/ellipse_orientations.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{The shape of a galaxy image for various ellipticity components $\varepsilon_1$ and $\varepsilon_2$ on the $x$ and $y$-axes respectively. Taken from \cite{schneider}.}
+        \label{ellipses}
+    \end{subfigure}
+    ~
+    %% Einstein Ring Figure
+    \begin{subfigure}[H]{0.425\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/einstein_ring.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{An image of the luminous red galaxy LRG 3-757 along with a strongly lensed background galaxy, called the `Cosmic Horseshoe' \cite{einstein_ring}.}
+        \label{einstein_ring}
+    \end{subfigure}
+    \caption{}
+\end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 While dark matter does not absorb or emit light, it does interact with light indirectly through gravitational lensing. The presence of matter curves spacetime locally which causes light to follow curved paths called geodesics \textcolor{red}{(clean up!)}. The deviation in path is usually negligable, but can be significant in regions containing clusters of galaxies and their massive dark matter halos. By observing how the magnitudes and shapes of distant galaxies are distorted when travelling through regions of matter, we can infer the masses of the dark matter halos and reconstruct the hidden dark matter mass distribution. A simplified cartoon of this process is shown in Figure ??, as well as a diagram defining the necessary angles and distances in Figure ??.
@@ -481,13 +479,13 @@ A similar asdf often used in asdf is the galaxy-mass correlation function, which
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Pangloss Cartoon
-% \begin{figure*}
-%     \centering
-%     \includegraphics[width=0.85\textwidth]{figs-swe/pangloss_cartoon.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{A cartoon model of how the \texttt{Pangloss} framework uses a dark matter halo model to reconstruct the foreground mass along the line of sight of a background source galaxy. A `lightcone' centered at a background source is constructed with radius $R$ and populated with all foreground galaxies contained in this volume. Each foreground object has an attached dark matter halo and physical distance to the line of sight (dashed line). The shear and convergence along the line of sight contributed by each halo is calculated using \cite{lensing_calc}, and the predicted ellipticity is determined using the sum of these contributions and Equation \eqref{lensing}.}
-%     \label{pangloss_cartoon}
-% \end{figure*}
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.85\textwidth]{figs-swe/thesis/pangloss_cartoon.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{A cartoon model of how the \texttt{Pangloss} framework uses a dark matter halo model to reconstruct the foreground mass along the line of sight of a background source galaxy. A `lightcone' centered at a background source is constructed with radius $R$ and populated with all foreground galaxies contained in this volume. Each foreground object has an attached dark matter halo and physical distance to the line of sight (dashed line). The shear and convergence along the line of sight contributed by each halo is calculated using \cite{lensing_calc}, and the predicted ellipticity is determined using the sum of these contributions and Equation \eqref{lensing}.}
+    \label{pangloss_cartoon}
+\end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 To infer foreground dark matter mass structures using weak gravitational lensing, first a model of the relationship between foreground galaxies and the foreground dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true underlying dark matter structure. To do this, I built upon the publicly available \texttt{Pangloss}\footnote{\label{note1}https://github.com/drphilmarshall/Pangloss} framework used in Collett et al. \cite{collett_marshall} to reconstruct all the
@@ -532,17 +530,22 @@ Not all foreground halos are equally relevant to the lensing calculation. To add
 Rel(M_h,R)\propto\frac{M_h}{R^3}
 \end{equation}
 
-where $M_h$ is the halo mass and $R$ is the distance from the halo to the line of sight. The relevance distribution for one background catalog realization with \textcolor{red}{???} foreground halos in a lightcone of radius \textcolor{red}{??} arcminutes is shown in Figure ??. As expected, there are very few massive halos along the line of sight and therefore only a small percentage of foreground halos should have a high relative contribution to the predicted lensing quantities. This encouraged the intended analysis on lightcones with all halos and those with only a small subset of the most relevant halos to compare the results and see if the computational time saved by using only the most relevant halos was worth the loss in prediction accuracy.
+\noindent where $M_h$ is the halo mass and $R$ is the distance from the halo to the line of sight. Numerical values are assigned by comparing a halo's individual $M_h$ and $R$ to a threshold $M_T$ and $R_T$:
+\begin{equation}\label{relevant_thresh}
+Rel(M_h,R)=\frac{(M_h/M_T)}{(R/R_T)^3}.
+\end{equation}
+
+In this work, the threshold values used are $M_T=10^{12}M_\odot$ and $R_T=10$ kpc. The relevance distribution for one background catalog realization with \textcolor{red}{???} foreground halos in a lightcone of radius \textcolor{red}{??} arcminutes is shown in Figure ??. As expected, there are very few massive halos along the line of sight and therefore only a small percentage of foreground halos should have a high relative contribution to the predicted lensing quantities. This encouraged the intended analysis on lightcones with all halos and those with only a small subset of the most relevant halos to compare the results and see if the computational time saved by using only the most relevant halos was worth the loss in prediction accuracy.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Relevance Distribution of all Halos
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.25\textwidth]{figs-swe/thesis/relevance_distribution.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{CAPTION}
-%     \label{rel_dist}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.475\textwidth]{figs-swe/thesis/relevance_distribution.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:rel_dist}
+\end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -551,103 +554,137 @@ where $M_h$ is the halo mass and $R$ is the distance from the halo to the line o
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Smooth-Component Correction Diagram
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.25\textwidth]{figs-swe/thesis/smooth_correction.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{CAPTION}
-%     \label{scc}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.5\textwidth]{figs-swe/thesis/smooth_correction.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:scc}
+\end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 As discussed in Section \ref{scc}, the halo model does not account for additional mass structures such as filaments. To apply the smooth-component correction to \texttt{Pangloss}, the mean mass density $\rho(z)$ and halo density $\rho_h(z)$ had to be calculated at each of the 100 redshift bins. For $\rho_h(z)$, this was done by summing all halo masses $M_{h,i}$ in a given redshift bin and integrating Equation \eqref{pvolume_element} from ${z-\Delta z/2}$ to ${z+\Delta z/2}$, except for the boundary bins. Once $\rho_h(z)$ had been calculated for each redshift slice, the projected surface mass density was found by integrating over the redshift interval,
-\begin{equation}\label{surface_density} 
-\sum(z)=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho_s(z)\,dz=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho(z)-\rho_h(z)\,dz,
-\end{equation}
+\begin{align}\label{surface_density} 
+\sum(z)&=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho_s(z)\,dz\nonumber\\
+&=\int_{z-\frac{\Delta z}{2}}^{z+\frac{\Delta z}{2}} \rho(z)-\rho_h(z)\,dz,
+\end{align}
 
-\noindent and the convergence contribution of the mass sheet was calculated using Equation \eqref{convergence} with ${z_l=z}$ and ${z_s=1.3857}$. The corrected total convergence for a given background source is simply the sum of the halo contributions and the asfd. There is no additional shear produced by a uniform sheet of mass (citation!), but the corrected reduced shear is now calculated using the corrected total $\kappa$ in Equation \eqref{reduced_shear}. A diagram of this process is shown in Figure \ref{fig:scc}.
+\noindent and the convergence contribution of the mass sheet was calculated using Equation \eqref{convergence} with ${z_l=z}$ and ${z_s=1.3857}$. The corrected total convergence for a given background source is simply the sum of the halo contributions and the smooth-component contributions. There is no additional shear produced by a uniform sheet of mass (citation!), but the corrected reduced shear is now calculated using the corrected total $\kappa$ in Equation \eqref{reduced_shear}. A diagram of this process is shown in Figure \ref{fig:scc}.
 
-The volume and projected surface mass densities of each redshift slice are shown in Figures \ref{fig:volume_densities} and \ref{fig:surface_densities} respectively. (Describe plots)
+The volume and projected surface mass densities of each redshift slice are shown in Figures \ref{fig:volume_densities} and \ref{fig:surface_densities} respectively. (Describe plots) (reduced shears before and after correction)
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Surface and Volume densities for smooth-component correction redshift slices
-% \begin{figure*}
-%     \centering
-%     \begin{subfigure}[H]{0.415\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/thesis/scc_vol_den.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{CAPTION}
-%         \label{fig:volume_densities}
-%     \end{subfigure}
-%     ~
-%     %% Einstein Ring Figure
-%     \begin{subfigure}[H]{0.425\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/thesis/scc_surf_deng.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{CAPTION}
-%         \label{fig:surface_densities}
-%     \end{subfigure}
-%     \caption{}
-% \end{figure*}
+\begin{figure*}
+    \centering
+    % Volume
+    \begin{subfigure}[H]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/vol_densities.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        \label{fig:volume_densities}
+    \end{subfigure}
+    ~
+    % Surface
+    \begin{subfigure}[H]{0.49\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/thesis/surf_densities.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        \label{fig:surface_densities}
+    \end{subfigure}
+    \caption{}
+\end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
+
+%%------------------------------------------------------------------------------------------------------------------------------------------
+%% Kappa Contributions of S.C.C.
+\begin{figure}
+    \centering
+    \includegraphics[width=0.425\textwidth]{figs-swe/thesis/kappa_distribution.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:kappa_dist}
+\end{figure}
+%%------------------------------------------------------------------------------------------------------------------------------------------
+
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Line of Sight Lensing Predictions}
 
-(Predict LOS kappa and shear measurements )
-
-Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Wright and Brainerd \cite{lensing_calc}. The total convergence and shear at the center of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
+Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Section \ref{grav_lensing} (see Wright and Brainerd \cite{lensing_calc} for far more detail). The total convergence and shear along the LOS of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone, as well as the additional convergence terms from the smooth-component correction. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
 
 
 %%==========================================================================================================================================
 \section{Checking the Pangloss Model}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-%% Pangloss Lightcone Data
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.25\textwidth]{figs-swe/thesis/lightcone_data.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{CAPTION}
-%     \label{rel_dist}
-% \end{figure}
+%% Pangloss Lightcone Data Plots
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.75\textwidth]{figs-swe/thesis/lightcone_plots.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:lightcone}
+\end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 Using the presented methodology, ??? background galaxies in a ??? arcmin$^2$ subset of the (0,0,0,0) Millennium Simulation foreground catalog were generated and lensed by both the ray-traced shear and convergence maps as well as the \texttt{Pangloss} framework. With a lightcone radius of ?? arcminutes, the lightcones contained an average of ${??\pm??}$ foreground halos. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
 
-Figure (??) displays different views an example lightcone where the foreground halos are plotted as circles whose size are proportional to their galaxy brightness (top left), angular size (top center), convergence contributions (top right), and halo mass (bottom). Figure (??) shows a few examples of mass structures in the foreground catalog along with the ray-traced convergence and shear maps from (Hilbert cite). 
+Figure \ref{fig:lightcone} displays different views an example lightcone where the foreground halos are plotted as circles whose size are proportional to their galaxy brightness (top left), angular size (top center), convergence contributions (top right), and halo mass (bottom). Figure \ref{fig:subplots} shows a few examples of mass structures in the foreground catalog along with the ray-traced convergence (plotted in inverse greyscale) and shear maps (plotted as red ellipticity sticks) from \cite{ray_tracing}. 
 
-Figure (??) shows a 
+Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. As described in section \ref{corr_functions}, the ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. Both correlation functions are used in this work to estimate how well the \texttt{Pangloss} framework models weak lensing by dark matter structures and are computed using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, see Appendix (??).
 
-Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. As described in section (??), the ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. Both correlation functions are used in this work to estimate how well the \texttt{Pangloss} framework models weak lensing by dark matter structures and are computed using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition and the more common Schneider definition \cite{schneider}, see Appendix (??).
-
-% For readers that are unfamiliar with correlation functions in the context of cosmology or want a visual aid, see the appendix.
+%%------------------------------------------------------------------------------------------------------------------------------------------
+%% Two or Three subplots of foreground/background/shear/kappa maps
+% \begin{figure*}
+%     \centering
+%     % Volume
+%     \begin{subfigure}[H]{0.415\textwidth}
+%         \includegraphics[width=\textwidth]{figs-swe/thesis/vol_densities.png}
+%         \captionsetup{justification=raggedright,singlelinecheck=false}
+%         \caption{CAPTION}
+%         \label{fig:volume_densities}
+%     \end{subfigure}
+%     ~
+%     % Surface
+%     \begin{subfigure}[H]{0.425\textwidth}
+%         \includegraphics[width=\textwidth]{figs-swe/thesis/surf_densities.png}
+%         \captionsetup{justification=raggedright,singlelinecheck=false}
+%         \caption{CAPTION}
+%         \label{fig:surface_densities}
+%     \end{subfigure}
+%     \caption{}
+%     \label{fig:subplots}
+% \end{figure*}
+%%------------------------------------------------------------------------------------------------------------------------------------------
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Ellipticity-Ellipticity Correlation Function}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-%% Ellipticity-Ellipticity Correlation
-% \begin{figure}
-%     \centering
-%     \begin{subfigure}{0.475\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/gg_corr.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{The ellipticity-ellipticity correlation function for 3,240 sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. While the correlation of the intrinsic ellipticities before lensing (blue) shows no correlation, the correlation of the ray-traced ellipticities (green) and halo model predicted ellipticities (purple) both show significant positive correlation on scales up to 1 arcminute. The halo model predicts a small negative correlation above this scale, while the ray-tracing shows positive correlation on all scales.}
-%         %The correlation of the intrinsic ellipticities before lensing is plotted in blue, and shows no correlation. The correlation of the true ray-traced ellipticities is plotted in green and shows significant positive correlation on all scales. The halo predicted correlation, plotted in purple, shows significant positive correlation until a separation distance of 0.8 arcminutes.
-%         \label{gg_corr}
-%     \end{subfigure}
-%     ~~
-%     \begin{subfigure}{0.475\textwidth}
-%         \includegraphics[width=\textwidth]{figs-swe/gg_corr_series.png}
-%         \captionsetup{justification=raggedright,singlelinecheck=false}
-%         \caption{The ellipticity-ellipticity correlation functions for a series of halo model frameworks with increasing lightcone radii from $R=1$ to $R=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{gg_corr}.}
-%         \label{gg_corr_series}
-%     \end{subfigure}
-%     \caption{}
-% \end{figure}
-%%------------------------------------------------------------------------------------------------------------------------------------------
+% Ellipticity-Ellipticity Correlation
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.475\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/gg_corr.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        %The ellipticity-ellipticity correlation function for ?? sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. While the correlation of the intrinsic ellipticities before lensing (blue) shows no correlation, the correlation of the ray-traced ellipticities (green) and halo model predicted ellipticities (purple) both show significant positive correlation on scales up to 1 arcminute. The halo model predicts a small negative correlation above this scale, while the ray-tracing shows positive correlation on all scales.}
+        %The correlation of the intrinsic ellipticities before lensing is plotted in blue, and shows no correlation. The correlation of the true ray-traced ellipticities is plotted in green and shows significant positive correlation on all scales. The halo predicted correlation, plotted in purple, shows significant positive correlation until a separation distance of 0.8 arcminutes.
+        \label{gg_corr}
+    \end{subfigure}
+    ~~
+    \begin{subfigure}{0.475\textwidth}
+        \includegraphics[width=\textwidth]{figs-swe/gg_corr_series.png}
+        \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{CAPTION}
+        %The ellipticity-ellipticity correlation functions for a series of halo model frameworks with increasing lightcone radii from $R=1$ to $R=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{gg_corr}.}
+        \label{gg_corr_series}
+    \end{subfigure}
+    \caption{}
+\end{figure}
+%------------------------------------------------------------------------------------------------------------------------------------------
 
 The first test of the halo model was with the ellipticity-ellipticity correlation function with a lightcone radius of ?? arcminutes which is given in Figure \ref{gg_corr}. The statistic measured the average correlation between pairs of ellipticities at separation distances between ?? and ?? arcminutes. The correlation function of the intrinsic ellipticities plotted in blue shows no significant deviation from zero as expected, as before lensing the galaxies had random orientations. Both the ray-traced, plotted in green, and halo model, plotted in purple, ellipticities show positive correlation on small scales up to a separation of ?? arcminutes. However, ... (New analysis depending on figure)
 
@@ -669,13 +706,14 @@ The galaxy-mass correlation function was similarly re-calculated at increasing l
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% Galaxy-mass correlation function
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.475\textwidth]{figs-swe/ng_corr.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{The galaxy-mass correlation function of 3,240 sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. There is no significant correlation of the intrinsic ellipticities (blue) as expected, and both the ray-traced correlation (green) and halo model correlation (purple) are positive on all scales. The green and purple curves are in agreement from 0.2 to 0.7 arcminutes, but have significant discrepancies on scales above and below this range.}
-%     \label{ng_corr}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=0.475\textwidth]{figs-swe/ng_corr.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    %The galaxy-mass correlation function of 3,240 sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. There is no significant correlation of the intrinsic ellipticities (blue) as expected, and both the ray-traced correlation (green) and halo model correlation (purple) are positive on all scales. The green and purple curves are in agreement from 0.2 to 0.7 arcminutes, but have significant discrepancies on scales above and below this range.}
+    \label{ng_corr}
+\end{figure}
 %
 % ...Same progression corr function as gg??
 %
@@ -716,13 +754,13 @@ Of intrinsic interest is the relative number of relevant halos needed in each li
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% 3 panel plot of binned Hilbert map, Pangloss map, and difference
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/kappamaps.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{CAPTION}
-%     \label{corr_fraction}
-% \end{figure}
+\begin{figure*}
+    \centering
+    \includegraphics[width=\textwidth]{figs-swe/thesis/kappamaps.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{CAPTION}
+    \label{fig:kappamaps}
+\end{figure*}
 %
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -734,14 +772,14 @@ Of intrinsic interest is the relative number of relevant halos needed in each li
 A secondary goal of this research was to investigate how quickly the prediction for the shear and convergence for a single background source could be made. The mean CPU time required for the prediction per lightcone was ${80\pm10}$ ms for the first run. However, many small improvements to the coding infrastructure of \texttt{Pangloss} were made to speed up the prediction. The average CPU time for a lensing prediction per lightcone for four separate runs after various (and cumulative) changes is plotted in Figure \ref{cpu_plot}, with a final run time of $??\pm?$ ms. Run 1 corresponds to the original \texttt{Pangloss} framework code, run 2 only wrote the needed quantities for this analysis to the catalog \texttt{Astropy} tables, run 3 changed the redshift grid binning to be done once for all halos in the drilling rather than for every individual halo in lensing, run 4 optimized various lensing calculations with matrices whenever possible, run 5 replaced the computationally expensive lensing calculation functions with a lookup table, and run 6 is using only the most ?? relevant halos. Cumulatively, these changes alone accounted for a ??\% decrease in mean CPU time per lightcone and ?? the initial variation.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-%% Mean lightcone CPU time
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=0.475\textwidth]{figs-swe/profile_bar.png}
-%     \captionsetup{justification=raggedright,singlelinecheck=false}
-%     \caption{The mean CPU runtime per lightcone for various runs with different (and cumulative) code optimizations described in the text. The cumulative changes account for a 70\% decrease in the mean CPU time and a halving of the variation. Currently, the prediction can be made for a single lightcone in\\$24\pm5$ ms.}
-%     \label{cpu_plot}
-% \end{figure}
+% Mean lightcone CPU time
+\begin{figure}
+    \centering
+    \includegraphics[width=0.475\textwidth]{figs-swe/thesis/profile_bar.png}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{OLD: The mean CPU runtime per lightcone for various runs with different (and cumulative) code optimizations described in the text. The cumulative changes account for a ??\% decrease in the mean CPU time and a ?? of the variation. Currently, the prediction can be made for a single lightcone in\\$??\pm??$ ms.}
+    \label{fig:cpu_plot}
+\end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 %%==========================================================================================================================================
@@ -837,7 +875,9 @@ Introduction, explain difference between the two different methods.
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Scaling Up Pangloss}
 
-% OLD: While the current \texttt{Pangloss} framework can handle the lensing predictions of 3,240 sources in a 324 arcmin$^2$ field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing up to 1,000 foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all other lightcones. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the 50 MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.
+While the current \texttt{Pangloss} framework can handle the lensing predictions of ?? sources in a ?? arcmin$^2$ field comfortably on a single processor, the goal is to scale up the framework to make predictions for background sources of the same number density in a 100 deg$^2$ field; this will require 3.6 million lightcones, each containing at least ??? relevant foreground halos. Luckily, the prediction is trivially parallelizable as the shear and convergence calculation of each lightcone is independent of all other lightcones. This makes GPUs an attractive candidate for future work, as it would only take 360 GPUs with 10,000 threads each to carry out the prediction. Additionally, the ?? MB of RAM per lightcone is sufficiently small to fit 10,000 lightcones on a GPU.\\
+
+(More??)
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -853,7 +893,9 @@ Introduction, explain difference between the two different methods.
 %%==========================================================================================================================================
 \section{Acknowledgements}
 
-% OLD: I would like to thank the Department of Energy for funding this research and giving me this wonderful opportunity, as well as SLAC National Laboratory for hosting me. This work was greatly aided by numerous conversations with Risa Wechsler from Stanford University and Matt Becker from the Kavli Institute for Particle Astrophysics and Cosmology (KIPAC). Finally, I am incredibly grateful to Phil Marshall for his unending support, patience, and guidance throughout this research.
+% OLD: I would like to thank the Department of Energy for funding this research and giving me this wonderful opportunity, as well as SLAC National Laboratory for hosting me. 
+
+%This work was greatly aided by numerous conversations with Risa Wechsler from Stanford University and Matt Becker from the Kavli Institute for Particle Astrophysics and Cosmology (KIPAC), as well as Jesus Pando from DePaul University. Finally, I am incredibly grateful to Phil Marshall for his unending support, patience, and guidance throughout this research.
 % This work was supported in part by the U.S. Department of Energy, Office of Science, Office of Workforce Development for Teachers and Scientists (WDTS) under the Science Undergraduate Laboratory Internships Program (SULI).
 
 %%==========================================================================================================================================
@@ -953,9 +995,13 @@ The same plots for the source galaxies \textit{after lensing} are shown in Figur
 
 \subsection{Deriving the Standard Correlation Function Definition from \texttt{TreeCorr}'s Definition}
 
-(Introduce issue a bit)\\
+The definition for the shear-shear (or equivalently, in the case of weak lensing, ellipticity-ellipticity) correlation function components in Mike Jarvis's \texttt{TreeCorr} package is different from the common definition given in Equation \eqref{gg_corr_def} from Schneider \cite{schneider}. For the aid of those who wish to use this very useful package but still use the conventional correlation function defintion, I have outlined the connection between the two definitions and the outputs of \texttt{TreeCorr} below:
 
-From Jarvis \href{http://arxiv.org/pdf/astro-ph/0307393v2.pdf}{(Page 3)}:
+\setlength\parindent{0pt}
+
+\vspace{0.25 in}
+
+From Jarvis \cite{jarvis} (Page 3):
 \begin{align}
 \xi_+&=\left<\gamma_i\gamma_j^*\right>=\texttt{xip}+i(\texttt{xip\_im})\label{s+}\\
 \xi_-&=\left<\gamma_i\gamma_je^{-4i\alpha}\right>=\texttt{xim}+i(\texttt{xim\_im})\label{s-}
@@ -963,7 +1009,7 @@ From Jarvis \href{http://arxiv.org/pdf/astro-ph/0307393v2.pdf}{(Page 3)}:
 
 where $\alpha$ is the angle between the two objects $i,j$ and each $\gamma$ is given by $\gamma_n=|\gamma_n|e^{2i\theta_n}$ in polar form.\\
 
-From Schneider \href{http://arxiv.org/pdf/astro-ph/0509252v1.pdf}{(Page 92)}:
+From Schneider \cite{schneider} (Page 92):
 \begin{align}
 \xi_\pm&=\left<\gamma_{i_t}\gamma_{j_t}\right>\pm\left<\gamma_{i_\times}\gamma_{j_\times}\right>\label{s+-}\\
 \xi_\times&=\left<\gamma_{i_t}\gamma_{j_\times}\right>\label{sx}
@@ -1118,419 +1164,3 @@ Combing these results give
 as desired.
 
 \end{document}
-
-
-%% Currently, this appendix is not being used
-
-% \subsection{Deriving the Standard Correlation Function Definition from \texttt{TreeCorr}'s Definition}
-
-% \begin{itemize}
-% \item Introduction to difference between the common Schneider definition of lensing correlation functions and that used by Jarvis`s \texttt{TreeCorr} code
-% \item Here we derive the connection between the two
-% \item Definitions of each, along with references
-% \end{itemize}
-
-% From Jarvis \href{http://arxiv.org/pdf/astro-ph/0307393v2.pdf}{(Page 3)}:
-% \begin{align}
-% \xi_+&=\left<\gamma_i\gamma_j^*\right>=\texttt{xip}+i(\texttt{xip\_im})\label{s+}\\
-% \xi_-&=\left<\gamma_i\gamma_je^{-4i\alpha}\right>=\texttt{xim}+i(\texttt{xim\_im})\label{s-}
-% \end{align}
-
-% where $\alpha$ is the angle between the two objects $i,j$ and each $\gamma$ is given by $\gamma_n=|\gamma_n|e^{2i\theta_n}$ in polar form.\\
-
-% From Schneider \href{http://arxiv.org/pdf/astro-ph/0509252v1.pdf}{(Page 92)}:
-% \begin{align}
-% \xi_\pm&=\left<\gamma_{i_t}\gamma_{j_t}\right>\pm\left<\gamma_{i_\times}\gamma_{j_\times}\right>\label{s+-}\\
-% \xi_\times&=\left<\gamma_{i_t}\gamma_{j_\times}\right>\label{sx}
-% \end{align}
-
-% where $\gamma_{n_t}=-\operatorname{Re}\left(\gamma_n e^{-2i\alpha}\right)$ and $\gamma_{n_\times}=-\operatorname{Im}\left(\gamma_n e^{-2i\alpha}\right)$.\\
-
-% \section*{Schneider's $\xi_+$ to Jarvis's \texttt{xip}}
-
-% Starting with Schneider's definition, observe that
-% \begin{align*}
-% \xi_+&=\left<\gamma_{i_t}\gamma_{j_t}\right>+\left<\gamma_{i_\times}\gamma_{j_\times}\right>\\
-% &=\left<\operatorname{Re}\left(\gamma_ie^{-2i\alpha}\right)\cdot\operatorname{Re}\left(\gamma_je^{-2i\alpha}\right)\right>+\left<\operatorname{Im}\left(\gamma_ie^{-2i\alpha}\right)\cdot\operatorname{Im}\left(\gamma_je^{-2i\alpha}\right)\right>\\
-% &=\left<\operatorname{Re}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Re}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>+\left<\operatorname{Im}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Im}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>\\
-% &=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\cos\left(2(\theta_j-\alpha)\right)\right>+\left<|\gamma_i|\cdot|\gamma_j|\sin\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\right>.
-% \end{align*}
-
-% Using the trig identities
-% \begin{align}
-% \cos(u)\cos(v)&=\frac{1}{2}\left[\cos(u-v)+\cos(u+v)\right],\\
-% \sin(u)\sin(v)&=\frac{1}{2}\left[\cos(u-v)-\cos(u+v)\right],
-% \end{align}
-
-% and the linearity of the expectation operator, it is straightforward to show that
-% %\begin{align*}
-% %\xi_+&=\left<|\gamma_i|\cdot|\gamma_j|\right>\cdot\left(\left<\frac{1}{2}\left[\cos\left(2(\theta_i-\theta_j)\right)+\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right]\right>+\left<\frac{1}{2}\left[\cos\left(2(\theta_i-\theta_j)\right)-\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right]\right>\right)\\
-% %&=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\theta_j)\right)\right>.
-% %\end{align*}
-% $$\xi_+=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\theta_j)\right)\right>.$$
-
-% Now using the identity
-% \begin{equation}\label{trig2}
-% \cos(u\pm v)=\cos\left(u\right)\cos\left(v\right)\mp\sin\left(u\right)\sin\left(v\right),
-% \end{equation}
-
-% the previous equation can be written as
-
-% \begin{align*}
-% \xi_+&=\left<|\gamma_i|\cdot|\gamma_j|\cdot\left[\cos\left(2\theta_i\right)\cos\left(2\theta_j\right)+\sin\left(2\theta_i\right)\sin\left(2\theta_j\right)\right]\right>\\
-% &=\left<\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right>.
-% \end{align*}
-
-% Using the complex number identities
-
-% \begin{align}
-% \operatorname{Re}(z)&=\frac{1}{2}\left[z+z^*\right],\label{complex1}\\
-% \operatorname{Im}(z)&=\frac{1}{2i}\left[z-z^*\right]\label{complex2},
-% \end{align}
-
-% it follows that
-
-% \begin{align*}
-% \xi_+&=\left<\frac{1}{4}\left[(\gamma_i+\gamma_i^*)(\gamma_j+\gamma_j^*)-(\gamma_i-\gamma_i^*)(\gamma_j-\gamma_j^*)\right]\right>\\
-% &=\left<\frac{1}{2}\left[\gamma_i\gamma_j^*+(\gamma_i\gamma_j^*)^*\right]\right>\\
-% &=\left<\operatorname{Re}(\gamma_i\gamma_j^*)\right>=\texttt{xip}.
-% \end{align*}
-
-% \section*{Schneider's $\xi_-$ to Jarvis's \texttt{xim}}
-
-% The first few steps are identical to the previous section besides the negative in the definition of $\xi_-$, giving
-% \begin{align*}
-% \xi_-&=\left<\gamma_{i_t}\gamma_{j_t}\right>-\left<\gamma_{i_\times}\gamma_{j_\times}\right>\\
-% &=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\cos\left(2(\theta_j-\alpha)\right)\right>-\left<|\gamma_i|\cdot|\gamma_j|\sin\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\right>\\
-% &=\left<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i+\theta_j-2\alpha)\right)\right>.
-% \end{align*}
-
-% Now using Equation \eqref{trig2} twice, first letting $u=2(\theta_i+\theta_j)$ and $v=-4\alpha$, and then letting $u=2\theta_i$ and $v=2\theta_j$, this equation becomes
-
-% \begin{align*}
-% \xi_-&=\left<|\gamma_i|\cdot|\gamma_j|\Big(\left[\cos(2\theta_i)\cos(2\theta_j)-\sin(2\theta_i)\sin(2\theta_j)\right]\cos(4\alpha)+\left[\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\right]\sin(4\alpha)\Big)\right>\\
-% &=\Big<\big[\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)-\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\big]\cos(4\alpha)+\big[\operatorname{Im}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\big]\sin(4\alpha)\Big>.
-% \end{align*}
-
-% Using the identities \eqref{complex1} and \eqref{complex2}, and simplifying the leftover terms, this equation can be shown to equal
-% \begin{align*}
-% \xi_-=\big<\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha)\big>.
-% \end{align*}
-
-% Now observe that for two complex numbers $a$ and $b$, it is true that
-
-% $$\operatorname{Re}(a\cdot b^*)=\operatorname{Re}(a)\cdot\operatorname{Re}(b)+\operatorname{Im}(a)\cdot\operatorname{Im}(b).$$
-
-% Then setting $a=\gamma_i\gamma_j$ and $b=e^{4i\alpha}$, it must be true that
-
-% $$\operatorname{Re}\left(\gamma_i\gamma_je^{-4i\alpha}\right)=\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha).$$
-
-% Combining this with our previous result, this means that
-
-% $$\xi_-=\big<\operatorname{Re}(\gamma_i\gamma_j)\cos(4\alpha)+\operatorname{Im}(\gamma_i\gamma_j)\sin(4\alpha)\big>=\left<\operatorname{Re}\left(\gamma_i\gamma_je^{-4i\alpha}\right)\right>=\texttt{xim}.$$
-
-% \section*{Schneider's $\xi_\times$ to Jarvis's $\frac{1}{2}\left(\texttt{xim\_im}-\texttt{xip\_im}\right)$}
-
-% Starting from Schneider's definition of $\xi_\times$,
-
-% \begin{align*}
-% \xi_\times&=\left<\gamma_{i_t}\gamma_{j_\times}\right>\\
-% &=\left<\operatorname{Re}\left(|\gamma_i|e^{2i(\theta_i-\alpha)}\right)\cdot\operatorname{Im}\left(|\gamma_j|e^{2i(\theta_j-\alpha)}\right)\right>\\
-% &=\big<|\gamma_i|\cdot|\gamma_j|\cos\left(2(\theta_i-\alpha)\right)\sin\left(2(\theta_j-\alpha)\right)\big>.\\
-% \end{align*}
-
-% Using the trig identity
-
-% \begin{equation}\label{trig3}
-% \cos(u)\sin(v)=\frac{1}{2}\left[\sin(u+v)-\sin(u-v)\right],
-% \end{equation}
-
-% the previous equation becomes
-
-% \begin{align*}
-% \xi_\times&=\left<|\gamma_i|\cdot|\gamma_j|\cdot\frac{1}{2}\big[\sin\left(2(\theta_i+\theta_j-2\alpha)\right)-\sin\left(2(\theta_i-\theta_j)\right)\big]\right>.
-% \end{align*}
-
-% Next, applying the identities
-
-% \begin{equation}\label{trig4}
-% \sin(u\pm v)=\sin(u)\cos(v)\pm\cos(u)\sin(v)
-% \end{equation}
-
-% along with \eqref{trig2} iteratively until each trig function only has a single term, the equation becomes
-
-% \begin{align*}
-% \xi_\times&=\Big<|\gamma_i|\cdot|\gamma_j|\cdot\frac{1}{2}\Big(\left[\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\right]\cos(4\alpha)\\
-% &\qquad\qquad\qquad\quad-\left[\cos(2\theta_i)\cos(2\theta_j)-\sin(2\theta_i)\sin(2\theta_j)\right]\sin(4\alpha)\\
-% &\qquad\qquad\qquad\quad-\sin(2\theta_i)\cos(2\theta_j)+\cos(2\theta_i)\sin(2\theta_j)\Big)\Big>\\
-% &=\Big<\frac{1}{2}\Big(\left[\operatorname{Im}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right]\cos(4\alpha)\\
-% &\qquad-\left[\operatorname{Re}(\gamma_i)\cdot\operatorname{Re}(\gamma_j)-\operatorname{Im}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\right]\sin(4\alpha)\\
-% &\qquad-\operatorname{Im}(\gamma_i)\operatorname{Re}(\gamma_j)+\operatorname{Re}(\gamma_i)\cdot\operatorname{Im}(\gamma_j)\Big)\Big>.\\
-% \end{align*}
-
-% Using the identities \eqref{complex1} and \eqref{complex2}, this can be simplified to
-
-% \begin{align*}
-% \xi_\times&=\left<\frac{1}{2}\big[\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>.
-% \end{align*}
-
-% Consider again two complex numbers $a$ and $b$. Observe that
-
-% $$\operatorname{Im}(a\cdot b^*)=\operatorname{Im}(a)\cdot\operatorname{Re}(b)-\operatorname{Re}(a)\cdot\operatorname{Im}(b).$$
-
-% Then setting $a=\gamma_i\gamma_j$ and $b=e^{4i\alpha}$, it must be true that
-
-% $$\operatorname{Im}\left(\gamma_i\gamma_je^{-4i\alpha}\right)=\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha).$$
-
-% Combing these results give
-
-% \begin{align*}
-% \xi_\times&=\left<\frac{1}{2}\big[\operatorname{Im}(\gamma_i\gamma_j)\cos(4\alpha)-\operatorname{Re}(\gamma_i\gamma_j)\sin(4\alpha)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>\\
-% &=\left<\frac{1}{2}\big[\operatorname{Im}\left(\gamma_i\gamma_je^{-4i\alpha}\right)-\operatorname{Im}(\gamma_i\gamma_j^*)\big]\right>\\
-% &=\frac{1}{2}\big[\texttt{xim\_im}-\texttt{xip\_im}\big].
-% \end{align*}
-
-% as desired.
-
-% \end{document}
-
-
-% % Outline:
-
-% %% Introduction:
-% \begin{itemize}
-% \item Broad intro into cosmology and dark matter, set problem in context
-%     \begin{itemize}
-%     \item (Very) short introduction to history of dark matter, Zwicky, rotation curves, etc.
-%     \end{itemize}
-% \begin{itemize}
-% \item Introduction to gravitational lensing
-%     \begin{itemize}
-%     \item Convergence and Shear / Strong and Weak lensing
-%         \begin{itemize}
-%         \item Dramatic effect of strong lensing, how it is used for constraining cos. parameters
-%         \item Only a few hundred known, not good for making mass maps
-%         \item All galaxies are weakly lensed, good for our purposes
-%         \end{itemize}
-%     \end{itemize}
-% \end{itemize}
-% \item What this work does and aims for
-% \begin{itemize}
-%     \item We aim to implement a simple dark matter halo model to predict weak-lensing effects by foreground mass - and to make the prediction `quickly' and/or with large parallelization
-%     \item Quick summary of what we do in paper
-%         \begin{itemize}
-%         \item Use halo model to make approximation of dark matter mass distribution in Millennium Simulation
-%         \item Use shear-shear and galaxy-mass correlation functions as summary statistics
-%         \item Compare statistics to ray-traced data
-%         \item Discuss physial and computational shortcomings with current methodology
-%         \end{itemize}
-%     \end{itemize}
-% \end{itemize}
-
-% %% Theoretical Background:
-% \begin{itemize}
-% \item Galaxy ellipticities
-%     \begin{itemize}
-%     \item (Most) galaxies are not circular - have intrinsic ellipticities
-%         \begin{itemize}
-%         \item If they were all circular, we could measure the change in shape exactly!
-%         \end{itemize}
-%     \item Galaxies are not always well approximated by ellipses (reference)
-%     \item Mathematical formalism
-%     \item Plot of galaxy orientation given e1 and e2 from P.J. Marshall thesis
-%     \end{itemize}
-% \item Shape noise and PSF issues in weak lensing (distorting already weak signal)
-% \item Gravitational lensing
-%     \begin{itemize}
-%     \item Short introduction to problem setup for simple case (point mass maybe?)
-%     \item Assumptions made in a typical solution (thin lens approximation?)
-%     \item Show solution from Schneider
-%     \item Shear and convergence
-%     \item Measuring shear in weak lensing - a statistical feature
-%     \end{itemize}
-% \item Dark matter halos
-%     \begin{itemize}
-%     \item NFW profile and equation (reference)
-%     \item BMO truncation and equation (reference)
-%     \end{itemize}
-% \item SMHR? Or too distracting?
-% \end{itemize}
-
-% % Old theory:
-% %However, the important results for a point mass using the thin lens approximation can be summarized as follows: The distortion of a background galaxy image can be quantified by the linearized lens mapping Jacobi matrix $\mathcal{A}$ which can be written as
-
-% %$$\mathcal{A}=(1-\kappa)\,
-% %\begin{pmatrix}
-% %1-g_1 & -g2\\
-% %-g_2 & 1+g_1
-% %\end{pmatrix}$$
-
-% %\noindent where $\kappa$ and $g$ are the convergence and reduced shear respectively at the center of the background source.
-% %\begin{displaymath}
-% %  \varepsilon = \left\{
-% %    \begin{array}{lr}
-% %      \frac{\varepsilon_i+g}{1+g^*\varepsilon_i} & : |g|\leq1; \\
-% %      \frac{1+g\varepsilon_i^*}{\varepsilon^*+g^*} & : |g|>1.
-% %    \end{array}
-% %   \right.
-% %\end{displaymath}
-
-
-% %% The Pangloss Framework:
-% \begin{itemize}
-% \item Assumptions
-%     \begin{itemize}
-%     \item A catalog with galaxy
-%     \item Currently use actual dark matter halo mass for an idea of best case scenario - can run same analysis with masses sampled from SMHR (reference)
-%     \item PSF already accounted for in catalog and error low enough for weak lensing analysis
-%     \item Use actual redshift for best case scenario (but can easily be replaced by photometric redshift sampling)
-%     \end{itemize}
-% \item Millennium Simulation
-%     \begin{itemize}
-%     \item Instead of blindly using \texttt{Pangloss} to make dark matter mass maps using sky survey data, we instead test how accurately and precisely we can predict weakly-lensed shear and convergence
-%     \item Mention which M.S. we used
-%     \item S. Hilbert`s ray traced M.S. (reference)
-%         \begin{itemize}
-%         \item Can use the ray-traced convergence and shear to calculate the ``true'' lensed ellipticties and compare to \texttt{Pangloss}
-%         \end{itemize}
-%     \end{itemize}
-% \item Background galaxies
-%     \begin{itemize}
-%     \item random orientation
-%     \item ellipticity range (get numbers!)
-%     \item Accounting for shape noise
-%     \end{itemize}
-% \item Lightcones
-%     \begin{itemize}
-%     \item Instead of using all foreground mass in a field to calculate the lensing of a single background object, we create a lightcone centered at the source with a chosen radius $R$
-%     \item Drilling
-%         \begin{itemize}
-%         \item redshift grid to speed up calcuations
-%         \item Use the physical distance to line of sight in lensing calculations
-%             \begin{itemize}
-%             \item Redshift-to-distance relation (equation and reference)
-%             \end{itemize}
-%         \item Ranking galaxy `relevance'
-%             \begin{itemize}
-%             \item Want to only include the most important galaxies for lensing to speed up computation, as most will have negligable mass or be too far away
-%             \item Allows quicker lensing calculations, means we can make $R$ bigger
-%             \item Show `relevance` metric ($M/R^3$ but unitless)
-%             \item Include plot of predicted relevance vs kappa contribution??
-%             \end{itemize}
-%         \end{itemize}
-%     \item Lensing by Halos
-%         \begin{itemize}
-%         \item Treat each foreground halo as a separate lensing event
-%         \item Total lensing is the sum of each event
-%         \item Lookup table??
-%         \end{itemize}
-%     \item Include cartoon
-%     \end{itemize}
-% \item Checking the halo model: Use of correlation functions as summary statistics for ellipticity predictions
-%     \begin{itemize}
-%         \item Introduce the concept of correlation functions in general
-%             \begin{itemize}
-%             \item Definition
-%             \item Autocorrelation vs cross-correlation
-%             \item Use of correlation functions in cosmology
-%             \item Shear-shear and galaxy-mass correlation functions
-%                 \begin{itemize}
-%                 \item Reference appendix for Visualizing Correlation Functions
-%                 \end{itemize}
-%             \end{itemize}
-%         \item Use of Jarvis`s \texttt{TreeCorr} code to calculate cf`s
-%         \begin{itemize}
-%             \item Reference appendix for Jarvis proof
-%         \end{itemize}
-%     \end{itemize}
-% \item Show one map with ray-traced features and lensed ellipticities vs another map with \texttt{Pangloss} features and predicted ellipticities?
-% \end{itemize}
-
-% %% Results
-% \begin{itemize}
-% \item Maps??
-% \item Correlation Functions
-%     \begin{itemize}
-%     \item shear-shear
-%     \item galaxy-mass
-%     \item progression of each as $R$ increases??
-%     \item cf`s without shape noise and with shape noise
-%     \item cf`s with all galaxies vs with only `relevant' galaxies?
-%     \end{itemize}
-% \item The Need for Speed
-%     \begin{itemize}
-%     \item Table or graph of speedups and CPU time per lightcone progression (make sure to check \texttt{timeit} first!)
-%     \end{itemize}
-% \end{itemize}
-
-% %% Conclusion
-% \begin{itemize}
-% \item Issues with the \texttt{Pangloss} framework
-%     \begin{itemize}
-%     \item Systematic shear power under-prediction in cf`s
-%     \item Missing large-scale dark matter structure
-%     \end{itemize}
-%     \item Possibly missing features in model
-%         \begin{itemize}
-%         \item voids
-%         \item filaments
-%         \item stellar mass
-%         \end{itemize}
-%     \item Speed
-% \item Moving Foward
-%     \begin{itemize}
-%     \item Scaling up
-%         \begin{itemize}
-%         \item CPU and RAM numbers for lightcone parallelization from discussion with Debbie Bard
-%         \end{itemize}
-%     \item infer hyper-parameters from SMHR, physical distance, etc
-%     \item other stuff - too tired right now
-%     \end{itemize}
-% \end{itemize}
-
-% %% Acknowledgements
-% \begin{itemize}
-% \item DOE
-% \item SULI
-% \item Stanford University
-% \item KIPAC
-% \item Risa, Matt, Pat
-% \item Phil!!
-% \end{itemize}
-
-% %% References
-% \begin{itemize}
-% \item P.J. Marshall Thesis?
-% \item Collett et al.
-% \item S. Hilbert (ray-traced) http://arxiv.org/abs/0809.5035
-% \item Millennium Simulation
-% \item Schneider
-% \item Jarvis \texttt{TreeCorr}
-% \item lensing calculation http://arxiv.org/pdf/astro-ph/9908213v1.pdf
-% \item NFW profile
-% \item BMO truncation, BMO vs NFW http://arxiv.org/pdf/1301.1684v2.pdf
-% \item SMHR http://arxiv.org/pdf/1401.7329v1.pdf
-% \item Planck
-% \item galaxy curves
-% \item BAOs
-% \item LCDM
-% \item GR
-% \item corrFuns in cosmology
-% \item wl distortion percent
-% \item CFHT Lensing Survey
-% \end{itemize}
-
-% %% Appendix A
-% \begin{itemize}
-% \item Use as a brief introduction to the shear-shear and galaxy-mass correlation function as used in this work
-%     \begin{itemize}
-%     \item reference other (much more detailed) material for readers to find
-%     \end{itemize}
-% \item Include correlation value colormaps for $\xi_+$, $\xi_-$, and $\xi_\times$ along with discussion of correlation pattern
-% \item Include color-coded correlation visuals along with setup
-%     \begin{itemize}
-%     \item Galaxies around lens before lensing - correlation values scatter plot with no signal
-%     \item Galaxies around lens after lensing - correlation values scatter plot with signal
-%     \end{itemize}
-% \item B-modes and E-modes plot??
-% \end{itemize}
