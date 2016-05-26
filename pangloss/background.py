@@ -213,6 +213,9 @@ class BackgroundCatalog(pangloss.Catalog):
         e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
         e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
 
+        # Save intrinsic ellipticity std
+        self.std_int = sigma_e
+
         # Change any |e|> 1 ellipticity components
         while (e1_int>1.0).any() or (e2_int>1.0).any():
 
@@ -909,6 +912,37 @@ class BackgroundCatalog(pangloss.Catalog):
         std_err = 1.0/np.sqrt(np.sum(w)) * 100.0
 
         return chi2, n_sigma, mean_err, std_err
+
+# ----------------------------------------------------------------------------
+
+    def calculate_log_likelihood(self):
+        '''
+        Calculate the log likelihood of the predicted ellipticities given model parameters.
+        Taken from Phil's thesis (page 61): http://www.slac.stanford.edu/~pjm/Site/CV_files/Marshall_PhDthesis.pdf
+        '''
+
+        # Calculate sigma
+        std_int = self.std_int
+        std_e1 = np.std(self.galaxies['e1_halo'])
+        std_e2 = np.std(self.galaxies['e2_halo'])
+        std_obs = np.mean([std_e1,std_e2])
+        sigma = np.sqrt(std_int**2+std_obs**2)
+
+        # Calculate the (log of) normalization constant
+        N = 2.*self.galaxy_count
+        logZ = (N/2.)*np.log(2.*np.pi*sigma**2)
+
+        # Calculate chi2
+        g = self.galaxies['g']
+        g1, g2 = g.real, g.imag
+        e1, e2 = self.galaxies['e1_halo'], self.galaxies['e2_halo']
+
+        chi2 = ( np.sum( (e1 - g1)**2 / sigma**2 ) + np.sum( (e2 - g2)**2 / sigma**2 ) )
+
+        # Calculate log-likelihood
+        log_likelihood = -logZ + (-0.5) * chi2
+
+        return log_likelihood
 
 # ----------------------------------------------------------------------------
 
