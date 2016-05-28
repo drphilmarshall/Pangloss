@@ -20,9 +20,6 @@ time = True
 # Turn on for plotting correlation function plots
 corr_plots = True
 
-# time should only be used if `rel_compare` and `smooth_compare` are False!
-if time is True: assert rel_compare is False and smooth_compare is False
-
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
 sys.path.append(PANGLOSS_DIR)
@@ -52,70 +49,76 @@ d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 
-# Start all clocks
-if time is True: start_time = timeit.default_timer()
+# time data is stored in these arrays...
+T = 10 # number of time data points
+likelihood_time = []
+likelihood_total_time = []
+abc_time = []
+abc_total_time = []
 
-B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
+for i in range(T):
+    print 'Run {}'.format(i)
+    # Start all clocks
+    if time is True: start_time = timeit.default_timer()
 
-# Lens the background catalog by map
-if vb is True: print('Lensing background by map...')
-B.lens_by_map(K,S)
-print 'Background catalog has',B.galaxy_count,'galaxies'
+    B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
 
-# Drill the lightcones
-if vb is True: print('Drilling lightcones...')
-lc_radius = 6.0
-B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
+    # Lens the background catalog by map
+    if vb is True: print('Lensing background by map...')
+    B.lens_by_map(K,S)
+    print 'Background catalog has',B.galaxy_count,'galaxies'
 
-# Calculate mean/std galaxies per lightcone
-galaxy_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
-mean_galaxies = np.mean(galaxy_counts)
-std_galaxies = np.std(galaxy_counts)
-print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_galaxies)
+    # Drill the lightcones
+    if vb is True: print('Drilling lightcones...')
+    lc_radius = 4.0
+    B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
 
-# Lens the background catalog by foreground halos
-if vb is True: print('Lensing background by halos..')
-relevance_lim = 0.0
-#relevance_lim = 0.00001
-smooth_corr = False
-#cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
-print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
+    # Calculate mean/std galaxies per lightcone
+    galaxy_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
+    mean_galaxies = np.mean(galaxy_counts)
+    std_galaxies = np.std(galaxy_counts)
+    print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_galaxies)
 
-# Calculate likelihood
-start_likelihood = timeit.default_timer()
-likelihood = B.calculate_log_likelihood()
-likelihood_time = timeit.default_timer() - start_likelihood
-likelihood_total_time = timeit.default_timer() - start_time
-print 'lens_by_halos likelihood = {}; likelihood time was {} s, Total time taken was {} s'.format(likelihood,likelihood_time,likelihood_total_time)
+    # Lens the background catalog by foreground halos
+    if vb is True: print('Lensing background by halos..')
+    relevance_lim = 0.0
+    #relevance_lim = 0.0001
+    #relevance_lim = 0.00001
+    smooth_corr = False
+    #cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
+    B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
+    print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 
-# Calculate e-e corr for ABC
-start_abc = timeit.default_timer()
-gg_halo = B.calculate_corr(corr_type='gg',lensed='halo',foreground=F)
-# Calculate distance metric and make selection decision
-abc_time = timeit.default_timer() - start_abc
-abc_total_time = timeit.default_timer() - start_time - likelihood_total_time
-print 'abc decision = {}; abc decision time was {} s, Total time taken (excluding likelihood estimation) was {} s'.format(abc_decision,abc_time,abc_total_time)
+    # Calculate likelihood
+    start_likelihood = timeit.default_timer()
+    likelihood = B.calculate_log_likelihood()
+    likelihood_time.append(timeit.default_timer() - start_likelihood)
+    likelihood_total_time.append(timeit.default_timer() - start_time)
+    print 'lens_by_halos likelihood = {}; likelihood time was {} s, Total time taken was {} s'.format(likelihood,likelihood_time[i],likelihood_total_time[i])
 
-if corr_plots is True:
-    # Calculate the correlation function for each lensing type
-    if vb is True: print('Calculating correlation...')
-    gg_map = B.calculate_corr(corr_type='gg',lensed='map',foreground=F)
+    # Calculate e-e corr for ABC
+    start_abc = timeit.default_timer()
     gg_halo = B.calculate_corr(corr_type='gg',lensed='halo',foreground=F)
-    ng_map = B.calculate_corr(corr_type='ng',lensed='map',foreground=F)
-    ng_halo = B.calculate_corr(corr_type='ng',lensed='halo',foreground=F)
+    # Calculate distance metric and make selection decision
+    abc_time.append(timeit.default_timer() - start_abc)
+    abc_total_time.append(timeit.default_timer() - start_time - likelihood_time[i])
+    abc_decision = 'Rejected' # TEMPORARY!!
+    print 'abc decision = {}; abc decision time was {} s, Total time taken (excluding likelihood estimation) was {} s'.format(abc_decision,abc_time[i],abc_total_time[i])
 
-    # Plot the correlation functions
-    pangloss.plotting.plot_corr(gg_map,corr_type='gg',corr_comp='plus',lensed='map',color='green',galaxy_count=B.galaxy_count)
-    pangloss.plotting.plot_corr(gg_halo,corr_type='gg',corr_comp='plus',lensed='halo',color='purple')
-    pangloss.plotting.plot_corr(gg_map,corr_type='gg',corr_comp='cross',lensed='map',color='green')
-    pangloss.plotting.plot_corr(gg_halo,corr_type='gg',corr_comp='cross',lensed='halo',color='purple')
-    plt.gcf().set_size_inches(10,10)
-    plt.show()
+    del B
 
-    pangloss.plotting.plot_corr(ng_map,corr_type='ng',corr_comp='real',lensed='map',color='green',galaxy_count=B.galaxy_count)
-    pangloss.plotting.plot_corr(ng_halo,corr_type='ng',corr_comp='real',lensed='halo',color='purple')
-    plt.gcf().set_size_inches(10,10)
-    plt.show()
+mean_likelihood = np.mean(likelihood_time)
+std_likelihood = np.std(likelihood_time)
+
+mean_likelihood_t = np.mean(likelihood_total_time)
+std_likelihood_t = np.std(likelihood_total_time)
+
+mean_abc = np.mean(abc_time)
+std_abc = np.std(abc_time)
+
+mean_abc_t = np.mean(abc_total_time)
+std_abc_t = np.std(abc_total_time)
+print 'likelihood_time = {}+/-{},\nlikelihood_total_time = {}+/-{},\nabc_time = {}+/-{},\nabc_total_time = {}+/-{}'.format(mean_likelihood,std_likelihood,mean_likelihood_t,std_likelihood_t,mean_abc,std_abc,mean_abc_t,std_abc_t)
+print '{}'
 
 if vb is True: print('Closing...')

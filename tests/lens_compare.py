@@ -2,7 +2,7 @@
 
 import numpy as np
 import scipy as sp
-import os,sys
+import os,sys,timeit
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import cmath, cProfile
@@ -13,6 +13,9 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 # Turn on for verbose
 vb = True
 
+# Turn on for likelihood estimation time
+time = True
+
 # Turn on for pickling correlation data
 pickle = False
 
@@ -20,7 +23,7 @@ pickle = False
 rel_plots = False
 
 # Turn on for smooth-component correction plots
-smooth_plots = True
+smooth_plots = False
 
 # Turn on for plotting correlation function plots
 corr_plots = True
@@ -32,7 +35,10 @@ rel_compare = False
 smooth_compare = False
 
 # Turn on for plotting maps
-maps = True
+maps = False
+
+# time should only be used if `rel_compare` and `smooth_compare` are False!
+if time is True: assert rel_compare is False and smooth_compare is False
 
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -52,6 +58,7 @@ F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_0_0_0_0_N_4096_ang_
 
 # Generate Background Catalog in the middle of the (0,0,0,0) field
 if vb is True: print('Generating background catalog...')
+
 # Can pick one of the domains below
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
@@ -62,6 +69,9 @@ d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.52,-1.61,-1.59] # only galaxies in subplot
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
+
+# Start likelihood clock
+if time is True: start_time = timeit.default_timer()
 
 # Lens the background catalog by map
 if vb is True: print('Lensing background by map...')
@@ -88,15 +98,21 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 if vb is True: print('Lensing background by halos..')
 relevance_lim = 0.0
 #relevance_lim = 0.00001
+smooth_corr = False
 #cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=True)
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
+
+# Calculate likelihood
+likelihood = B.calculate_log_likelihood()
+elapsed_time = timeit.default_timer() - start_time
+print 'lens_by_halos likelihood = {}; Total time taken was {} s'.format(likelihood,elapsed_time)
 
 if rel_compare is True:
     # Lens the background catalog using only relevant foreground halos
     if vb is True: print('Lensing background by relevant halos..')
     relevance_lim2 = 0.00001 # ~60 galaxies/lightcone
-    B_rel.lens_by_halos(relevance_lim=relevance_lim2,lookup_table=True)
+    B_rel.lens_by_halos(relevance_lim=relevance_lim2,lookup_table=True,smooth_corr=smooth_corr)
     mean_rel =  B_rel.mean_relevant_halos
     std_rel = B_rel.std_relevant_halos
     print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(mean_rel,std_rel)
