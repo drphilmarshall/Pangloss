@@ -91,5 +91,9 @@ Kdiff = pangloss.Kappamap(data=[kappadata,domain,map_xy])
 Kdiff.plot(subplot=d,coords='world')
 plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+'kappa_difference', bbox_inches='tight')
 
+### Testing
+print 'mean Khalo = {}'.format(np.mean(Khalo.values[0]))
+Khalo.values[0] = Khalo.values[0] - np.mean(Khalo.values[0])
+
 # Make 3 subplots of all maps
 pangloss.plotting.compare_binned_maps(Kmap,Khalo,fig_size=10,savefile='kappamap_plots')
