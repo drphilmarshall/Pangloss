@@ -14,7 +14,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 vb = True
 
 # Turn on for likelihood estimation time
-time = True
+time = False
 
 # Turn on for pickling correlation data
 pickle = False
@@ -81,7 +81,8 @@ print 'Background catalog has',B.galaxy_count,'galaxies'
 # Drill the lightcones
 if vb is True: print('Drilling lightcones...')
 lc_radius = 6.0
-B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
+smooth_corr = True
+B.drill_lightcones(radius=lc_radius,foreground=F,save=False,smooth_corr=smooth_corr)
 
 # Save copy of background lightcones for relevant halos:
 if rel_compare is True: B_rel = copy.deepcopy(B)
@@ -98,15 +99,15 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 if vb is True: print('Lensing background by halos..')
 relevance_lim = 0.0
 #relevance_lim = 0.00001
-smooth_corr = False
-#cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
+cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr); print')
+#B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 
 # Calculate likelihood
 likelihood = B.calculate_log_likelihood()
-elapsed_time = timeit.default_timer() - start_time
-print 'lens_by_halos likelihood = {}; Total time taken was {} s'.format(likelihood,elapsed_time)
+if time is True:
+    elapsed_time = timeit.default_timer() - start_time
+    print 'lens_by_halos likelihood = {}; Total time taken was {} s'.format(likelihood,elapsed_time)
 
 if rel_compare is True:
     # Lens the background catalog using only relevant foreground halos
