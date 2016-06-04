@@ -60,8 +60,9 @@ Kmap, Smap = B.bin_to_maps(lensed='map',binsize=binsize,savefile='kappa_map')
 
 # Drill the lightcones
 if vb is True: print('Drilling lightcones...')
-lc_radius = 2.0
-B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
+lc_radius = 6.0
+smooth_corr = True
+B.drill_lightcones(radius=lc_radius,foreground=F,save=False,smooth_corr=smooth_corr)
 
 # Calculate mean/std galaxies per lightcone
 galaxy_counts = [lightcone.galaxy_count for lightcone in B.lightcones]
@@ -72,8 +73,8 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
 #relevance_lim = 0.0
-relevance_lim = 0.00001
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=False)
+relevance_lim = 10**-5
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 
 # Bin kappa and shear maps
@@ -96,4 +97,4 @@ print 'mean Khalo = {}'.format(np.mean(Khalo.values[0]))
 Khalo.values[0] = Khalo.values[0] - np.mean(Khalo.values[0])
 
 # Make 3 subplots of all maps
-pangloss.plotting.compare_binned_maps(Kmap,Khalo,fig_size=10,savefile='kappamap_plots')
+pangloss.plotting.compare_binned_maps(Kmap,Khalo,fig_size=20,savefile='kappamap_plots')

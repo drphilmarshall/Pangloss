@@ -79,8 +79,8 @@ B.lens_by_map(K,S)
 print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
-if vb is True: print('Drilling lightcones...')
-lc_radius = 6.0
+if vb is True: print('Drilling ligh7cones...')
+lc_radius = 7.0
 smooth_corr = True
 B.drill_lightcones(radius=lc_radius,foreground=F,save=False,smooth_corr=smooth_corr)
 
@@ -99,8 +99,9 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 if vb is True: print('Lensing background by halos..')
 relevance_lim = 0.0
 #relevance_lim = 0.00001
-cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr); print')
-#B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
+#relevance_lim = 10**-7
+#cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr); print')
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 
 # Calculate likelihood
@@ -171,10 +172,18 @@ if corr_plots is True:
     plt.gcf().set_size_inches(10,10)
     plt.show()
 
+    # Calculate RMSE
+    gg_nrmse = np.sqrt( np.sum( (gg_halo.xip - gg_map.xip)**2 ) / np.size(gg_map.xip) ) / np.sqrt( np.sum( gg_halo.xip**2 ) / np.size(gg_map.xip) )
+    print 'The shear-shear correlation function NRMSE = {}'.format(gg_nrmse)
+
     pangloss.plotting.plot_corr(ng_map,corr_type='ng',corr_comp='real',lensed='map',color='green',galaxy_count=B.galaxy_count)
     pangloss.plotting.plot_corr(ng_halo,corr_type='ng',corr_comp='real',lensed='halo',color='purple')
     plt.gcf().set_size_inches(10,10)
     plt.show()
+
+    # Calculate RMSE
+    ng_nrmse = np.sqrt( np.sum( (ng_halo.xi - ng_map.xi)**2 ) / np.size(ng_map.xi) ) / np.sqrt( np.sum( ng_halo.xi**2 ) / np.size(ng_map.xi) )
+    print 'The galaxy-mass correlation function NRMSE = {}'.format(ng_nrmse)
 
     # Compare the correlation functions
     chi2,n_sigma,percent_err,std_err = B.compare_corr(gg_halo,gg_map,corr_type='gg',corr_comp='plus')

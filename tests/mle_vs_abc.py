@@ -50,7 +50,7 @@ d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 
 # time data is stored in these arrays...
-T = 1 # number of time data points
+T = 20 # number of time data points
 likelihood_time = []
 likelihood_total_time = []
 abc_time = []
@@ -58,7 +58,7 @@ abc_total_time = []
 
 #
 area = 0.2*0.2*(3600) #arcmin^2
-n = 1000000 # number of sources
+n = 3*10**2 # number of sources
 N = n / area # number of soruces per arcmin^2
 
 for i in range(T):
@@ -100,6 +100,7 @@ for i in range(T):
     start_likelihood = timeit.default_timer()
     likelihood = B.calculate_log_likelihood(lensed='map')
     cProfile.run('B.calculate_log_likelihood(lensed="map"); print')
+    B.calculate_log_likelihood(lensed='map')
     likelihood_time.append(timeit.default_timer() - start_likelihood)
     likelihood_total_time.append(timeit.default_timer() - start_time)
     print 'lens_by_halos likelihood = {}; likelihood time was {} s, Total time taken was {} s'.format(likelihood,likelihood_time[i],likelihood_total_time[i])
