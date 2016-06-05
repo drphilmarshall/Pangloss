@@ -98,6 +98,9 @@
 \makeatletter
 \newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark} % Used for footnotes
 \def\p@subsection{} % Fixes section references
+\renewcommand\@make@capt@title[2]{%
+     \@ifx@empty\float@link{\@firstofone}{\expandafter\href\expandafter{\float@link}}%
+      {\textbf{#1}}\@caption@fignum@sep#2\quad}% % Fixes caption justification
 \makeatother
 
 % \raggedbottom
@@ -161,7 +164,7 @@ A brief introduction to the halo model, the effects of strong and weak gravitati
     \centering
     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/ms_structure.jpg}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{\cite{ms_figures}}
+    \caption{A visualization of the large-scale dark matter distribution in the Millennium Simulation. The largest bright spots correspond to superclusters of galaxies which are connected by thread-like structures of matter called filaments. Taken from \cite{ms_figures}.}
     \label{fig:ms_structure}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -177,25 +180,26 @@ Before describing the developed model for line-of-sight dark matter mass map rec
     \centering
     \begin{subfigure}[H]{0.375\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/ms_galaxies.jpg}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
+        %\captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{Galaxy distribution.}
         \label{ms_galaxies}
     \end{subfigure}
     ~
     %% Einstein Ring Figure
     \begin{subfigure}[H]{0.375\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/ms_halos.jpg}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
+        %\captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{Halo distribution.}
         \label{ms_halos}
     \end{subfigure}
-    \caption{\cite{ms_figures}}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{A comparison of the galaxy and dark matter distribution for a single cluster in the Millennium Simulation. The galaxies tend to be located in the centers of clumps of dark matter called `halos', which suggests that galaxies at least partially trace out the underlying dark matter distribution. Taken from \cite{ms_figures}.}
     \label{ms_compare}
 \end{figure*}
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
-Cosmological simulations like the Millennium Simulation (MS) demonstrate that the underlying matter distribution of our universe is likely breathtakingly complex; rather than a largely disordered collection of galaxies and interstellar gas, matter appears to condense into clusters and superclusters of galaxies threaded together by large filaments pocketed with under-dense regions called voids, as shown in Figure \ref{fig:ms_structure} \cite{ms_figures}. While the exact relation between the distribution of galaxies and dark matter is not known, simulations predict that early galaxies formed in the large gravitational potentials of over-dense regions of dark matter \cite{halo_formation}. This suggests that, while we cannot map dark matter directly, galaxies should trace out at least some of the underlying dark matter structures \cite{abundance_matching}. A comparrison of the predicted galaxy and dark matter distribution from a small region of the MS is shown in Figure \ref{ms_compare}.
+Cosmological simulations like the Millennium Simulation demonstrate that the underlying matter distribution of our universe is likely breathtakingly complex; rather than a largely disordered collection of galaxies and interstellar gas, matter appears to condense into clusters and superclusters of galaxies threaded together by large filaments pocketed with under-dense regions called voids, as shown in Figure \ref{fig:ms_structure} \cite{ms_figures}. While the exact relation between the distribution of galaxies and dark matter is not known, simulations predict that early galaxies formed in the large gravitational potentials of over-dense regions of dark matter \cite{halo_formation}. This suggests that, while we cannot map dark matter directly, galaxies should trace out at least some of the underlying dark matter structures \cite{abundance_matching}. A comparison of the predicted galaxy and dark matter distribution from a small region of the simulation is shown in Figure \ref{ms_compare}.
 
 The simplest way to model the relationship between galaxies and dark matter is by enveloping each galaxy in a spherically symmetric dark matter `halo' of a certain mass $M_h$. These halos extend far beyond the edge of the visible galaxy that they enclose, with the Milky Way's own halo estimated to have a radius of between 300,000 and 400,000 light-yeras \cite{milky_way_halo}. While the density profile of the halos may be complex, numerous simulations have shown that it can be well approximated locally by the Navarro-Frenk-White (NFW) profile which has the form
 \begin{equation}\label{nfw_profile}
@@ -413,7 +417,7 @@ $$\left<\varepsilon\right>=0.$$
 
  \noindent which provides a method of detecting the shear observationally.
 
- The analytical form of the convergence and shear contribution from a BMO-profile is quite messy, but is derived and explained in detail in \ref{bmo}. Calculating the lensing contribution of the smooth-component correction is much simpler; the projected surface mass density at at given redshift is found by integrating $\rho_s(z)$ over a sufficiently small $dz$ interval, and then the mass sheet's convergence is found using Equation \eqref{convergence}. There is no shear contribution as a uniform sheet of mass causes only magnification due to the mass sheet degeneracy \cite{mass_degeneracy}. However, Equation \eqref{lensing} shows that the lensed ellipticities depend on the \textit{reduced} shear, which does depend on the additional convergence terms resulting from the smooth-component correction.
+ The analytical form of the convergence and shear contribution from a BMO-profile is quite messy, but is derived and explained in detail in \ref{nfw_bmo}. Calculating the lensing contribution of the smooth-component correction is much simpler; the projected surface mass density at at given redshift is found by integrating $\rho_s(z)$ over a sufficiently small $dz$ interval, and then the mass sheet's convergence is found using Equation \eqref{convergence}. There is no shear contribution as a uniform sheet of mass causes only magnification due to the mass sheet degeneracy \cite{mass_degeneracy}. However, Equation \eqref{lensing} shows that the lensed ellipticities depend on the \textit{reduced} shear, which does depend on the additional convergence terms resulting from the smooth-component correction.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Galaxies as Ellipses} \label{galaxies_as_ellipses}
@@ -481,7 +485,7 @@ A similar statistical measure often used in weak lensing measurements is the gal
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 To infer foreground dark matter mass structures using weak gravitational lensing, first a model of the relationship between foreground galaxies and dark matter must be established and robustly tested to see if, statistically, it makes the same lensing predictions of background sources as the true underlying dark matter structure. To do this, I built upon the publicly available \texttt{Pangloss}\footnote{\label{note1}https://github.com/drphilmarshall/Pangloss} framework used in Collett et al. (\cite{collett}) to reconstruct all the
-mass along the lines of sight of generated background galaxies in the MS using a halo model with smooth-component correction. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. The implementation of this process is detailed in the following sections.
+mass along the lines of sight of generated background galaxies in the Millennium Simulation using a halo model with smooth-component correction. The lensing contribution of each halo is calculated, and the total lensing of the background galaxy is the sum of each halo contribution. The implementation of this process is detailed in the following sections.
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -505,7 +509,7 @@ Testing the first assumption is the main goal of this thesis. The second assumpt
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Generating Background Galaxies}
-With the (0,0,0,0) catalog of MS foreground galaxies chosen, a set of 1440 background galaxies over a field of 144 arcmin$^2$ was generated, with density 10 galaxies per arcmin$^2$. The intrinsic orientation of each galaxy was sampled from a uniform distribution as, without lensing, there should be no preferred orientation due to the assumption of an isotropic universe. The magnitude of the galaxy ellipticities was sampled from a normal distribution with a standard deviation of 0.2, but any ellipticities with magnitude greater than one were re-sampled. Random ellipticity noise was sampled from a normal distribution with a standard deviation of 0.1 and added to the intrinsic ellipticities. Finally, each ellipticity was multiplied by $M=0.9$ to account for a multiplicative bias of 10\%.
+With the (0,0,0,0) catalog of Millennium Simulation foreground galaxies chosen, a set of 1440 background galaxies over a field of 144 arcmin$^2$ was generated, with density 10 galaxies per arcmin$^2$. The intrinsic orientation of each galaxy was sampled from a uniform distribution as, without lensing, there should be no preferred orientation due to the assumption of an isotropic universe. The magnitude of the galaxy ellipticities was sampled from a normal distribution with a standard deviation of 0.2, but any ellipticities with magnitude greater than one were re-sampled. Random ellipticity noise was sampled from a normal distribution with a standard deviation of 0.1 and added to the intrinsic ellipticities. Finally, each ellipticity was multiplied by $M=0.9$ to account for a multiplicative bias of 10\%.
 
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -517,7 +521,7 @@ To calculate the convergence and shear contribution of each halo, the physical d
 
 \subsection{Assigning Relevance to Halos}
 
-Not all foreground halos are equally relevant to the lensing calculation. To add a significant contribution to the combined shear and convergence, a halo must be massive, close to the line of sight, or preferably both. McCully et al. in \ref{mccully} derived that the correct metric for determining the relevance of a given foreground halo to the overall lensing calculation to be given by
+Not all foreground halos are equally relevant to the lensing calculation. To add a significant contribution to the combined shear and convergence, a halo must be massive, close to the line of sight, or preferably both. McCully et al. in \cite{mccully} derived that the correct metric for determining the relevance of a given foreground halo to the overall lensing calculation to be given by
 \begin{equation}\label{relevant}
 Rel(M_h,R)\propto\frac{M_h}{R^3}
 \end{equation}
@@ -535,7 +539,7 @@ In this work, the threshold values used are ${M_T=10^{12}M_\odot}$ and ${R_T=10}
     \centering
     \includegraphics[width=0.5\textwidth]{figs-swe/thesis/relevance_distribution.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{The mean number of relevant galaxies in a single realization of 1440 source galaxies determined by Equation \eqref{relevant_thresh} with a threshold mass and distance of ${M_T=10^{12}M_\odot}$ and ${R_T=10}$ kpc respectively. The errorbars correspond to the standard deviation of relevant halos accross all lightcones. As expected, most halos are either too far away from the line-of-sight or not massive enough to make a significant contribution, or both. The number of halos falls logarithmically with the relevance limit and reaches a mean of one halo at a relevance of ${10^{-2}M_\odot\,\text{Mpc}^3}$.}
     \label{fig:rel_dist}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -550,7 +554,7 @@ In this work, the threshold values used are ${M_T=10^{12}M_\odot}$ and ${R_T=10}
     \centering
     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/smooth_correction.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{A diagram of the smooth-component correction implementation in \texttt{Pangloss}. The halo density at each redshift slice $z$ was calculated by summing the masses of all foreground halos within $\Delta z$ and dividing by the proper volume of the cone slice using Equation \eqref{pvolume_element} and solid angle $d\Omega$.}
     \label{fig:scc}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -570,21 +574,23 @@ The volume and projected surface mass densities of each redshift slice are shown
 \begin{figure*}
     \centering
     % Volume
-    \begin{subfigure}[H]{0.49\textwidth}
+    \begin{subfigure}[H]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/vol_densities.png}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
+        % \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{Smooth-component volume densities.}
         \label{fig:volume_densities}
     \end{subfigure}
     ~
     % Surface
-    \begin{subfigure}[H]{0.49\textwidth}
+    \begin{subfigure}[H]{0.48\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/surf_densities.png}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
+        % \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{Smooth-component projected surface densities.}
         \label{fig:surface_densities}
     \end{subfigure}
-    \caption{}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{The surface and volume densities for each of the 100 smooth-component correction and halo densities in a lightcone with radius $R_L=6$ arcminutes. The green line is the halo density of each slice and the blue line is the calculated smooth-component density such that the two densities sum to the universe mean density plotted in black. The number of halos in each redshift bin is plotted as a histogram in the background. The red line in plot (b) is the ciritical surface density.}
+    \label{densities}
 \end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -594,7 +600,7 @@ The volume and projected surface mass densities of each redshift slice are shown
     \centering
     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/kappa_distribution.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{The convergence distribution of the 4838 individual halos, plotted in green, and the 100 smooth-component slices, plotted in blue, contained in the same lightcone as Figure \ref{densities}. The mass sheets have a higher convergence contribution than all but the most relevant halos in the lightcone. The curve of smooth component $\kappa$'s indicates how foreground mass at the center of the light's path has the highest lensing efficiency.}
     \label{fig:kappa_dist}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -603,7 +609,7 @@ The volume and projected surface mass densities of each redshift slice are shown
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Line of Sight Lensing Predictions}
 
-Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Section \ref{grav_lensing} (see Wright and Brainerd \cite{lensing_calc} for far more detail). The total convergence and shear along the LOS of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone, as well as the additional convergence terms from the smooth-component correction. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
+Using the physical separation distance and halo mass, the shear and convergence contribution of a single foreground halo is calculated using methods described in Section \ref{grav_lensing} (see \cite{lensing_calc} and \cite{nfw_bmo} for more details). The total convergence and shear along the LOS of the lightcone is simply the sum of the convergence and shear contributions of each halo contained in the lightcone, as well as the additional convergence terms from the smooth-component correction. The \texttt{Pangloss} predicted lensed source ellipticity is then calculated using Equation \eqref{lensing}.
 
 
 %%==========================================================================================================================================
@@ -615,14 +621,14 @@ Using the physical separation distance and halo mass, the shear and convergence 
     \centering
     \includegraphics[width=0.75\textwidth]{figs-swe/thesis/lightcone_plots.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{Four different views of a lightcone centered on the line-of-sight of a particular background source.  The top left figure plots the positions of the halos with the size proportional to their galaxy brightness in the $i$-band, the center figure plots the angular size of foreground halos with red and blue regions representing the NFW scale radius and virial radius of each halo respectively, the top right figure plots the $\kappa$ contributions of each halo, and the bottom plots the positions of each halo along the redshift axis with size proportional to halo mass.}
     \label{fig:lightcone}
 \end{figure*}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 Using the presented methodology, 1440 background galaxies in a 144 arcmin$^2$ subset of the (0,0,0,0) Millennium Simulation foreground catalog were generated and lensed by both the ray-traced shear and convergence maps as well as the \texttt{Pangloss} framework. With a lightcone radius of 6 arcminutes, the lightcones contained an average of ${4836\pm104}$ foreground halos. Both sets of lensed ellipticities were characterized with correlation functions, as well as the intrinsic ellipticities of the sources before lensing.
 
-Figure \ref{fig:lightcone} displays different views an example lightcone where the foreground halos are plotted as circles whose size are proportional to their galaxy brightness (top left), angular size (top center), convergence contributions (top right), and halo mass (bottom). Figure \ref{fig:subplots} shows a few examples of mass structures in the foreground catalog along with the ray-traced convergence (plotted in inverse greyscale) and shear maps (plotted as red ellipticity sticks) from \cite{ray_tracing}. 
+Figure \ref{fig:lightcone} displays different views an example lightcone where the foreground halos are plotted as circles whose size are proportional to their galaxy brightness (top left), angular size (top center), \texttt{Pangloss} predicted convergence contributions (top right), and halo mass (bottom). Comparing the center and top right figures demonstrates the importance of proximity to the line-of-sight for significant $\kappa$ contributions. Figure \ref{fig:subplots} shows a few examples of mass structures in the foreground catalog along with the ray-traced convergence (plotted in inverse greyscale) and shear maps (plotted as red ellipticity sticks) from \cite{ray_tracing}. 
 
 Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticities for individual galaxies, the lensing is characterized globally with correlation functions. As described in section \ref{corr_functions}, the ellipticity-ellipticity correlation function measures how correlated the ellipticities of pairs of galaxies are as a function of separation distance, while the galaxy-mass correlation function measures the correlation of lensed ellipticities around foreground halos as a function of separation distance. Both correlation functions are used in this work to estimate how well the \texttt{Pangloss} framework models weak lensing by dark matter structures and are computed using the publicly available \texttt{TreeCorr} module written by Mike Jarvis\footnote{https://github.com/rmjarvis/TreeCorr}. Note that the ellipticity-ellipticity correlation function definition used in \texttt{TreeCorr} is slightly different than that used in most of the literature; for a derivation of the connection between Jarvis's definition \cite{jarvis} and the more common Schneider definition \cite{schneider}, see Appendix \ref{corr_defs}.
 
@@ -661,24 +667,21 @@ Instead of comparing the ray-traced and \texttt{Pangloss} predicted ellipticitie
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/gg_corr.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
-        %The ellipticity-ellipticity correlation function for ?? sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. While the correlation of the intrinsic ellipticities before lensing (blue) shows no correlation, the correlation of the ray-traced ellipticities (green) and halo model predicted ellipticities (purple) both show significant positive correlation on scales up to 1 arcminute. The halo model predicts a small negative correlation above this scale, while the ray-tracing shows positive correlation on all scales.}
-        %The correlation of the intrinsic ellipticities before lensing is plotted in blue, and shows no correlation. The correlation of the true ray-traced ellipticities is plotted in green and shows significant positive correlation on all scales. The halo predicted correlation, plotted in purple, shows significant positive correlation until a separation distance of 0.8 arcminutes.
+        \caption{The $\varepsilon$-$\varepsilon$ correlation function for 1440 sources at separation distances from 0.1 to 2 arcminutes using lightcones with radii of $R_L=6$ arcminutes, where green is the `true' ray-traced correlation and purple is the halo model predicted correlation. While the cross-component $\xi_\times(\Delta\theta)$ for both is consistent with zero accross all scales as expected, the halo model systematically underpredicts the correlation on scales larger than 0.2 arcminutes.}
         \label{fig:gg_corr}
     \end{subfigure}
     ~~
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/gg_progression.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
-        %The ellipticity-ellipticity correlation functions for a series of halo model frameworks with increasing lightcone radii from $R=1$ to $R=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{gg_corr}.}
+        \caption{The $\varepsilon$-$\varepsilon$ correlation functions of 1440 sources for a series of halo model frameworks with increasing lightcone radii from $R_L=1$ to $R_L=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{fig:gg_corr}. The predicted correlation seems to converge to the ray-traced value with larger $R_L$ as more halo contributions are accounted for.}
         \label{fig:gg_corr_series}
     \end{subfigure}
     \caption{}
 \end{figure}
 %------------------------------------------------------------------------------------------------------------------------------------------
 
-The first test of the halo model was with the $\varepsilon$-$\varepsilon$ correlation function with a lightcone radius of 6 arcminutes which is given in Figure \ref{fig:gg_corr}. The statistic measured the average correlation between pairs of ellipticities at separation distances between 0.1 and 2 arcminutes. The cross-component of the correlation function shows no significant deviation from zero as expected, as gravitational lensing only shears galaxies tangentially. For the $\xi_+$ component, the ray-traced (plotted in green) and halo model (plotted in purple) are in relative agreement from seperation scales of 0.1 to 0.2 arcminutes, but there is a systematic underprediction of correlation by the halo model on scales larger than 0.2 arcminutes by an average of 31\%. This result is consistent with Pace et al. in \cite{pace} which found that a purely halo model underpredicted the lensing correlation on average by 40\%. This may be indicative that not enough halo mass is being used in the lensing prediction, the halo model does not adequately address large-scale mass structures, or that there is significant dark matter mass not correlated with galaxies.  These issues are discussed further in Section \ref{issues}.
+The first test of the halo model was with the $\varepsilon$-$\varepsilon$ correlation function with a lightcone radius of 6 arcminutes and all halos which is given in Figure \ref{fig:gg_corr}. The statistic measured the average correlation between pairs of ellipticities at separation distances between 0.1 and 2 arcminutes. The cross-component of the correlation function shows no significant deviation from zero as expected, as gravitational lensing only shears galaxies tangentially. For the $\xi_+$ component, the ray-traced (plotted in green) and halo model (plotted in purple) are in relative agreement from seperation scales of 0.1 to 0.2 arcminutes, but there is a systematic underprediction of correlation by the halo model on scales larger than 0.2 arcminutes by an average of 31\%. This result is consistent with Pace et al. in \cite{pace} which found that a purely halo model underpredicted the lensing correlation on average by 40\%. This may be indicative that not enough halo mass is being used in the lensing prediction, the halo model does not adequately address large-scale mass structures, or that there is significant dark matter mass not correlated with galaxies.  These issues are discussed further in Section \ref{issues}.
 
 Using the same catalog of background sources, this statistic was recalculated for the halo model ellipticities for various lightcone radii ranging from $R_L=1$ to $R_L=8$ arcminutes. The result is shown in Figure \ref{fig:gg_corr_series}, where the series of model predicted correlation functions is compared to the ray-traced correlation function. As $R_L$ increases, the mean number of foreground galaxies contained in each lightcone grows quadratically from ${134\pm17}$ galaxies when $R_L=1$ arcminute to ${8570\pm87}$ galaxies when $R_L=8$ arcminutes. Increasing the number of foreground objects, and thus increasing the mass and structure considered for shear and convergence predictions, systematically increased the predicted correlation on all scales. This result encourages the use of lightcones with radii of at least 8 arcminutes, and further emphasizes the need for computational efficiency to allow the timely use of large lightcones.
 
@@ -686,7 +689,7 @@ Using the same catalog of background sources, this statistic was recalculated fo
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Galaxy-Mass Correlation Function}
 
-The catalog of lensed ellipticities was also analyzed using the galaxy-mass correlation function with separation distances from 0.1 to 2 arcminutes and a lightcone radius of 6 arcminutes. The result is shown in Figure \ref{fig:ng_corr}. The lensed ellipticities from the ray-tracing and halo model both show positive correlation on all calculated scales and largely agree on scales larger than 0.3 arcminutes except for a slight overprediction by the halo model near 0.45 arcminutes. However, a new feature is the large overprediction of correlation on separation scales smaller than 0.2 arcminutes. This is likely because background sources this close to massive foreground halos are often in the strong lensing regime which is not currently accounted for by the \texttt{Pangloss} framework.
+The catalog of lensed ellipticities was also analyzed using the galaxy-mass correlation function with separation distances from 0.1 to 2 arcminutes and a lightcone radius of 6 arcminutes and all halo. The result is shown in Figure \ref{fig:ng_corr}. The lensed ellipticities from the ray-tracing and halo model both show positive correlation on all calculated scales and largely agree on scales larger than 0.3 arcminutes except for a slight overprediction by the halo model near 0.45 arcminutes. However, a new feature is the large overprediction of correlation on separation scales smaller than 0.2 arcminutes. This is likely because background sources this close to massive foreground halos are often in the strong lensing regime which is not currently accounted for by the \texttt{Pangloss} framework.
 
 The galaxy-mass correlation function was similarly re-calculated at increasing lightcone radii from $R=1$ to $R=8$ arcminutes with the result in Figure \ref{fig:ng_corr_series} As with the $\varepsilon$-$\varepsilon$ correlation, structure larger than $\sim$1 arcminute is captured much better by increasingly large lightcone radii as expected. However, there is little to no improvement of the galaxy-mass correlation on scales smaller than 0.3 arcminutes which futher points to the need to model strong lensing.
 
@@ -697,15 +700,14 @@ The galaxy-mass correlation function was similarly re-calculated at increasing l
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/ng_corr.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
-        %The galaxy-mass correlation function of 3,240 sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. There is no significant correlation of the intrinsic ellipticities (blue) as expected, and both the ray-traced correlation (green) and halo model correlation (purple) are positive on all scales. The green and purple curves are in agreement from 0.2 to 0.7 arcminutes, but have significant discrepancies on scales above and below this range.}
+        \caption{The galaxy-mass correlation function of 1440 sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R_L=6$ arcminutes. The halo model predicts the statistic well on scales above 0.3 arcminutes, but systematically overpredicts correlation on scales below 0.2 arcminutes. This is likely due to strong lensing effects which are not currently accounted for in \texttt{Pangloss}.}
         \label{fig:ng_corr}
     \end{subfigure}
     ~~
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/ng_progression.png}
         \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
+        \caption{The galaxy-mass correlation functions of 1440 sources for a series of halo model frameworks with increasing lightcone radii from $R_L=1$ to $R_L=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{fig:ng_corr}. The predicted correlation seems to converge to the ray-traced value with larger $R_L$ as more halo contributions are accounted for.}
         \label{fig:ng_corr_series}
     \end{subfigure}
     \caption{}
@@ -716,29 +718,27 @@ The galaxy-mass correlation function was similarly re-calculated at increasing l
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Correlation Fraction of Relevant Halos} \label{halo_fraction}
 
-Of intrinsic interest is the relative number of relevant halos needed in each lightcone to accurately predict the halo correlation functions in Figures \ref{fig:gg_corr} and \ref{fig:ng_corr}, as a low percentage would allow much faster lensing predictions. Figures \ref{fig:rel_gg_compare} and \ref{fig:rel_ng_compare} display an example $\varepsilon$-$\varepsilon$ and galaxy-mass correlation function comparrison of the halo model using all halos (purple) and halo model using halos above the relevance limit of ${10^{-5} M_{\odot}/\text{Mpc}^3}$, as well as the percent error of each predicted value between the two implementations. This relevance limit resulted in $??\pm??$ relevant halos per lightcone, and resulted in a normalized root-mean-square error (NRMSE) of ??. Figure \ref{fig:halo_fraction} plots the $\varepsilon$-$\varepsilon$ and galaxy-mass correlation function NRMSE as a function of relevance limits and mean relevant halos. These results suggest that either correlation function prediction can be approximated on average with an NRMSE below 10\% using around the 70 most relevant halos, or an NRMSE of below 5\% using around the 300 most relevant halos. Calibration curves such as this can allow the best-case correlation function to be predicted within a desired accuracy at only a fraction of the full lensing calculation which will be especially helpful in future analyses with much larger fields of view.
+Of intrinsic interest is the relative number of relevant halos needed in each lightcone to accurately predict the halo correlation functions in Figures \ref{fig:gg_corr} and \ref{fig:ng_corr} as a low percentage would allow much faster lensing predictions. Figures \ref{fig:rel_gg_compare} and \ref{fig:rel_ng_compare} display an example $\varepsilon$-$\varepsilon$ and galaxy-mass correlation function comparison of the halo model using all halos (plotted in purple) and halo model using halos above the relevance limit of ${10^{-5} M_{\odot}/\text{Mpc}^3}$ (plotted in blue) with $R_L=6$ arcminutes, as well as the percent error of each predicted value between the two implementations. This relevance limit corresponded to $66\pm10$ relevant halos per lightcone and resulted in a normalized root-mean-square error (NRMSE) of 0.164 and 0.082 for the two statistics. Figure \ref{fig:halo_fraction} plots the $\varepsilon$-$\varepsilon$ and galaxy-mass correlation function NRMSE as a function of relevance limits and mean relevant halos, still using a lightcone radius of 6 arcminutes. These results suggest that either correlation function prediction can be approximated on average with an NRMSE below 10\% using around the 70 most relevant halos, or an NRMSE of below 5\% using around the 300 most relevant halos. Calibration curves such as this can allow the best-case correlation function to be predicted within a desired accuracy at only a fraction of the full lensing calculation which will be especially helpful in future analyses with much larger fields of view.
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
-% Correlation Function Comparrison
+% Correlation Function comparison
 \begin{figure}
     \centering
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/rel_gg_compare.png}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
-        %The ellipticity-ellipticity correlation function for ?? sources at separation distances from 0.1 to 2 arcminutes and a lightcone radius of $R=2$ arcminutes. While the correlation of the intrinsic ellipticities before lensing (blue) shows no correlation, the correlation of the ray-traced ellipticities (green) and halo model predicted ellipticities (purple) both show significant positive correlation on scales up to 1 arcminute. The halo model predicts a small negative correlation above this scale, while the ray-tracing shows positive correlation on all scales.}
-        %The correlation of the intrinsic ellipticities before lensing is plotted in blue, and shows no correlation. The correlation of the true ray-traced ellipticities is plotted in green and shows significant positive correlation on all scales. The halo predicted correlation, plotted in purple, shows significant positive correlation until a separation distance of 0.8 arcminutes.
+        % \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{$\varepsilon$-$\varepsilon$ correlation function comparison.}
         \label{fig:rel_gg_compare}
     \end{subfigure}
     ~~
     \begin{subfigure}{0.475\textwidth}
         \includegraphics[width=\textwidth]{figs-swe/thesis/rel_ng_compare.png}
-        \captionsetup{justification=raggedright,singlelinecheck=false}
-        \caption{CAPTION}
-        %The ellipticity-ellipticity correlation functions for a series of halo model frameworks with increasing lightcone radii from $R=1$ to $R=8$ arcminutes, all plotted in purple with various line styles. These are compared to the same ray-traced correlation from Figure \ref{gg_corr}.}
+        % \captionsetup{justification=raggedright,singlelinecheck=false}
+        \caption{Galaxy-mass correlation function comparison.}
         \label{fig:rel_ng_compare}
     \end{subfigure}
-    \caption{}
+    \captionsetup{justification=raggedright,singlelinecheck=false}
+    \caption{Comparing the two correlation functions using all halos (purple) and only the $66\pm10$ most relevant halos resulting from a relevance limit of ${10^{-5} M_{\odot}/\text{Mpc}^3}$ (blue). The percent error of each point as well as the mean error and NRMSE is plotted below each figure.}
     \label{fig:rel_corr}
 \end{figure}
 
@@ -748,10 +748,10 @@ Of intrinsic interest is the relative number of relevant halos needed in each li
 % NRMSE and Correlation Fraction as function of Mean Relevant Halos
 \begin{figure*}
     \centering
-    \includegraphics[width=0.925\textwidth]{figs-swe/thesis/halo_fraction_long.png}
+    \includegraphics[width=0.95\textwidth]{figs-swe/thesis/halo_fraction_long.png}
     % \includegraphics[width=0.475\textwidth]{figs-swe/thesis/halo_fraction.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION!}
+    \caption{The NRMSE of the $\varepsilon$-$\varepsilon$ and galaxy-mass correlation function, plotted in blue and green respectively, as a function of relevance limit / number of relevant halos used for 1440 sources with $R_L=6$ arcminutes. The lines corresponding to an NRMSE of 5\% and 10\% are plotted for convenience. This suggests that, on average, either best-case summary statistic can be approximated using only the 70 most relevant halos for a NRMSE below 10\% and the 300 most relevant halos for a NRMSE below 5\%. This figure can be used to determine what relevance limit should be used to recover the statistics to a desired accuracy.}
     \label{fig:halo_fraction}
 \end{figure*}
 
@@ -761,9 +761,9 @@ Of intrinsic interest is the relative number of relevant halos needed in each li
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Convergence Mass Maps} \label{mass_maps}
 
-While correlation functions can describe how well the lensing predictions are being made globally, it is still instructive to analyze the difference between the ray-traced and halo model projected mass maps. This was done by selecting a region of foreground mass, calculating the ray-traced and \texttt{Pangloss}-predicted convergence of a uniform grid of background sources in the field, and binning the convergence maps to a desired resolution. Convergence is proportional to projected surface mass density, so comparring the two convergence maps is equivalent to comparing their respecitve projected mass distributions.
+While correlation functions can describe how well the lensing predictions are being made globally, it is still instructive to analyze the difference between the ray-traced and halo model projected mass maps. This was done by selecting a region of foreground mass, calculating the ray-traced and \texttt{Pangloss}-predicted convergence of a uniform grid of background sources in the field, and binning the convergence maps to a desired resolution. Convergence is proportional to projected surface mass density, so comparing the two convergence maps is equivalent to comparing their respecitve projected mass distributions.
 
-The result of a particular 9 arcmin$^2$ field is shown in Figure \ref{fig:kappamaps}, where the ray-traced convergence is shown on the left, the halo model convergence is in the center, and the ray-traced convergence subtracted from the halo model convergence is shown on the right. While particular foreground objects are almost always predicted, the currently implemented halo model over-predicts the convergence throughout most of the field; (more). The halo model does not appear to accurately account for the voids between foreground masses and over-predicts the mass of most ... This could partially be a result of incorrect halo profiles, but it is apparent that the smooth-component correction is not adequate to ... (rework)
+The result of a particular 9 arcmin$^2$ field is shown in Figure \ref{fig:kappamaps}, where the ray-traced convergence is shown on the left, the halo model convergence is in the center, and the ray-traced convergence subtracted from the halo model convergence is shown on the right. While particular foreground objects are almost always predicted, the currently implemented halo model over-predicts the convergence throughout most of the field; the halo model does not appear to accurately account for the voids between foreground masses and over-predicts the mass of most foreground objects. This could be a result of incorrect halo profiles, a too-simplistic implementation of the smooth-component correction, missing features in the halo model, a significant amount of dark matter mass not being correlated with galaxies, or some combination of all four possibilities..
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 %% 3 panel plot of binned Hilbert map, Pangloss map, and difference
@@ -771,7 +771,7 @@ The result of a particular 9 arcmin$^2$ field is shown in Figure \ref{fig:kappam
     \centering
     \includegraphics[width=\textwidth]{figs-swe/thesis/kappamaps.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{The projected convergence map of a 9 arcmin$^2$ field of the Millennium Simulation using (left) the ray-traced convergence, (center) the \texttt{Pangloss} predicted halo model convergence, and (right) the ray-traced convergence subtracted from the halo model convergence. All maps are plotted with the same intensity scaling. The halo model predicts individual foreground objects, but systematically overpredicts the convergence throughout the map. This could be a result of incorrect halo profiles, a too-simplistic modeling of large-scale mass structures, and/or a significant amount of dark matter that is not correlated with galaxies.}
     \label{fig:kappamaps}
 \end{figure*}
 %
@@ -786,7 +786,7 @@ The result of a particular 9 arcmin$^2$ field is shown in Figure \ref{fig:kappam
     \centering
     \includegraphics[width=0.475\textwidth]{figs-swe/thesis/profile_bar.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{OLD: The mean CPU runtime per lightcone for various runs with different (and cumulative) code optimizations described in the text. The cumulative changes account for a 59\% decrease in the mean CPU time and a halving of the variation. Currently, the prediction can be made for a single lightcone in $57\pm8$ ms.}
+    \caption{The mean CPU runtime per lightcone for various runs with different (and cumulative) code optimizations described in Section \ref{comp_perform}. The cumulative changes account for a 59\% decrease in the mean CPU time and a halving of the initial variation. On average, the lensing prediction for a single lightcone can now be made in $57\pm8$.}
     \label{fig:cpu_plot}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -803,7 +803,7 @@ The distribution of total CPU time in significant parts of the lensing calculati
     \centering
     \includegraphics[width=0.875\textwidth]{figs-swe/thesis/cpu_scaling.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{The mean CPU runtime required for a single lensing prediction as a function of lightcone radius $R_L$ (left) and relevance limit at constant radius (right). The mean runtime scales quadratically with lightcone radius, and therefore halo count, with a overhead of about ${55\pm10}$ ms. Increasing the relevance limit to ${10^{-6}M_\odot\,\text{Mpc}^3}$, or about 300 relevant halos, decreases the mean runtime to near the minimum overhead.}
     \label{fig:cpu_scaling}
 \end{figure*}
 %
@@ -856,9 +856,8 @@ However, exploring the parameter space efficiently is a significant problem in M
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Approximate Bayesian Computation} \label{abc}
 
-MLE is not the only common method of parameter inference. As discussed in the previous section, the likelihood is computationally expensive to calculate and so MLE may not lend itself well to inference when large number of background galaxies are used. Approximate Bayesian computation (ABC) is a class of computational methods that estimate the posterior distribution without calculating the likelihood function. This can be vital for complex models in which the likelihood function does not have an analytic form or is computationally costly to evaluate. While fortunately Equation \eqref{log-likelihood} is a relatively simple likelihood function, the calculation may become too costly for very large mock catalogs of millions or billions of source galaxies. However, ABC does come at a cost; as the name implies, there are various assumptions and approximations made in the process that can potentially lead to an innaccurate posterior prediction. A general overview of the ABC process is shown in Figure \ref{fig:abc} taken from \cite{abc}, which offers an excellent introduction to the topic. I summarize a common ABC implementation and its application to \texttt{Pangloss} below.
-
-% In order to gague future inference feasibility, I analyzed whether ABC could make posterior 
+MLE is not the only common method of parameter inference. As discussed in the previous section, the likelihood is computationally expensive to calculate and so MLE may not lend itself well to inference when large number of background galaxies are used. Approximate Bayesian computation (ABC) is a class of computational methods that estimate the posterior distribution without calculating the likelihood function. This can be vital for complex models in which the likelihood function does not have an analytic form or is computationally costly to evaluate. While fortunately Equation \eqref{log-likelihood} is a relatively simple likelihood function, the calculation may become too costly for very large mock catalogs of millions or billions of source galaxies. However, ABC does come at a cost; as the name implies, there are various assumptions and approximations made in the process that can potentially lead to an innaccurate posterior prediction. See \cite{abc} for an excellent introduction to the topic. I summarize a common ABC implementation and its application to \texttt{Pangloss} below.
+%A general overview of the ABC process is shown in Figure \ref{fig:abc} taken from \cite{abc}, which offers an excellent introduction to the topic.
 
 All ABC methods approximate the likelihood function by simulating data using parameters sampled from the prior distribution. If the simulated data are very `similar' to the observed data, then the parameter set is accepted; if not, the parameter set is rejected. The posterior is then approximated by a histogram of the accepted parameters after a large number of simulations have been run. These methods are approximations as simulated data that is `similar enough' to observed data is accepted rather than requiring exact matches. Practically, determining what metric of `similar' to use and what threshold value $\delta$ should be chosen for data rejection becomes a compromise of computation speed and posterior accuracy.
 
@@ -868,29 +867,29 @@ A possible implemenetation of the above for \texttt{Pangloss} would be as follow
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 % ABC Diagram
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\textwidth]{figs-swe/thesis/abc.png}
-    \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION; Will replace with a self-made plot made specifically for \texttt{Pangloss} before thesis submission.}
-    \label{fig:abc}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.5\textwidth]{figs-swe/thesis/abc.png}
+%     \captionsetup{justification=raggedright,singlelinecheck=false}
+%     \caption{CAPTION; Will replace with a self-made plot made specifically for \texttt{Pangloss} before thesis submission.}
+%     \label{fig:abc}
+% \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Results} \label{inference_results}
 
 I implemented the methodology in section \ref{pangloss} to make weakly lensed ellipticity predictions for 20 mock catalogs of $N$ background sources ranging from $N=10^2$ to $N=10^6$. The mean CPU times for a single likelihood calulation and ABC rejection decision as a function of $N$ is shown in Figure \ref{fig:mle_vs_abc}. The two methods take approximately the same amount of time up to $N=10^3$ sources, but the correlation function quickly becomes far too computationally inefficient at $N$ values above $10^4$. While further analysis is needed to determine whether more or less ABC samples are required than posterior samples from MLE, this result, as well as the limitation that ABC is fundamentally an approximation of the posterior,
-suggests that any future inference work will likely use MLE instead of ABC. However, the time spent for either inference method is quite small in comparrison to the CPU time required to create lightcones and make the line-of-sight lensing predictions. This is an encouraging result which de-emphasizes the choice of sampling method and suggests that further work on the framework should be on additional optimization of the lensing prediction code rather than posterior estimation.
+suggests that any future inference work will likely use MLE instead of ABC. However, the time spent for either inference method is quite small in comparison to the CPU time required to create lightcones and make the line-of-sight lensing predictions. This is an encouraging result which de-emphasizes the choice of sampling method and suggests that further work on the framework should be on additional optimization of the lensing prediction code rather than posterior estimation.
 % Additionally as ABC is fundamentally an approximation of the posterior \textit{and} a single decision is orders of magnitude slower than a likelihood calculation for a large $N$
 
 %%------------------------------------------------------------------------------------------------------------------------------------------
 % ABC Diagram
 \begin{figure}
     \centering
-    \includegraphics[width=0.475\textwidth]{figs-swe/thesis/mle_vs_abc.png}
+    \includegraphics[width=0.49\textwidth]{figs-swe/thesis/mle_vs_abc.png}
     \captionsetup{justification=raggedright,singlelinecheck=false}
-    \caption{CAPTION}
+    \caption{The mean CPU runtime of a single likelihood evaluation and ABC decision, based upon the $\varepsilon$-$\varepsilon$ correlation function calculation, as a function of the number of background sources $N$. The mean runtime was determined using 20 mock catalogs for each $N$. Both sampling methods require an overhead of about 3 ms and increase runtime with $N$, but a single ABC decision takes three orders of magnitude more runtime for $N\geq10^5$ galaxies.}
     \label{fig:mle_vs_abc}
 \end{figure}
 %%------------------------------------------------------------------------------------------------------------------------------------------
@@ -925,7 +924,7 @@ However, the \texttt{Pangloss} code needs to be optimized before the paralleliza
 %%------------------------------------------------------------------------------------------------------------------------------------------
 \subsection{Future Inference Work}
 
-The results of Section \ref{feasibility} demonstrated that neither the likelihood nor correlation function computation present a significant computational issue in comparrison to the lensing calculation, so either are feasible approaches for a hierarchial inference of the stellar mass - halo mass relation. As a single ABC rejection algorithm performed many orders of magnitude \textit{worse} than a single likelihood calculation for ${10^2\leq N\leq10^6}$ sources and ABC fundementally an approximation, it appears that the method is not suitable for this work unless ABC ends up requiring far less samples than the number of needed posterior samples in MLE. However as discussed above and in Section \ref{inference_results}, there is still much more work to the \texttt{Pangloss} framework that needs to be done, both in modeling features and computational infastructure, before an inference using a large number of background sources comparable to modern sky surveys can be achieved.
+The results of Section \ref{feasibility} demonstrated that neither the likelihood nor correlation function computation present a significant computational issue in comparison to the lensing calculation, so either are feasible approaches for a hierarchial inference of the stellar mass - halo mass relation. As a single ABC rejection algorithm performed many orders of magnitude \textit{worse} than a single likelihood calculation for ${10^2\leq N\leq10^6}$ sources and ABC fundementally an approximation, it appears that the method is not suitable for this work unless ABC ends up requiring far less samples than the number of needed posterior samples in MLE. However as discussed above and in Section \ref{inference_results}, there is still much more work to the \texttt{Pangloss} framework that needs to be done, both in modeling features and computational infastructure, before an inference using a large number of background sources comparable to modern sky surveys can be achieved.
 
 
 %%==========================================================================================================================================
@@ -1036,7 +1035,7 @@ Now consider a region of space around a foreground lens populated with many back
     \label{colored_corr}
 \end{figure}
 
-The same plots for the source galaxies \textit{after lensing} are shown in Figure \ref{colored_corr_lensed}. The source ellipticities have clearly aligned tangentially around the foreground lens in Figure \ref{color_corr_lensed}, and distinct patterns have appeared in the correlation pair distribution for each color bin in Figure \ref{corr_dist_lensed}. First consider a single color bin, such as the blue. Galaxies next to one another are lensed in approximately the same way and thus nearly parallel, leading to a positive correlation at small separation distances in Figure \ref{corr_dist_lensed}. Moving a quarter of the way around the blue circle of galaxies, the lensed ellipticities become perpendicular and have negative correlation. This can be seen as the dip in correlation at `middle' separation distances in \ref{corr_dist_lensed}. Finally for galaxies on opposite sides of the lens, their relative orientation is again parallel and the correlation has returned to positive values. This spike in correlation is clearly visible in the distribution and is shifted to the right for colors further from the lens as the radius of the color bin increases. Averaging all scatter points in discrete separation distance bins, the $\varepsilon$-$\varepsilon$ correlation function will no longer be zero and a detectable signal will remain.
+The same plots for the source galaxies \textit{after lensing} are shown in Figure \ref{color_corr_lensed}. The source ellipticities have clearly aligned tangentially around the foreground lens in Figure \ref{color_corr_lensed}, and distinct patterns have appeared in the correlation pair distribution for each color bin in Figure \ref{corr_dist_lensed}. First consider a single color bin, such as the blue. Galaxies next to one another are lensed in approximately the same way and thus nearly parallel, leading to a positive correlation at small separation distances in Figure \ref{corr_dist_lensed}. Moving a quarter of the way around the blue circle of galaxies, the lensed ellipticities become perpendicular and have negative correlation. This can be seen as the dip in correlation at `middle' separation distances in \ref{corr_dist_lensed}. Finally for galaxies on opposite sides of the lens, their relative orientation is again parallel and the correlation has returned to positive values. This spike in correlation is clearly visible in the distribution and is shifted to the right for colors further from the lens as the radius of the color bin increases. Averaging all scatter points in discrete separation distance bins, the $\varepsilon$-$\varepsilon$ correlation function will no longer be zero and a detectable signal will remain.
 
 %% Color-Coded Correlation Lensed
 % \begin{figure}
