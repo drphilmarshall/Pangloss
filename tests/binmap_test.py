@@ -72,8 +72,8 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
-#relevance_lim = 0.0
-relevance_lim = 10**-5
+relevance_lim = 0.0
+#relevance_lim = 10**-5
 B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
 

@@ -80,7 +80,7 @@ print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
 if vb is True: print('Drilling ligh7cones...')
-lc_radius = 7.0
+lc_radius = 2.0
 smooth_corr = True
 B.drill_lightcones(radius=lc_radius,foreground=F,save=False,smooth_corr=smooth_corr)
 
@@ -97,9 +97,9 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
-relevance_lim = 0.0
+#relevance_lim = 0.0
 #relevance_lim = 0.00001
-#relevance_lim = 10**-7
+relevance_lim = 10**-5
 #cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr); print')
 B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)

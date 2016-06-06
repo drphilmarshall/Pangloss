@@ -99,7 +99,7 @@ for i in range(T):
     # Calculate likelihood
     start_likelihood = timeit.default_timer()
     likelihood = B.calculate_log_likelihood(lensed='map')
-    cProfile.run('B.calculate_log_likelihood(lensed="map"); print')
+    #cProfile.run('B.calculate_log_likelihood(lensed="map"); print')
     B.calculate_log_likelihood(lensed='map')
     likelihood_time.append(timeit.default_timer() - start_likelihood)
     likelihood_total_time.append(timeit.default_timer() - start_time)
