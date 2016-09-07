@@ -53,13 +53,13 @@ class LensingTable():
     for lensing caluclations.
     '''
 
-    def __init__(self,x_lim=[1e-7,1000.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
+    def __init__(self,x_lim=[1e-7,1000.0],t_lim=[40.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
 
         # Create lookup table
         self.generate_lookup_table(x_lim,t_lim,Nx,Nt,kx,ky)
         return
 
-    def generate_lookup_table(self,x_lim=[1e-7,200.0],t_lim=[50.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
+    def generate_lookup_table(self,x_lim=[1e-7,200.0],t_lim=[40.0,200.0],Nx=1000,Nt=100,kx=3,ky=3):
 
         # Set x and t limits
         self.x_min = x_lim[0]

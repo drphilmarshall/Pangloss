@@ -4,11 +4,6 @@ import struct
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 
-arcmin2rad = (1.0/60.0)*np.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-deg2rad = np.pi/180.0
-rad2deg = 1.0/deg2rad
-
 vb = False
 
 class WLMap:
@@ -62,41 +57,86 @@ class WLMap:
       2015-06-24  Started Everett (SLAC)
     """
 
-    def __init__(self,mapfiles,FITS=True):
+    def __init__(self,mapfiles=None,data=None,FITS=True):
 
-        # mapfile should be inputted as list, but is automatically converted to
-        # a list if it is a single file string
-        if type(mapfiles) != list:
-            mapfiles = [mapfiles]
-        self.input = mapfiles
+        assert not (mapfiles is not None and data is not None), \
+        "Error: Can only input mapfiles or data; not both!"
 
-        # Parsing the file name(s)
-        # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
-        self.map_x = []
-        self.map_y = []
-        for i in range(0,len(self.input)):
-            input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
-            self.map_x.append(eval(input_parse[3])) # The x location of the map grid
-            self.map_y.append(eval(input_parse[4])) # The y location of the map grid
+        # Make a WLMap by reading in data from a file.
+        # Mapfile should be inputted as list, but is automatically
+        # converted to a list if it is a single file string
+        if mapfiles is not None:
+            if type(mapfiles) != list:
+                mapfiles = [mapfiles]
+            self.input = mapfiles
+            self.origin = 'file'
+
+        # Make a WLMap from scratch, given 3 numpy arrays: d,domain,map_xy
+        # d must be a 3D array, to allow for shear as well as kappa.
+        # x and y must be meshgrids that specify the world coordinates
+        # of the pixel centers. domain =[ra_i, ra_f, dec_i, dec_f],
+        # map_xy = [map_x, map_y]. (no longer need x and y)
+        elif data is not None:
+            assert type(data) == list
+            assert len(data) == 3
+            #d,x,y,domain,map_xy = data[0],data[1],data[2],data[3],data[4] # OLD - don't need x,y if domain is passed
+            d,domain,map_xy = data[0],data[1],data[2]
+            assert len(d.shape) == 3
+            assert len(domain) == 4
+            assert len(map_xy) == 2
+            #assert d[0].shape[0] == x.shape[0]-1
+            #assert d[0].shape[1] == y.shape[0]-1
+            #assert x.shape == y.shape # For now, must be square!
+            if len(d) == 2: assert d[0].shape == d[1].shape
+            self.input = []
+            self.origin = 'scratch'
+
+        else:
+            print "Empty "+self.__str__()
+            return None
 
         # Declare needed attributes as lists
+        self.hdr = []
         self.values = []
         self.NX = []
         self.PIXSCALE = []
         self.field = []
         self.wcs = []
         self.output = []
+        self.map_x = []
+        self.map_y = []
 
-        # Read in data from file:
-        if FITS:
-            # Read in FITS image, extract wcs:
-            if vb: print "Reading in map from files "+mapfiles
-            self.read_in_fits_data()
+        if self.origin == 'file':
+            # Parsing the file name(s)
+            # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
+            for i in range(0,len(self.input)):
+                input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
+                self.map_x.append(eval(input_parse[3])) # The x location of the map grid
+                self.map_y.append(eval(input_parse[4])) # The y location of the map grid
 
-        else:
-            # Read in binary data, to self.values:
-            if vb: print "Reading in map from file "+mapfiles
-            self.read_in_binary_data()
+            # Read in data from file:
+            if FITS:
+                # Read in FITS image, extract wcs:
+                if vb: print "Reading in map from files "+mapfiles
+                self.read_in_fits_data()
+
+            else:
+                # Read in binary data, to self.values:
+                if vb: print "Reading in map from file "+mapfiles
+                self.read_in_binary_data()
+
+        elif self.origin == 'scratch':
+            # Reformat data into self.values:
+            if vb: print "Making map from data arrays"
+            for i in range(0,len(d)):
+                # The map (x,y) positions corresponding to the Hilbert maps
+                self.map_x.append(map_xy[0]) # The x location of the map grid
+                self.map_y.append(map_xy[1]) # The y location of the map grid
+
+            self.reformat_data(d,domain)
+
+            # Set up the WCS:
+            #self.make_wcs(x,y)
 
         # Check file consistency
         assert self.PIXSCALE[1:] == self.PIXSCALE[:-1]
@@ -108,22 +148,22 @@ class WLMap:
 # ----------------------------------------------------------------------------
 
     def __str__(self):
-        return 'abstract map'
+        return 'Weak Lensing Map object.'
 
 # ----------------------------------------------------------------------------
 
     def read_in_fits_data(self):
         for i in range(0,len(self.input)):
             hdu = pyfits.open(self.input[i])[0]
-            hdr = hdu.header
-            self.get_fits_wcs(hdr,i)
+            self.hdr.append(hdu.header)
+            self.get_fits_wcs(self.hdr[i],i)
             self.values.append(hdu.data)
             # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
             # self.values[i] = self.values[i].transpose()
             self.NX.append(self.values[i].shape[0])
-            self.PIXSCALE.append(self.wcs[i]['CD1_1'])
+            self.PIXSCALE.append(-self.wcs[i]['CD1_1'])
             self.field.append(self.NX[i]*self.PIXSCALE[i])
-            return None
+        return None
 
 # ----------------------------------------------------------------------------
 
@@ -152,10 +192,70 @@ class WLMap:
             self.output.append(self.input[i]+'.fits')
             if os.path.exists(self.output[i]):
               if vb: print "FITS version already exists: ",self.output
+              self.make_header(i)
             else:
               if vb: print "Writing map to "+self.output[i]
               self.write_out_to_fits(i)
             # This should probably not be in __init__ but hopefully it only gets run once.
+
+        return
+
+# ----------------------------------------------------------------------------
+
+    def reformat_data(self,d,domain):
+        #
+        for i in range(0,len(d)):
+            #
+            self.values.append(d[i])
+
+            ra_i, ra_f, dec_i, dec_f = domain[0], domain[1], domain[2], domain[3] # degrees
+            dra, ddec = abs(ra_i-ra_f), abs(dec_i-dec_f) # degrees
+            assert dra == ddec
+            self.field.append(dra) # degrees
+            #self.NX.append(int( 4096.0 * (dra / 4.0) ))
+            self.NX.append(self.values[i].shape[0])
+            self.PIXSCALE.append(self.field[i]/(1.0*self.NX[i])) # degrees
+            self.make_wcs(i,domain)
+            self.make_header(i)
+            self.input.append('')
+            self.output.append('')
+
+        return
+
+# ----------------------------------------------------------------------------
+    #def make_wcs(self,x,y):
+    def make_wcs(self,i,domain):
+        '''
+        Make wcs for inputted data
+        '''
+        ra_i, ra_f, dec_i, dec_f = domain[0], domain[1], domain[2], domain[3]
+        #ramin = np.min(np.min(x))
+        #ramax = np.max(np.max(x))
+        #decmin = np.min(np.min(y))
+        #decmax = np.max(np.max(y))
+        self.wcs.append(dict())
+        # ra  = CRVAL1 + CD1_1*(i-CRPIX1)
+        # dec = CRVAL2 + CD2_2*(j-CRPIX2)
+        self.wcs[i]['CRPIX1'] = 0.0
+        self.wcs[i]['CRPIX2'] = 0.0
+        self.wcs[i]['CRVAL1'] =  ra_i
+        self.wcs[i]['CRVAL2'] = dec_i
+        self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
+        self.wcs[i]['CD1_2'] = 0.0
+        self.wcs[i]['CD2_1'] = 0.0
+        self.wcs[i]['CD2_2'] = self.PIXSCALE[i]
+        self.wcs[i]['CTYPE1'] = 'RA---TAN'
+        self.wcs[i]['CTYPE2'] = 'DEC--TAN'
+
+        '''
+        # i = LTV1 + LTM1_1*(x/rad)
+        # j = LTV2 + LTM2_2*(y/rad)
+        self.wcs[i]['LTV1'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
+        self.wcs[i]['LTV2'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
+        self.wcs[i]['LTM1_1'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        self.wcs[i]['LTM2_2'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        '''
+        return
 
 # ----------------------------------------------------------------------------
 #  WCS parameters: to allow conversions between
@@ -169,8 +269,10 @@ class WLMap:
         # dec = CRVAL2 + CD2_2*(j-CRPIX2)
         self.wcs[i]['CRPIX1'] = 0.0
         self.wcs[i]['CRPIX2'] = 0.0
-        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.map_x[i]*self.field[i]
-        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.map_y[i]*self.field[i]
+        self.wcs[i]['CRVAL1'] =  0.5*self.field[i] - self.map_x[i]*self.field[i]
+        self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + self.map_y[i]*self.field[i]
+        # self.wcs[i]['CRVAL1'] =  0.5*self.field[i] + 0.5*self.PIXSCALE[i] - self.map_x[i]*self.field[i]
+        # self.wcs[i]['CRVAL2'] = -0.5*self.field[i] + 0.5*self.PIXSCALE[i] + self.map_y[i]*self.field[i]
         self.wcs[i]['CD1_1'] = -self.PIXSCALE[i]
         self.wcs[i]['CD1_2'] = 0.0
         self.wcs[i]['CD2_1'] = 0.0
@@ -180,10 +282,12 @@ class WLMap:
 
         # i = LTV1 + LTM1_1*(x/rad)
         # j = LTV2 + LTM2_2*(y/rad)
+
         self.wcs[i]['LTV1'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
         self.wcs[i]['LTV2'] = 0.5*self.field[i]/self.PIXSCALE[i] - 0.5
-        self.wcs[i]['LTM1_1'] = 1.0/(self.PIXSCALE[i]*deg2rad)
-        self.wcs[i]['LTM2_2'] = 1.0/(self.PIXSCALE[i]*deg2rad)
+        self.wcs[i]['LTM1_1'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+        self.wcs[i]['LTM2_2'] = 1.0/np.deg2rad(self.PIXSCALE[i])
+
         return None
 
 # ----------------------------------------------------------------------------
@@ -191,22 +295,29 @@ class WLMap:
     def get_fits_wcs(self,hdr,i):
         self.wcs.append(dict())
         for keyword in hdr.keys():
-           self.wcs[i][keyword] = hdr[keyword]
+            self.wcs[i][keyword] = hdr[keyword]
         return None
 
 # ----------------------------------------------------------------------------
 
-    def write_out_to_fits(self,i):
-
+    def make_header(self,i):
         # Start a FITS header + data unit:
         hdu = pyfits.PrimaryHDU()
         # Add WCS keywords to the FITS header (in apparently random order):
         for keyword in self.wcs[i].keys():
-            hdu.header.update(keyword,self.wcs[i][keyword])
+            hdu.header.set(keyword,self.wcs[i][keyword])
         # Make image array. The transpose would be necessary so that ds9 displays
         # the image correctly, if we hadn't already done it in read_in_fits_data()
         # hdu.data = self.values[i].transpose()
         hdu.data = self.values[i]
+        self.hdr.append(hdu.header)
+        return hdu
+
+# ----------------------------------------------------------------------------
+
+    def write_out_to_fits(self,i):
+        # Make header
+        hdu = self.make_header(i)
         # Verify and write to file:
         hdu.verify()
         hdu.writeto(self.output[i])

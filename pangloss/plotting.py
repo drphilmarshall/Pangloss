@@ -2,9 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os, sys
 from astropy.table import Table, Column
+from astropy.wcs import WCS
 from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
+import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Import Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
@@ -61,14 +64,74 @@ HISTORY
   2015-07-5  Collected and extended by Everett (SLAC)
 """
 
+# ============================================================================
+
+def set_axes(fig,Lx=10,Ly=10,header=None,imsubplot=[0,1,0,1]):
+    '''
+    Sets wcs and pixel axes for plotting maps and catalogs. Both sets of axes are
+    contained in the current figure instance, and also returned for ease of use.
+    '''
+
+    assert header is not None, "Must pass a FITS header!"
+
+    # Create world coordinate axis
+    wcs = WCS(header)
+    ax = fig.add_axes(viewport, projection=wcs, label='wcs')
+    ax.set_autoscale_on(False)
+    ra = ax.coords['ra']
+    dec = ax.coords['dec']
+
+    # Set pixel limits on axis
+    pix_xi = imsubplot[0]
+    pix_xf = imsubplot[1]
+    pix_yi = imsubplot[2]
+    pix_yf = imsubplot[3]
+    ax.set_xlim(pix_xi-0.5, pix_xf-0.5)
+    ax.set_ylim(pix_yi-0.5, pix_yf-0.5)
+
+    # Set labels
+    ra.set_axislabel('Right Ascension / deg')
+    dec.set_axislabel('Declination / deg')
+
+    # Set x/y-axis unit formatter
+    if Lx > 0.03 and Lx <= 0.3:
+        ra.set_major_formatter('d.dd')
+    elif Lx <= 0.03:
+        ra.set_major_formatter('d.ddd')
+    else:
+        ra.set_major_formatter('d.d')
+
+    if Ly >0.03 and Ly <= 0.3:
+        dec.set_major_formatter('d.dd')
+    elif Ly <= 0.03:
+        dec.set_major_formatter('d.ddd')
+    else:
+        dec.set_major_formatter('d.d')
+
+    # max number of ticks
+    num = 8
+    if Lx > Ly:
+        ra.set_ticks(number=num)
+        dec.set_ticks(number=np.ceil(num*Ly/Lx))
+
+    elif Lx < Ly:
+        ra.set_ticks(number=np.ceil(num*Lx/Ly))
+        dec.set_ticks(number=num)
+
+    else:
+        ra.set_ticks(number=num)
+        dec.set_ticks(number=num)
+
+    return ax
+
+# ----------------------------------------------------------------------------
 
 def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     '''
     Creates axes for plotting maps and catalogs. Both sets of axes are
     contained in the current figure instance, and also returned for
-    ease of use.
+    ease of use. OLD VERSION - only remains for old demos.
     '''
-
     # Make image axes for plotting maps in:
     imshow = fig.add_axes(viewport,label='imshow')
     imshow.set_xlim(imsubplot[0],imsubplot[1])
@@ -84,8 +147,9 @@ def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
     world.set_xlim(subplot[0],subplot[1])
     world.set_ylim(subplot[2],subplot[3])
 
-    return imshow,world
+    return
 
+# ----------------------------------------------------------------------------
 
 def set_figure_size(fig,fig_size,Lx,Ly):
     '''
@@ -328,6 +392,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
     handles = [h[0] for h in handles]
     plt.legend(handles,labels,fontsize=18)
 
+    plt.tick_params(axis='both', which='major', labelsize=16)
+
     # Print the number of lightcones and their radii
     if galaxy_count and radius is not None:
         # place a text box in upper left in axes coords
@@ -344,7 +410,7 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
 
     return
 
-def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
+def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None,fig_size=10,show=True):
     '''
     Plots a comparrison of the ray-traced/map correlation, halo model correlation, and relevant-halos correlation.
     '''
@@ -419,7 +485,9 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
         plt.plot([min_sep, max_sep],[mean_ng_err, mean_ng_err],'--b',label='Mean Error: {:.3}%'.format(mean_ng_err),linewidth=2)
     # Set plot settings
     plt.xscale('log')
+    plt.yscale('log')
     plt.gca().set_xlim(min_sep,max_sep)
+    plt.tick_params(axis='both', which='major', labelsize=16)
 
     # Make axis ticks larger
     plt.gca().tick_params('both', length=5, width=1, which='major')
@@ -428,13 +496,14 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
     # Set axes labels
     plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
     plt.ylabel('Percent Error',fontsize=20)
-    plt.legend(fontsize=18)
+    plt.legend(fontsize=16)
 
     # State the NRMSE
     plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
-    plt.gcf().set_size_inches(10,10)
-    plt.show()
+    plt.gcf().set_size_inches(fig_size,fig_size)
+
+    if show is True: plt.show()
 
     return
 
@@ -545,7 +614,7 @@ def reject_outliers(data, m=5):
     '''
     return data[abs(data - np.mean(data)) < m * np.std(data)], abs(data - np.mean(data)) < m * np.std(data)
 
-def plot_densities(foreground,lightcone,density_type='volume'):
+def plot_densities(foreground,lightcone,density_type='volume',fig_size=10,show=True,label=True):
     '''
     Plots the universe's mass density, halo mass density, and smooth-component mass density
     as a function of redshift.
@@ -600,7 +669,7 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     plt.yticks(fontsize=14)
     plt.yscale('log')
     ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize='16')
-    plt.legend(loc=2)
+    plt.legend(loc=2,fontsize=16)
 
     # Set up histogram axis
     ax_hist = ax_rho.twinx()
@@ -610,17 +679,140 @@ def plot_densities(foreground,lightcone,density_type='volume'):
     plt.yscale('log')
     ax_hist.set_ylabel('Galaxy Count', color='g',fontsize='16')
     plt.yticks(fontsize=14)
+    plt.gcf().set_size_inches(fig_size,fig_size)
 
     # Match axis label colors to plot colors
     #for tl in ax_rho.get_yticklabels(): tl.set_color('b')
     for tl in ax_hist.get_yticklabels():  tl.set_color('g')
 
-    plt.gca().text(0.25,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    if label is True: plt.gca().text(0.25,0.95,'Lightcone with radius {} arcmin and {} galaxies'.format(lightcone.rmax,lightcone.galaxy_count),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
 
-    plt.show()
+    if show is True: plt.show()
 
     return
 
+#-------------------------------------------------------------------------------------------------------------------
+
+def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
+    '''
+    Plots two binned kappamaps, one from lensed_by_maps() and one from lensed_by_halos(), as well as their difference.
+    NOTE: Currently, this will only compare binned kappamaps that are square.
+    NOTE: Currenlty, colormap only displays correclty for a fig_size of 20.
+    '''
+
+    if Kmap is None or Khalo is None:
+        print('Must pass two binned kappamaps!')
+        return
+
+    # Make sure kappamaps are the same size
+    assert Kmap.NX[0] == Khalo.NX[0]
+    assert Kmap.PIXSCALE[0] == Khalo.PIXSCALE[0]
+    assert Kmap.field[0] == Khalo.field[0]
+
+    # Create difference kappamap (map-halo)
+    kappadata = np.array([Khalo.values[0] - Kmap.values[0]])
+    assert Kmap.map_x == Khalo.map_x
+    assert Kmap.map_y == Khalo.map_y
+    map_xy = [Kmap.map_x, Kmap.map_y]
+    ra_i, dec_i = Kmap.image2world(0,0)
+    ra_f, dec_f = Kmap.image2world(Kmap.NX[0],Kmap.NX[0])
+    domain = [ra_i, ra_f, dec_i, dec_f]
+    Kdiff = pangloss.Kappamap(data=[kappadata,domain,map_xy])
+
+    # Make 1x3 subplots of map, halo, difference (each square)
+    fig = plt.figure()
+
+    # Set figure size:
+    fig.set_size_inches(fig_size,fig_size)
+    #pangloss.set_figure_size(fig,fig_size,Lx,Ly)
+
+    # Used for colormap scaling
+    KMmin = np.min(Kmap.values[0])
+    KMmax = np.max(Kmap.values[0])
+    KHmin = np.min(Khalo.values[0])
+    KHmax = np.max(Khalo.values[0])
+
+    Kmin = min(KMmin,KHmin)
+    # Kmin = 0
+    Kmax = max(KMmax,KHmax)
+
+    # Set the pixel and wcs axes parameters
+    Lx, Ly = Kmap.field[0], Kmap.field[0]
+    pix_xi, pix_yi = 0, 0
+    pix_xf, pix_yf = Kmap.NX[0], Kmap.NX[0]
+    imsubplot = [pix_xi, pix_xf, pix_yi, pix_yf]
+
+    # Create world coordinate axes
+    wcs = WCS(Kmap.hdr[0])
+    ax1 = fig.add_subplot(1, 3, 1, projection=wcs, label = 'map wcs')
+    ax2 = fig.add_subplot(1, 3, 2, projection=wcs, label = 'halo wcs')
+    ax3 = fig.add_subplot(1, 3, 3, projection=wcs, label = 'diff wcs')
+
+    # set_axes() doesn't work well with subplots of this kind, so we do part
+    # of it here...
+    axes = [ax1, ax2, ax3]
+    for ax in axes:
+        # Set axis info
+        ax.set_autoscale_on(False)
+        ra = ax.coords['ra']
+        dec = ax.coords['dec']
+
+        # Set pixel limits on axis
+        pix_xi = imsubplot[0]
+        pix_xf = imsubplot[1]
+        pix_yi = imsubplot[2]
+        pix_yf = imsubplot[3]
+        ax.set_xlim(pix_xi-0.5, pix_xf-0.5)
+        ax.set_ylim(pix_yi-0.5, pix_yf-0.5)
+
+        # Set labels
+        ra.set_axislabel('Right Ascension / deg')
+        dec.set_axislabel('Declination / deg')
+
+        # Set x/y-axis unit formatter
+        if Lx > 0.03 and Lx <= 0.3:
+            ra.set_major_formatter('d.dd')
+        elif Lx <= 0.03:
+            ra.set_major_formatter('d.ddd')
+        else:
+            ra.set_major_formatter('d.d')
+
+        if Ly >0.03 and Ly <= 0.3:
+            dec.set_major_formatter('d.dd')
+        elif Ly <= 0.03:
+            dec.set_major_formatter('d.ddd')
+        else:
+            dec.set_major_formatter('d.d')
+
+        # max number of ticks
+        num = 8
+        if Lx > Ly:
+            ra.set_ticks(number=num)
+            dec.set_ticks(number=np.ceil(num*Ly/Lx))
+
+        elif Lx < Ly:
+            ra.set_ticks(number=np.ceil(num*Lx/Ly))
+            dec.set_ticks(number=num)
+
+        else:
+            ra.set_ticks(number=num)
+            dec.set_ticks(number=num)
+
+    # Plot the kappamaps
+    im1 = ax1.imshow(Kmap.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+    im2 = ax2.imshow(Khalo.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+    im3 = ax3.imshow(Kdiff.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+
+    # Make single colorbar
+    cbar_ax = fig.add_axes([0.925, 0.395, 0.0225, 0.2325])
+    fig.colorbar(im1, cax=cbar_ax)
+
+    if savefile is not None:
+        plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+
+    return
+
+    plt.show()
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.

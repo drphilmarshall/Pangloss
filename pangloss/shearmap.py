@@ -2,13 +2,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pangloss
+from astropy.wcs import WCS
 import cmath
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-
-arcmin2rad = (1.0/60.0)*np.pi/180.0
-rad2arcmin = 1.0/arcmin2rad
-deg2rad = np.pi/180.0
-rad2deg = 1.0/deg2rad
 
 vb = False
 
@@ -89,14 +85,16 @@ class Shearmap(pangloss.WLMap):
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
-            imshow = fig.axes[0]
-            world = fig.axes[1]
+            #ax = fig.axes[0]
+            ax = plt.gca()
+            ra = ax.coords['ra']
+            dec = ax.coords['dec']
 
             # If the Kappamap subplot was not passed to this Shearmap:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
-                fig.sca(world)
-                subplot = plt.axis()
+                subplot = [ax.axis()[0]+.5, ax.axis()[1]+.5, ax.axis()[2]+.5, ax.axis()[3]+.5]
+                coords = 'pixel'
 
             # Adopt figure size from open Kappamap:
             fig_size = plt.gcf().get_size_inches()[0]
@@ -110,16 +108,11 @@ class Shearmap(pangloss.WLMap):
             fig._label = "Pangloss Map"
             pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
-            # Adjust the subplot in image and wcs by half a pixel
-            imsubplot = [-0.5,pix_Lx-0.5,-0.5,pix_Ly-0.5]
-            #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
-            imshow,world = pangloss.make_axes(fig,subplot,imsubplot)
+            # Set the pixel and wcs axes
+            imsubplot = [pix_xi, pix_xf, pix_yi, pix_yf]
+            ax = pangloss.set_axes(fig,Lx,Ly,self.hdr[0],imsubplot)
 
 # ----------------------------------------------------------------------------
-
-        # Set the axes to image, since we'll be computing
-        # shear stick positions in world coordinates:
-        fig.sca(world)
 
         # Retrieve gamma values in desired subplot
         gamma1 = self.values[0][pix_yi:pix_yf,pix_xi:pix_xf]
@@ -146,14 +139,12 @@ class Shearmap(pangloss.WLMap):
         else:
             N = 1
 
-        #N=1
-        #plt.quiver(X,Y,dx,dy,color='r',headwidth=0,pivot='middle')
-        plt.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle')
+        ax.quiver(X[::N,::N],Y[::N,::N],dx[::N,::N],dy[::N,::N],color='r',headwidth=0,pivot='middle',transform=ax.get_transform('world'))
 
         # Add scale bar
-        bar = AnchoredSizeBar(world.transData,L/10.0,'10% Shear',pad=0.5,loc=3,sep=5,borderpad=0.25,frameon=True)
+        bar = AnchoredSizeBar(ax.transData,L/10.0,'10% Shear',pad=0.5,loc=3,sep=5,borderpad=0.25,frameon=True)
         bar.size_bar._children[0]._linewidth = 2
         bar.size_bar._children[0]._edgecolor = (1,0,0,1)
-        world.add_artist(bar)
+        ax.add_artist(bar)
 
         return

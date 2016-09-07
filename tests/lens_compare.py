@@ -2,7 +2,7 @@
 
 import numpy as np
 import scipy as sp
-import os,sys
+import os,sys,timeit
 import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import cmath, cProfile
@@ -12,6 +12,9 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 # Turn on for verbose
 vb = True
+
+# Turn on for likelihood estimation time
+time = False
 
 # Turn on for pickling correlation data
 pickle = False
@@ -34,6 +37,9 @@ smooth_compare = False
 # Turn on for plotting maps
 maps = False
 
+# time should only be used if `rel_compare` and `smooth_compare` are False!
+if time is True: assert rel_compare is False and smooth_compare is False
+
 # Pangloss:
 PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
 sys.path.append(PANGLOSS_DIR)
@@ -52,6 +58,7 @@ F = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_0_0_0_0_N_4096_ang_
 
 # Generate Background Catalog in the middle of the (0,0,0,0) field
 if vb is True: print('Generating background catalog...')
+
 # Can pick one of the domains below
 #d = [1.85,1.15,-1.85,-1.15]
 #d = [1.75,1.25,-1.75,-1.25]
@@ -63,15 +70,19 @@ d = [1.6,1.4,-1.6,-1.4] # 1440 galaxies
 #d = [1.55,1.54,-1.61,-1.6] # ~3 galaxies
 B = pangloss.BackgroundCatalog(N=10.0,sigma_e=0.01,domain=d,field=[0,0,0,0])
 
+# Start likelihood clock
+if time is True: start_time = timeit.default_timer()
+
 # Lens the background catalog by map
 if vb is True: print('Lensing background by map...')
 B.lens_by_map(K,S)
 print 'Background catalog has',B.galaxy_count,'galaxies'
 
 # Drill the lightcones
-if vb is True: print('Drilling lightcones...')
-lc_radius = 8.0
-B.drill_lightcones(radius=lc_radius,foreground=F,save=False)
+if vb is True: print('Drilling ligh7cones...')
+lc_radius = 2.0
+smooth_corr = True
+B.drill_lightcones(radius=lc_radius,foreground=F,save=False,smooth_corr=smooth_corr)
 
 # Save copy of background lightcones for relevant halos:
 if rel_compare is True: B_rel = copy.deepcopy(B)
@@ -86,17 +97,24 @@ print 'Lightcones have {0:.2f} +/- {1:.2f} galaxies'.format(mean_galaxies,std_ga
 
 # Lens the background catalog by foreground halos
 if vb is True: print('Lensing background by halos..')
-relevance_lim = 0.0
+#relevance_lim = 0.0
 #relevance_lim = 0.00001
-#cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True); print')
-B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=True)
+relevance_lim = 10**-5
+#cProfile.run('B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr); print')
+B.lens_by_halos(relevance_lim=relevance_lim,lookup_table=True,smooth_corr=smooth_corr)
 print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(B.mean_relevant_halos,B.std_relevant_halos)
+
+# Calculate likelihood
+likelihood = B.calculate_log_likelihood()
+if time is True:
+    elapsed_time = timeit.default_timer() - start_time
+    print 'lens_by_halos likelihood = {}; Total time taken was {} s'.format(likelihood,elapsed_time)
 
 if rel_compare is True:
     # Lens the background catalog using only relevant foreground halos
     if vb is True: print('Lensing background by relevant halos..')
     relevance_lim2 = 0.00001 # ~60 galaxies/lightcone
-    B_rel.lens_by_halos(relevance_lim=relevance_lim2,lookup_table=True)
+    B_rel.lens_by_halos(relevance_lim=relevance_lim2,lookup_table=True,smooth_corr=smooth_corr)
     mean_rel =  B_rel.mean_relevant_halos
     std_rel = B_rel.std_relevant_halos
     print 'Lightcones have {0:.2f} +/- {1:.2f} relevant galaxies'.format(mean_rel,std_rel)
@@ -154,10 +172,18 @@ if corr_plots is True:
     plt.gcf().set_size_inches(10,10)
     plt.show()
 
+    # Calculate RMSE
+    gg_nrmse = np.sqrt( np.sum( (gg_halo.xip - gg_map.xip)**2 ) / np.size(gg_map.xip) ) / np.sqrt( np.sum( gg_halo.xip**2 ) / np.size(gg_map.xip) )
+    print 'The shear-shear correlation function NRMSE = {}'.format(gg_nrmse)
+
     pangloss.plotting.plot_corr(ng_map,corr_type='ng',corr_comp='real',lensed='map',color='green',galaxy_count=B.galaxy_count)
     pangloss.plotting.plot_corr(ng_halo,corr_type='ng',corr_comp='real',lensed='halo',color='purple')
     plt.gcf().set_size_inches(10,10)
     plt.show()
+
+    # Calculate RMSE
+    ng_nrmse = np.sqrt( np.sum( (ng_halo.xi - ng_map.xi)**2 ) / np.size(ng_map.xi) ) / np.sqrt( np.sum( ng_halo.xi**2 ) / np.size(ng_map.xi) )
+    print 'The galaxy-mass correlation function NRMSE = {}'.format(ng_nrmse)
 
     # Compare the correlation functions
     chi2,n_sigma,percent_err,std_err = B.compare_corr(gg_halo,gg_map,corr_type='gg',corr_comp='plus')
@@ -180,7 +206,6 @@ if corr_plots is True:
             std_rel = None
         pangloss.plotting.compare_smooth_component(gg_map,gg_halo,gg_halo_s,corr_type='gg',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
         pangloss.plotting.compare_smooth_component(ng_map,ng_halo,ng_halo_s,corr_type='ng',galaxy_count=B.galaxy_count,radius=lc_radius,rel_halos=[mean_rel,std_rel])
-
 
 # Plot a map near a lens
 if maps is True:

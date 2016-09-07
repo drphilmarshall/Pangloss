@@ -44,6 +44,20 @@ class BackgroundCatalog(pangloss.Catalog):
     METHODS
         generate()
         write(output)
+        generate
+        write
+        lens_by_map
+        lens_by_halos
+        add_noise
+        setup_grid
+        set_importance
+        drill_lightcones
+        save
+        load
+        bin_to_map
+        calculate_corr
+        compare_corr
+        plot
 
     BUGS
 
@@ -55,14 +69,19 @@ class BackgroundCatalog(pangloss.Catalog):
     HISTORY
       2015-06-29  Started Everett (SLAC)
     """
-    def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
+
+# ============================================================================
+
+    def __init__(self,domain=None,field=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2,spacing=None):
         self.type = 'background'
 
-        # Only a subplot OR a field is allowed, not both!
+        # A domain must come with a corresponding field!
         assert not (domain is not None and field is None)
 
         # The catalog can be created over a field corresponding to a foreground catalog (1 deg^2) or over an inputted subplot
         if domain is not None and field is not None:
+            self.domain = domain
+            self.field = field
             self.map_x = field[0]
             self.map_y = field[1]
             self.field_i = field[2]
@@ -71,6 +90,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         elif domain is None and field is not None:
             # Set domain based upon inputted field
+            self.field = field
             self.map_x = field[0]
             self.map_y = field[1]
             self.field_i = field[2]
@@ -83,18 +103,19 @@ class BackgroundCatalog(pangloss.Catalog):
             dec_f = -1.0+self.map_y*4.0+self.field_j*1.0
 
             # Set the domain to the inputted field
-            domain = [ra_i,ra_f,dec_i,dec_f]
+            self.domain = [ra_i,ra_f,dec_i,dec_f]
 
         elif domain is None and field is None:
             # If neither are inputted, use the field x=y=i=j=0:
-            domain = [2.0,1.0,-2.0,-1.0]
+            self.domain = [2.0,1.0,-2.0,-1.0]
+            self.field = [0,0,0,0]
             self.map_x = 0
             self.map_y = 0
             self.field_i = 0
             self.field_j = 0
 
         # Generate the background catalog
-        self.generate(domain,N,mag_lim,mass_lim,z_lim,sigma_e)
+        self.generate(self.domain,N,mag_lim,mass_lim,z_lim,sigma_e,spacing)
 
         # The catalog keeps track of the number of excluded strongly-lensed galaxies, and add strong lensing flag
         self.strong_lensed_removed = 0
@@ -124,9 +145,13 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def __str__(self):
         # *!Need to fix with new attributes!*
         return 'Background catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxy_count,self.minZ,self.maxZ)
+
+# ----------------------------------------------------------------------------
 
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
@@ -135,7 +160,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2):
+    def generate(self,domain=None,N=10,mag_lim=[24.0,0.0],mass_lim=[10.0**6,10.0**12],z_lim=[1.3857,1.3857],sigma_e=0.2,spacing=None):
         '''
         Draw N-generated world-coordinate positions of galaxies in the sky per
         square arcminute inside a given domain of the form
@@ -159,32 +184,37 @@ class BackgroundCatalog(pangloss.Catalog):
             dec_init = np.deg2rad(domain[2])
             dec_final = np.deg2rad(domain[3])
 
-        # Determine area of domain and the number of generated galaxies contained in it
+        # Determine area of domain and the number of generated galaxies contained in it,
+        # as well as fenerate positions based upon random locations or a uniform spacing
         # (expecting wcs in degrees)
         self.Lx, self.Ly = abs(np.rad2deg(ra_final)-np.rad2deg(ra_init)), abs(np.rad2deg(dec_final)-np.rad2deg(dec_init))
-        area = 3600*self.Lx*self.Ly # square arcminutes
-        self.galaxy_count = int(N*area) # N galaxies per square arcminute
-
-        # Initialize generated variables
-        ra = np.zeros(self.galaxy_count)
-        dec = np.zeros(self.galaxy_count)
-        mag = np.zeros(self.galaxy_count)
-        mass = np.zeros(self.galaxy_count)
-        z = np.zeros(self.galaxy_count)
-        e1_int = np.zeros(self.galaxy_count)
-        e2_int = np.zeros(self.galaxy_count)
-        eMod_int = np.zeros(self.galaxy_count)
-        ePhi_int = np.zeros(self.galaxy_count)
+        if spacing is None:
+            # Determine number of galaxies at uniformly distributed positions
+            # by the passed galaxy density N
+            area = 3600*self.Lx*self.Ly # square arcminutes
+            self.galaxy_count = int(N*area) # N galaxies per square arcminute
+            ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
+            dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
+        else:
+            # If a spacing is passed, overrule N to make a uniformly spaced
+            # grid of background galaxies with separation distance 'spacing'
+            # in rad (spacing = 1.705e-5 rad/pix for kappa/shear map density)
+            r = np.arange(ra_final,ra_init,spacing) # swapped b/c left-handed
+            d = np.arange(dec_init,dec_final,spacing)
+            self.galaxy_count = np.size(r)*np.size(d)
+            ra, dec = np.meshgrid(r,d)
+            ra, dec = ra.reshape(self.galaxy_count), dec.reshape(self.galaxy_count)
 
         # Populate the generated variables
         ID = np.arange(self.galaxy_count)
-        ra = np.random.uniform(ra_init,ra_final,self.galaxy_count)
-        dec = np.random.uniform(dec_init,dec_final,self.galaxy_count)
         mag = np.random.uniform(mag_lim[0],mag_lim[1],self.galaxy_count)
         mass = np.random.uniform(mass_lim[0],mass_lim[1],self.galaxy_count)
         z = np.random.uniform(z_lim[0],z_lim[1],self.galaxy_count)
         e1_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
         e2_int = np.random.normal(0.0,sigma_e,self.galaxy_count)
+
+        # Save intrinsic ellipticity std
+        self.std_int = sigma_e
 
         # Change any |e|> 1 ellipticity components
         while (e1_int>1.0).any() or (e2_int>1.0).any():
@@ -432,6 +462,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
 
     def add_noise(self,M=1,sigma_obs=0.1):
         '''
@@ -470,6 +501,8 @@ class BackgroundCatalog(pangloss.Catalog):
         self.galaxies['eMod'] = eMod
 
         return
+
+# ----------------------------------------------------------------------------
 
     def setup_grid(self):
         '''
@@ -516,6 +549,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def drill_lightcones(self,radius=2.0,foreground=None,save=False):
         '''
         Drill a lightcone at each background source with radius in arcmin. Will
@@ -539,7 +574,7 @@ class BackgroundCatalog(pangloss.Catalog):
             foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
 
         # Only take the columns from foreground that are needed for a lightcone
-        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type']])
+        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type','mag'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type'],foreground.galaxies['mag_SDSS_i']])
 
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
@@ -596,6 +631,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
+# ----------------------------------------------------------------------------
+
     def load(self,filename=None):
         '''
         Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
@@ -613,15 +650,104 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def bin_to_map(self,data=['kappa','gamma1','gamma2'],binsize=1.0,bin_units='arcmin'):
-        '''
-        Bin the background galaxies into WLMaps with data set in the list 'data'. Binsize is in units of arcmin.
-        '''
-        # If a single string is passed for data, turn into list
-        if type(data) == str:
-            data = [data]
+# ----------------------------------------------------------------------------
 
-        # Finish!!
+    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None):
+        '''
+        Bin the background galaxies into WLMaps. We always make both
+        a kappa map and a shear map - the 'lensed' kwarg tells us
+        which type of lensing, by 'halo's or 'map's, has been applied.
+        Binsize is in units of arcmin, and an optional map centroid is
+        passed in as the 'center' list [ra,dec] where these world
+        coordinates are in degrees.
+        ** set binsize=0.586 for same resolution scale as Hilbert maps **
+        '''
+
+        maps=['kappa','gamma1','gamma2']
+
+        setup = False
+        for map in maps:
+            if setup is False:
+                # Set up x and y bins - only need to do this the first
+                # time through!
+                setup = True
+                ra,dec = self.galaxies['RA'],self.galaxies['Dec']
+                decmin,decmax = np.min(dec),np.max(dec)
+                NY = int( np.rad2deg(decmax-decmin)*60.0/binsize )
+                ramin,ramax = np.min(ra),np.max(ra)
+                NX = int( np.rad2deg(ramax-ramin)*60.0/(binsize*np.cos(np.deg2rad(np.mean(dec)))) )
+
+                rabins = np.linspace(ramin,ramax,NX+1)
+                decbins = np.linspace(decmin,decmax,NY+1)
+
+                # Set up some data arrays:
+                empty = np.outer(np.zeros(NY),np.zeros(NX))
+                kappadata = np.array([empty])
+                gammadata = np.array([empty,empty])
+
+            if map == 'kappa':
+
+                if lensed == 'map':
+                    values = self.galaxies['kappa']
+                elif lensed == 'halo':
+                    values = self.galaxies['kappa_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
+
+            elif map == 'gamma1':
+
+                if lensed == 'map':
+                    values = self.galaxies['gamma1']
+                elif lensed == 'halo':
+                    values = self.galaxies['gamma1_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
+
+            elif map == 'gamma2':
+
+                if lensed == 'map':
+                    values = self.galaxies['gamma2']
+                elif lensed == 'halo':
+                    values = self.galaxies['gamma2_halo']
+                elif lensed == 'none':
+                    values = np.zeros(len(self.galaxies))
+
+            # Make 2D histograms, weighted and unweighted. The first
+            # gives the sum of the map contributions, the second the
+            # number of map contributions. We want the simple average,
+            # so we divide one by the other.
+            H,x,y = np.histogram2d(ra,dec,weights=values,bins=[rabins,decbins])
+            N,x,y = np.histogram2d(ra,dec,bins=[rabins,decbins])
+
+            if map == 'kappa':
+                kappadata[0] = 1.0*H/N
+            elif map == 'gamma1':
+                gammadata[0] = 1.0*H/N
+            elif map == 'gamma2':
+                gammadata[1] = 1.0*H/N
+
+        # Store these histograms in WLMap objects
+        map_xy = [self.map_x, self.map_y]
+        kappamap = pangloss.Kappamap(data=[kappadata,self.domain,map_xy])
+        shearmap = pangloss.Shearmap(data=[gammadata,self.domain,map_xy])
+        #kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy]) # no longer use x,y
+        #shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy]) # no longer use x,y
+
+        ## ONLY HERE FOR TESTING
+        subplot = np.rad2deg([ramax,ramin,decmin,decmax]) # ra flipped b/c left-handed
+        #subplot = [ramin,ramax,decmin,decmax]
+
+        # Used for colormap scaling
+        #Kmin = np.min(kappadata[0])
+        #Kmax = np.max(kappadata[0])
+        #plt.imshow(kappadata[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
+        kappamap.plot(subplot=subplot,coords='world')
+
+        if savefile is not None:
+            plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+        #plt.show()
+
+        return kappamap, shearmap
 
 # ----------------------------------------------------------------------------
 
@@ -712,6 +838,8 @@ class BackgroundCatalog(pangloss.Catalog):
             # Add other correlation types later if necessary
             pass
 
+# ----------------------------------------------------------------------------
+
     def compare_corr(self,corr1,corr2,corr_type='gg',corr_comp='plus',percent_type='error'):
         '''
         Compares two correlation function components (with the same binning and separation values) using
@@ -785,6 +913,38 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return chi2, n_sigma, mean_err, std_err
 
+# ----------------------------------------------------------------------------
+
+    def calculate_log_likelihood(self):
+        '''
+        Calculate the log likelihood of the predicted ellipticities given model parameters.
+        Taken from Phil's thesis (page 61): http://www.slac.stanford.edu/~pjm/Site/CV_files/Marshall_PhDthesis.pdf
+        '''
+
+        # Calculate sigma
+        std_int = self.std_int
+        std_e1 = np.std(self.galaxies['e1_halo'])
+        std_e2 = np.std(self.galaxies['e2_halo'])
+        std_obs = np.mean([std_e1,std_e2])
+        sigma = np.sqrt(std_int**2+std_obs**2)
+
+        # Calculate the (log of) normalization constant
+        N = 2.*self.galaxy_count
+        logZ = (N/2.)*np.log(2.*np.pi*sigma**2)
+
+        # Calculate chi2
+        g = self.galaxies['g']
+        g1, g2 = g.real, g.imag
+        e1, e2 = self.galaxies['e1_halo'], self.galaxies['e2_halo']
+
+        chi2 = ( np.sum( (e1 - g1)**2 / sigma**2 ) + np.sum( (e2 - g2)**2 / sigma**2 ) )
+
+        # Calculate log-likelihood
+        log_likelihood = -logZ + (-0.5) * chi2
+
+        return log_likelihood
+
+# ----------------------------------------------------------------------------
 
     def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10,graph='scatter',lensed='none'):
         '''
@@ -797,14 +957,15 @@ class BackgroundCatalog(pangloss.Catalog):
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
-            imshow = fig.axes[0]
-            world = fig.axes[1]
+            ax = plt.gca()
+            ra = ax.coords['ra']
+            dec = ax.coords['dec']
 
             # If the Kappamap subplot was not passed to this Shearmap:
             if subplot == None:
                 # Adopt subplot from the open Kappamap:
-                fig.sca(world)
-                subplot = plt.axis()
+                subplot = [ax.axis()[0]+.5, ax.axis()[1]+.5, ax.axis()[2]+.5, ax.axis()[3]+.5]
+                coords = 'pixel'
 
             # Adopt figure size from open Kappamap:
             fig_size = plt.gcf().get_size_inches()[0]
@@ -869,14 +1030,15 @@ class BackgroundCatalog(pangloss.Catalog):
                 ePhi_halo = -galaxies['ePhi_halo']
 
         # Set current axis to world coordinates and set the limits
-        fig.sca(world)
-        world.set_xlim(subplot[0],subplot[1])
-        world.set_ylim(subplot[2],subplot[3])
+        # OLD; before astropy wcs implementation
+        #fig.sca(world)
+        #world.set_xlim(subplot[0],subplot[1])
+        #world.set_ylim(subplot[2],subplot[3])
 
         if graph == 'scatter':
             # Scale size of point by the galaxy mass
             s = [math.log(mass[i]) for i in range(0,len(mass))]
-            plt.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue')
+            ax.scatter(ra,dec,s,alpha=0.5,edgecolor=None,color='blue',transform='wcs')
 
         elif graph == 'ellipse':
             # Scale galaxy plot size by its mass?
@@ -967,3 +1129,5 @@ class BackgroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+# ============================================================================
