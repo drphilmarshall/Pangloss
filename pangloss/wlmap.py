@@ -57,7 +57,7 @@ class WLMap:
       2015-06-24  Started Everett (SLAC)
     """
 
-    def __init__(self,mapfiles=None,data=None,FITS=True):
+    def __init__(self, mapfiles=None, data=None, FITS=True):
 
         assert not (mapfiles is not None and data is not None), \
         "Error: Can only input mapfiles or data; not both!"

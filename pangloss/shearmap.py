@@ -47,11 +47,11 @@ class Shearmap(pangloss.WLMap):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,shearfiles,FITS=True):
+    def __init__(self, shearfiles, FITS=True):
 
         self.name = 'Shear map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        pangloss.WLMap.__init__(self,shearfiles,FITS)
+        pangloss.WLMap.__init__(self, mapfiles=shearfiles, data=None, FITS=FITS)
 
 # ----------------------------------------------------------------------------
 
