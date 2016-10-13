@@ -4,7 +4,7 @@ Pangloss is software module for reconstructing all the mass within a light cone
 through the Universe.  Understanding complex mass distributions like
 this is important for accurate time delay lens cosmography, and also for
 accurate lens magnification estimation. It aspires to use all available
-data in an  attempt to make the best of all mass maps. However, this
+data (including weakly-lensed galaxy shapes) in an  attempt to make the best of all mass maps. However, this
 problem is sufficiently difficult that we are mostly spending our time
 cultivating a garden of toy models and baby steps.
 
