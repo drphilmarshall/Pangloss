@@ -285,8 +285,8 @@ def plot_corr(corr,corr_type='gg',corr_comp='plus',sep_units='arcmin',lensed='ma
         # Set axes labels
         plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
 
-        if corr_type == 'gg': plt.ylabel(r'Ellipticity-Ellipticity Correlation $\xi(\Delta\theta)$',fontsize=20)
-        elif corr_type == 'ng': plt.ylabel(r'Galaxy-Mass Correlation $\left<\gamma_t\right>$',fontsize=20)
+        if corr_type == 'gg': plt.ylabel(r'Ellipticity-Ellipticity Correlation $\xi(\Delta\theta)$',fontsize=22)
+        elif corr_type == 'ng': plt.ylabel(r'Galaxy-Mass Correlation $\left<\gamma_t\right>$',fontsize=22)
         else: pass # Can incorporate other correlation functions later if needed
 
         # Plot xi=0 for reference
@@ -487,25 +487,25 @@ def compare_relevant_halos(corr_map,corr_halo,corr_rel,corr_type='gg',sep_units=
     plt.xscale('log')
     plt.yscale('log')
     plt.gca().set_xlim(min_sep,max_sep)
-    plt.tick_params(axis='both', which='major', labelsize=16)
+    plt.tick_params(axis='both', which='major', labelsize=20)
 
     # Make axis ticks larger
     plt.gca().tick_params('both', length=5, width=1, which='major')
     plt.gca().tick_params('both', length=5, width=1, which='minor')
 
     # Set axes labels
-    plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=20)
-    plt.ylabel('Percent Error',fontsize=20)
-    plt.legend(fontsize=16)
+    plt.xlabel(r'$\Delta\theta$ (arcmin)',fontsize=22)
+    plt.ylabel('Percent Error',fontsize=22)
+    plt.legend(loc=4,fontsize=18)
 
     # State the NRMSE
-    plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=18,verticalalignment='top')
+    plt.gca().text(0.025,0.95,'Normalized RMSE: {:.3}'.format(nrmse),transform=plt.gca().transAxes,fontsize=20,verticalalignment='top')
 
     plt.gcf().set_size_inches(fig_size,fig_size)
 
     if show is True: plt.show()
 
-    return
+    return nrmse
 
 def compare_smooth_component(corr_map,corr_halo,corr_smooth,corr_type='gg',sep_units='arcmin',galaxy_count=None,radius=None,rel_halos=None):
     '''
@@ -648,8 +648,7 @@ def plot_densities(foreground,lightcone,density_type='volume',fig_size=10,show=T
 
     # Set up density axis
     fig, ax_rho = plt.subplots()
-    plt.xlabel('Redshift (z)',fontsize='14')
-    plt.xticks(fontsize=14)
+    plt.xlabel('Redshift (z)',fontsize='22')
 
     # Plot densities
     if density_type == 'volume':
@@ -666,10 +665,10 @@ def plot_densities(foreground,lightcone,density_type='volume',fig_size=10,show=T
         plt.plot(redshifts,sigma_h,'--og',label='Sigma_h',zorder=10)
         degree = 2
 
-    plt.yticks(fontsize=14)
     plt.yscale('log')
-    ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize='16')
-    plt.legend(loc=2,fontsize=16)
+    ax_rho.set_ylabel(r'Mass Density ($M_\odot$/Mpc$^{}$)'.format(degree),fontsize=22)
+    plt.legend(loc=2,fontsize=18)
+    plt.tick_params(axis='both', which='major', labelsize=20)
 
     # Set up histogram axis
     ax_hist = ax_rho.twinx()
@@ -677,8 +676,8 @@ def plot_densities(foreground,lightcone,density_type='volume',fig_size=10,show=T
     # Plot histogram
     plt.hist(lightcone.galaxies['z_sz'],50,normed=False,facecolor='green', alpha=0.1,zorder=1)
     plt.yscale('log')
-    ax_hist.set_ylabel('Galaxy Count', color='g',fontsize='16')
-    plt.yticks(fontsize=14)
+    ax_hist.set_ylabel('Galaxy Count', color='g',fontsize=20)
+    plt.tick_params(axis='both', which='major', labelsize=20)
     plt.gcf().set_size_inches(fig_size,fig_size)
 
     # Match axis label colors to plot colors
@@ -765,10 +764,6 @@ def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
         ax.set_xlim(pix_xi-0.5, pix_xf-0.5)
         ax.set_ylim(pix_yi-0.5, pix_yf-0.5)
 
-        # Set labels
-        ra.set_axislabel('Right Ascension / deg')
-        dec.set_axislabel('Declination / deg')
-
         # Set x/y-axis unit formatter
         if Lx > 0.03 and Lx <= 0.3:
             ra.set_major_formatter('d.dd')
@@ -798,21 +793,33 @@ def compare_binned_maps(Kmap=None,Khalo=None,fig_size=20,savefile=None):
             ra.set_ticks(number=num)
             dec.set_ticks(number=num)
 
+        # Set tick size
+        ra.ticklabels._fontproperties._size = 18
+        dec.ticklabels._fontproperties._size = 16
+
+	# Set axes labels
+    ax1.coords['dec'].set_axislabel('Declination / deg',fontsize=20)
+    ax2.coords['ra'].set_axislabel('Right Ascension / deg',fontsize=20)
+
     # Plot the kappamaps
     im1 = ax1.imshow(Kmap.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
     im2 = ax2.imshow(Khalo.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
     im3 = ax3.imshow(Kdiff.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
 
     # Make single colorbar
-    cbar_ax = fig.add_axes([0.925, 0.395, 0.0225, 0.2325])
-    fig.colorbar(im1, cax=cbar_ax)
+    cbar_ax = fig.add_axes([0.925, 0.3865, 0.0225, 0.228]) # For saved plot
+    # cbar_ax = fig.add_axes([0.925, 0.2825, 0.0225, 0.435]) # For maximized plot
+    cb = fig.colorbar(im1, cax=cbar_ax)
+    cb.ax.tick_params(labelsize=16)
+
+    #fig.tight_layout()
 
     if savefile is not None:
         plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
 
-    return
-
     plt.show()
+
+    return
 
 #-------------------------------------------------------------------------------------------------------------------
 # This section is for code only used to create demo plots. None of these are currently used for actual pangloss use.

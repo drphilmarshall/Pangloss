@@ -147,6 +147,8 @@ class Lightcone(object):
         if len(self.galaxies) == 0:
             print "Lightcone: WARNING: no galaxies here!"
 
+        # Set lightcone
+
         # No smooth-component correction kappas until set!
         self.smooth_kappas = None
 
@@ -214,6 +216,7 @@ class Lightcone(object):
         if np.abs(self.zs-Grid.zs)     > 0.05: print "Grid zs != lens zs"
         self.redshifts,self.dz = Grid.redshifts,Grid.dz
         self.Da_l,self.Da_s,self.Da_ls = Grid.Da_l,Grid.Da_s,Grid.Da_ls
+        self.volumes = Grid.volumes
         return
 
 # ----------------------------------------------------------------------------
@@ -574,6 +577,10 @@ class Lightcone(object):
         '''
         Calculate proper volume of redshift slice at z in Mpc^3. Details in `pangloss/doc/void_correction.pdf`.
         '''
+
+        if self.volumes is not None:
+            # If volumes have been pre-calculated, use them!
+            return self.volumes[z==self.redshifts][0]
 
         # Important parameters
         redshifts = self.redshifts
