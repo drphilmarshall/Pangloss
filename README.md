@@ -45,12 +45,13 @@ installed as well:
     import os,getopt,cPickle,timeit
     import matplotlib,mpl_toolkits
     import numpy,scipy,math,cmath,random
-    import astropy,treecorr
+    import astropy,treecorr,requests
 
 Most (if not all) are available via pip and/or homebrew. In particular, you'll want to
 
     pip install astropy
     pip install TreeCorr
+    pip install requests
 
 and look up their installation documentation if that doesn't work.
 
@@ -92,10 +93,10 @@ example directory, for testing.
 
 To get the test data, please do the following:
 
-    cd calib
-    Fetch.csh
+    python
+    >> import pangloss
+    >> pangloss.data_fetcher.setup_data()
 
-The Fetch script uses wget. 
 Additional galaxy catalogs and ray-traced convergence maps from the
 Millenium Simulation are available from Stefan Hilbert on request.
 

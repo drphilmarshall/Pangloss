@@ -1,13 +1,11 @@
 # ===========================================================================
 
-import pangloss
-
-import cPickle, gc
 import numpy as np
-import scipy as sp
 import pylab as plt
-from math import pi
+import scipy as sp
 from astropy.table import Column
+
+import pangloss
 
 # ======================================================================
 
