@@ -1,7 +1,10 @@
-import numpy as np
+import os
+import sys
+
 import matplotlib.pyplot as plt
-import os, sys
-from astropy.table import Table, Column
+import numpy as np
+from astropy.table import Column
+from io import int_or_float
 
 # Fast correlation functions:
 try:
@@ -64,12 +67,12 @@ class ForegroundCatalog(pangloss.Catalog):
         # Parsing the file name
         # 0 <= x,y <= 7, each (i,j) map covers 4x4 square degrees
         input_parse = self.filename.split('_') # Creates list of filename elements separated by '_'
-        self.map_x = eval(input_parse[3]) # The x location of the map grid
-        self.map_y = eval(input_parse[4]) # The y location of the map grid
+        self.map_x = int_or_float(input_parse[3]) # The x location of the map grid
+        self.map_y = int_or_float(input_parse[4]) # The y location of the map grid
 
         # 0 <= i,j <= 3, each (i,j) field covers 1x1 square degree
-        self.field_i = eval(input_parse[5]) # The i location of the field grid in the (x,y) map
-        self.field_j = eval(input_parse[6]) # The j location of the field grid in the (x,y) map
+        self.field_i = int_or_float(input_parse[5]) # The i location of the field grid in the (x,y) map
+        self.field_j = int_or_float(input_parse[6]) # The j location of the field grid in the (x,y) map
 
         # Calculate mean kappas on the redshift grid
         self.find_mean_kappas()
@@ -228,15 +231,15 @@ class ForegroundCatalog(pangloss.Catalog):
 
         # Find the galaxies that are within the limits, and extract the useful data from them
         ra_lim, dec_lim = [ai, af], [di, df]
-        galaxies = self.return_galaxies(mag_lim,mass_lim,z_lim,ra_lim,dec_lim)
+        galaxies = self.return_galaxies(mag_lim, mass_lim, z_lim, ra_lim, dec_lim)
         ra = np.rad2deg(galaxies['RA'])
         dec = np.rad2deg(galaxies['Dec'])
         mass = galaxies['Mstar_obs']
 
         # Set current axis to world coordinates and set the limits
         fig.sca(world)
-        world.set_xlim(subplot[0],subplot[1])
-        world.set_ylim(subplot[2],subplot[3])
+        world.set_xlim(subplot[0], subplot[1])
+        world.set_ylim(subplot[2], subplot[3])
 
         # Scale galaxy plot size by its mass
         scale = ((np.log10(mass)-9.0)/(12.0-9.0))

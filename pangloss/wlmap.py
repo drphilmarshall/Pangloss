@@ -1,8 +1,9 @@
-
-import numpy as np, os, string
+import os
 import struct
+
 import astropy.io.fits as pyfits
-import matplotlib.pyplot as plt
+import numpy as np
+from io import int_or_float
 
 vb = False
 
@@ -111,8 +112,8 @@ class WLMap:
             # 0 <= x,y <= 7, each (x,y) map covers 4x4 square degrees
             for i in range(0,len(self.input)):
                 input_parse = self.input[i].split('_') # Creates list of filename elements separated by '_'
-                self.map_x.append(eval(input_parse[3])) # The x location of the map grid
-                self.map_y.append(eval(input_parse[4])) # The y location of the map grid
+                self.map_x.append(int_or_float(input_parse[3])) # The x location of the map grid
+                self.map_y.append(int_or_float(input_parse[4])) # The y location of the map grid
 
             # Read in data from file:
             if FITS:
@@ -158,6 +159,7 @@ class WLMap:
             self.hdr.append(hdu.header)
             self.get_fits_wcs(self.hdr[i],i)
             self.values.append(hdu.data)
+            hdu.close()
             # This transpose would be necessary so that ds9 displays the image correctly, if we hadn't done it already in read_in_binary_data()
             # self.values[i] = self.values[i].transpose()
             self.NX.append(self.values[i].shape[0])
@@ -180,6 +182,7 @@ class WLMap:
 
             mapfile = open(self.input[i],"rb")
             data = mapfile.read()
+            mapfile.close()
             fmt = str(self.NX[i]*self.NX[i])+'f'
             start = 0
             stop = struct.calcsize(fmt)

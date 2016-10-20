@@ -25,6 +25,8 @@ from astropy.table import Table
 
         rm(filename): silent file removal
 
+        number(s): extract integer or floating point from string
+
     BUGS
 
     AUTHORS
@@ -93,5 +95,13 @@ def rm(filename):
     except OSError:
         pass
     return
+
+# ----------------------------------------------------------------------------
+def int_or_float(s):
+    try:
+        return int(s)
+    except ValueError:
+        return float(s)
+
 
 # ======================================================================
