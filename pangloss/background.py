@@ -551,11 +551,13 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def drill_lightcones(self,radius=2.0,foreground=None,save=False):
+    def drill_lightcones(self,radius=2.0,foreground=None,save=False,smooth_corr=False):
         '''
         Drill a lightcone at each background source with radius in arcmin. Will
         write the lightcones to pangloss/data/lightcones. The method can only be
         used with BackgroundCatalogs that were created as a field, not a subplot.
+        If smooth_corr is True, will pre-calculate the necessary volumes to
+        speed up the correction.
         '''
 
         # Retrieve background galaxy data and initialize the lightcones
@@ -579,6 +581,9 @@ class BackgroundCatalog(pangloss.Catalog):
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
         del foreground
+
+        # If smooth_corr is True, pre-calculate volumes to be stored in self.grid
+        if smooth_corr is True: self.grid.calculate_bin_volumes(lc_radius=radius)
 
         # Set the counter to be 10%
         counter = np.ceil(self.galaxy_count/10.0)
@@ -652,7 +657,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None):
+    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None,show=False):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
@@ -730,22 +735,18 @@ class BackgroundCatalog(pangloss.Catalog):
         map_xy = [self.map_x, self.map_y]
         kappamap = pangloss.Kappamap(data=[kappadata,self.domain,map_xy])
         shearmap = pangloss.Shearmap(data=[gammadata,self.domain,map_xy])
-        #kappamap = pangloss.Kappamap(data=[kappadata,x,y,self.domain,map_xy]) # no longer use x,y
-        #shearmap = pangloss.Shearmap(data=[gammadata,x,y,self.domain,map_xy]) # no longer use x,y
 
-        ## ONLY HERE FOR TESTING
-        subplot = np.rad2deg([ramax,ramin,decmin,decmax]) # ra flipped b/c left-handed
-        #subplot = [ramin,ramax,decmin,decmax]
+        # Testing purposes...
+        mean_kappa = np.mean(kappamap.values[0])
+        print 'mean kappa of type {} is {}'.format(lensed,mean_kappa)
 
-        # Used for colormap scaling
-        #Kmin = np.min(kappadata[0])
-        #Kmax = np.max(kappadata[0])
-        #plt.imshow(kappadata[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')
-        kappamap.plot(subplot=subplot,coords='world')
+        # Show plot if `show` is True
+        if show is True:
+            subplot = np.rad2deg([ramax,ramin,decmin,decmax]) # ra flipped b/c left-handed
+            kappamap.plot(subplot=subplot,coords='world')
 
         if savefile is not None:
             plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
-        #plt.show()
 
         return kappamap, shearmap
 
@@ -915,16 +916,24 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def calculate_log_likelihood(self):
+    def calculate_log_likelihood(self,lensed='halo'):
         '''
         Calculate the log likelihood of the predicted ellipticities given model parameters.
         Taken from Phil's thesis (page 61): http://www.slac.stanford.edu/~pjm/Site/CV_files/Marshall_PhDthesis.pdf
         '''
 
+	if lensed == 'halo':
+	    e1_label = 'e1_halo'
+	    e2_label = 'e2_halo'
+	    g_label = 'g_halo'
+	elif lensed == 'map':
+	    e1_label = 'e1'
+	    e2_label = 'e2'
+	    g_label = 'g'
         # Calculate sigma
         std_int = self.std_int
-        std_e1 = np.std(self.galaxies['e1_halo'])
-        std_e2 = np.std(self.galaxies['e2_halo'])
+        std_e1 = np.std(self.galaxies[e1_label])
+        std_e2 = np.std(self.galaxies[e2_label])
         std_obs = np.mean([std_e1,std_e2])
         sigma = np.sqrt(std_int**2+std_obs**2)
 
@@ -933,9 +942,9 @@ class BackgroundCatalog(pangloss.Catalog):
         logZ = (N/2.)*np.log(2.*np.pi*sigma**2)
 
         # Calculate chi2
-        g = self.galaxies['g']
+        g = self.galaxies[g_label]
         g1, g2 = g.real, g.imag
-        e1, e2 = self.galaxies['e1_halo'], self.galaxies['e2_halo']
+        e1, e2 = self.galaxies[e1_label], self.galaxies[e2_label]
 
         chi2 = ( np.sum( (e1 - g1)**2 / sigma**2 ) + np.sum( (e2 - g2)**2 / sigma**2 ) )
 
