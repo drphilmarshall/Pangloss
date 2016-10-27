@@ -1,6 +1,6 @@
 import pandas as pd
-import os,cPickle
 from collections import OrderedDict
+import os,cPickle
 
 """
     NAME
@@ -53,15 +53,15 @@ def read_hilbert_catalog(filename,config):
         raise IOError("Cannot open %s\n" % filename)
 
     rename = OrderedDict()
-    rename['nRAName'] = 'nRA'
-    rename['DecName'] = 'Dec'
-    rename['CalibMhaloName'] = 'Mhalo_obs'
-    rename['CalibRedshiftName'] = 'z_obs'
-    rename['ObsMstarName'] = 'Mstar_obs'
-    rename['ObsRedshiftName'] = 'z_obs'
+    rename[config.parameters['nRAName']] = 'nRA'
+    rename[config.parameters['DecName']] = 'Dec'
+    rename[config.parameters['CalibMhaloName']] = 'Mhalo_obs'
+    rename[config.parameters['CalibRedshiftName']] = 'z_obs'
+    rename[config.parameters['ObsMstarName']] = 'Mstar_obs'
+    rename[config.parameters['ObsRedshiftName']] = 'z_obs'
 
     for key in rename:
-        try: df = df.rename(columns={key, rename[key]})
+        try: table = table.rename(columns={key: rename[key]})
         except: pass
 
     # Add a RA column:

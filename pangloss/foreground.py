@@ -3,7 +3,6 @@ import numpy as np
 from io import int_or_float
 import pangloss
 
-
 # Fast correlation functions:
 try:
     import treecorr
@@ -73,6 +72,8 @@ class ForegroundCatalog(pangloss.Catalog):
 
         # Initialize common catalog attributes:
         pangloss.Catalog.__init__(self)
+
+        self.mass_prior = None
 
         return
 
@@ -243,3 +244,10 @@ class ForegroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+
+    def set_mass_prior(self, distribution):
+        self.mass_prior = distribution
+
+    def draw_halo_masses(self):
+        self.galaxies['Mh'] = self.mass_prior.draw(self.galaxies)

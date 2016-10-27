@@ -16,10 +16,10 @@ except ImportError:
 
 
 # Verbose
-vb = True
+vb = False
 
 # Record CPU time per lightcone?
-time = True
+time = False
 
 # ============================================================================
 
@@ -357,7 +357,7 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.drawMhalos(shmr)
             '''
 
-            lightcone.drawConcentrations(errors=True)
+            lightcone.drawConcentrations(errors=False)
 
             # Compute each halo's contribution to the convergence and shear:
             if lookup_table is True:
@@ -420,7 +420,7 @@ class BackgroundCatalog(pangloss.Catalog):
         g_conj = np.array([val.conjugate() for val in g])
 
         # Flag any galaxy that has been strongly (or near-strongly) lensed
-        self.galaxies['strong_flag'][abs(g)>0.5] = 1
+        self.galaxies['strong_flag'] = abs(g)>0.5
 
         # Calculate the observed ellipticity for weak lensing events
         index = np.abs(g) < 1.0
@@ -517,14 +517,14 @@ class BackgroundCatalog(pangloss.Catalog):
             R = 0.01 # Mpc
 
             # Calculate relevance according to scheme given by McCully et al. in http://arxiv.org/abs/1601.05417
-            lightcone.galaxies['relevance'] = (10**lightcone.galaxies['Mh']/M)*(R/lightcone.galaxies['rphys'])**3
+            lightcone.galaxies['relevance'] = (lightcone.galaxies['Mh']/M)*(R/lightcone.galaxies['rphys'])**3
 
         elif metric == 'linear':
             # Find the min and max physical distance and
             r_min = np.min(lightcone.galaxies['rphys'])
             r_max = np.max(lightcone.galaxies['rphys'])
-            Mh_min = np.min(10**lightcone.galaxies['Mh'])
-            Mh_max = np.max(10**lightcone.galaxies['Mh'])
+            Mh_min = np.min(lightcone.galaxies['Mh'])
+            Mh_max = np.max(lightcone.galaxies['Mh'])
 
             # Compute the relevance using a linear metric from 0 to 1
             relevance_r = (r_max - self.galaxies['rphys']) / r_max
@@ -555,7 +555,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.lightcones = np.zeros(self.galaxy_count,dtype='object')
 
         # Set lightcone parameters
-        flavor = 'simulated'
+        flavor = 'sampled'
 
         # Setup the grid
         self.setup_grid()
@@ -567,8 +567,9 @@ class BackgroundCatalog(pangloss.Catalog):
             foreground = pangloss.ForegroundCatalog(pangloss.guo_file, config)
 
         # Only take the columns from foreground that are needed for a lightcone
-        lc_catalog = foreground.galaxies[['RA','Dec','z_obs','Mhalo_obs','Type']]
-        lc_catalog['mag'] = foreground.galaxies['mag_SDSS_i']
+        lc_catalog = foreground.galaxies[['RA','Dec','z_obs','Mhalo_obs','Type','GalID',
+                                          'mag_SDSS_i', 'Mh']]
+        lc_catalog.rename(columns={'mag_SDSS_i': 'mag'})
 
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
@@ -582,15 +583,15 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
-            if i%counter == 0 and vb is True:
-                print i,' ',np.ceil(100*i/self.galaxy_count),'%'
+            if i % counter == 0 and vb is True:
+                print i, ' ', np.ceil(100*i/self.galaxy_count), '%'
             # Set galaxy positions
             ra0 = self.galaxies['RA'][i]
             dec0 = self.galaxies['Dec'][i]
-            position = [ra0,dec0]
+            position = [ra0, dec0]
 
             # Create the lightcone for background galaxy i
-            self.lightcones[i] = pangloss.Lightcone(lc_catalog,flavor,position,radius,ID=i)
+            self.lightcones[i] = pangloss.Lightcone(lc_catalog, flavor, position, radius, ID=i)
 
             # Create the redshift scaffolding for lightcone i:
             self.lightcones[i].defineSystem(self.zl,self.zs)
@@ -608,7 +609,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def save(self,filename=None):
+    def save(self, filename=None):
         '''
         Save the background galaxy catalog in '/data'.
         '''
@@ -624,14 +625,14 @@ class BackgroundCatalog(pangloss.Catalog):
         self.filename = filename
 
         pickle_file = open(self.filename, 'wb')
-        pickle.dump(self.__dict__,self.filename,2)
+        pickle.dump(self.__dict__, self.filename, )
         pickle_file.close()
 
         return
 
 # ----------------------------------------------------------------------------
 
-    def load(self,filename=None):
+    def load(self, filename=None):
         '''
         Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
         '''
@@ -650,7 +651,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None,show=False):
+    def bin_to_maps(self, lensed='none', binsize=0.075, center=None, savefile=None, show=False):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
@@ -1132,4 +1133,16 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-# ============================================================================
+    def get_sampled_halo_masses_in_lightcones(self):
+        row = dict()
+        for cone in self.lightcones:
+            for index in xrange(len(cone.galaxies)):
+                row[cone.galaxies.iloc[index]['GalID']] = [cone.galaxies.iloc[index]['Mh']]
+        return DataFrame(row)
+
+    def get_true_halo_masses_in_lightcones(self):
+        row = dict()
+        for cone in self.lightcones:
+            for index in xrange(len(cone.galaxies)):
+                row[cone.galaxies.iloc[index]['GalID']] = [cone.galaxies.iloc[index]['Mhalo_obs']]
+        return DataFrame(row)

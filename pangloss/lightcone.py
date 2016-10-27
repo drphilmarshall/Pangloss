@@ -3,7 +3,7 @@
 import numpy as np
 import pylab as plt
 import scipy as sp
-
+import pandas as pd
 import pangloss
 
 # ======================================================================
@@ -88,10 +88,12 @@ class Lightcone(object):
 
         dx = self.rmax*pangloss.arcmin2rad
         # Ra is flipped as it is left-handed
-        self.galaxies = self.catalog[np.where((self.catalog['RA'] > (self.xc[0]-dx)) & \
+        self.galaxies = pd.DataFrame.copy(self.catalog[(self.catalog['RA'] > (self.xc[0]-dx)) & \
                                               (self.catalog['RA'] < (self.xc[0]+dx)) & \
                                               (self.catalog['Dec'] > (self.xc[1]-dx)) & \
-                                              (self.catalog['Dec'] < (self.xc[1]+dx))   )]
+                                              (self.catalog['Dec'] < (self.xc[1]+dx)) & \
+                                               self.catalog['Mh'] > 0
+                                              ])
 
         # Trim it to a circle:
         x = -np.cos(self.galaxies['Dec'])*(self.galaxies['RA'] - self.xc[0])*pangloss.rad2arcmin
@@ -102,10 +104,10 @@ class Lightcone(object):
         self.galaxies['y'] = y
         self.galaxies['r'] = r
         self.galaxies['phi'] = phi
-        self.galaxies = self.galaxies[np.where(self.galaxies['r'] < self.rmax)]
+        self.galaxies = self.galaxies[self.galaxies['r'] < self.rmax]
 
         try:
-            self.galaxies = self.galaxies[np.where(self.galaxies['Type'] != 2)]
+            self.galaxies = self.galaxies[self.galaxies['Type'] != 2]
         except AttributeError: pass
 
         # Why is this here? If we want to save all the galaxies, shouldn't it be placed above the galaxies[np.where()] line? - Spencer
@@ -133,6 +135,12 @@ class Lightcone(object):
             # Mstar is already given as log M...
             self.galaxies['Mstar'] = self.galaxies['Mstar_obs'] * 1.0
             # Halo masses will be added by drawMhalos
+
+        elif self.flavor == 'sampled':
+            # Take the log of the halo mass, and set up the parameter array:
+            zero = np.sum(self.galaxies['Mhalo_obs']==0)
+            if zero != 0: print 'There are {} galaxies with subhalo mass = 0'.format(zero)
+            self.galaxies['Mh_obs'] = np.log10(self.galaxies['Mhalo_obs'])
 
         if len(self.galaxies) == 0:
             print "Lightcone: WARNING: no galaxies here!"
@@ -179,9 +187,9 @@ class Lightcone(object):
           #  self.N_cut=self.galaxies[np.where((self.galaxies.['r'] < radius)  & \
           #                                    (self.galaxies["%s"%col] < cut[1])& \
           #                                (self.galaxies["%s"%col] > cut[0]))]
-            self.N_cut=self.galaxies[np.where((self.galaxies['r'] < radius)  & \
+            self.N_cut=self.galaxies[(self.galaxies['r'] < radius)  & \
                                            (self.galaxies["%s"%col] < cut[1])& \
-                                           (self.galaxies["%s"%col] > cut[0]))]
+                                           (self.galaxies["%s"%col] > cut[0])]
 
             return self.N_cut
 
@@ -195,7 +203,7 @@ class Lightcone(object):
         self.zl = zl
         self.zs = zs
         self.cosmo = cosmo
-        self.galaxies = self.galaxies[np.where(self.galaxies['z_obs'] < zs+0.2)]
+        self.galaxies = self.galaxies[self.galaxies['z_obs'] < zs+0.2]
         self.galaxy_count = len(self.galaxies)
         return
 
@@ -244,13 +252,13 @@ class Lightcone(object):
                 R=PR[i]*60 # positions are stored in arcseconds
                 D=PD[i]
 
-                goodset = set(self.galaxies[np.where((self.galaxies['r'] < R) & \
-                   (self.galaxies["%s"%col] < D))['identifier']])
+                goodset = set(self.galaxies[(self.galaxies['r'] < R) & \
+                   (self.galaxies["%s"%col] < D)['identifier']])
 
                 self.galaxies['photo_flag'][np.array(\
                    [_ in goodset for _ in self.galaxies['identifier']])] = True
 
-        self.galaxies = self.galaxies[np.where(self.galaxies['photo_flag']==True)]
+        self.galaxies = self.galaxies[self.galaxies['photo_flag']==True]
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # Set spectroscopic flag of any galaxy that should have
@@ -262,8 +270,8 @@ class Lightcone(object):
             for i in range(len(SR)):
                 R=SR[i]*60 # positions are stored in arcseconds
                 D=SD[i]
-                goodset=set(self.galaxies[np.where((self.galaxies['r'] < R) & \
-                   (self.galaxies["%s"%col] < D))]['identifier'])
+                goodset=set(self.galaxies[(self.galaxies['r'] < R) & \
+                   (self.galaxies["%s"%col] < D)]['identifier'])
 
                 self.galaxies['spec_flag'][np.array(\
                    [_ in goodset for _ in self.galaxies['identifier']])]=True
@@ -354,7 +362,7 @@ class Lightcone(object):
 # Given an Mh, what could the halo concentration be?
 
     def drawConcentrations(self,errors=False):
-        M200 = 10**self.galaxies['Mh']
+        M200 = self.galaxies['Mh']
         r200 = (3*M200/(800*3.14159*self.galaxies['rho_crit']))**(1./3)
         self.galaxies["r200"] = r200
         c200 = pangloss.MCrelation(M200,scatter=errors)
@@ -369,7 +377,6 @@ class Lightcone(object):
 # Compute halos' contributions to the convergence:
 
     def makeKappas(self,errors=False,truncationscale=5,profile="BMO1",lensing_table=None):
-
         rho_s = pangloss.delta_c(self.galaxies['c200'])*self.galaxies['rho_crit']
         self.kappa_s = rho_s * self.galaxies['rs'] /self.galaxies['sigma_crit']  #kappa slice for each lightcone
         r_trunc = truncationscale*self.galaxies['r200']
@@ -550,7 +557,7 @@ class Lightcone(object):
         Returns the halo mass density at the given redshift slice.
         '''
         assert z in self.redshifts
-        return np.sum( 10**self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
+        return np.sum(self.galaxies['Mh'][self.galaxies['z_sz']==z] ) / self.slice_proper_volume(z) # M_sol/Mpc^3
 
     def slice_proper_volume(self,z):
         '''
@@ -656,28 +663,28 @@ class Lightcone(object):
        if quantity == 'mass':
            contr = np.zeros(zbins)
            for i in range(zbins):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['Mhalo_obs']
                contr[i] = np.sum(size)
 
        elif quantity == 'kappa':
            contr = np.zeros(zbins)
            for i in range(zbins):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['kappa']
                contr[i] = np.sum(size)
 
        elif quantity == 'mu':
            contr = np.zeros(zbins)
            for i in range(zbins):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['mu']
                contr[i] = np.sum(size)
 
        elif quantity == 'stellarmass':
            contr = np.zeros(zbins)
            for i in range(zbins):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['Mstar_obs']
                contr[i] = np.sum(size)
        else:
@@ -774,7 +781,7 @@ class Lightcone(object):
 
        # Only plot a subset of points, in a slice down the middle of
        # the light cone:
-       subset = self.galaxies[np.where(np.abs(self.galaxies['x']) < 0.3)]
+       subset = self.galaxies[np.abs(self.galaxies['x']) < 0.3]
 
        # Point positions:
        z = subset['z']
@@ -838,7 +845,7 @@ class Lightcone(object):
        if quantity == 'mass':
            contr = np.zeros(len(z))
            for i in range(len(z)):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['Mhalo_obs']
                contr[i] = np.sum(size)
            plt.plot(z, contr)
@@ -847,7 +854,7 @@ class Lightcone(object):
        elif quantity == 'kappa':
            contr = np.zeros(len(z))
            for i in range(len(z)):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['kappa']
                contr[i] = np.sum(size)
            plt.plot(z, contr)
@@ -856,7 +863,7 @@ class Lightcone(object):
        elif quantity == 'mu':
            contr = np.zeros(len(z))
            for i in range(len(z)):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['mu']
                contr[i] = np.sum(size)
            plt.plot(z, contr)
@@ -865,7 +872,7 @@ class Lightcone(object):
        elif quantity == 'stellarmass':
            contr = np.zeros(len(z))
            for i in range(len(z)):
-               galaxies = self.galaxies[np.where(self.galaxies['z'] <= z[i])]
+               galaxies = self.galaxies[self.galaxies['z'] <= z[i]]
                size = galaxies['Mstar_obs']
                contr[i] = np.sum(size)
            plt.plot(z, contr)

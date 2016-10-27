@@ -21,6 +21,7 @@ from lensing import *
 from scalingrelations import *
 from miscellaneous import *
 from data import *
+from distribution import *
 
 # Matt Auger's classes.
 from distances import *
