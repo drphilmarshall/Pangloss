@@ -1,10 +1,6 @@
-# ===========================================================================
-
-import pangloss
+import pandas as pd
 import os,cPickle
-from astropy.table import Table
-
-# ======================================================================
+from collections import OrderedDict
 
 """
     NAME
@@ -38,8 +34,6 @@ from astropy.table import Table
       2013-03-23  Marshall & Collett (Oxford)
 """
 
-#=========================================================================
-
 def writePickle(contents,filename):
     F = open(filename,"wb")
     cPickle.dump(contents,F,protocol=2)
@@ -52,32 +46,26 @@ def readPickle(filename):
     F.close()
     return contents
 
-# ----------------------------------------------------------------------------
-
 def read_hilbert_catalog(filename,config):
 
-    try: table = Table.read(filename, format = 'ascii')
+    try: table = pd.read_table(filename)
     except:
         raise IOError("Cannot open %s\n" % filename)
 
-    try: table.rename_column(config.parameters['nRAName'],'nRA')
-    except: pass
-    try: table.rename_column(config.parameters['DecName'],'Dec')
-    except: pass
+    rename = OrderedDict()
+    rename['nRAName'] = 'nRA'
+    rename['DecName'] = 'Dec'
+    rename['CalibMhaloName'] = 'Mhalo_obs'
+    rename['CalibRedshiftName'] = 'z_obs'
+    rename['ObsMstarName'] = 'Mstar_obs'
+    rename['ObsRedshiftName'] = 'z_obs'
+
+    for key in rename:
+        try: df = df.rename(columns={key, rename[key]})
+        except: pass
+
     # Add a RA column:
     try: table['RA'] = -table['nRA']
-    except: pass
-
-    # Calibration catalogs:
-    try: table.rename_column(config.parameters['CalibMhaloName'],'Mhalo_obs')
-    except: pass
-    try: table.rename_column(config.parameters['CalibRedshiftName'],'z_obs')
-    except: pass
-
-    # Observed catalog:
-    try: table.rename_column(config.parameters['ObsMstarName'],'Mstar_obs')
-    except: pass
-    try: table.rename_column(config.parameters['ObsRedshiftName'],'z_obs')
     except: pass
     try:
         table['mag'] = table[config.parameters['MagName']]
@@ -86,7 +74,6 @@ def read_hilbert_catalog(filename,config):
 
     return table
 
-# ----------------------------------------------------------------------------
 # Remove file, if it exists, stay quiet otherwise:
 
 def rm(filename):
@@ -96,12 +83,8 @@ def rm(filename):
         pass
     return
 
-# ----------------------------------------------------------------------------
 def int_or_float(s):
     try:
         return int(s)
     except ValueError:
         return float(s)
-
-
-# ======================================================================

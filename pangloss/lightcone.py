@@ -3,7 +3,6 @@
 import numpy as np
 import pylab as plt
 import scipy as sp
-from astropy.table import Column
 
 import pangloss
 
@@ -44,8 +43,6 @@ class Lightcone(object):
 
         mimicPhotozError(self,sigma=0.1):
 
-        writeColumn(self,string,values):
-
         snapToGrid(self, Grid):
 
         drawMstars(self,model): Needs updating to take SHMR object
@@ -67,7 +64,7 @@ class Lightcone(object):
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,catalog,flavor,position,radius,ID=None,maglimit=99,band="r"):
+    def __init__(self, catalog, flavor, position, radius, ID=None, maglimit=99, band="r"):
 
         self.name = 'Lightcone through the Universe'
         self.flavor = flavor   # 'real' or 'simulated'
@@ -101,10 +98,10 @@ class Lightcone(object):
         y = (self.galaxies['Dec'] - self.xc[1])*pangloss.rad2arcmin
         r = np.sqrt(x*x + y*y)
         phi = np.arctan2(y,x)
-        self.writeColumn('x',x)
-        self.writeColumn('y',y)
-        self.writeColumn('r',r)
-        self.writeColumn('phi',phi)
+        self.galaxies['x'] = x
+        self.galaxies['y'] = y
+        self.galaxies['r'] = r
+        self.galaxies['phi'] = phi
         self.galaxies = self.galaxies[np.where(self.galaxies['r'] < self.rmax)]
 
         try:
@@ -121,20 +118,20 @@ class Lightcone(object):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Halo parameters, to be varied during sampling analysis:
-        self.writeColumn('z',self.galaxies['z_obs']*1.0)
+        self.galaxies['z'] = self.galaxies['z_obs'] * 1.0
 
         if self.flavor == 'simulated':
             # Take the log of the halo mass, and set up the parameter array:
-            zero = np.sum(self.galaxies['Mhalo_obs']==0)
+            zero = np.sum(self.galaxies['Mhalo_obs'] == 0)
             if zero != 0: print 'There are {} galaxies with subhalo mass = 0'.format(zero)
-            self.writeColumn('Mh_obs',np.log10(self.galaxies['Mhalo_obs']))
-            self.writeColumn('Mh',self.galaxies['Mh_obs']*1.0)
+            self.galaxies['Mh_obs'] = np.log10(self.galaxies['Mhalo_obs'])
+            self.galaxies['Mh'] = self.galaxies['Mh_obs'] * 1.0
             # Stellar masses will be added by drawMstars
             # Halo masses will be replaced by drawMhalos
 
         elif self.flavor == 'real':
             # Mstar is already given as log M...
-            self.writeColumn('Mstar',self.galaxies['Mstar_obs']*1.0)
+            self.galaxies['Mstar'] = self.galaxies['Mstar_obs'] * 1.0
             # Halo masses will be added by drawMhalos
 
         if len(self.galaxies) == 0:
@@ -240,8 +237,8 @@ class Lightcone(object):
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
         # Only include galaxies observed by photometry:
 
-        self.writeColumn('photo_flag',False)
-        self.writeColumn('identifier',range(len(self.galaxies['x'])))
+        self.galaxies['photo_flag'] = False
+        self.galaxies['identifier'] = range(len(self.galaxies['x']))
         if PR != ['']:
             for i in range(len(PR)):
                 R=PR[i]*60 # positions are stored in arcseconds
@@ -259,7 +256,7 @@ class Lightcone(object):
         # Set spectroscopic flag of any galaxy that should have
         # spectroscopy, according to the given radius and depth:
 
-        self.writeColumn('spec_flag',False)
+        self.galaxies['spec_flag'] = False
 
         if SR!=['']:
             for i in range(len(SR)):
@@ -278,16 +275,6 @@ class Lightcone(object):
 # (previous ones are single use per lightcone)
 # ----------------------------------------------------------------------------
 
-# Add galaxy property column, overwriting any values that already exist:
-
-    def writeColumn(self,string,values):
-        try:
-            self.galaxies.add_column(Column(name='%s'%string,data=values))
-        except ValueError:
-            self.galaxies["%s"%string]=values
-
-# ----------------------------------------------------------------------------
-
     def mimicPhotozError(self,sigma=0.1):
 
         # Start with the original, constant z_obs in the catalog:
@@ -300,7 +287,7 @@ class Lightcone(object):
         z = z_obs + e*(1+z_obs)*np.random.randn(len(z_obs))
 
         # Over-write the z parameter array:
-        self.writeColumn('z',z)
+        self.galaxies['z'] = z
 
         return
 
@@ -311,13 +298,13 @@ class Lightcone(object):
         z = self.galaxies['z']
         sz,p = Grid.snap(z)
         self.sigma_crit = Grid.sigma_crit
-        self.writeColumn('z_sz',sz)
-        self.writeColumn('Da_p',Grid.Da_p[p])
-        self.writeColumn('rho_crit',Grid.rho_crit[p])
-        self.writeColumn('sigma_crit',Grid.sigma_crit[p])
-        self.writeColumn('beta',Grid.beta[p])
+        self.galaxies['z_sz'] = sz
+        self.galaxies['Da_p'] = Grid.Da_p[p]
+        self.galaxies['rho_crit'] = Grid.rho_crit[p]
+        self.galaxies['sigma_crit'] = Grid.sigma_crit[p]
+        self.galaxies['beta'] = Grid.beta[p]
         rphys = self.galaxies['r']*pangloss.arcmin2rad*self.galaxies['Da_p']
-        self.writeColumn('rphys',rphys)
+        self.galaxies['rphys'] = rphys
 
         # Write foreground mean kappas for foreground correction (0 if foreground kappas not inputed)
         if foreground_kappas is None:
@@ -325,7 +312,7 @@ class Lightcone(object):
         else:
             self.foreground_kappas = foreground_kappas
             f_kappa = foreground_kappas[p]
-        self.writeColumn('f_kappa',f_kappa)
+        self.galaxies['f_kappa'] = f_kappa
 
         return
 
@@ -334,9 +321,9 @@ class Lightcone(object):
 
     def drawMstars(self,model):
         Mstar = model.drawMstars(self.galaxies['Mh'],self.galaxies['z'])
-        self.writeColumn('Mstar',Mstar)
+        self.galaxies['Mstar'] = Mstar
         # Copy this to Mstar_obs - mimicMstarError will deal with noise
-        self.writeColumn('Mstar_obs',Mstar)
+        self.galaxies['Mstar_obs'] = Mstar
         return
 
 # ----------------------------------------------------------------------------
@@ -351,7 +338,7 @@ class Lightcone(object):
         Mstar[self.galaxies['spec_flag']==True] += np.random.randn(Mstar[self.galaxies['spec_flag']==True].size)*sigmaS
 
         # Over-write the Mstar parameter array:
-        self.writeColumn('Mstar',Mstar)
+        self.galaxies['Mstar'] = Mstar
         return
 
 
@@ -360,7 +347,7 @@ class Lightcone(object):
 
     def drawMhalos(self,model):
         Mh = model.drawMhalos(self.galaxies['Mstar'],self.galaxies['z'])
-        self.writeColumn('Mh',Mh)
+        self.galaxies['Mh'] = Mh
         return
 
 # ----------------------------------------------------------------------------
@@ -369,13 +356,12 @@ class Lightcone(object):
     def drawConcentrations(self,errors=False):
         M200 = 10**self.galaxies['Mh']
         r200 = (3*M200/(800*3.14159*self.galaxies['rho_crit']))**(1./3)
-        self.writeColumn("r200",r200)
+        self.galaxies["r200"] = r200
         c200 = pangloss.MCrelation(M200,scatter=errors)
-        self.writeColumn("c200",c200)
+        self.galaxies["c200"] = c200
         r_s = r200/c200
-        self.writeColumn('rs',r_s)
-        x = self.galaxies['rphys']/r_s
-        self.writeColumn('X',x)
+        self.galaxies['rs'] = r_s
+        self.galaxies['X'] = self.galaxies['rphys']/r_s
 
         return
 
@@ -420,11 +406,11 @@ class Lightcone(object):
 
         mu = 1.0/(((1.0 - kappa)**2.0) - (gamma**2.0))
 
-        self.writeColumn('kappa',kappa)
-        self.writeColumn('gamma',gamma)
-        self.writeColumn('gamma1',-gamma1)
-        self.writeColumn('gamma2',-gamma2)
-        self.writeColumn('mu',mu)
+        self.galaxies['kappa'] = kappa
+        self.galaxies['gamma'] = gamma
+        self.galaxies['gamma1'] = -gamma1
+        self.galaxies['gamma2'] = -gamma2
+        self.galaxies['mu'] = mu
 
         return
 
@@ -455,9 +441,9 @@ class Lightcone(object):
                 gamma2_keeton = (1.-B) * (G2) /  ( (1-B*K)**2   - (B*G)**2   )
 
                 # Write the convergene and shear for each galaxy in the lightcone
-                self.writeColumn('kappa_keeton',kappa_keeton)
-                self.writeColumn('gamma1_keeton',gamma1_keeton)
-                self.writeColumn('gamma2_keeton',gamma2_keeton)
+                self.galaxies['kappa_keeton'] = kappa_keeton
+                self.galaxies['gamma1_keeton'] = gamma1_keeton
+                self.galaxies['gamma2_keeton'] = gamma2_keeton
 
                 # Add the total convergence and shear from all galaxies
                 self.kappa_keeton_total=np.sum(self.galaxies['kappa_keeton'])
@@ -478,9 +464,9 @@ class Lightcone(object):
                 gamma2_tom = (1.-B) * G2
 
                 # Write the convergene and shear for each galaxy in the lightcone
-                self.writeColumn('kappa_tom',kappa_tom)
-                self.writeColumn('gamma1_tom',gamma1_tom)
-                self.writeColumn('gamma2_tom',gamma2_tom)
+                self.galaxies['kappa_tom'] = kappa_tom
+                self.galaxies['gamma1_tom'] = gamma1_tom
+                self.galaxies['gamma2_tom'] = gamma2_tom
 
                 # Add the total convergence and shear from all galaxies
                 self.kappa_tom_total=np.sum(self.galaxies['kappa_tom'])
@@ -498,9 +484,9 @@ class Lightcone(object):
             if method == 'add':
                 # Calculate the convergence and shear for each galaxy in the lightcone
                 ## Why are these necessary ?? Should check if we can delete
-                self.writeColumn('kappa_add',K)
-                self.writeColumn('gamma1_add',G1)
-                self.writeColumn('gamma2_add',G2)
+                self.galaxies['kappa_add'] = K
+                self.galaxies['gamma1_add'] = G1
+                self.galaxies['gamma2_add'] = G2
 
                 # Add the total convergence and shear from all galaxies
                 self.kappa_add_total=np.sum(self.galaxies['kappa'])
@@ -734,8 +720,10 @@ class Lightcone(object):
        slicehalfwidth = self.rmax / 6.0
 
        if quantity == 'mass':
-           self.writeColumn('rtrunc_arcmin',(self.galaxies['r200']/self.galaxies['Da_p']) * pangloss.rad2arcmin)
-           self.writeColumn('rscale_arcmin',(self.galaxies['rs']/self.galaxies['Da_p']) * pangloss.rad2arcmin)
+           self.galaxies['rtrunc_arcmin'] = (self.galaxies['r200']/self.galaxies['Da_p']) * \
+                                             pangloss.rad2arcmin
+           self.galaxies['rscale_arcmin'] = (self.galaxies['rs']/self.galaxies['Da_p']) * \
+           pangloss.rad2arcmin
            for i in range(len(self.galaxies['x'])):
                trunc = plt.Circle([self.galaxies['x'][i], self.galaxies['y'][i]],radius=self.galaxies['rtrunc_arcmin'][i],fill=True,fc="b",alpha=0.05)
                AX.add_patch(trunc)

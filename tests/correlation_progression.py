@@ -3,7 +3,6 @@
 import numpy as np
 import scipy as sp
 import os,sys,timeit
-import astropy.io.fits as pyfits
 import matplotlib.pyplot as plt
 import cmath, cProfile
 import copy

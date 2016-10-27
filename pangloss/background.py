@@ -1,13 +1,12 @@
 import cPickle as pickle
 import math
 import os
-import sys
 import timeit
-
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Table
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+import pangloss
+from pandas import DataFrame
 
 # Fast correlation functions:
 try:
@@ -15,10 +14,6 @@ try:
 except ImportError:
     import pangloss.nocorr as treecorr
 
-# Import Pangloss:
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
-import pangloss
 
 # Verbose
 vb = True
@@ -227,11 +222,10 @@ class BackgroundCatalog(pangloss.Catalog):
         eMod_int = abs(e_int)
         ePhi_int = np.rad2deg(np.arctan2(e2_int,e1_int))/2.0
 
-        # Save generated catalog as an astropy table
-        self.galaxies = Table([ID,ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['ID','RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
-                              meta={'name':'background catalog','size':N,'mag_lim':mag_lim, \
-                                    'mass_lim':mass_lim,'z_lim':z_lim,'sigma_e':sigma_e})
-
+        # Save generated catalog as a pandas dataframe
+        columns = ['ID','RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int']
+        data = np.matrix([ID,ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int]).transpose()
+        self.galaxies = DataFrame(columns=columns, data=data)
         return
 
     def lens_by_map(self,kappamap,shearmap):
@@ -569,11 +563,12 @@ class BackgroundCatalog(pangloss.Catalog):
         # If a foreground catalog object is not passed, load in the appropriate catalog.
         if foreground is None:
             # Load in the corresponding foreground catalog
-            config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-            foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+            config = pangloss.Configuration(pangloss.catalog_example)
+            foreground = pangloss.ForegroundCatalog(pangloss.guo_file, config)
 
         # Only take the columns from foreground that are needed for a lightcone
-        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type','mag'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type'],foreground.galaxies['mag_SDSS_i']])
+        lc_catalog = foreground.galaxies[['RA','Dec','z_obs','Mhalo_obs','Type']]
+        lc_catalog['mag'] = foreground.galaxies['mag_SDSS_i']
 
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
@@ -623,7 +618,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # If no filename is given, a default is set using the field numbers (x,y,i,j).
         if filename is None:
-            filename = PANGLOSS_DIR+'/data/background_catalog_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
+            filename = pangloss.data_dir+'/background_catalog_'+str(self.map_x)+'_'+str(
+                self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
 
         self.filename = filename
 
@@ -743,7 +739,7 @@ class BackgroundCatalog(pangloss.Catalog):
             kappamap.plot(subplot=subplot,coords='world')
 
         if savefile is not None:
-            plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+            plt.savefig(pangloss.data_dir+'/binned_maps/'+savefile, bbox_inches='tight')
 
         return kappamap, shearmap
 
@@ -797,8 +793,8 @@ class BackgroundCatalog(pangloss.Catalog):
         elif corr_type == 'ng':
             # Load in foreground catalog if none is passed
             if foreground is None:
-                config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-                foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+                config = pangloss.Configuration(pangloss.pangloss_module_dir+'/example/example.config')
+                foreground = pangloss.ForegroundCatalog(pangloss.pangloss_module_dir+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
 
             # Create catalog of the foreground galaxy locations
             corr_cat1 = treecorr.Catalog(ra=foreground.galaxies['RA'], dec=foreground.galaxies['Dec'], ra_units='rad', dec_units='rad')

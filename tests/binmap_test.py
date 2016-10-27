@@ -3,7 +3,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 import cPickle as pickle
-import astropy.io.fits as pyfits
+import pyfits
 import os, sys, cmath, cProfile, copy
 
 # Turn on for verbose
