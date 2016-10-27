@@ -36,7 +36,7 @@ def fetch():
             download(url, demo_data)
 
     if not path.exists(calib_dir):
-        mkdir(data_dir)
+        mkdir(calib_dir)
 
     for calib_data in calib_data_files:
         if not path.exists(calib_data):
