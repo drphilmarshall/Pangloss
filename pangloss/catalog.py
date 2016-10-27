@@ -1,10 +1,8 @@
-import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
-import os, random, math
-from astropy.table import Table, Column
+import os
 
-import pangloss
+import numpy as np
+from astropy.table import Table
+
 
 # ============================================================================
 
