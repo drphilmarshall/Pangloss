@@ -1,17 +1,10 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import os, sys
-from astropy.table import Table, Column
+import numpy as np
 from astropy.wcs import WCS
-from matplotlib.patches import Ellipse
 from matplotlib.collections import LineCollection
-import matplotlib.gridspec as gridspec
+from matplotlib.patches import Ellipse
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-# Import Pangloss:
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
 import pangloss
 
 viewport = [0.1,0.1,0.8,0.8]

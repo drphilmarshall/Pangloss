@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # ======================================================================
 
+import getopt
+import numpy
+import sys
+
 import pangloss
 
-import sys,glob,getopt,numpy
-
-from math import pi
 
 # ======================================================================
 
