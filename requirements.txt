@@ -4,3 +4,4 @@ numpy>=1.11.2
 scipy>=0.18.1
 matplotlib>=1.5.3
 requests>=2.11.1
+TreeCorr>=3.3.5

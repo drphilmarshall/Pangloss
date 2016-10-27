@@ -1,10 +1,12 @@
-import numpy as np
-import scipy as sp
-import matplotlib.pyplot as plt
-import os, random, math, cmath, sys, timeit, cProfile
 import cPickle as pickle
-from astropy.table import Table, Column
-from matplotlib.patches import Ellipse
+import math
+import os
+import sys
+import timeit
+
+import matplotlib.pyplot as plt
+import numpy as np
+from astropy.table import Table
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 # Fast correlation functions:
@@ -536,8 +538,8 @@ class BackgroundCatalog(pangloss.Catalog):
             Mh_max = np.max(10**lightcone.galaxies['Mh'])
 
             # Compute the relevance using a linear metric from 0 to 1
-            relevance_r = (r_max - galaxies['rphys']) / r_max
-            relevance_m = (galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
+            relevance_r = (r_max - self.galaxies['rphys']) / r_max
+            relevance_m = (self.galaxies['Mh'] - Mh_min) / (Mh_max - Mh_min)
             #relevance = relevance_r*relevance_m
             relevance = np.sqrt(relevance_r**2+relevance_m**2)
 
@@ -867,7 +869,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
             elif corr_comp == 'cross_prime':
                 y1, y2 = corr1.xip_im, corr2.xip_im
-                var1, var2 = corr1.varxi, corr2,varxi
+                var1, var2 = corr1.varxi, corr2.varxi
 
         # For galaxy-galaxy correlation functions:
         elif corr_type == 'ng':
@@ -876,7 +878,7 @@ class BackgroundCatalog(pangloss.Catalog):
                 y1, y2 = corr1.xi, corr2.xi
 
             elif corr_comp == 'imag':
-                y1, y2 = corr.xi_im, corr2.xi_im
+                y1, y2 = corr1.xi_im, corr2.xi_im
 
             # Extract the variance
             var1, var2 = corr1.varxi, corr2.varxi
