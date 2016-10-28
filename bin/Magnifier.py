@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # ======================================================================
-import pangloss
+import getopt
+import glob
+import numpy
+import sys
 
-import sys,getopt,cPickle,numpy,glob
 import matplotlib.pyplot as plt
-
-from scipy.stats.kde import gaussian_kde
-from math import pi
 from astropy.io import ascii
+
+import pangloss
 
 
 # ======================================================================

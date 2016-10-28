@@ -10,28 +10,28 @@ class Configuration(object):
         Configuration
 
     PURPOSE
-        Structure of metadata supplied by the Pangloss user to define 
+        Structure of metadata supplied by the Pangloss user to define
         the experiment they want to do.
 
     COMMENTS
 
     INITIALISATION
         configfile    Plain text file containing desired values of pars
-    
+
     METHODS
         read(self): from configfile, get par names and values
-        
+
         convert(self): strings to numbers, and expand paths
-        
+
         prepare(self): set up workspace
-        
-        getLightconePickleName(self,flavor,pointing=None): 
+
+        getLightconePickleName(self,flavor,pointing=None):
 
     BUGS
 
     AUTHORS
       This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford). 
+      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
       Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
@@ -99,8 +99,12 @@ class Configuration(object):
 
         # Calibration catalogs and kappa maps must come in pairs...
         if self.parameters['CalibrationKappamaps'] != None:
+            print self.parameters['CalibrationCatalogs']
+            print self.parameters['CalibrationKappamaps']
             assert len(self.parameters['CalibrationCatalogs']) == \
-                  len(self.parameters['CalibrationKappamaps'])
+                  len(self.parameters['CalibrationKappamaps']), \
+                  "There are {} catalog(s), but {} kappa map(s)! Should be equal.".format( \
+                  len(self.parameters['CalibrationCatalogs']),len(self.parameters['CalibrationKappamaps']))
 
 
         surveycoveragekeys=['PhotometricRadius','PhotometricDepth','SpectroscopicDepth','SpectroscopicRadius']
@@ -110,7 +114,7 @@ class Configuration(object):
             if self.parameters[key]!=['']:
                 for i in range(len(self.parameters[key])):
                     self.parameters[key][i]=float(self.parameters[key][i])
-            
+
         return
 
     # ------------------------------------------------------------------
@@ -135,11 +139,11 @@ class Configuration(object):
             # In this case, need the name of the obscat:
             x = self.parameters['ObservedCatalog'][0]
             return x.split('.')[0]+"_lightcone.pickle"
-        
+
         elif flavor == 'simulated':
             # In this case, need the CALIB_DIR and pointing number:
             assert pointing != None
-            CALIB_DIR = self.parameters['CalibrationFolder'][0]          
+            CALIB_DIR = self.parameters['CalibrationFolder'][0]
             x = "%s/pointing_%i" % (CALIB_DIR, pointing)
             return x+"_lightcone.pickle"
 
@@ -149,7 +153,7 @@ class Configuration(object):
             CALIB_DIR = self.parameters['CalibrationFolder'][0]
 
             # This is for multiple catalogs to help separate them
-            EXP_NAME = self.parameters['ExperimentName']            
+            EXP_NAME = self.parameters['ExperimentName']
             x = "%s/%s_pointing_%i" % (CALIB_DIR, EXP_NAME, pointing)
 
             return x+"_lightcone.pickle"
@@ -158,4 +162,3 @@ class Configuration(object):
 
 
 # ======================================================================
-

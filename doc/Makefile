@@ -1,8 +1,29 @@
-                                                                                                                                                               
-all: paper
+
+
+all: thesis
 
 clean:
-	-rm -f *.aux *.log *.dvi *.blg *.out *.bbl paper-lcr.ps paper-lcr.pdf
+	-rm -f *.aux *.log *.dvi *.blg *.out *Notes.bib *.bbl paper-lcr.p* suli-report-swe.pdf thesis_swe.pdf
+
+
+# ----------------------------------------------------------------------------
+
+sulireport:
+	pdflatex suli-report-swe.tex
+	pdflatex suli-report-swe.tex
+	bibtex suli-report-swe
+	pdflatex suli-report-swe.tex
+	pdflatex suli-report-swe.tex
+	# mv suli-report-swe.pdf FinalPaper_SEverett.pdf
+
+# ----------------------------------------------------------------------------
+
+thesis:
+	pdflatex thesis_swe.tex
+	pdflatex thesis_swe.tex
+	bibtex thesis_swe
+	pdflatex thesis_swe.tex
+	pdflatex thesis_swe.tex
 
 # ----------------------------------------------------------------------------
 
