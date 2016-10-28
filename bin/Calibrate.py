@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # ======================================================================
 
-import pangloss
-
-import sys,getopt,cPickle,numpy
+import getopt
+import numpy
+import sys
 
 import scipy.stats as stats
+
+import pangloss
 
 # ======================================================================
 
@@ -146,7 +148,7 @@ def Calibrate(argv):
                 pfile = x.split('.')[0].split("_lightcone")[0]+"_"+EXP_NAME+"_KappaHilbert_Kappah_"+comparatorType+".pickle"
                 calresultpickles.append(pfile)
         else:
-            print "Calibrate: Unrecognised comparator "+Comparator
+            print "Calibrate: Unrecognised comparator " + comparator
             print "Calibrate: If you want to use a comparator other than kappa_h, "
             print "Calibrate: you'll need to code it up!"
             print "Calibrate: (This should be easy, but you can ask tcollett@ast.cam.uk for help)."

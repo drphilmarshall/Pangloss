@@ -1,13 +1,11 @@
 # ===========================================================================
 
-import pangloss
-
-import cPickle, gc
 import numpy as np
-import scipy as sp
 import pylab as plt
-from math import pi
+import scipy as sp
 from astropy.table import Column
+
+import pangloss
 
 # ======================================================================
 
@@ -61,11 +59,6 @@ class Lightcone(object):
         combineKappas(self):
 
     BUGS
-
-    AUTHORS
-      This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
-      Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
 
     HISTORY
       2013-03-23  Collett & Marshall (Cambridge)

@@ -1,5 +1,4 @@
-import pangloss
-import numpy as np, gc
+import numpy as np
 from scipy.interpolate import RectBivariateSpline
 from scipy.special import gamma,gammainc # for Sersic profile.
 

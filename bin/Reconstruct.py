@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # ======================================================================
 
-import pangloss
+import getopt
+import numpy
+import sys
 
-import sys,getopt,cPickle,numpy
+import pangloss
 
 # ======================================================================
 

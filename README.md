@@ -18,12 +18,9 @@ to see what our current plans are;
 
 ## License
 
-Pangloss is distributed under the Gnu Public License (GPL) v2, a copy of
-which is delivered with this code. This basically means you can do
-anything you like with it, as long as you keep propagating the license
-information.
+Pangloss is distributed under the MIT License.
 
-However, when reporting on your use of Pangloss, we do ask that you include:
+When reporting on your use of Pangloss, we do ask that you include:
 * A citation to: **[Collett et al. (2013), MNRAS, 432, 679, arxiv/1303.6564](http://adsabs.harvard.edu/abs/2013MNRAS.432..679C)**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and
@@ -31,29 +28,11 @@ Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pa
 
 ## Installation
 
-After cloning or forking the repository, 
-add the following lines (or similar) to your .login file:
+The setup scripts is setup.py and the project can be setup via
 
-    setenv PANGLOSS_DIR ${WORK_DIR}/Pangloss
-    setenv PYTHONPATH ${PANGLOSS_DIR}/Pangloss:${PYTHONPATH}
-    setenv PATH ${PATH}:${PANGLOSS_DIR}
+pip install git+https://github.com/drphilmarshall/pangloss.git@wl
 
-Then "import pangloss" from python should just work, and the command
-line scripts should too. However, you will need to have the following packages
-installed as well:
-
-    import os,getopt,cPickle,timeit
-    import matplotlib,mpl_toolkits
-    import numpy,scipy,math,cmath,random
-    import astropy,treecorr
-
-Most (if not all) are available via pip and/or homebrew. In particular, you'll want to
-
-    pip install astropy
-    pip install TreeCorr
-
-and look up their installation documentation if that doesn't work.
-
+the package requirements can be found in requirements.txt.
 
 ## Example use
 
@@ -92,19 +71,19 @@ example directory, for testing.
 
 To get the test data, please do the following:
 
-    cd calib
-    Fetch.csh
+    python
+    >> import pangloss
+    >> pangloss.data.fetch()
 
-The Fetch script uses wget. 
 Additional galaxy catalogs and ray-traced convergence maps from the
 Millenium Simulation are available from Stefan Hilbert on request.
 
 You should then be able to execute the following example analysis:
 
-    cd example
-    Drill.py example.config
-    Reconstruct.py example.config
-    Calibrate.py example.config
+    cd /YourPathToPangloss/Pangloss/bin
+    python Drill.py example.config
+    python Reconstruct.py example.config
+    python Calibrate.py example.config
     
 Analysing from start to finish will take some time. Be patient! 
 (Drill ~2 mins, Reconstruct ~10 mins)
