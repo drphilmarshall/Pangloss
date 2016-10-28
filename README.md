@@ -18,12 +18,9 @@ to see what our current plans are;
 
 ## License
 
-Pangloss is distributed under the Gnu Public License (GPL) v2, a copy of
-which is delivered with this code. This basically means you can do
-anything you like with it, as long as you keep propagating the license
-information.
+Pangloss is distributed under the MIT License.
 
-However, when reporting on your use of Pangloss, we do ask that you include:
+When reporting on your use of Pangloss, we do ask that you include:
 * A citation to: **[Collett et al. (2013), MNRAS, 432, 679, arxiv/1303.6564](http://adsabs.harvard.edu/abs/2013MNRAS.432..679C)**
 * An acknowledgment including a link to this repo, such as:
 _"This work made use of the Pangloss code, written by Tom Collett and

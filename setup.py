@@ -2,9 +2,10 @@ from setuptools import setup
 
 setup(
     name="pangloss",
-    version='0.0.1',
-    author="Phil Marshal",
-    author_email="pjm@slac.stanford.edu",
+    version="1.0.0",
+    author="Phil Marshall, Tom Collett, Spencer Everett, David Thomas",
+    author_email="pjm@slac.stanford.edu, thomas.collett@port.ac.uk, spencerweverett@gmail.com, "
+                 "dthomas5@stanford.edu",
     url="https://github.com/drphilmarshall/pangloss",
     packages=["pangloss"],
     description="Line of sight weak lensing and inference.",
@@ -13,7 +14,7 @@ setup(
     include_package_data=True,
     classifiers=[
         "Development Status :: 4 - Beta",
-        "License :: OSI Approved :: GNU General Public License (GPL)",
+        "License :: OSI Approved :: MIT License",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Operating System :: OS Independent",
