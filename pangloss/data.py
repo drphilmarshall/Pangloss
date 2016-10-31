@@ -6,6 +6,8 @@ from requests import get
 pangloss_module_dir = path.dirname(path.realpath(__file__))
 data_dir = path.join(path.dirname(pangloss_module_dir), 'data')
 calib_dir = path.join(path.dirname(pangloss_module_dir), 'calib')
+millennium_dir = path.join(calib_dir, 'Millennium')
+shmr_dir = path.join(calib_dir, 'SHMR')
 
 gamma_1_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1')
 gamma_2_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2')
@@ -14,9 +16,9 @@ guo_file = path.join(data_dir, 'GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_p
                                 '.images.txt')
 demo_data_files = [gamma_1_file, gamma_2_file, kappa_file, guo_file]
 
-catalog_example = path.join(calib_dir, 'Millennium/catalog_example.txt')
-kappa_example = path.join(calib_dir, 'Millennium/kappa_example.fits')
-halo_mass_redshift_catalog = path.join(calib_dir, 'SHMR/HaloMassRedshiftCatalog.pickle')
+catalog_example = path.join(millennium_dir, 'catalog_example.txt')
+kappa_example = path.join(millennium_dir, 'kappa_example.fits')
+halo_mass_redshift_catalog = path.join(shmr_dir, 'HaloMassRedshiftCatalog.pickle')
 
 calib_data_files = [catalog_example, kappa_example, halo_mass_redshift_catalog]
 
@@ -27,16 +29,14 @@ def fetch():
     demo_data_url = 'http://www.slac.stanford.edu/~pjm/hilbert'
     calib_data_url = 'http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib'
 
-    if not path.exists(data_dir):
-        mkdir(data_dir)
+    for d in [data_dir, calib_dir, millennium_dir, shmr_dir]:
+        if not path.exists(d):
+            mkdir(d)
 
     for demo_data in demo_data_files:
         if not path.exists(demo_data):
             url = '{}/{}'.format(demo_data_url, path.basename(demo_data))
             download(url, demo_data)
-
-    if not path.exists(calib_dir):
-        mkdir(calib_dir)
 
     for calib_data in calib_data_files:
         if not path.exists(calib_data):
