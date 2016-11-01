@@ -625,7 +625,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.filename = filename
 
         pickle_file = open(self.filename, 'wb')
-        pickle.dump(self.__dict__, self.filename, )
+        pickle.dump(self.__dict__, self.filename, 2)
         pickle_file.close()
 
         return
