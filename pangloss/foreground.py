@@ -87,7 +87,7 @@ class ForegroundCatalog(pangloss.Catalog):
         Hilbert foreground catalogs.
         '''
 
-        self.galaxies = pangloss.io.read_hilbert_catalog(filename,config)
+        self.galaxies = pangloss.read_hilbert_catalog(filename,config)
 
         return
 

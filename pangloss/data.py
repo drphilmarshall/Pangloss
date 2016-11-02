@@ -8,16 +8,19 @@ data_dir = path.join(path.dirname(pangloss_module_dir), 'data')
 calib_dir = path.join(path.dirname(pangloss_module_dir), 'calib')
 millennium_dir = path.join(calib_dir, 'Millennium')
 shmr_dir = path.join(calib_dir, 'SHMR')
+example_dir = path.join(path.dirname(pangloss_module_dir), 'example')
 
 gamma_1_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1')
 gamma_2_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2')
 kappa_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa')
 guo_file = path.join(data_dir,  'GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt')
+config_file = path.join(example_dir, 'example.config')
 demo_data_files = {}
 demo_data_files['gamma_1_file'] = gamma_1_file
 demo_data_files['gamma_2_file'] = gamma_2_file
 demo_data_files['kappa_file'] = kappa_file
 demo_data_files['guo_file'] = guo_file
+demo_data_files['config_file'] = config_file
 
 catalog_example = path.join(millennium_dir, 'catalog_example.txt')
 kappa_example = path.join(millennium_dir, 'kappa_example.fits')
