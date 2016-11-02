@@ -1,8 +1,6 @@
 import os
 
 import numpy as np
-from astropy.table import Table
-
 
 # ============================================================================
 
@@ -62,17 +60,9 @@ class Catalog(object):
         # Add more!
         return 'General catalog object'
 
-    def read(filename,config):
-
-        try: table = Table.read(filename, format = 'ascii')
-        except:
-            raise IOError("Cannot open %s\n" % filename)
-
-        return table
-
     def write(self,output=os.getcwd()):
         # Writes catalog data to current directory unless otherwise specified
-        self.galaxies.write(output,format = 'ascii')
+        self.galaxies.to_csv(output)
         return
 
 

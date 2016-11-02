@@ -1,10 +1,7 @@
-import os
-import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Column
 from io import int_or_float
+import pangloss
 
 # Fast correlation functions:
 try:
@@ -12,10 +9,6 @@ try:
 except ImportError:
     from pangloss import nocorr as treecorr
 
-# Pangloss:
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
-import pangloss
 
 # ============================================================================
 
@@ -80,6 +73,8 @@ class ForegroundCatalog(pangloss.Catalog):
         # Initialize common catalog attributes:
         pangloss.Catalog.__init__(self)
 
+        self.mass_prior = None
+
         return
 
     def __str(self):
@@ -102,15 +97,9 @@ class ForegroundCatalog(pangloss.Catalog):
         NOTE: Different from lightcone snapToGrid
         '''
         z = catalog['z_obs']
-        sz,p = Grid.snap(z)
-        self.writeColumn('z_sz',sz)
-        self.writeColumn('sigma_crit',Grid.sigma_crit[p]) # Units of M_sun/Mpc^2
-
-    def writeColumn(self,string,values):
-        try:
-            self.galaxies.add_column(Column(name='%s'%string,data=values))
-        except ValueError:
-            self.galaxies["%s"%string]=values
+        sz, p = Grid.snap(z)
+        self.galaxies['z_sz'] = sz
+        self.galaxies['sigma_crit'] = Grid.sigma_crit[p] # Units of M_sun/Mpc^2
 
     def find_mean_kappas(self):
         '''
@@ -255,3 +244,10 @@ class ForegroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+
+    def set_mass_prior(self, distribution):
+        self.mass_prior = distribution
+
+    def draw_halo_masses(self):
+        self.galaxies['Mh'] = self.mass_prior.draw(self.galaxies)

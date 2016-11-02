@@ -2,8 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pangloss
-from astropy.wcs import WCS
-import cmath
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 vb = False

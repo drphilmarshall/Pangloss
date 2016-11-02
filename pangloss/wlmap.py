@@ -1,7 +1,7 @@
 import os
 import struct
 
-import astropy.io.fits as pyfits
+import pyfits
 import numpy as np
 from io import int_or_float
 
