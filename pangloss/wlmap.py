@@ -3,7 +3,7 @@ import struct
 
 import pyfits
 import numpy as np
-from io import int_or_float
+from utils import int_or_float
 
 vb = False
 

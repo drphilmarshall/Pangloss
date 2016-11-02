@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from io import int_or_float
+from utils import int_or_float
 import pangloss
 
 # Fast correlation functions:
