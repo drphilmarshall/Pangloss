@@ -1,7 +1,7 @@
 import os
 import struct
 
-import pyfits
+import astropy.io.fits as pyfits
 import numpy as np
 from utils import int_or_float
 
@@ -417,17 +417,20 @@ class WLMap:
 # ----------------------------------------------------------------------------
 # In general, we don't know how to plot this map...
 
-    def plot_setup(self,subplot=None,coords='world'):
+    def plot_setup(self, subplot=None, coords='world'):
         '''
-        Plot the convergence as a grayscale image.
+        Set up a plot of the map.
 
-        Optional arguments:
-            subplot         List of four plot limits [xmin,xmax,ymin,ymax]
-            coords          Type of coordinates inputted for the subplot:
-                            'pixel', 'physical', or 'world'
+        Parameters
+        ----------
+        subplot : list, float
+            List of four plot limits [xmin,xmax,ymin,ymax]
+        coords : string
+            Input coordinate system for the subplot: 'pixel', 'physical', or 'world'
 
-        *!NOTE!*: Not a complete plotting method. Ony calculates values common
-        to both Kappamap and Shearmap plots
+        Notes
+        -----
+        This is not a complete plotting method: it only calculates quantities common to both Kappamap and Shearmap plots
         '''
 
         if subplot is None:
@@ -463,7 +466,7 @@ class WLMap:
         else:
             raise IOError('Error: Subplot bounds can only be in pixel, physical, or world coordinates.')
 
-        # Convert subplot bounds to pixel values
+        # Convert subplot bounds to (floating point) pixel values
         pix_xi,pix_yi = self.world2image(xi,yi)
         pix_xf,pix_yf = self.world2image(xf,yf)
 

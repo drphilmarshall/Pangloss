@@ -10,44 +10,29 @@ vb = False
 
 class Kappamap(pangloss.WLMap):
     """
-    NAME
-        Kappamap
+    Read in, store, transform and interrogate a convergence map.
 
-    PURPOSE
-        Read in, store, transform and interrogate a convergence map.
+    Notes
+    -----
+    A "physical" coordinate system is used, where x = -RA (rad)
+    and y = Dec (rad). This is the system favoured by Hilbert et al.
 
-    COMMENTS
-        A "physical" coordinate system is used, where x = -RA (rad)
-        and y = Dec (rad). This is the system favoured by Hilbert et al.
+    Parameters
+    ----------
+    kappafile : string
+        Name of file containing a convergence map
+    FITS : boolean
+        Data file format (def=True)
 
-    INITIALISATION
-        kappafile      Name of file containing a convergence map
-        FITS           Data file format (def=True)
-
-    METHODS
-        plot(self,fig_size=10,subplot=None): Plots either the whole image or a
-                                             given sub-image in physical
-                                             coordinates
-
-    BUGS
-
-    AUTHORS
-      This file is part of the Pangloss project, distributed under the
-      GPL v2, by Tom Collett (IoA) and  Phil Marshall (Oxford).
-      Please cite: Collett et al 2013, http://arxiv.org/abs/1303.6564
-
-    HISTORY
-      2013-03-23  Marshall & Collett (Oxford)
-      2015-06-24  Updated to use WLMap class, Everett (SLAC)
     """
 
 # ----------------------------------------------------------------------------
 
-    def __init__(self,kappafile=None,data=None,FITS=True):
+    def __init__(self, kappafile=None, data=None, FITS=True):
 
         self.name = 'Convergence map kappa from Millenium Simulation, zs = 1.3857'
         # Calls the WLMap superclass
-        pangloss.WLMap.__init__(self,mapfiles=kappafile,data=data,FITS=FITS)
+        pangloss.WLMap.__init__(self, mapfiles=kappafile, data=data, FITS=FITS)
 
 # ----------------------------------------------------------------------------
 
@@ -57,15 +42,18 @@ class Kappamap(pangloss.WLMap):
 
 # ----------------------------------------------------------------------------
 
-    def plot(self,fig_size=10,subplot=None,coords='world'):
+    def plot(self, fig_size=10, subplot=None, coords='world'):
         """
         Plot the convergence as a grayscale image.
 
-        Optional arguments:
-            fig_size        Figure size in inches
-            subplot         List of four plot limits [xmin,xmax,ymin,ymax]
-            coords          Type of coordinates inputted for the subplot:
-                            'pixel', 'physical', or 'world'
+        Parameters
+        ----------
+        fig_size : float
+            Figure size in inches
+        subplot : list, float
+            Plot limits [xmin,xmax,ymin,ymax]
+        coords : string
+            Input coordinate system for the subplot: 'pixel', 'physical', or 'world'
         """
 
         # Always start a figure when plotting kappa maps:
@@ -81,9 +69,13 @@ class Kappamap(pangloss.WLMap):
         imsubplot = [pix_xi, pix_xf, pix_yi, pix_yf]
         ax = pangloss.set_axes(fig,Lx,Ly,self.hdr[0],imsubplot)
 
-        # Used for colormap scaling
-        Kmin = np.min(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf])
-        Kmax = np.max(self.values[0][pix_yi:pix_yf,pix_xi:pix_xf])
+        # Get the colormap limits
+        Kmin = np.min(self.values[0]
+                                 [int(pix_yi):int(pix_yf),
+                                  int(pix_xi):int(pix_xf)])
+        Kmax = np.max(self.values[0]
+                                 [int(pix_yi):int(pix_yf),
+                                  int(pix_xi):int(pix_xf)])
 
         # Plot Kappamap image
         ax.imshow(self.values[0],cmap='gray_r',vmin=Kmin,vmax=Kmax,origin='lower')

@@ -62,7 +62,7 @@ def set_axes(fig,Lx=10,Ly=10,header=None,imsubplot=[0,1,0,1]):
 
     assert header is not None, "Must pass a FITS header!"
 
-    # Create world coordinate axis
+    # Create axis, always in world coordinates
     wcs = WCS(header)
     ax = fig.add_axes(viewport, projection=wcs, label='wcs')
     ax.set_autoscale_on(False)
@@ -114,9 +114,15 @@ def set_axes(fig,Lx=10,Ly=10,header=None,imsubplot=[0,1,0,1]):
 
 # ----------------------------------------------------------------------------
 
-def make_axes(fig,subplot,imsubplot=[0,1,0,1]):
+def make_axes(fig, subplot, imsubplot=[0,1,0,1]):
     '''
-    Creates axes for plotting maps and catalogs. Both sets of axes are
+    Creates axes for plotting maps and catalogs.
+
+    Notes
+    -----
+    DEPRECATED.
+    
+    Both sets of axes are
     contained in the current figure instance, and also returned for
     ease of use. OLD VERSION - only remains for old demos.
     '''

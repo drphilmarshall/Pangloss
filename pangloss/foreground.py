@@ -55,7 +55,10 @@ class ForegroundCatalog(pangloss.Catalog):
 
         # Structures catalog metadata from configfile and reads in the catalog data
         self.config = config
-        self.read(filename,config)
+        self.read(filename, config)
+
+        # Add columns to contain free parameters - initialize to zero:
+        self.galaxies['Mh'] = self.galaxies['Mhalo_obs'].copy() * 0.0
 
         # Parsing the file name
         # 0 <= x,y <= 7, each (i,j) map covers 4x4 square degrees
@@ -87,7 +90,7 @@ class ForegroundCatalog(pangloss.Catalog):
         Hilbert foreground catalogs.
         '''
 
-        self.galaxies = pangloss.read_hilbert_catalog(filename,config)
+        self.galaxies = pangloss.read_hilbert_catalog(filename, config)
 
         return
 
@@ -174,12 +177,12 @@ class ForegroundCatalog(pangloss.Catalog):
 
         plt.show()
 
-    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
+    def plot(self, subplot=None, mag_lim=[0, 24], mass_lim=[0, 10**20],
+             z_lim=[0, 1.3857], fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
-            The optional input fig_size is in inches and has a default value of 10.
-        The other optional inputs are limits with default values, which limit
-        the number of galaxies that are to be plotted by the respective attribute.
+        The optional input fig_size is in inches and has a default value of 10.
+        The other optional inputs are limits with default values, which limit the number of galaxies that are to be plotted by the respective attribute.
         '''
 
         # Get current figure (or make one if it doesn't exist)
@@ -188,8 +191,10 @@ class ForegroundCatalog(pangloss.Catalog):
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
-            imshow = fig.axes[0]
-            world = fig.axes[1]
+            # imshow = fig.axes[0]
+            # world = fig.axes[1]
+            world = fig.gca()
+            # This fails though: the halos do not appear...
 
             # If the Kappamap subplot was not passed to this catalog:
             if subplot == None:
@@ -211,8 +216,8 @@ class ForegroundCatalog(pangloss.Catalog):
             # Adjust the subplot in wcs by half a pixel
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
 
-            # Create new imshow and world axes
-            imshow, world = pangloss.make_axes(fig,subplot)
+            # DEPRECATED: Create new imshow and world axes
+            # imshow, world = pangloss.make_axes(fig,subplot)
 
         ai, af = subplot[0], subplot[1]    # RA limits for subplot
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
