@@ -2,8 +2,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pangloss
-from astropy.wcs import WCS
-import cmath
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 vb = False
@@ -148,3 +146,7 @@ class Shearmap(pangloss.WLMap):
         ax.add_artist(bar)
 
         return
+
+    @staticmethod
+    def example():
+        return Shearmap([pangloss.GAMMA_1_FILE, pangloss.GAMMA_2_FILE], FITS=False)

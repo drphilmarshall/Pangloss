@@ -1,13 +1,12 @@
 import cPickle as pickle
 import math
 import os
-import sys
 import timeit
-
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Table
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+import pangloss
+from pandas import DataFrame
 
 # Fast correlation functions:
 try:
@@ -15,16 +14,12 @@ try:
 except ImportError:
     import pangloss.nocorr as treecorr
 
-# Import Pangloss:
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
-import pangloss
 
 # Verbose
-vb = True
+vb = False
 
 # Record CPU time per lightcone?
-time = True
+time = False
 
 # ============================================================================
 
@@ -227,11 +222,10 @@ class BackgroundCatalog(pangloss.Catalog):
         eMod_int = abs(e_int)
         ePhi_int = np.rad2deg(np.arctan2(e2_int,e1_int))/2.0
 
-        # Save generated catalog as an astropy table
-        self.galaxies = Table([ID,ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int],names=['ID','RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int'], \
-                              meta={'name':'background catalog','size':N,'mag_lim':mag_lim, \
-                                    'mass_lim':mass_lim,'z_lim':z_lim,'sigma_e':sigma_e})
-
+        # Save generated catalog as a pandas dataframe
+        columns = ['ID','RA','Dec','mag','Mstar_obs','z_obs','eMod_int','ePhi_int','e1_int','e2_int']
+        data = np.matrix([ID,ra,dec,mag,mass,z,eMod_int,ePhi_int,e1_int,e2_int]).transpose()
+        self.galaxies = DataFrame(columns=columns, data=data)
         return
 
     def lens_by_map(self,kappamap,shearmap):
@@ -268,7 +262,7 @@ class BackgroundCatalog(pangloss.Catalog):
         g_conj = np.array([val.conjugate() for val in g])
 
         # Flag any galaxy that has been strongly (or near-strongly) lensed
-        self.galaxies['strong_flag'][np.abs(g)>0.5] = 1
+        self.galaxies['strong_flag'] = np.abs(g)>0.5
 
         # Calculate the observed ellipticity for weak lensing events
         index = np.abs(g) < 1.0
@@ -302,7 +296,8 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-    def lens_by_halos(self,save=False,methods=['add'],use_method='add',relevance_lim=0.0,lookup_table=False,smooth_corr=False,foreground_corr=False):
+    def lens_by_halos(self, save=False, methods=['add'], use_method='add', relevance_lim=10e-6,
+                      lookup_table=False, smooth_corr=False, foreground_corr=False):
         '''
         Lens background galaxies by the combined shear and convergence in their respective lightcones using
         the method given by `use_method`. By default all foreground objects in a lightcone are used in the
@@ -363,7 +358,7 @@ class BackgroundCatalog(pangloss.Catalog):
             lightcone.drawMhalos(shmr)
             '''
 
-            lightcone.drawConcentrations(errors=True)
+            lightcone.drawConcentrations(errors=False)
 
             # Compute each halo's contribution to the convergence and shear:
             if lookup_table is True:
@@ -426,7 +421,7 @@ class BackgroundCatalog(pangloss.Catalog):
         g_conj = np.array([val.conjugate() for val in g])
 
         # Flag any galaxy that has been strongly (or near-strongly) lensed
-        self.galaxies['strong_flag'][abs(g)>0.5] = 1
+        self.galaxies['strong_flag'] = abs(g)>0.5
 
         # Calculate the observed ellipticity for weak lensing events
         index = np.abs(g) < 1.0
@@ -523,14 +518,14 @@ class BackgroundCatalog(pangloss.Catalog):
             R = 0.01 # Mpc
 
             # Calculate relevance according to scheme given by McCully et al. in http://arxiv.org/abs/1601.05417
-            lightcone.galaxies['relevance'] = (10**lightcone.galaxies['Mh']/M)*(R/lightcone.galaxies['rphys'])**3
+            lightcone.galaxies['relevance'] = (lightcone.galaxies['Mh']/M)*(R/lightcone.galaxies['rphys'])**3
 
         elif metric == 'linear':
             # Find the min and max physical distance and
             r_min = np.min(lightcone.galaxies['rphys'])
             r_max = np.max(lightcone.galaxies['rphys'])
-            Mh_min = np.min(10**lightcone.galaxies['Mh'])
-            Mh_max = np.max(10**lightcone.galaxies['Mh'])
+            Mh_min = np.min(lightcone.galaxies['Mh'])
+            Mh_max = np.max(lightcone.galaxies['Mh'])
 
             # Compute the relevance using a linear metric from 0 to 1
             relevance_r = (r_max - self.galaxies['rphys']) / r_max
@@ -561,7 +556,7 @@ class BackgroundCatalog(pangloss.Catalog):
         self.lightcones = np.zeros(self.galaxy_count,dtype='object')
 
         # Set lightcone parameters
-        flavor = 'simulated'
+        flavor = 'sampled'
 
         # Setup the grid
         self.setup_grid()
@@ -569,11 +564,13 @@ class BackgroundCatalog(pangloss.Catalog):
         # If a foreground catalog object is not passed, load in the appropriate catalog.
         if foreground is None:
             # Load in the corresponding foreground catalog
-            config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-            foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+            config = pangloss.Configuration.example()
+            foreground = pangloss.ForegroundCatalog(pangloss.GUO_FILE, config)
 
         # Only take the columns from foreground that are needed for a lightcone
-        lc_catalog = Table(names=['RA','Dec','z_obs','Mhalo_obs','Type','mag'],data=[foreground.galaxies['RA'],foreground.galaxies['Dec'],foreground.galaxies['z_obs'],foreground.galaxies['Mhalo_obs'],foreground.galaxies['Type'],foreground.galaxies['mag_SDSS_i']])
+        lc_catalog = foreground.galaxies[['RA','Dec','z_obs','Mhalo_obs','Type','GalID',
+                                          'mag_SDSS_i', 'Mh']]
+        lc_catalog.rename(columns={'mag_SDSS_i': 'mag'})
 
         # Save mean kappas in foreground redshift slices for foreground correction
         self.foreground_kappas = foreground.mean_kappas
@@ -587,15 +584,15 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # Drill a lightcone at each galaxy location
         for i in range(self.galaxy_count):
-            if i%counter == 0 and vb is True:
-                print i,' ',np.ceil(100*i/self.galaxy_count),'%'
+            if i % counter == 0 and vb is True:
+                print i, ' ', np.ceil(100*i/self.galaxy_count), '%'
             # Set galaxy positions
             ra0 = self.galaxies['RA'][i]
             dec0 = self.galaxies['Dec'][i]
-            position = [ra0,dec0]
+            position = [ra0, dec0]
 
             # Create the lightcone for background galaxy i
-            self.lightcones[i] = pangloss.Lightcone(lc_catalog,flavor,position,radius,ID=i)
+            self.lightcones[i] = pangloss.Lightcone(lc_catalog, flavor, position, radius, ID=i)
 
             # Create the redshift scaffolding for lightcone i:
             self.lightcones[i].defineSystem(self.zl,self.zs)
@@ -613,7 +610,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def save(self,filename=None):
+    def save(self, filename=None):
         '''
         Save the background galaxy catalog in '/data'.
         '''
@@ -623,19 +620,20 @@ class BackgroundCatalog(pangloss.Catalog):
 
         # If no filename is given, a default is set using the field numbers (x,y,i,j).
         if filename is None:
-            filename = PANGLOSS_DIR+'/data/background_catalog_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
+            filename = pangloss.DATA_DIR + '/background_catalog_' + str(self.map_x) + '_' + str(
+                self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'.pkl'
 
         self.filename = filename
 
         pickle_file = open(self.filename, 'wb')
-        pickle.dump(self.__dict__,self.filename,2)
+        pickle.dump(self.__dict__, self.filename, 2)
         pickle_file.close()
 
         return
 
 # ----------------------------------------------------------------------------
 
-    def load(self,filename=None):
+    def load(self, filename=None):
         '''
         Load in an old background galaxy catalog. Note: Not sure when we will use this yet.
         '''
@@ -654,7 +652,7 @@ class BackgroundCatalog(pangloss.Catalog):
 
 # ----------------------------------------------------------------------------
 
-    def bin_to_maps(self,lensed='none',binsize=0.075,center=None,savefile=None,show=False):
+    def bin_to_maps(self, lensed='none', binsize=0.075, center=None, savefile=None, show=False):
         '''
         Bin the background galaxies into WLMaps. We always make both
         a kappa map and a shear map - the 'lensed' kwarg tells us
@@ -743,7 +741,7 @@ class BackgroundCatalog(pangloss.Catalog):
             kappamap.plot(subplot=subplot,coords='world')
 
         if savefile is not None:
-            plt.savefig(PANGLOSS_DIR+'/data/binned_maps/'+savefile, bbox_inches='tight')
+            plt.savefig(pangloss.DATA_DIR + '/binned_maps/' + savefile, bbox_inches='tight')
 
         return kappamap, shearmap
 
@@ -797,8 +795,8 @@ class BackgroundCatalog(pangloss.Catalog):
         elif corr_type == 'ng':
             # Load in foreground catalog if none is passed
             if foreground is None:
-                config = pangloss.Configuration(PANGLOSS_DIR+'/example/example.config')
-                foreground = pangloss.ForegroundCatalog(PANGLOSS_DIR+'/data/GGL_los_8_'+str(self.map_x)+'_'+str(self.map_y)+'_'+str(self.field_i)+'_'+str(self.field_j)+'_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt',config)
+                config = pangloss.Configuration.example()
+                foreground = pangloss.ForegroundCatalog(pangloss.PANGLOSS_MODULE_DIR + '/data/GGL_los_8_' + str(self.map_x) + '_' + str(self.map_y) + '_' + str(self.field_i) + '_' + str(self.field_j) + '_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt', config)
 
             # Create catalog of the foreground galaxy locations
             corr_cat1 = treecorr.Catalog(ra=foreground.galaxies['RA'], dec=foreground.galaxies['Dec'], ra_units='rad', dec_units='rad')
@@ -912,6 +910,32 @@ class BackgroundCatalog(pangloss.Catalog):
         return chi2, n_sigma, mean_err, std_err
 
 # ----------------------------------------------------------------------------
+
+    def halo_mass_log_likelihood(self):
+        """
+            Compare observed ellipticity to ray traced reduced shear.
+        """
+        std_int = self.std_int
+        e1 = self.galaxies['e1'].as_matrix()
+        e2 = self.galaxies['e2'].as_matrix()
+        std_e1 = e1.std()
+        std_e2 = e2.std()
+        std_obs = np.mean([std_e1, std_e2])
+        sigma = np.sqrt(std_int**2+std_obs**2)
+
+        # Calculate the (log of) normalization constant
+        N = 2.*self.galaxy_count
+        logZ = (N/2.)*np.log(2.*np.pi*sigma**2)
+
+        # Calculate chi2
+        g = self.galaxies['g_halo'].as_matrix()
+        g1, g2 = g.real, g.imag
+        chi2 = np.sum((e1-g1)**2/sigma**2) + np.sum((e2-g2)**2/sigma**2)
+
+        # Calculate log-likelihood
+        log_likelihood = -logZ + (-0.5) * chi2
+
+        return log_likelihood
 
     def calculate_log_likelihood(self,lensed='halo'):
         '''
@@ -1136,4 +1160,16 @@ class BackgroundCatalog(pangloss.Catalog):
 
         return
 
-# ============================================================================
+    def get_sampled_halo_masses_in_lightcones(self):
+        row = dict()
+        for cone in self.lightcones:
+            for index in xrange(len(cone.galaxies)):
+                row[cone.galaxies.iloc[index]['GalID']] = [cone.galaxies.iloc[index]['Mh']]
+        return DataFrame(row)
+
+    def get_true_halo_masses_in_lightcones(self):
+        row = dict()
+        for cone in self.lightcones:
+            for index in xrange(len(cone.galaxies)):
+                row[cone.galaxies.iloc[index]['GalID']] = [cone.galaxies.iloc[index]['Mhalo_obs']]
+        return DataFrame(row)

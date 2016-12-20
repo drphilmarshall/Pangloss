@@ -6,8 +6,6 @@ import numpy
 import sys
 
 import matplotlib.pyplot as plt
-from astropy.io import ascii
-
 import pangloss
 
 
@@ -195,11 +193,9 @@ def Magnifier(argv):
 
     numpy.savetxt(CALIB_DIR+"/lc_density.txt", lc_dens) 
 
-    print 'Mean overdensity in all fields = %.3f (this should =1)' % numpy.mean(lc_density)
     print 'Lightcone overdensities saved to file'
     print pangloss.dashedline
     del lc_dens
-    del lc_density
 
     # ==============================================================
     # Sample all lightcones to make the pdfs
@@ -398,12 +394,9 @@ def Magnifier(argv):
                 means.append(sub_mean)
                 fieldname.append(field_name[i])
 
-        meanmu_table = numpy.array([fieldname, means]).T
-        ascii.write(meanmu_table, CALIB_DIR+"/"+EXP_NAME+"_table_meanmu.txt", names=['#field','mean_mu'])
+        print "           Mean mu of all the fields = ",numpy.mean(means)
+        print "Magnifier: saved PDFs to",outputfile
 
-        print "           Mean mu of all the fields = ",numpy.mean(means)        
-        print "Magnifier: saved PDFs to",outputfile 
-            
     print pangloss.doubledashedline
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -   

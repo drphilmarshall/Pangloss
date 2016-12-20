@@ -1,26 +1,29 @@
 from os import mkdir, path, remove
 from traceback import print_exc
-
 from requests import get
 
-pangloss_module_dir = path.dirname(path.realpath(__file__))
-data_dir = path.join(path.dirname(pangloss_module_dir), 'data')
-calib_dir = path.join(path.dirname(pangloss_module_dir), 'calib')
-millennium_dir = path.join(calib_dir, 'Millennium')
-shmr_dir = path.join(calib_dir, 'SHMR')
+PANGLOSS_MODULE_DIR = path.dirname(path.realpath(__file__))
+DATA_DIR = path.join(path.dirname(PANGLOSS_MODULE_DIR), 'data')
+CALIB_DIR = path.join(path.dirname(PANGLOSS_MODULE_DIR), 'calib')
+MILLENNIUM_DIR = path.join(CALIB_DIR, 'Millennium')
+SHMR_DIR = path.join(CALIB_DIR, 'SHMR')
+EXAMPLE_DIR = path.join(path.dirname(PANGLOSS_MODULE_DIR), 'example')
 
-gamma_1_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1')
-gamma_2_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2')
-kappa_file = path.join(data_dir, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa')
-guo_file = path.join(data_dir, 'GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63'
-                                '.images.txt')
-demo_data_files = [gamma_1_file, gamma_2_file, kappa_file, guo_file]
+#files for demo notebooks
+GAMMA_1_FILE = path.join(DATA_DIR, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_1')
+GAMMA_2_FILE = path.join(DATA_DIR, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.gamma_2')
+KAPPA_FILE = path.join(DATA_DIR, 'GGL_los_8_0_0_N_4096_ang_4_rays_to_plane_37_f.kappa')
+GUO_FILE = path.join(DATA_DIR, 'GGL_los_8_0_0_0_0_N_4096_ang_4_Guo_galaxies_on_plane_27_to_63.images.txt')
+CONFIG_FILE = path.join(EXAMPLE_DIR, 'example.config')
 
-catalog_example = path.join(millennium_dir, 'catalog_example.txt')
-kappa_example = path.join(millennium_dir, 'kappa_example.fits')
-halo_mass_redshift_catalog = path.join(shmr_dir, 'HaloMassRedshiftCatalog.pickle')
+DEMO_FILES = [GAMMA_1_FILE, GAMMA_2_FILE, KAPPA_FILE, GUO_FILE, CONFIG_FILE]
 
-calib_data_files = [catalog_example, kappa_example, halo_mass_redshift_catalog]
+#files for classic examples
+CATALOG_EXAMPLE = path.join(MILLENNIUM_DIR, 'catalog_example.txt')
+KAPPA_EXAMPLE = path.join(MILLENNIUM_DIR, 'kappa_example.fits')
+HALO_MASS_REDSHIFT_CATALOG = path.join(SHMR_DIR, 'HaloMassRedshiftCatalog.pickle')
+
+EXAMPLE_FILES = [CATALOG_EXAMPLE, KAPPA_EXAMPLE, HALO_MASS_REDSHIFT_CATALOG]
 
 def fetch():
     """
@@ -29,20 +32,19 @@ def fetch():
     demo_data_url = 'http://www.slac.stanford.edu/~pjm/hilbert'
     calib_data_url = 'http://www.ast.cam.ac.uk/~tcollett/Pangloss/calib'
 
-    for d in [data_dir, calib_dir, millennium_dir, shmr_dir]:
+    for d in [DATA_DIR, CALIB_DIR, MILLENNIUM_DIR, SHMR_DIR]:
         if not path.exists(d):
             mkdir(d)
 
-    for demo_data in demo_data_files:
-        if not path.exists(demo_data):
-            url = '{}/{}'.format(demo_data_url, path.basename(demo_data))
-            download(url, demo_data)
+    for demo_file in DEMO_FILES:
+        if not path.exists(demo_file):
+            url = '{}/{}'.format(demo_data_url, path.basename(demo_file))
+            download(url, demo_file)
 
-    for calib_data in calib_data_files:
-        if not path.exists(calib_data):
-            url = '{}/{}/{}'.format(calib_data_url, *calib_data.split('/')[-2:])
-            download(url, calib_data)
-
+    for example_file in EXAMPLE_FILES:
+        if not path.exists(example_file):
+            url = '{}/{}/{}'.format(calib_data_url, *example_file.split('/')[-2:])
+            download(url, example_file)
 
 def download(url, output):
     """

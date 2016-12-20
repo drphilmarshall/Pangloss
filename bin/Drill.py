@@ -130,10 +130,10 @@ def Drill(argv):
         count = 0
         Ncones = Nc/Ncalcats
 
-        for i,catalog in enumerate(calcats):
+        for i, catalog in enumerate(calcats):
 
             print "Drill: Reading in calibration catalog from "+catalog+"..."
-            table = pangloss.read_hilbert_catalog(catalog,experiment)
+            table = pangloss.read_hilbert_catalog(catalog, experiment)
 
             if units == 'deg':
                 table['nRA'] = -table['nRA'] * pangloss.deg2rad

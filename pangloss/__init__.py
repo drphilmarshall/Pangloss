@@ -16,13 +16,13 @@ from foreground import *
 from background import *
 from plotting import *
 from config import *
-from io import *
+from utils import *
 from lensing import *
 from scalingrelations import *
 from miscellaneous import *
 from data import *
+from distribution import *
 
 # Matt Auger's classes.
 from distances import *
 from ndinterp import *
-

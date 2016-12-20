@@ -1,20 +1,22 @@
 # Pangloss
 
-Pangloss is software module for reconstructing all the mass within a light cone
+Pangloss is a software module for reconstructing all the mass within a light cone
 through the Universe.  Understanding complex mass distributions like
 this is important for accurate time delay lens cosmography, and also for
-accurate lens magnification estimation. It aspires to use all available
-data (including weakly-lensed galaxy shapes) in an  attempt to make the best of all mass maps. However, this
+accurate lens magnification estimation - but more generally, we are interested in the inference of cosmological hyper-parameters in a hierarchical model that, in principle, allows us to ask different questions about galaxies and large scale structure than we can with summary statistics alone.
+
+We aspire to use all available
+data (including optical photometry and weakly-lensed galaxy shapes) in an attempt to make the best of all mass maps. However, this
 problem is sufficiently difficult that we are mostly spending our time
 cultivating a garden of toy models and baby steps.
 
 If you are interested in the ongoing investigation of this interesting
 problem, you should:
 * Read our first paper, [_"Reconstructing the lensing mass in the universe from photometric catalogue data;"_](http://arxiv.org/abs/1303.6564)
-* [Browse the wiki](https://github.com/drphilmarshall/Pangloss/wiki) 
+* [Browse the wiki](https://github.com/drphilmarshall/Pangloss/wiki)
 to see what our current plans are;
 * [Fork the code](https://github.com/drphilmarshall/Pangloss) and play around with it;
-* Contact us! [Phil](mailto:dr.phil.marshall@gmail.com) and [Tom](mailto:tcollett@ast.cam.ac.uk) are keen to hear from other researchers in the field who would like to coordinate and/or collaborate.
+* [Contact us!](https://github.com/drphilmarshall/Pangloss/issues) We are keen to hear from other researchers in the field who would like to coordinate and/or collaborate.
 
 ## License
 
@@ -23,23 +25,36 @@ Pangloss is distributed under the MIT License.
 When reporting on your use of Pangloss, we do ask that you include:
 * A citation to: **[Collett et al. (2013), MNRAS, 432, 679, arxiv/1303.6564](http://adsabs.harvard.edu/abs/2013MNRAS.432..679C)**
 * An acknowledgment including a link to this repo, such as:
-_"This work made use of the Pangloss code, written by Tom Collett and
-Phil Marshall, which is freely available at https://github.com/drphilmarshall/Pangloss."_
+_"This work made use of the Pangloss code, which is freely available at https://github.com/drphilmarshall/Pangloss."_
 
 ## Installation
 
-The setup scripts is setup.py and the project can be setup via
-
+The Pangloss package requirements can be found in `requirements.txt`.
+```
+pip install -r requirements.txt
+```
+You can install the Pangloss package itself with
+```
 pip install git+https://github.com/drphilmarshall/pangloss.git@wl
-
-the package requirements can be found in requirements.txt.
+```
+To help develop it, you can fork and clone the Pangloss repository, and install it with
+```
+python setup.py develop
+```
 
 ## Example use
+
+### Analyzing Weak Lensing Data
+
+Take a look at the demonstration notebooks in the [demos](demos/index.ipynb) folder.
+
+
+### Reproducing Collett et al 2013
 
 Right now, there are three main scripts that carry out Pangloss's
 functions:
 
-* **[Drill.py](https://github.com/drphilmarshall/Pangloss/blob/master/Drill.py)**: 
+* **[Drill.py](https://github.com/drphilmarshall/Pangloss/blob/master/Drill.py)**:
 from an input catalog of galaxies (either real or
 simulated), drill out a narrow lightcone (or set of lightcones) centred
 on some sky position of interest, and save the resulting smaller
@@ -63,7 +78,7 @@ we're working towards relaxing this.
 They all take, as their sole input, the same configuration file, an
 [example of which is given here](https://github.com/drphilmarshall/Pangloss/blob/master/pangloss/example_catalog.txt).
 
-In the calib directory we include the means to obtain the halo catalog 
+In the calib directory we include the means to obtain the halo catalog
 for a 1x1 square degree patch of Millennium Simulation sky, and its
 associated ray traced convergence map, for making the calibration
 lightcones. A small mock observed galaxy catalog is included in the
@@ -84,8 +99,8 @@ You should then be able to execute the following example analysis:
     python Drill.py example.config
     python Reconstruct.py example.config
     python Calibrate.py example.config
-    
-Analysing from start to finish will take some time. Be patient! 
+
+Analysing from start to finish will take some time. Be patient!
 (Drill ~2 mins, Reconstruct ~10 mins)
 
 For more details of what the Pangloss scripts are doing, [start reading the code here.](https://github.com/drphilmarshall/Pangloss/wiki/Code-description)
@@ -96,9 +111,9 @@ Also, check out Tom's flowchart that describes the process of data simulation an
 
 ## PDFs based on overdensities
 
-The [original 
-Pangloss](https://github.com/drphilmarshall/Pangloss) has been 
-modified so that it can be used to find convergence and 
-magnification pdfs for any given group of fields based on 
-comparing overdensities of the observed fields with simulation 
+The [original
+Pangloss](https://github.com/drphilmarshall/Pangloss) has been
+modified so that it can be used to find convergence and
+magnification pdfs for any given group of fields based on
+comparing overdensities of the observed fields with simulation
 lightcones.

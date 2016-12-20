@@ -1,10 +1,7 @@
-import os
-import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Column
-from io import int_or_float
+from utils import int_or_float
+import pangloss
 
 # Fast correlation functions:
 try:
@@ -12,10 +9,6 @@ try:
 except ImportError:
     from pangloss import nocorr as treecorr
 
-# Pangloss:
-PANGLOSS_DIR = os.path.expandvars("$PANGLOSS_DIR")
-sys.path.append(PANGLOSS_DIR)
-import pangloss
 
 # ============================================================================
 
@@ -55,14 +48,20 @@ class ForegroundCatalog(pangloss.Catalog):
       2015-07-2  Started Everett (SLAC)
     """
 
-    def __init__(self,filename,config):
+    def __init__(self, filename, config, stellar_mass_threshold=None):
 
         self.filename = filename
         self.type = 'foreground'
 
         # Structures catalog metadata from configfile and reads in the catalog data
         self.config = config
-        self.read(filename,config)
+        self.galaxies = pangloss.read_hilbert_catalog(filename, config)
+
+        if stellar_mass_threshold:
+            self.galaxies = self.galaxies[self.galaxies['Mstar_obs'] > stellar_mass_threshold]
+
+        # Add columns to contain free parameters - initialize to true massses:
+        self.galaxies['Mh'] = self.galaxies['Mhalo_obs'].copy() * 1.0
 
         # Parsing the file name
         # 0 <= x,y <= 7, each (i,j) map covers 4x4 square degrees
@@ -80,21 +79,13 @@ class ForegroundCatalog(pangloss.Catalog):
         # Initialize common catalog attributes:
         pangloss.Catalog.__init__(self)
 
+        self.mass_prior = None
+
         return
 
     def __str(self):
         # Add more!
         return 'Foreground catalog with {} galaxies, with redshifts ranging from {} to {}'.format(self.galaxyCount,self.minZ,self.maxZ)
-
-    def read(self,filename,config):
-        '''
-        Uses astropy.table to read catalog, but with a few specific changes only for
-        Hilbert foreground catalogs.
-        '''
-
-        self.galaxies = pangloss.io.read_hilbert_catalog(filename,config)
-
-        return
 
     def snap_to_grid(self,catalog, Grid):
         '''
@@ -102,15 +93,9 @@ class ForegroundCatalog(pangloss.Catalog):
         NOTE: Different from lightcone snapToGrid
         '''
         z = catalog['z_obs']
-        sz,p = Grid.snap(z)
-        self.writeColumn('z_sz',sz)
-        self.writeColumn('sigma_crit',Grid.sigma_crit[p]) # Units of M_sun/Mpc^2
-
-    def writeColumn(self,string,values):
-        try:
-            self.galaxies.add_column(Column(name='%s'%string,data=values))
-        except ValueError:
-            self.galaxies["%s"%string]=values
+        sz, p = Grid.snap(z)
+        self.galaxies['z_sz'] = sz
+        self.galaxies['sigma_crit'] = Grid.sigma_crit[p] # Units of M_sun/Mpc^2
 
     def find_mean_kappas(self):
         '''
@@ -185,12 +170,12 @@ class ForegroundCatalog(pangloss.Catalog):
 
         plt.show()
 
-    def plot(self,subplot=None,mag_lim=[0,24],mass_lim=[0,10**20],z_lim=[0,1.3857],fig_size=10):
+    def plot(self, subplot=None, mag_lim=[0, 24], mass_lim=[0, 10**20],
+             z_lim=[0, 1.3857], fig_size=10):
         '''
         Plots the positions of galaxies in the foreground catalog in world coordinates.
-            The optional input fig_size is in inches and has a default value of 10.
-        The other optional inputs are limits with default values, which limit
-        the number of galaxies that are to be plotted by the respective attribute.
+        The optional input fig_size is in inches and has a default value of 10.
+        The other optional inputs are limits with default values, which limit the number of galaxies that are to be plotted by the respective attribute.
         '''
 
         # Get current figure (or make one if it doesn't exist)
@@ -199,8 +184,10 @@ class ForegroundCatalog(pangloss.Catalog):
         # If there is a Pangloss map open:
         if fig._label == 'Pangloss Map':
             # Adopt axes from the open Kappamap:
-            imshow = fig.axes[0]
-            world = fig.axes[1]
+            # imshow = fig.axes[0]
+            # world = fig.axes[1]
+            world = fig.gca()
+            # This fails though: the halos do not appear...
 
             # If the Kappamap subplot was not passed to this catalog:
             if subplot == None:
@@ -222,8 +209,8 @@ class ForegroundCatalog(pangloss.Catalog):
             # Adjust the subplot in wcs by half a pixel
             #subplot = [subplot[0]-self.PIXSCALE[0]/2.0,subplot[1]-self.PIXSCALE[0]/2.0,subplot[2]-self.PIXSCALE[0]/2.0,subplot[3]-self.PIXSCALE[0]/2.0]
 
-            # Create new imshow and world axes
-            imshow, world = pangloss.make_axes(fig,subplot)
+            # DEPRECATED: Create new imshow and world axes
+            # imshow, world = pangloss.make_axes(fig,subplot)
 
         ai, af = subplot[0], subplot[1]    # RA limits for subplot
         di, df = subplot[2], subplot[3]    # DEC limits for subplot
@@ -255,3 +242,14 @@ class ForegroundCatalog(pangloss.Catalog):
         pangloss.set_figure_size(fig,fig_size,Lx,Ly)
 
         return
+
+
+    def set_mass_prior(self, distribution):
+        self.mass_prior = distribution
+
+    def draw_halo_masses(self):
+        self.galaxies['Mh'] = self.mass_prior.draw(self.galaxies)
+
+    @staticmethod
+    def guo(stellar_mass_threshold=None):
+        return ForegroundCatalog(pangloss.GUO_FILE, pangloss.Configuration.example(), stellar_mass_threshold)

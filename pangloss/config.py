@@ -1,8 +1,8 @@
-# ===========================================================================
-
 import os, glob
+from .data import PANGLOSS_MODULE_DIR
 
-# ======================================================================
+EXAMPLE_CONFIG = os.path.join(os.path.join(os.path.dirname(PANGLOSS_MODULE_DIR), 'example'),
+                        'example.config')
 
 class Configuration(object):
     """
@@ -27,6 +27,8 @@ class Configuration(object):
 
         getLightconePickleName(self,flavor,pointing=None):
 
+        example(): static method to get example configuration
+
     BUGS
 
     AUTHORS
@@ -46,7 +48,6 @@ class Configuration(object):
         self.prepare()
         return
 
-    # ------------------------------------------------------------------
     # Read in values by keyword and populate the parameters dictionary.
 
     def read(self):
@@ -65,7 +66,6 @@ class Configuration(object):
         thisfile.close()
         return
 
-    # ------------------------------------------------------------------
     # Convert string values into floats/ints where necessary, and expand
     # environment variables.
 
@@ -117,7 +117,6 @@ class Configuration(object):
 
         return
 
-    # ------------------------------------------------------------------
     # Perform various other preparations.
 
     def prepare(self):
@@ -130,7 +129,6 @@ class Configuration(object):
 
         return
 
-    # ------------------------------------------------------------------
     # Figure out pickle names:
 
     def getLightconePickleName(self,flavor,pointing=None):
@@ -160,5 +158,6 @@ class Configuration(object):
 
         return
 
-
-# ======================================================================
+    @staticmethod
+    def example():
+        return Configuration(EXAMPLE_CONFIG)

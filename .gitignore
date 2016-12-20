@@ -17,3 +17,6 @@ calib/SHMR
 *ipynb_checkpoints*
 data
 calib
+build
+dist
+pangloss.egg-info
